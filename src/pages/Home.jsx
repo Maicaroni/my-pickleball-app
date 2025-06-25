@@ -54,8 +54,8 @@ const Hero = styled.div`
   overflow: hidden;
 
   @media (max-width: 768px) {
-    min-height: 80vh;
-    padding: 60px 16px;
+    min-height: 74vh;
+    padding: 80px 16px 120px;
   }
 
   @keyframes gradient {
@@ -501,61 +501,29 @@ const AboutText = styled.p`
 const AboutStats = styled.div`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 3rem;
+  gap: 2rem;
   width: 100%;
-  position: relative;
-  padding-top: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
 
-  @media (max-width: 1024px) {
+  @media (max-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
-    gap: 4rem 2rem;
-    padding: 1rem 16px;
+    gap: 1.5rem;
   }
 
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-    gap: 3.5rem;
-    padding: 1rem 24px;
-  }
-`;
-
-const StatItem = styled.div`
-  position: relative;
-  padding: 0 8px;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 2px;
-    background: linear-gradient(90deg, #29ba9b, #a3e635);
-    border-radius: 2px;
-  }
-
-  h3 {
-    font-size: clamp(2.5rem, 4vw, 3.5rem);
-    font-weight: 800;
-    color: white;
-    margin-bottom: 0.75rem;
-    line-height: 1;
-
-    @media (max-width: 768px) {
-      font-size: clamp(2rem, 3.5vw, 3rem);
+  div {
+    text-align: center;
+    
+    h3 {
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      font-weight: 700;
+      color: #29ba9b;
       margin-bottom: 0.5rem;
-  }
-  }
-
-  p {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 1.125rem;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-
-    @media (max-width: 768px) {
-      font-size: 1rem;
+    }
+    
+    p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.875rem;
     }
   }
 `;
@@ -722,7 +690,6 @@ function Home() {
   }, []);
 
   const handleNavigation = (path) => {
-    window.scrollTo(0, 0);
     navigate(path);
   };
 

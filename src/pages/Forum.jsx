@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import AuthModal from '../components/AuthModal';
+import { useAuth } from '../contexts/AuthContext';
 
 // Types for TypeScript (if using TS, move these to types/forum.ts)
 /**
@@ -101,6 +102,7 @@ const CreatePostHeader = styled.button`
   align-items: center;
   gap: 16px;
   transition: all 0.2s ease;
+  outline: none;
 
   @media (max-width: 768px) {
     padding: 16px;
@@ -109,6 +111,16 @@ const CreatePostHeader = styled.button`
 
   &:hover {
     color: #29ba9b;
+  }
+
+  &:focus {
+    outline: none;
+    border: none;
+  }
+
+  &:active {
+    outline: none;
+    border: none;
   }
 `;
 
@@ -134,10 +146,10 @@ const CreatePostOptions = styled.div`
   padding: 16px 20px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: space-between;
 
   @media (max-width: 768px) {
-    padding: 12px 16px;
+    padding: 16px;
     gap: 12px;
     flex-wrap: wrap;
   }
@@ -155,12 +167,15 @@ const ImageUploadButton = styled.button`
   gap: 8px;
   border-radius: 20px;
   transition: all 0.2s ease;
+  outline: none;
 
   @media (max-width: 768px) {
-    padding: 8px 12px;
+    padding: 10px 14px;
     font-size: 13px;
-    flex: 1;
-    justify-content: center;
+    border-radius: 10px;
+    min-height: 36px;
+    font-weight: 500;
+    background: #f1f5f9;
   }
 
   svg {
@@ -171,14 +186,24 @@ const ImageUploadButton = styled.button`
     stroke-width: 2;
 
     @media (max-width: 768px) {
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
     }
   }
 
   &:hover {
     color: #29ba9b;
     background: #f1f5f9;
+  }
+
+  &:focus {
+    outline: none;
+    border: none;
+  }
+
+  &:active {
+    outline: none;
+    border: none;
   }
 `;
 
@@ -303,20 +328,170 @@ const PostImages = styled.div`
     gap: 3px;
   }
   
-  &.two-images {
-    grid-template-columns: 1fr 1fr;
+  /* Single image - preserves aspect ratio */
+  &.single-image {
+    img {
+      width: 100%;
+      max-height: 400px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
   }
   
+  /* Two images - side by side or stacked based on aspect ratio */
+  &.two-images-horizontal {
+    grid-template-columns: 1fr 1fr;
+    img {
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+  }
+  
+  &.two-images-vertical {
+    grid-template-rows: 1fr 1fr;
+    img {
+      aspect-ratio: 16/9;
+      object-fit: cover;
+    }
+  }
+  
+  /* Three images - one large + two small */
+  &.three-images-left {
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    
+    img:first-child {
+      grid-row: 1 / 3;
+      aspect-ratio: 4/5;
+      object-fit: cover;
+    }
+    
+    img:nth-child(2),
+    img:nth-child(3) {
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+  }
+  
+  &.three-images-top {
+    grid-template-rows: 2fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    
+    img:first-child {
+      grid-column: 1 / 3;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+    }
+    
+    img:nth-child(2),
+    img:nth-child(3) {
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+  }
+  
+  /* Four images - 2x2 grid */
   &.four-images {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
+    
+    img {
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+  }
+  
+  /* Five images - 2+3 layout */
+  &.five-images {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    
+    img:first-child,
+    img:nth-child(2) {
+      grid-row: 1 / 3;
+      aspect-ratio: 4/5;
+      object-fit: cover;
+    }
+    
+    img:nth-child(3),
+    img:nth-child(4),
+    img:nth-child(5) {
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+    
+    img:nth-child(3) {
+      grid-column: 3;
+      grid-row: 1;
+    }
+    
+    img:nth-child(4) {
+      grid-column: 3;
+      grid-row: 2;
+    }
+  }
+  
+  /* Six images - 3x2 grid */
+  &.six-images {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    
+    img {
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+  }
+  
+  /* Seven images - 3x3 with first image spanning 2 rows */
+  &.seven-images {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    
+    img:first-child {
+      grid-row: 1 / 3;
+      aspect-ratio: 4/5;
+      object-fit: cover;
+    }
+    
+    img:not(:first-child) {
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+  }
+  
+  /* Eight images - 3x3 with first two images spanning 2 rows */
+  &.eight-images {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    
+    img:first-child,
+    img:nth-child(2) {
+      grid-row: 1 / 3;
+      aspect-ratio: 4/5;
+      object-fit: cover;
+    }
+    
+    img:not(:first-child):not(:nth-child(2)) {
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+  }
+  
+  /* Nine+ images - 3x3 grid with overlay */
+  &.nine-plus-images {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    
+    img {
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
   }
   
   img {
     width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
     transition: transform 0.3s ease;
+    cursor: pointer;
 
     @media (hover: hover) {
       &:hover {
@@ -324,23 +499,46 @@ const PostImages = styled.div`
       }
     }
   }
+  
+  /* More than 5 images indicator */
+  .more-images-overlay {
+    position: relative;
+    
+    &::after {
+      content: '+' attr(data-remaining);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 600;
+      backdrop-filter: blur(2px);
+    }
+  }
 `;
 
 const PostActions = styled.div`
-  padding: 16px 20px;
+  padding: 8px 20px;
   display: flex;
   gap: 20px;
   border-top: 1px solid #e2e8f0;
   margin-top: 16px;
 
   @media (max-width: 768px) {
-    padding: 14px 16px;
+    padding: 6px 16px;
     gap: 14px;
   }
 
   button {
     background: none;
     border: none;
+    outline: none;
     padding: 8px 12px;
     color: #64748b;
     font-size: 14px;
@@ -349,7 +547,7 @@ const PostActions = styled.div`
     align-items: center;
     gap: 8px;
     border-radius: 20px;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease;
 
     @media (max-width: 768px) {
       padding: 10px;
@@ -361,7 +559,15 @@ const PostActions = styled.div`
 
     &:hover {
       color: #29ba9b;
-      background: #f1f5f9;
+    }
+
+    &:focus {
+      outline: none;
+      background: none;
+    }
+
+    &:active {
+      background: none;
     }
   }
 `;
@@ -393,9 +599,359 @@ const TimeStamp = styled.div`
 `;
 
 const CommentSection = styled.div`
-  border-top: 1px solid #efefef;
-  padding: 16px;
+  border-top: 1px solid #e2e8f0;
+`;
+
+const CommentInput = styled.div`
+  padding: 8px 20px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
   background: white;
+
+  @media (max-width: 768px) {
+    padding: 8px 16px;
+    gap: 10px;
+  }
+`;
+
+const CommentTextArea = styled.input`
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 8px 0;
+  font-size: 14px;
+  font-family: inherit;
+  background: transparent;
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+`;
+
+const CommentSubmitButton = styled.button`
+  background: none;
+  color: #29ba9b;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    transform: scale(1.1);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const CommentsList = styled.div`
+  background: white;
+`;
+
+const CommentItem = styled.div`
+  padding: 6px 20px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+
+  @media (max-width: 768px) {
+    padding: 6px 16px;
+    gap: 10px;
+  }
+
+  &:last-child {
+    padding-bottom: 12px;
+  }
+`;
+
+const CommentAvatar = styled.div`
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 50%;
+  background: #29ba9b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: white;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 2px;
+`;
+
+const CommentItemContent = styled.div`
+  flex: 1;
+  line-height: 1.3;
+  
+  .comment-content {
+    font-size: 14px;
+    color: #000;
+    margin: 0 0 4px 0;
+    text-align: left;
+    
+    .comment-author {
+      font-weight: 600;
+      margin-right: 6px;
+    }
+    
+    .comment-text {
+      font-weight: 400;
+    }
+  }
+  
+  .comment-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+    
+    .comment-time {
+      font-size: 12px;
+      color: #8e8e8e;
+      font-weight: 400;
+    }
+    
+    .comment-reply {
+      font-size: 12px;
+      color: #8e8e8e;
+      font-weight: 600;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      
+      &:hover {
+        color: #262626;
+      }
+    }
+  }
+`;
+
+const ViewRepliesButton = styled.div`
+  padding-left: 36px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  text-align: left;
+  width: 100%;
+  
+  .view-replies {
+    margin-top: 8px;
+    text-align: left;
+    
+    button {
+      background: none !important;
+      border: none;
+      font-size: 12px;
+      color: #8e8e8e;
+      font-weight: 400;
+      padding: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      outline: none;
+      justify-content: flex-start;
+      
+      &:hover {
+        color: #262626;
+        background: none !important;
+      }
+      
+      &:focus {
+        outline: none;
+        background: none !important;
+      }
+      
+      &:active {
+        background: none !important;
+      }
+      
+      &::before {
+        content: '';
+        width: 20px;
+        height: 1px;
+        background: #8e8e8e;
+        flex-shrink: 0;
+      }
+    }
+  }
+  
+  @media (max-width: 768px) {
+    padding-left: 28px;
+    margin-bottom: 6px;
+  }
+`;
+
+const ExpandCommentsButton = styled.button`
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #29ba9b;
+    background: #f1f5f9;
+  }
+`;
+
+const ReplySection = styled.div`
+  margin-left: 36px;
+  border-left: 1px solid #e2e8f0;
+  padding-left: 12px;
+  margin-bottom: 12px;
+  
+  @media (max-width: 768px) {
+    margin-left: 28px;
+    padding-left: 8px;
+    margin-bottom: 10px;
+  }
+`;
+
+const ReplyInput = styled.div`
+  padding: 8px 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: white;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+  }
+`;
+
+const ReplyTextArea = styled.input`
+  flex: 1;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+
+  &:focus {
+    border-color: #29ba9b;
+    box-shadow: 0 0 0 2px rgba(41, 186, 155, 0.1);
+  }
+
+  &::placeholder {
+    color: #94a3b8;
+  }
+`;
+
+const ReplySubmitButton = styled.button`
+  background: none;
+  color: #29ba9b;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    transform: scale(1.1);
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
+const ReplyItem = styled.div`
+  padding: 4px 0;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+  }
+`;
+
+const ReplyAvatar = styled.div`
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  border-radius: 50%;
+  background: #29ba9b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: white;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 2px;
+`;
+
+const ReplyContent = styled.div`
+  flex: 1;
+  line-height: 1.3;
+  
+  .reply-content {
+    font-size: 13px;
+    color: #000;
+    margin: 0 0 2px 0;
+    text-align: left;
+    
+    .reply-author {
+      font-weight: 600;
+      margin-right: 6px;
+    }
+    
+    .reply-text {
+      font-weight: 400;
+    }
+  }
+  
+  .reply-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+    
+    .reply-time {
+      font-size: 11px;
+      color: #8e8e8e;
+      font-weight: 400;
+    }
+    
+    .reply-reply {
+      font-size: 11px;
+      color: #8e8e8e;
+      font-weight: 600;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      
+      &:hover {
+        color: #262626;
+      }
+    }
+  }
 `;
 
 const Comment = styled.div`
@@ -515,16 +1071,25 @@ const PostTextArea = styled.textarea`
   width: 100%;
   min-height: 150px;
   padding: 12px;
-  border: 1px solid #dbdbdb;
+  border: none;
   border-radius: 4px;
   resize: none;
-  font-size: 14px;
-  line-height: 1.4;
-  margin-bottom: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #334155;
+  font-family: inherit;
+  margin-bottom: 0px;
+  
+  @media (max-width: 768px) {
+    font-size: 14px;
+  }
   
   &:focus {
     outline: none;
-    border-color: #29ba9b;
+  }
+  
+  &::placeholder {
+    color: #94a3b8;
   }
 `;
 
@@ -543,23 +1108,49 @@ const ImageUploadArea = styled.div`
 `;
 
 const SubmitButton = styled.button`
-  width: 100%;
-  padding: 12px;
+  width: ${props => props.width || '100%'};
+  padding: ${props => props.padding || '12px'};
   background: #29ba9b;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 16px;
+  margin-top: ${props => props.marginTop || '16px'};
+  transition: all 0.2s ease;
+  
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+    border-radius: 10px;
+    min-height: 40px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(41, 186, 155, 0.2);
+  }
   
   &:hover {
     background: #234255;
+    transform: translateY(-1px);
+    
+    @media (max-width: 768px) {
+      transform: none;
+      background: #26a085;
+    }
+  }
+  
+  &:active {
+    transform: translateY(0);
+    
+    @media (max-width: 768px) {
+      transform: scale(0.98);
+    }
   }
   
   &:disabled {
     background: #dbdbdb;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 `;
 
@@ -714,6 +1305,201 @@ const ImageCounter = styled.div`
   }
 `;
 
+const ImagePreviewContainer = styled.div`
+  margin-top: 16px;
+  padding: 16px 0;
+
+  @media (max-width: 768px) {
+    padding: 12px 0;
+    margin-top: 12px;
+  }
+  
+  /* Use the same smart layout as posts */
+  .preview-grid {
+    display: grid;
+    gap: 8px;
+    border-radius: 8px;
+    overflow: hidden;
+    
+    /* Single image */
+    &.single-image {
+      .preview-image {
+        max-height: 300px;
+        border-radius: 8px;
+      }
+    }
+    
+    /* Two images */
+    &.two-images-horizontal {
+      grid-template-columns: 1fr 1fr;
+      .preview-image {
+        aspect-ratio: 1;
+      }
+    }
+    
+    /* Three images */
+    &.three-images-left {
+      grid-template-columns: 2fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      
+      .preview-image:first-child {
+        grid-row: 1 / 3;
+        aspect-ratio: 4/5;
+      }
+      
+      .preview-image:nth-child(2),
+      .preview-image:nth-child(3) {
+        aspect-ratio: 1;
+      }
+    }
+    
+    /* Four images */
+    &.four-images {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      
+      .preview-image {
+        aspect-ratio: 1;
+      }
+    }
+    
+    /* Five images */
+    &.five-images {
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      
+      .preview-image:first-child,
+      .preview-image:nth-child(2) {
+        grid-row: 1 / 3;
+        aspect-ratio: 4/5;
+      }
+      
+      .preview-image:nth-child(3) {
+        grid-column: 3;
+        grid-row: 1;
+        aspect-ratio: 1;
+      }
+      
+      .preview-image:nth-child(4) {
+        grid-column: 3;
+        grid-row: 2;
+        aspect-ratio: 1;
+      }
+    }
+    
+    /* Six images */
+    &.six-images {
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      
+      .preview-image {
+        aspect-ratio: 1;
+      }
+    }
+    
+    /* Seven images */
+    &.seven-images {
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
+      
+      .preview-image:first-child {
+        grid-row: 1 / 3;
+        aspect-ratio: 4/5;
+      }
+      
+      .preview-image:not(:first-child) {
+        aspect-ratio: 1;
+      }
+    }
+    
+    /* Eight images */
+    &.eight-images {
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
+      
+      .preview-image:first-child,
+      .preview-image:nth-child(2) {
+        grid-row: 1 / 3;
+        aspect-ratio: 4/5;
+      }
+      
+      .preview-image:not(:first-child):not(:nth-child(2)) {
+        aspect-ratio: 1;
+      }
+    }
+    
+    /* Nine+ images */
+    &.nine-plus-images {
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
+      
+      .preview-image {
+        aspect-ratio: 1;
+      }
+    }
+  }
+`;
+
+const ImagePreview = styled.div`
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #e2e8f0;
+
+  &.preview-image {
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+`;
+
+const RemoveImageButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(4px);
+  padding: 0;
+  outline: none;
+
+  &:hover {
+    background: rgba(255, 255, 255, 1);
+    color: #ef4444;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.5;
+    flex-shrink: 0;
+  }
+`;
+
 function PlusIcon() {
   return (
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -722,18 +1508,18 @@ function PlusIcon() {
   );
 }
 
-function HeartIcon() {
+function HeartIcon({ filled = false }) {
   return (
-    <svg viewBox="0 0 24 24" width="20" height="20">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    <svg viewBox="0 0 24 24" width="20" height="20" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
 
 function CommentIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="20" height="20">
-      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -781,6 +1567,14 @@ function ChevronRightIcon() {
   );
 }
 
+function SendIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+    </svg>
+  );
+}
+
 /**
  * Forum Component
  * 
@@ -795,6 +1589,9 @@ function ChevronRightIcon() {
  * - POST /api/posts/:id/comments - Add comment
  */
 function Forum() {
+  // Auth context
+  const { user, isAuthenticated } = useAuth();
+  
   // State management
   const [posts, setPosts] = useState([]); // Post[]
   const [loading, setLoading] = useState(true);
@@ -804,6 +1601,16 @@ function Forum() {
   const [postContent, setPostContent] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Comments state - TODO: Backend should provide this data
+  const [showComments, setShowComments] = useState({}); // { postId: boolean }
+  const [commentInputs, setCommentInputs] = useState({}); // { postId: string }
+  const [postComments, setPostComments] = useState({}); // { postId: Comment[] }
+  const [submittingComment, setSubmittingComment] = useState({}); // { postId: boolean }
+  const [showReplies, setShowReplies] = useState({}); // { commentId: boolean }
+  const [replyInputs, setReplyInputs] = useState({}); // { commentId: string }
+  const [showReplyInput, setShowReplyInput] = useState({}); // { commentId: boolean }
+  const [submittingReply, setSubmittingReply] = useState({}); // { commentId: boolean }
   
   // Pagination state
   const [page, setPage] = useState(1);
@@ -852,7 +1659,7 @@ function Forum() {
   }, [page]);
 
   /**
-   * Handles post interaction (like, comment)
+   * Handles post interaction (like, comment toggle)
    * Requires authentication
    * @param {Event} e - Event object
    * @param {string} action - Type of interaction ('like' | 'comment')
@@ -860,9 +1667,6 @@ function Forum() {
    */
   const handleInteraction = async (e, action, postId) => {
     e.preventDefault();
-    
-    // Check auth state
-    const isAuthenticated = false; // TODO: Replace with actual auth check
     
     if (!isAuthenticated) {
       setShowAuthModal(true);
@@ -872,18 +1676,197 @@ function Forum() {
     try {
       switch (action) {
         case 'like':
-          // TODO: Replace with actual API call
-          // await api.post(`/posts/${postId}/like`);
-          // Update posts state with new like count
+          // TODO: Backend API call
+          // const response = await fetch(`/api/posts/${postId}/like`, {
+          //   method: 'POST',
+          //   headers: {
+          //     'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          //     'Content-Type': 'application/json'
+          //   }
+          // });
+          // const updatedPost = await response.json();
+          
+          // For now, update local state optimistically
+          setPosts(prevPosts => 
+            prevPosts.map(post => {
+              if (post.id === postId) {
+                return {
+                  ...post,
+                  isLiked: !post.isLiked,
+                  likeCount: post.isLiked ? post.likeCount - 1 : post.likeCount + 1
+                };
+              }
+              return post;
+            })
+          );
           break;
+          
         case 'comment':
-          // TODO: Replace with actual API call
-          // await api.post(`/posts/${postId}/comments`, { content });
-          // Update posts state with new comment
+          // Toggle comment section visibility
+          setShowComments(prev => ({
+            ...prev,
+            [postId]: !prev[postId]
+          }));
+          
+          // Initialize comment input if not exists
+          if (!commentInputs[postId]) {
+            setCommentInputs(prev => ({
+              ...prev,
+              [postId]: ''
+            }));
+          }
+          
+          // Fetch comments if opening and not already loaded
+          // TODO: Backend API call
+          if (!showComments[postId] && !postComments[postId]) {
+            // const commentsResponse = await fetch(`/api/posts/${postId}/comments`);
+            // const comments = await commentsResponse.json();
+            // setPostComments(prev => ({ ...prev, [postId]: comments }));
+            
+            // For now, initialize with empty array
+            setPostComments(prev => ({ ...prev, [postId]: [] }));
+          }
           break;
       }
     } catch (err) {
-      // Handle error
+      console.error('Error handling interaction:', err);
+    }
+  };
+
+  /**
+   * Handles submitting a new comment
+   * @param {string} postId - Post identifier
+   */
+  const handleSubmitComment = async (postId) => {
+    const commentText = commentInputs[postId]?.trim();
+    if (!commentText || !isAuthenticated) return;
+
+    try {
+      setSubmittingComment(prev => ({ ...prev, [postId]: true }));
+
+      // TODO: Backend API call
+      // const response = await fetch(`/api/posts/${postId}/comments`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({ content: commentText })
+      // });
+      // const newComment = await response.json();
+
+      // For now, create optimistic comment
+      const newComment = {
+        id: Date.now().toString(),
+        author: {
+          id: user.id,
+          name: user.name,
+          initials: user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+        },
+        content: commentText,
+        createdAt: new Date().toISOString()
+      };
+
+      // Update local state
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: [newComment, ...(prev[postId] || [])]
+      }));
+
+      // Update comment count in posts
+      setPosts(prevPosts => 
+        prevPosts.map(post => {
+          if (post.id === postId) {
+            return { ...post, commentCount: post.commentCount + 1 };
+          }
+          return post;
+        })
+      );
+
+      // Clear input
+      setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+
+    } catch (err) {
+      console.error('Error submitting comment:', err);
+    } finally {
+      setSubmittingComment(prev => ({ ...prev, [postId]: false }));
+    }
+  };
+
+  /**
+   * Handles submitting a reply to a comment
+   * @param {string} commentId - Comment identifier to reply to
+   * @param {string} postId - Post identifier
+   */
+  const handleSubmitReply = async (commentId, postId) => {
+    const replyText = replyInputs[commentId]?.trim();
+    if (!replyText || !isAuthenticated) return;
+
+    try {
+      setSubmittingReply(prev => ({ ...prev, [commentId]: true }));
+
+      // TODO: Backend API call
+      // const response = await fetch(`/api/comments/${commentId}/replies`, {
+      //   method: 'POST',
+      //   headers: {
+      //     'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({ content: replyText })
+      // });
+      // const newReply = await response.json();
+
+      // For now, create optimistic reply
+      const newReply = {
+        id: Date.now().toString(),
+        author: {
+          id: user.id,
+          name: user.name,
+          initials: user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+        },
+        content: replyText,
+        createdAt: new Date().toISOString(),
+        parentId: commentId
+      };
+
+      // Update local state - add reply to the specific comment
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: prev[postId].map(comment => {
+          if (comment.id === commentId) {
+            return {
+              ...comment,
+              replies: [...(comment.replies || []), newReply]
+            };
+          }
+          return comment;
+        })
+      }));
+
+      // Clear reply input and hide input field
+      setReplyInputs(prev => ({ ...prev, [commentId]: '' }));
+      setShowReplyInput(prev => ({ ...prev, [commentId]: false }));
+
+      // Show replies section if it was hidden
+      setShowReplies(prev => ({ ...prev, [commentId]: true }));
+
+    } catch (err) {
+      console.error('Error submitting reply:', err);
+    } finally {
+      setSubmittingReply(prev => ({ ...prev, [commentId]: false }));
+    }
+  };
+
+  /**
+   * Handles showing reply input for a comment
+   * @param {string} commentId - Comment identifier
+   */
+  const handleReplyClick = (commentId) => {
+    setShowReplyInput(prev => ({ ...prev, [commentId]: !prev[commentId] }));
+    
+    // Initialize reply input if not exists
+    if (!replyInputs[commentId]) {
+      setReplyInputs(prev => ({ ...prev, [commentId]: '' }));
     }
   };
 
@@ -905,15 +1888,24 @@ function Forum() {
   const handleCreatePost = async (e) => {
     e.preventDefault();
     
-    // Check auth state
-    const isAuthenticated = false; // TODO: Replace with actual auth check
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+
+    setShowCreateModal(!showCreateModal);
+  };
+
+  const handlePhotoVideoClick = (e) => {
+    e.preventDefault();
     
     if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
     }
 
-    setShowCreateModal(true);
+    // Directly open file picker
+    document.getElementById('imageInput').click();
   };
 
   const handleSubmitPost = async () => {
@@ -921,14 +1913,67 @@ function Forum() {
       setIsSubmitting(true);
       // TODO: Replace with actual API call
       // await createPost({ content: postContent, images: selectedImages });
+      
+      // Close the expanded create post interface
       setShowCreateModal(false);
       setPostContent("");
       setSelectedImages([]);
+      
+      // Optional: Show success message or refresh posts
+      // fetchPosts();
     } catch (err) {
       // Handle error
+      console.error('Error creating post:', err);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const removeImage = (indexToRemove) => {
+    setSelectedImages(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  // Function to determine the best layout based on image count and aspect ratios
+  const getImageLayoutClass = (images) => {
+    const count = images.length;
+    
+    if (count === 1) {
+      return 'single-image';
+    }
+    
+    if (count === 2) {
+      return 'two-images-horizontal';
+    }
+    
+    if (count === 3) {
+      return 'three-images-left';
+    }
+    
+    if (count === 4) {
+      return 'four-images';
+    }
+    
+    if (count === 5) {
+      return 'five-images';
+    }
+    
+    if (count === 6) {
+      return 'six-images';
+    }
+    
+    if (count === 7) {
+      return 'seven-images';
+    }
+    
+    if (count === 8) {
+      return 'eight-images';
+    }
+    
+    if (count >= 9) {
+      return 'nine-plus-images';
+    }
+    
+    return 'four-images';
   };
 
   const openCarousel = (images, startIndex) => {
@@ -1082,11 +2127,94 @@ function Forum() {
             <CreatePostAvatar />
             What's happening in pickleball?
           </CreatePostHeader>
+          
+                      {showCreateModal && (
+            <div style={{ padding: '0 20px 16px' }}>
+              <PostTextArea
+                placeholder="Write something here..."
+                value={postContent}
+                onChange={(e) => setPostContent(e.target.value)}
+                style={{ width: '100%', minHeight: '80px' }}
+              />
+              {selectedImages.length > 0 && (
+                <ImagePreviewContainer>
+                  <div className={`preview-grid ${getImageLayoutClass(selectedImages)}`}>
+                    {selectedImages.slice(0, selectedImages.length >= 9 ? 8 : selectedImages.length).map((image, index) => (
+                      <ImagePreview key={index} className="preview-image">
+                        <img src={image.url} alt={`Selected ${index + 1}`} />
+                        <RemoveImageButton onClick={() => removeImage(index)}>
+                          <CloseIcon />
+                        </RemoveImageButton>
+                      </ImagePreview>
+                    ))}
+                  </div>
+                  {selectedImages.length > 8 && (
+                    <div style={{ 
+                      marginTop: '8px', 
+                      fontSize: '13px', 
+                      color: '#64748b',
+                      textAlign: 'center'
+                    }}>
+                      +{selectedImages.length - 8} more images
+                    </div>
+                  )}
+                </ImagePreviewContainer>
+              )}
+            </div>
+          )}
+          
           <CreatePostOptions>
-            <ImageUploadButton onClick={handleCreatePost}>
+            <ImageUploadButton onClick={handlePhotoVideoClick}>
               <ImageIcon />
               Photo/Video
             </ImageUploadButton>
+            {showCreateModal && (
+              <SubmitButton
+                disabled={!postContent.trim()}
+                onClick={handleSubmitPost}
+                width="auto"
+                padding="8px 12px"
+                marginTop="0"
+              >
+                {isSubmitting ? 'Posting...' : 'Post'}
+              </SubmitButton>
+            )}
+            <input
+              id="imageInput"
+              type="file"
+              multiple
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,video/mp4,video/mov,video/avi,video/wmv,video/webm"
+              capture="environment"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                // Handle file selection from device storage
+                const files = Array.from(e.target.files);
+                if (files.length > 0) {
+                  // Create preview URLs for the selected images
+                  const imagePreviewsPromises = files.map(file => {
+                    return new Promise((resolve) => {
+                      const reader = new FileReader();
+                      reader.onload = (e) => {
+                        resolve({
+                          file: file,
+                          url: e.target.result,
+                          name: file.name
+                        });
+                      };
+                      reader.readAsDataURL(file);
+                    });
+                  });
+
+                  Promise.all(imagePreviewsPromises).then(imagePreviews => {
+                    setSelectedImages(imagePreviews);
+                    setShowCreateModal(true); // Auto-open the create modal when images are selected
+                  });
+
+                  // Clear the input so the same file can be selected again if needed
+                  e.target.value = '';
+                }
+              }}
+            />
           </CreatePostOptions>
         </CreatePost>
 
@@ -1116,22 +2244,30 @@ function Forum() {
             <PostContent>
               <p>{post.content}</p>
               {post.images?.length > 0 && (
-                <PostImages className={post.images.length === 2 ? 'two-images' : 'four-images'}>
-                  {post.images.map((image, index) => (
+                <PostImages className={getImageLayoutClass(post.images)}>
+                  {post.images.slice(0, post.images.length >= 9 ? 8 : post.images.length).map((image, index) => (
                     <img
                       key={image.id}
                       src={image.url}
                       alt={image.alt}
                       onClick={() => openCarousel(post.images, index)}
                       style={{ cursor: 'pointer' }}
+                      className={index === 7 && post.images.length > 8 ? 'more-images-overlay' : ''}
+                      data-remaining={post.images.length > 8 ? post.images.length - 8 : ''}
                     />
                   ))}
                 </PostImages>
               )}
             </PostContent>
             <PostActions>
-              <button onClick={(e) => handleInteraction(e, 'like', post.id)}>
-                <HeartIcon />
+              <button 
+                onClick={(e) => handleInteraction(e, 'like', post.id)}
+                style={{ 
+                  color: post.isLiked ? '#ef4444' : '#64748b',
+                  fontWeight: post.isLiked ? '600' : '400'
+                }}
+              >
+                <HeartIcon filled={post.isLiked} />
                 {post.likeCount}
               </button>
               <button onClick={(e) => handleInteraction(e, 'comment', post.id)}>
@@ -1139,6 +2275,167 @@ function Forum() {
                 {post.commentCount}
               </button>
             </PostActions>
+            
+            {/* Comments Section - Only show if logged in and comments are toggled */}
+            {isAuthenticated && showComments[post.id] && (
+              <CommentSection>
+                <CommentInput>
+                  <CommentAvatar>
+                    {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  </CommentAvatar>
+                  <CommentTextArea
+                    placeholder="Add a comment..."
+                    value={commentInputs[post.id] || ''}
+                    onChange={(e) => setCommentInputs(prev => ({
+                      ...prev,
+                      [post.id]: e.target.value
+                    }))}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSubmitComment(post.id);
+                      }
+                    }}
+                  />
+                  <CommentSubmitButton
+                    onClick={() => handleSubmitComment(post.id)}
+                    disabled={!commentInputs[post.id]?.trim() || submittingComment[post.id]}
+                  >
+                    <SendIcon />
+                  </CommentSubmitButton>
+                </CommentInput>
+                
+                {/* Comments List */}
+                {postComments[post.id] && postComments[post.id].length > 0 && (
+                  <CommentsList>
+                    {postComments[post.id].map((comment, index) => (
+                      <div key={comment.id}>
+                        <CommentItem>
+                          <CommentAvatar>
+                            {comment.author.initials}
+                          </CommentAvatar>
+                          <CommentItemContent>
+                            <p className="comment-content">
+                              <span className="comment-author">{comment.author.name}</span>
+                              <span className="comment-text">{comment.content}</span>
+                            </p>
+                            <div className="comment-meta">
+                              <span className="comment-time">
+                                {(() => {
+                                  const now = new Date();
+                                  const commentDate = new Date(comment.createdAt);
+                                  const diffInMinutes = Math.floor((now - commentDate) / (1000 * 60));
+                                  const diffInHours = Math.floor(diffInMinutes / 60);
+                                  const diffInDays = Math.floor(diffInHours / 24);
+                                  
+                                  if (diffInMinutes < 60) return `${diffInMinutes || 1}m`;
+                                  if (diffInHours < 24) return `${diffInHours}h`;
+                                  return `${diffInDays}d`;
+                                })()}
+                              </span>
+                              <button 
+                                className="comment-reply"
+                                onClick={() => handleReplyClick(comment.id)}
+                              >
+                                Reply
+                              </button>
+                            </div>
+                          </CommentItemContent>
+                        </CommentItem>
+
+                        {/* Toggle View/Hide replies button - below main comment */}
+                        {comment.replies && comment.replies.length > 0 && (
+                          <ViewRepliesButton>
+                            <div className="view-replies">
+                              <button onClick={() => setShowReplies(prev => ({
+                                ...prev,
+                                [comment.id]: !prev[comment.id]
+                              }))}>
+                                {showReplies[comment.id] 
+                                  ? 'Hide replies' 
+                                  : `View replies (${comment.replies.length})`
+                                }
+                              </button>
+                            </div>
+                          </ViewRepliesButton>
+                        )}
+                        
+                        {/* Replies Section */}
+                        {showReplies[comment.id] && comment.replies && comment.replies.length > 0 && (
+                          <ReplySection>
+                            {comment.replies.map(reply => (
+                              <ReplyItem key={reply.id}>
+                                <ReplyAvatar>
+                                  {reply.author.initials}
+                                </ReplyAvatar>
+                                <ReplyContent>
+                                  <p className="reply-content">
+                                    <span className="reply-author">{reply.author.name}</span>
+                                    <span className="reply-text">{reply.content}</span>
+                                  </p>
+                                  <div className="reply-meta">
+                                    <span className="reply-time">
+                                      {(() => {
+                                        const now = new Date();
+                                        const replyDate = new Date(reply.createdAt);
+                                        const diffInMinutes = Math.floor((now - replyDate) / (1000 * 60));
+                                        const diffInHours = Math.floor(diffInMinutes / 60);
+                                        const diffInDays = Math.floor(diffInHours / 24);
+                                        
+                                        if (diffInMinutes < 60) return `${diffInMinutes || 1}m`;
+                                        if (diffInHours < 24) return `${diffInHours}h`;
+                                        return `${diffInDays}d`;
+                                      })()}
+                                    </span>
+                                    <button 
+                                      className="reply-reply"
+                                      onClick={() => handleReplyClick(comment.id)}
+                                    >
+                                      Reply
+                                    </button>
+                                  </div>
+                                </ReplyContent>
+                              </ReplyItem>
+                            ))}
+                          </ReplySection>
+                        )}
+
+                        {/* Reply Input Section - at the end */}
+                        {showReplyInput[comment.id] && (
+                          <ReplySection>
+                            <ReplyInput>
+                              <ReplyAvatar>
+                                {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                              </ReplyAvatar>
+                              <ReplyTextArea
+                                placeholder="Reply..."
+                                value={replyInputs[comment.id] || ''}
+                                onChange={(e) => setReplyInputs(prev => ({
+                                  ...prev,
+                                  [comment.id]: e.target.value
+                                }))}
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleSubmitReply(comment.id, post.id);
+                                  }
+                                }}
+                              />
+                              <ReplySubmitButton
+                                onClick={() => handleSubmitReply(comment.id, post.id)}
+                                disabled={!replyInputs[comment.id]?.trim() || submittingReply[comment.id]}
+                              >
+                                <SendIcon />
+                              </ReplySubmitButton>
+                            </ReplyInput>
+                          </ReplySection>
+                        )}
+                      </div>
+                    ))}
+                  </CommentsList>
+                )}
+              </CommentSection>
+            )}
           </Post>
         ))}
 
@@ -1157,58 +2454,7 @@ function Forum() {
           />
         )}
 
-        {showCreateModal && (
-          <CreatePostModal onClick={() => setShowCreateModal(false)}>
-            <CreatePostModalContent onClick={e => e.stopPropagation()}>
-              <CreatePostModalHeader>
-                <CreatePostTitle>Create Post</CreatePostTitle>
-                <CloseButton onClick={() => setShowCreateModal(false)}>
-                  <CloseIcon />
-                </CloseButton>
-              </CreatePostModalHeader>
-              <CreatePostContent>
-                <PostTextArea
-                  placeholder="What's happening in pickleball?"
-                  value={postContent}
-                  onChange={(e) => setPostContent(e.target.value)}
-                />
-                <ImageUploadArea onClick={() => document.getElementById('imageInput').click()}>
-                  <ImageIcon />
-                  <p>Click to add photos/videos</p>
-                  <input
-                    id="imageInput"
-                    type="file"
-                    multiple
-                    accept="image/*,video/*"
-                    style={{ display: 'none' }}
-                    onChange={(e) => {
-                      // Handle file selection
-                      const files = Array.from(e.target.files);
-                      setSelectedImages(files);
-                    }}
-                  />
-                </ImageUploadArea>
-                {selectedImages.length > 0 && (
-                  <PostImages className={selectedImages.length === 2 ? 'two-images' : 'four-images'}>
-                    {selectedImages.map((file, index) => (
-                      <img
-                        key={index}
-                        src={URL.createObjectURL(file)}
-                        alt={`Selected image ${index + 1}`}
-                      />
-                    ))}
-                  </PostImages>
-                )}
-                <SubmitButton
-                  disabled={!postContent.trim() && selectedImages.length === 0}
-                  onClick={handleSubmitPost}
-                >
-                  {isSubmitting ? 'Posting...' : 'Post'}
-                </SubmitButton>
-              </CreatePostContent>
-            </CreatePostModalContent>
-          </CreatePostModal>
-        )}
+
 
         {carouselOpen && (
           <CarouselModal onClick={closeCarousel}>

@@ -62,6 +62,16 @@ main {
   padding-top: 30px; /* Space for fixed navbar */
 }
 
+@media (max-width: 768px) {
+  .app {
+    padding-bottom: 75px; /* Reduced space for smaller mobile bottom navigation container */
+  }
+  
+  body {
+    padding-bottom: env(safe-area-inset-bottom); /* iOS safe area support */
+  }
+}
+
 .full-width-container {
   width: 100%;
   max-width: 100%;

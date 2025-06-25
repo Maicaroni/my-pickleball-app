@@ -156,6 +156,14 @@ const Input = styled.input`
     font-size: 14px;
   }
 
+  ${props => props.$hasPassword && `
+    padding-right: 48px;
+    
+    @media (max-width: 768px) {
+      padding-right: 44px;
+    }
+  `}
+
   ${props => props.$hasError && `
     border-color: #ef4444;
     &:focus {
@@ -203,12 +211,32 @@ const PasswordToggle = styled.button`
   border: none;
   color: #64748b;
   cursor: pointer;
-  padding: 0;
+  padding: 4px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  z-index: 10;
+  width: 24px;
+  height: 24px;
+  outline: none;
   
   &:hover {
     color: #475569;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  &:active {
+    outline: none;
+    box-shadow: none;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
   }
 `;
 
@@ -439,6 +467,24 @@ const Register = () => {
     special: /[!@#$%^&*]/.test(formData.password)
   };
 
+  const validateEmailDomain = (email) => {
+    const allowedDomains = [
+      'gmail.com',
+      'yahoo.com',
+      'hotmail.com',
+      'outlook.com',
+      'icloud.com',
+      'protonmail.com',
+      'zoho.com',
+      'aol.com',
+      'live.com',
+      'msn.com'
+    ];
+    
+    const domain = email.split('@')[1]?.toLowerCase();
+    return allowedDomains.includes(domain);
+  };
+
   const validateForm = () => {
     const newErrors = {};
     
@@ -454,6 +500,8 @@ const Register = () => {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
+    } else if (!validateEmailDomain(formData.email)) {
+      newErrors.email = 'Please use a valid email provider (Gmail, Yahoo, Outlook, etc.)';
     }
     
     if (!formData.password) {
@@ -676,6 +724,7 @@ const Register = () => {
               onChange={handleChange}
               required
                 $hasError={!!errors.password}
+                $hasPassword={true}
               />
               <PasswordToggle
                 type="button"
@@ -722,6 +771,7 @@ const Register = () => {
               onChange={handleChange}
               required
                 $hasError={!!errors.confirmPassword}
+                $hasPassword={true}
               />
               <PasswordToggle
                 type="button"

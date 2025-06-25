@@ -642,38 +642,23 @@ function Ranks() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentDate, setCurrentDate] = useState('');
-  const [ageCategory, setAgeCategory] = useState('adult');
   const [ageGroup, setAgeGroup] = useState('');
 
-  const adultAgeGroups = ['19+', '35+', '50+', '60+', '70+', '75+', '80+'];
-  const juniorAgeGroups = ['18 and Under', '16 and Under', '14 and Under', '12 and Under'];
+  const adultAgeGroups = ['19+', '35+', '50+'];
 
   // Helper function to check if a player's age matches the selected age group
   const isInAgeGroup = (playerAge, selectedGroup) => {
     if (!selectedGroup) return true; // If no age group selected, include all
     
-    if (ageCategory === 'adult') {
-      const minAge = parseInt(selectedGroup.replace('+', '')); // Remove the '+' and parse
-      return playerAge >= minAge;
-    } else {
-      // For junior category
-      if (!selectedGroup) return playerAge <= 18;
-      const maxAge = parseInt(selectedGroup.split(' ')[0]);
-      return playerAge <= maxAge;
-    }
+    const minAge = parseInt(selectedGroup.replace('+', '')); // Remove the '+' and parse
+    return playerAge >= minAge;
   };
 
   const filterRankings = (rankings) => {
     if (!rankings) return [];
     
-    // First filter by age category (adult/junior)
-    let filtered = rankings.filter(player => {
-      if (ageCategory === 'adult') {
-        return player.age >= 19;
-      } else {
-        return player.age <= 18;
-      }
-    });
+    // Filter by age (adults only - 19+)
+    let filtered = rankings.filter(player => player.age >= 19);
 
     // Then filter by specific age group and search query
     filtered = filtered.filter(player => {
@@ -1158,28 +1143,13 @@ function Ranks() {
           </SearchBarWrapper>
           <AgeFilterContainer>
             <Select
-              value={ageCategory}
-              onChange={(e) => {
-                setAgeCategory(e.target.value);
-                setAgeGroup(''); // Reset age group when category changes
-              }}
-            >
-              <option value="adult">Adult</option>
-              <option value="junior">Junior</option>
-            </Select>
-            <Select
               value={ageGroup}
               onChange={(e) => setAgeGroup(e.target.value)}
             >
               <option value="">All Ages</option>
-              {ageCategory === 'adult' 
-                ? adultAgeGroups.map(age => (
-                    <option key={age} value={age}>{age}</option>
-                  ))
-                : juniorAgeGroups.map(age => (
-                    <option key={age} value={age}>{age}</option>
-                  ))
-              }
+              {adultAgeGroups.map(age => (
+                <option key={age} value={age}>{age}</option>
+              ))}
             </Select>
           </AgeFilterContainer>
         </SearchContainer>

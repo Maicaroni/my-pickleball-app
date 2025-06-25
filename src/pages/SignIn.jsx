@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import styled from 'styled-components';
 import viteLogo from '/vite.svg';
 
@@ -145,6 +146,10 @@ const Input = styled.input`
     font-size: 14px;
   }
 
+  ${props => props.$hasPassword && `
+    padding-right: 48px;
+  `}
+
   ${props => props.$hasError && `
     border-color: #ef4444;
     &:focus {
@@ -162,12 +167,32 @@ const PasswordToggle = styled.button`
   border: none;
   color: #64748b;
   cursor: pointer;
-  padding: 0;
+  padding: 4px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  z-index: 10;
+  width: 24px;
+  height: 24px;
+  outline: none;
   
   &:hover {
     color: #475569;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  &:active {
+    outline: none;
+    box-shadow: none;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
   }
 `;
 
@@ -366,6 +391,7 @@ const FacebookIcon = () => (
 
 const SignIn = () => {
   const navigate = useNavigate();
+  const { loginWithDummyData } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -375,6 +401,24 @@ const SignIn = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const validateEmailDomain = (email) => {
+    const allowedDomains = [
+      'gmail.com',
+      'yahoo.com',
+      'hotmail.com',
+      'outlook.com',
+      'icloud.com',
+      'protonmail.com',
+      'zoho.com',
+      'aol.com',
+      'live.com',
+      'msn.com'
+    ];
+    
+    const domain = email.split('@')[1]?.toLowerCase();
+    return allowedDomains.includes(domain);
+  };
+
   const validateForm = () => {
     const newErrors = {};
     
@@ -382,6 +426,8 @@ const SignIn = () => {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email';
+    } else if (!validateEmailDomain(formData.email)) {
+      newErrors.email = 'Please use a valid email provider (Gmail, Yahoo, Outlook, etc.)';
     }
     
     if (!formData.password) {
@@ -525,6 +571,7 @@ const SignIn = () => {
                 required
                 autoComplete="current-password"
                 $hasError={!!errors.password}
+                $hasPassword={true}
               />
               <PasswordToggle
                 type="button"
