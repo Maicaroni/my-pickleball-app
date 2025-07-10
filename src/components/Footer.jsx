@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
+import logoImg from '../../public/ppl-logo.svg';
 
 const FooterContainer = styled.footer`
   background: white;
@@ -99,7 +100,7 @@ function Footer() {
     <FooterContainer>
       <FooterContent>
         <LogoSection>
-          <img src="/ppl-logo.svg" alt="Philippine Pickleball League" />
+          <img src={logoImg} alt="Philippine Pickleball League" />
         </LogoSection>
 
         <SocialLinks>

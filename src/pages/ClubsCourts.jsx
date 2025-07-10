@@ -25,15 +25,13 @@ import { useAuth } from '../contexts/AuthContext';
  */
 
 const Container = styled.div`
-  padding: 72px 16px 24px;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 72px 16px 40px;
   animation: fadeIn 0.3s ease;
-  background: white;
-  min-height: 100vh;
 
   @media (min-width: 768px) {
-    padding: 90px 24px 24px;
+    padding: 90px 24px 48px;
   }
 
   @keyframes fadeIn {
@@ -48,67 +46,52 @@ const Container = styled.div`
   }
 `;
 
-const Header = styled.div`
-  margin-bottom: 40px;
+const PageTitle = styled.h1`
+  font-size: 2rem;
+  color: #234255;
+  margin-bottom: 1rem;
   text-align: center;
-  max-width: 800px;
-  margin: 0 auto 40px;
-  
-  h1 {
-    color: #0f172a;
-    font-size: 1.875rem;
-    margin-bottom: 12px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 
-    @media (min-width: 768px) {
-      font-size: 3.5rem;
-      margin-bottom: 16px;
-    }
+  @media (min-width: 768px) {
+    font-size: 2.5rem;
+    margin-bottom: 1.25rem;
   }
-  
-  p {
-    color: #64748b;
+`;
+
+const PageDescription = styled.p`
+  text-align: center;
+  color: #64748b;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 700px;
+  margin: 0 auto 3rem;
+  padding: 0 16px;
+
+  @media (max-width: 768px) {
     font-size: 1rem;
-    line-height: 1.6;
-    max-width: 500px;
-    margin: 0 auto;
-    font-weight: 400;
-    
-    @media (min-width: 768px) {
-      font-size: 1.2rem;
-    }
+    margin-bottom: 2rem;
+    padding: 0 8px;
   }
 `;
 
 const SearchSection = styled.div`
-  margin: 0 auto 24px;
+  margin-bottom: 32px;
   display: flex;
-  gap: 12px;
-  max-width: 1200px;
-  align-items: stretch;
   flex-direction: column;
-
-  @media (min-width: 640px) {
-    flex-direction: row;
-    align-items: center;
-    gap: 16px;
-  }
+  gap: 16px;
 
   @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: center;
     gap: 20px;
-    margin-bottom: 40px;
   }
 `;
 
 const SearchInputContainer = styled.div`
   position: relative;
   flex: 1;
-  width: 100%;
-
-  @media (min-width: 640px) {
-    min-width: 200px;
-  }
 
   svg {
     position: absolute;
@@ -123,19 +106,18 @@ const SearchInputContainer = styled.div`
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 16px 20px 16px 52px;
-  border: 1px solid #e2e8f0;
+  padding: 12px 16px 12px 48px;
+  border: 1.5px solid #e2e8f0;
   border-radius: 12px;
   font-size: 1rem;
-  color: #0f172a;
+  color: #1a1a1a;
   background: white;
   transition: all 0.2s ease;
-  height: 52px;
   
   &:focus {
     outline: none;
     border-color: #29ba9b;
-    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.08);
+    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
   }
   
   &::placeholder {
@@ -149,50 +131,36 @@ const SearchInput = styled.input`
 
 const FilterButtons = styled.div`
   display: flex;
-  gap: 8px;
+  gap: 12px;
   flex-wrap: wrap;
-  width: 100%;
-
-  @media (min-width: 640px) {
-    width: auto;
-    flex-wrap: nowrap;
-  }
 
   @media (min-width: 768px) {
-    gap: 12px;
+    flex-wrap: nowrap;
   }
 `;
 
 const FilterButton = styled.button`
   padding: 12px 16px;
   border-radius: 12px;
-  font-size: 0.875rem;
+  font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid ${props => props.$active ? '#29ba9b' : '#e2e8f0'};
+  border: 1.5px solid ${props => props.$active ? '#29ba9b' : '#e2e8f0'};
   background: ${props => props.$active ? '#29ba9b' : 'white'};
   color: ${props => props.$active ? 'white' : '#64748b'};
   white-space: nowrap;
-  height: 48px;
-  flex: 1;
-
-  @media (min-width: 640px) {
-    flex: none;
-    padding: 14px 20px;
-    font-size: 0.9rem;
-    height: 52px;
-  }
-  
-  @media (min-width: 768px) {
-    padding: 14px 24px;
-    font-size: 0.95rem;
-  }
+  min-width: 140px;
   
   &:hover {
     border-color: #29ba9b;
     color: ${props => props.$active ? 'white' : '#29ba9b'};
     background: ${props => props.$active ? '#26a085' : '#f8fafc'};
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
   }
 `;
 
@@ -1077,10 +1045,8 @@ const ClubsCourts = () => {
   if (loading) {
     return (
       <Container>
-        <Header>
-          <h1>Clubs & Courts</h1>
-          <p>Discover pickleball venues and communities across the Philippines</p>
-        </Header>
+        <PageTitle>Clubs & Courts</PageTitle>
+        <PageDescription>Discover pickleball venues and communities across the Philippines.</PageDescription>
         <LoadingSpinner>Loading venues...</LoadingSpinner>
       </Container>
     );
@@ -1089,10 +1055,8 @@ const ClubsCourts = () => {
   if (error) {
     return (
       <Container>
-        <Header>
-          <h1>Clubs & Courts</h1>
-          <p>Discover pickleball venues and communities across the Philippines.</p>
-        </Header>
+        <PageTitle>Clubs & Courts</PageTitle>
+        <PageDescription>Discover pickleball venues and communities across the Philippines.</PageDescription>
         <ErrorMessage>{error}</ErrorMessage>
       </Container>
     );
@@ -1346,10 +1310,8 @@ const ClubsCourts = () => {
   // Show main venues list page
   return (
     <Container>
-      <Header>
-        <h1>Clubs & Courts</h1>
-        <p>Discover pickleball venues and communities across the Philippines.</p>
-      </Header>
+      <PageTitle>Clubs & Courts</PageTitle>
+      <PageDescription>Discover pickleball venues and communities across the Philippines.</PageDescription>
 
       <SearchSection>
         <SearchInputContainer>
@@ -1444,8 +1406,6 @@ const ClubsCourts = () => {
           ))}
         </VenueGrid>
       )}
-
-
 
       {showAuthModal && (
         <AuthModal

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import styled from 'styled-components';
+import logoImg from '../../public/ppl-logo.svg';
 
 const GlobalReset = styled.div`
   * {
@@ -656,7 +657,7 @@ function Navbar() {
     <Nav $hidden={isNavHidden}>
       <NavContainer>
           <Logo onClick={() => handleNavigation('/')}>
-            <img src="/ppl-logo.svg" alt="Philippine Pickleball League" />
+            <img src={logoImg} alt="Philippine Pickleball League" />
         </Logo>
 
         <NavLinks>

@@ -13,8 +13,18 @@ const useAuth = () => {
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState({
+    isVisible: false,
+    message: '',
+    type: 'success'
+  });
 
   // Dummy user data for testing
+  const dummyCredentials = {
+    email: 'john.doe@gmail.com',
+    password: 'password123'
+  };
+
   const dummyUser = {
     id: 'user123',
     email: 'john.doe@gmail.com',
@@ -38,11 +48,45 @@ const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  const showNotification = (message, type = 'success') => {
+    setNotification({
+      isVisible: true,
+      message,
+      type
+    });
+  };
+
+  const hideNotification = () => {
+    setNotification(prev => ({
+      ...prev,
+      isVisible: false
+    }));
+  };
+
+  const authenticate = (email, password) => {
+    // Check credentials against dummy data
+    return email === dummyCredentials.email && password === dummyCredentials.password;
+  };
+
   const login = (userData, token) => {
     // Store user data and token
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', token);
     setUser(userData);
+    showNotification(`Welcome back, ${userData.firstName}!`, 'success');
+  };
+
+  const loginWithCredentials = (email, password) => {
+    if (authenticate(email, password)) {
+      const dummyToken = 'dummy-jwt-token-12345';
+      login(dummyUser, dummyToken);
+      return { success: true };
+    } else {
+      return { 
+        success: false, 
+        error: 'Invalid email or password. Please try again.' 
+      };
+    }
   };
 
   const logout = () => {
@@ -50,6 +94,7 @@ const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     setUser(null);
+    showNotification('User logged out', 'info');
   };
 
   // Function to simulate login with dummy data (for testing)
@@ -61,10 +106,16 @@ const AuthProvider = ({ children }) => {
   const value = {
     user,
     login,
+    loginWithCredentials,
     logout,
     loginWithDummyData,
+    authenticate,
     loading,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
+    notification,
+    showNotification,
+    hideNotification,
+    dummyCredentials // For reference (don't expose in production)
   };
 
   return (

@@ -324,73 +324,52 @@ const PostImages = styled.div`
   margin: 0 20px;
   
   @media (max-width: 768px) {
-    margin: 0 16px;
+    margin: 0;
     gap: 3px;
   }
   
-  /* Single image - preserves aspect ratio */
+  /* Single image - square aspect ratio */
   &.single-image {
     img {
       width: 100%;
-      max-height: 400px;
+      aspect-ratio: 1;
       object-fit: cover;
       border-radius: 8px;
     }
   }
   
-  /* Two images - side by side or stacked based on aspect ratio */
+  /* Two images - side by side squares */
   &.two-images-horizontal {
     grid-template-columns: 1fr 1fr;
+    
     img {
       aspect-ratio: 1;
       object-fit: cover;
+      border-radius: 8px;
     }
   }
   
-  &.two-images-vertical {
-    grid-template-rows: 1fr 1fr;
-    img {
-      aspect-ratio: 16/9;
-      object-fit: cover;
-    }
-  }
-  
-  /* Three images - one large + two small */
+  /* Three images - portrait left + two stacked squares right */
   &.three-images-left {
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     
     img:first-child {
       grid-row: 1 / 3;
-      aspect-ratio: 4/5;
+      aspect-ratio: 0.5;
       object-fit: cover;
+      border-radius: 8px;
     }
     
     img:nth-child(2),
     img:nth-child(3) {
       aspect-ratio: 1;
       object-fit: cover;
+      border-radius: 8px;
     }
   }
   
-  &.three-images-top {
-    grid-template-rows: 2fr 1fr;
-    grid-template-columns: 1fr 1fr;
-    
-    img:first-child {
-      grid-column: 1 / 3;
-      aspect-ratio: 16/9;
-      object-fit: cover;
-    }
-    
-    img:nth-child(2),
-    img:nth-child(3) {
-      aspect-ratio: 1;
-      object-fit: cover;
-    }
-  }
-  
-  /* Four images - 2x2 grid */
+  /* Four images - 2x2 grid of squares */
   &.four-images {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
@@ -398,93 +377,56 @@ const PostImages = styled.div`
     img {
       aspect-ratio: 1;
       object-fit: cover;
+      border-radius: 8px;
     }
   }
   
-  /* Five images - 2+3 layout */
-  &.five-images {
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    
-    img:first-child,
-    img:nth-child(2) {
-      grid-row: 1 / 3;
-      aspect-ratio: 4/5;
-      object-fit: cover;
-    }
-    
-    img:nth-child(3),
-    img:nth-child(4),
-    img:nth-child(5) {
-      aspect-ratio: 1;
-      object-fit: cover;
-    }
-    
-    img:nth-child(3) {
-      grid-column: 3;
-      grid-row: 1;
-    }
-    
-    img:nth-child(4) {
-      grid-column: 3;
-      grid-row: 2;
-    }
-  }
-  
-  /* Six images - 3x2 grid */
-  &.six-images {
-    grid-template-columns: 1fr 1fr 1fr;
+  /* Four+ images with overlay - 2x2 grid with "+X" overlay on last image */
+  &.four-images-with-overlay {
+    grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     
     img {
       aspect-ratio: 1;
       object-fit: cover;
-    }
-  }
-  
-  /* Seven images - 3x3 with first image spanning 2 rows */
-  &.seven-images {
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-    
-    img:first-child {
-      grid-row: 1 / 3;
-      aspect-ratio: 4/5;
-      object-fit: cover;
+      border-radius: 8px;
     }
     
-    img:not(:first-child) {
+    .image-container {
+      position: relative;
       aspect-ratio: 1;
-      object-fit: cover;
-    }
-  }
-  
-  /* Eight images - 3x3 with first two images spanning 2 rows */
-  &.eight-images {
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-    
-    img:first-child,
-    img:nth-child(2) {
-      grid-row: 1 / 3;
-      aspect-ratio: 4/5;
-      object-fit: cover;
-    }
-    
-    img:not(:first-child):not(:nth-child(2)) {
-      aspect-ratio: 1;
-      object-fit: cover;
-    }
-  }
-  
-  /* Nine+ images - 3x3 grid with overlay */
-  &.nine-plus-images {
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr;
-    
-    img {
-      aspect-ratio: 1;
-      object-fit: cover;
+      border-radius: 8px;
+      overflow: hidden;
+      
+      img {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+      }
+      
+      &.overlay {
+        &::after {
+          content: '+' attr(data-remaining);
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.7);
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 28px;
+          font-weight: 700;
+          backdrop-filter: blur(2px);
+          border-radius: 8px;
+          
+          @media (max-width: 768px) {
+            font-size: 24px;
+          }
+        }
+      }
     }
   }
   
@@ -497,28 +439,6 @@ const PostImages = styled.div`
       &:hover {
         transform: scale(1.02);
       }
-    }
-  }
-  
-  /* More than 5 images indicator */
-  .more-images-overlay {
-    position: relative;
-    
-    &::after {
-      content: '+' attr(data-remaining);
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: 600;
-      backdrop-filter: blur(2px);
     }
   }
 `;
@@ -1324,7 +1244,7 @@ const ImagePreviewContainer = styled.div`
     /* Single image */
     &.single-image {
       .preview-image {
-        max-height: 300px;
+        aspect-ratio: 1;
         border-radius: 8px;
       }
     }
@@ -1334,22 +1254,25 @@ const ImagePreviewContainer = styled.div`
       grid-template-columns: 1fr 1fr;
       .preview-image {
         aspect-ratio: 1;
+        border-radius: 8px;
       }
     }
     
     /* Three images */
     &.three-images-left {
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
       
       .preview-image:first-child {
         grid-row: 1 / 3;
-        aspect-ratio: 4/5;
+        aspect-ratio: 0.5;
+        border-radius: 8px;
       }
       
       .preview-image:nth-child(2),
       .preview-image:nth-child(3) {
         aspect-ratio: 1;
+        border-radius: 8px;
       }
     }
     
@@ -1360,81 +1283,41 @@ const ImagePreviewContainer = styled.div`
       
       .preview-image {
         aspect-ratio: 1;
+        border-radius: 8px;
       }
     }
     
-    /* Five images */
-    &.five-images {
-      grid-template-columns: 1fr 1fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      
-      .preview-image:first-child,
-      .preview-image:nth-child(2) {
-        grid-row: 1 / 3;
-        aspect-ratio: 4/5;
-      }
-      
-      .preview-image:nth-child(3) {
-        grid-column: 3;
-        grid-row: 1;
-        aspect-ratio: 1;
-      }
-      
-      .preview-image:nth-child(4) {
-        grid-column: 3;
-        grid-row: 2;
-        aspect-ratio: 1;
-      }
-    }
-    
-    /* Six images */
-    &.six-images {
-      grid-template-columns: 1fr 1fr 1fr;
+    /* Four+ images with overlay */
+    &.four-images-with-overlay {
+      grid-template-columns: 1fr 1fr;
       grid-template-rows: 1fr 1fr;
       
       .preview-image {
         aspect-ratio: 1;
-      }
-    }
-    
-    /* Seven images */
-    &.seven-images {
-      grid-template-columns: 1fr 1fr 1fr;
-      grid-template-rows: 1fr 1fr 1fr;
-      
-      .preview-image:first-child {
-        grid-row: 1 / 3;
-        aspect-ratio: 4/5;
-      }
-      
-      .preview-image:not(:first-child) {
-        aspect-ratio: 1;
-      }
-    }
-    
-    /* Eight images */
-    &.eight-images {
-      grid-template-columns: 1fr 1fr 1fr;
-      grid-template-rows: 1fr 1fr 1fr;
-      
-      .preview-image:first-child,
-      .preview-image:nth-child(2) {
-        grid-row: 1 / 3;
-        aspect-ratio: 4/5;
-      }
-      
-      .preview-image:not(:first-child):not(:nth-child(2)) {
-        aspect-ratio: 1;
-      }
-    }
-    
-    /* Nine+ images */
-    &.nine-plus-images {
-      grid-template-columns: 1fr 1fr 1fr;
-      grid-template-rows: 1fr 1fr 1fr;
-      
-      .preview-image {
-        aspect-ratio: 1;
+        border-radius: 8px;
+        
+        &.overlay-preview {
+          .overlay-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            backdrop-filter: blur(2px);
+            border-radius: 8px;
+            
+            @media (max-width: 768px) {
+              font-size: 20px;
+            }
+          }
+        }
       }
     }
   }
@@ -1909,9 +1792,36 @@ function Forum() {
   };
 
   const handleSubmitPost = async () => {
+    if (!postContent.trim() && selectedImages.length === 0) return;
+    
     try {
       setIsSubmitting(true);
-      // TODO: Replace with actual API call
+      
+      // Create new post object
+      const newPost = {
+        id: Date.now().toString(), // Generate unique ID
+        author: {
+          id: user.id,
+          username: `${user.firstName} ${user.lastName}`,
+          initials: `${user.firstName[0]}${user.lastName[0]}`.toUpperCase(),
+          avatarColor: '#29ba9b'
+        },
+        content: postContent.trim(),
+        images: selectedImages.map((image, index) => ({
+          id: `${Date.now()}_${index}`,
+          url: image.url,
+          alt: `User uploaded image ${index + 1}`
+        })),
+        createdAt: new Date().toISOString(),
+        likeCount: 0,
+        commentCount: 0,
+        isLiked: false
+      };
+
+      // Add new post to the beginning of posts array (most recent first)
+      setPosts(prevPosts => [newPost, ...prevPosts]);
+      
+      // TODO: Replace with actual API call when backend is ready
       // await createPost({ content: postContent, images: selectedImages });
       
       // Close the expanded create post interface
@@ -1919,8 +1829,6 @@ function Forum() {
       setPostContent("");
       setSelectedImages([]);
       
-      // Optional: Show success message or refresh posts
-      // fetchPosts();
     } catch (err) {
       // Handle error
       console.error('Error creating post:', err);
@@ -1953,27 +1861,11 @@ function Forum() {
       return 'four-images';
     }
     
-    if (count === 5) {
-      return 'five-images';
+    if (count > 4) {
+      return 'four-images-with-overlay';
     }
     
-    if (count === 6) {
-      return 'six-images';
-    }
-    
-    if (count === 7) {
-      return 'seven-images';
-    }
-    
-    if (count === 8) {
-      return 'eight-images';
-    }
-    
-    if (count >= 9) {
-      return 'nine-plus-images';
-    }
-    
-    return 'four-images';
+    return 'single-image';
   };
 
   const openCarousel = (images, startIndex) => {
@@ -2089,10 +1981,12 @@ function Forum() {
       },
       content: 'Great matches at the club today! Here are some highlights 📸',
       images: [
-        { id: '1', url: 'https://placehold.co/400x400/234255/FFF?text=Match+1', alt: 'Match highlight 1' },
-        { id: '2', url: 'https://placehold.co/400x400/234255/FFF?text=Match+2', alt: 'Match highlight 2' },
-        { id: '3', url: 'https://placehold.co/400x400/234255/FFF?text=Match+3', alt: 'Match highlight 3' },
-        { id: '4', url: 'https://placehold.co/400x400/234255/FFF?text=Match+4', alt: 'Match highlight 4' }
+        { id: '1', url: 'https://placehold.co/400x400/ff6b6b/FFF?text=Image+1+(Grid+Top-Left)', alt: 'Match highlight 1' },
+        { id: '2', url: 'https://placehold.co/400x400/4ecdc4/FFF?text=Image+2+(Grid+Top-Right)', alt: 'Match highlight 2' },
+        { id: '3', url: 'https://placehold.co/400x400/45b7d1/FFF?text=Image+3+(Grid+Bottom-Left)', alt: 'Match highlight 3' },
+        { id: '4', url: 'https://placehold.co/400x400/f7b731/FFF?text=Image+4+(Grid+Bottom-Right+with+Overlay)', alt: 'Match highlight 4' },
+        { id: '5', url: 'https://placehold.co/400x400/5f27cd/FFF?text=Image+5+(Hidden+in+Grid)', alt: 'Match highlight 5' },
+        { id: '6', url: 'https://placehold.co/400x400/00d2d3/FFF?text=Image+6+(Hidden+in+Grid)', alt: 'Match highlight 6' }
       ],
       createdAt: '2025-06-16T10:00:00Z',
       likeCount: 245,
@@ -2139,25 +2033,39 @@ function Forum() {
               {selectedImages.length > 0 && (
                 <ImagePreviewContainer>
                   <div className={`preview-grid ${getImageLayoutClass(selectedImages)}`}>
-                    {selectedImages.slice(0, selectedImages.length >= 9 ? 8 : selectedImages.length).map((image, index) => (
-                      <ImagePreview key={index} className="preview-image">
-                        <img src={image.url} alt={`Selected ${index + 1}`} />
-                        <RemoveImageButton onClick={() => removeImage(index)}>
-                          <CloseIcon />
-                        </RemoveImageButton>
-                      </ImagePreview>
-                    ))}
+                    {getImageLayoutClass(selectedImages) === 'four-images-with-overlay' ? (
+                      // Render first 3 images normally, 4th with overlay
+                      <>
+                        {selectedImages.slice(0, 3).map((image, index) => (
+                          <ImagePreview key={index} className="preview-image">
+                            <img src={image.url} alt={`Selected ${index + 1}`} />
+                            <RemoveImageButton onClick={() => removeImage(index)}>
+                              <CloseIcon />
+                            </RemoveImageButton>
+                          </ImagePreview>
+                        ))}
+                        <ImagePreview className="preview-image overlay-preview" data-remaining={selectedImages.length - 3}>
+                          <img src={selectedImages[3].url} alt={`Selected 4`} />
+                          <RemoveImageButton onClick={() => removeImage(3)}>
+                            <CloseIcon />
+                          </RemoveImageButton>
+                          <div className="overlay-indicator">
+                            +{selectedImages.length - 3}
+                          </div>
+                        </ImagePreview>
+                      </>
+                    ) : (
+                      // Render normally for 1-4 images
+                      selectedImages.map((image, index) => (
+                        <ImagePreview key={index} className="preview-image">
+                          <img src={image.url} alt={`Selected ${index + 1}`} />
+                          <RemoveImageButton onClick={() => removeImage(index)}>
+                            <CloseIcon />
+                          </RemoveImageButton>
+                        </ImagePreview>
+                      ))
+                    )}
                   </div>
-                  {selectedImages.length > 8 && (
-                    <div style={{ 
-                      marginTop: '8px', 
-                      fontSize: '13px', 
-                      color: '#64748b',
-                      textAlign: 'center'
-                    }}>
-                      +{selectedImages.length - 8} more images
-                    </div>
-                  )}
                 </ImagePreviewContainer>
               )}
             </div>
@@ -2245,17 +2153,43 @@ function Forum() {
               <p>{post.content}</p>
               {post.images?.length > 0 && (
                 <PostImages className={getImageLayoutClass(post.images)}>
-                  {post.images.slice(0, post.images.length >= 9 ? 8 : post.images.length).map((image, index) => (
-                    <img
-                      key={image.id}
-                      src={image.url}
-                      alt={image.alt}
-                      onClick={() => openCarousel(post.images, index)}
-                      style={{ cursor: 'pointer' }}
-                      className={index === 7 && post.images.length > 8 ? 'more-images-overlay' : ''}
-                      data-remaining={post.images.length > 8 ? post.images.length - 8 : ''}
-                    />
-                  ))}
+                  {getImageLayoutClass(post.images) === 'four-images-with-overlay' ? (
+                    // Render first 3 images normally, 4th with overlay
+                    <>
+                      {post.images.slice(0, 3).map((image, index) => (
+                        <div key={image.id} className="image-container">
+                          <img
+                            src={image.url}
+                            alt={image.alt}
+                            onClick={() => openCarousel(post.images, index)}
+                            style={{ cursor: 'pointer' }}
+                          />
+                        </div>
+                      ))}
+                      <div 
+                        className="image-container overlay" 
+                        data-remaining={post.images.length - 3}
+                        onClick={() => openCarousel(post.images, 3)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <img
+                          src={post.images[3].url}
+                          alt={post.images[3].alt}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    // Render normally for 1-4 images
+                    post.images.map((image, index) => (
+                      <img
+                        key={image.id}
+                        src={image.url}
+                        alt={image.alt}
+                        onClick={() => openCarousel(post.images, index)}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    ))
+                  )}
                 </PostImages>
               )}
             </PostContent>

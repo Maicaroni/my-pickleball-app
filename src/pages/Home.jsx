@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const useInView = (options = {}) => {
   const [isInView, setIsInView] = useState(false);
@@ -656,6 +657,7 @@ const ScrollIndicator = styled.div`
 
 function Home() {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [stats, setStats] = useState({
     activePlayers: 0,
     tournamentsHosted: 0,
@@ -665,6 +667,11 @@ function Home() {
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
 
   const [featuresRef, isVisible] = useInView({ threshold: 0.2 });
+
+  // Scroll to top when Home component loads
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Add footer visibility tracking
   useEffect(() => {
@@ -730,17 +737,26 @@ function Home() {
         <Hero>
           <HeroContent>
             <Title>
-              Philippine <span>Pickleball</span> League
+              {isAuthenticated ? (
+                <>Welcome back, <span>{user?.firstName}</span>!</>
+              ) : (
+                <>Philippine <span>Pickleball</span> League</>
+              )}
             </Title>
             <Subtitle>
-              Join the fastest growing pickleball community in the Philippines. 
-              Connect with players, join tournaments, and track your progress in a vibrant sports community.
+              {isAuthenticated ? (
+                "Ready to continue your pickleball journey? Discover upcoming tournaments in your area, connect with fellow players in our active community forum, track your ranking progress, and find the best courts and clubs near you. Your next great match is just a click away!"
+              ) : (
+                "Join the fastest growing pickleball community in the Philippines. Connect with players, join tournaments, and track your progress in a vibrant sports community."
+              )}
             </Subtitle>
-            <CTASection>
-              <CTAButton to="/register" $primary $fullWidth>
-                Get Started
-              </CTAButton>
-            </CTASection>
+            {!isAuthenticated && (
+              <CTASection>
+                <CTAButton to="/register" $primary $fullWidth>
+                  Get Started
+                </CTAButton>
+              </CTASection>
+            )}
           </HeroContent>
           <ScrollIndicator onClick={scrollToFeatures} $show={showScrollIndicator}>
             <span className="scroll-text">Scroll Down</span>
