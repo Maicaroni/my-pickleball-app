@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { useAuth } from '../contexts/AuthContext';
 import viteLogo from '/vite.svg';
 
 /**
@@ -544,45 +545,47 @@ const Register = () => {
     }
   };
 
+  const { login } = useAuth();
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
     if (!validateForm()) return;
-
+  
     setLoading(true);
     try {
-      // BACKEND INTEGRATION REQUIRED:
-      // 1. Make a POST request to /api/auth/register
-      // Expected request body:
-      // {
-      //   firstName: string,
-      //   lastName: string,
-      //   email: string,
-      //   password: string,
-      //   birthDate: string (YYYY-MM-DD)
-      // }
-      // Expected response:
-      // {
-      //   token: string,
-      //   user: {
-      //     id: string,
-      //     email: string,
-      //     firstName: string,
-      //     lastName: string,
-      //     birthDate: string,
-      //     roles: string[]
-      //   }
-      // }
-      // 2. Store the token in localStorage
-      // 3. Store user data in app state
-      // 4. Redirect to dashboard/home
-      
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Remove this line after backend integration
-      navigate('/');
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+          birthDate: formData.birthDate
+        })
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
+  
+      // ✅ Save token + user
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+  
+      // ✅ Set it in global context
+      login(data.user, data.token);
+  
+      // ✅ Navigate to home/dashboard
+      navigate("/");
     } catch (err) {
       setErrors(prev => ({
         ...prev,
-        submit: err.message || 'Failed to create account. Please try again.'
+        submit: err.message
       }));
     } finally {
       setLoading(false);
@@ -606,6 +609,7 @@ const Register = () => {
       // Handle token storage and redirection same way
       
       console.log(`Signing up with ${provider}`); // Remove after backend integration
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setErrors(prev => ({
         ...prev,
