@@ -118,12 +118,7 @@ const Notification = ({ message, type = 'success', isVisible, onClose }) => {
     return <LogoutIcon />;
   };
 
-  const getTitle = () => {
-    if (type === 'success' || message.includes('Welcome back')) {
-      return 'Successfully Logged In';
-    }
-    return 'User Logged Out';
-  };
+  const isLogoutMessage = message.includes('logged out') || type === 'info';
 
   return (
     <NotificationContainer $isVisible={isVisible}>
@@ -132,8 +127,14 @@ const Notification = ({ message, type = 'success', isVisible, onClose }) => {
           {getIcon()}
         </NotificationIcon>
         <NotificationText>
-          <h4>{getTitle()}</h4>
-          <p>{message}</p>
+          {isLogoutMessage ? (
+            <h4>{message}</h4>
+          ) : (
+            <>
+              <h4>Successfully Logged In</h4>
+              <p>{message}</p>
+            </>
+          )}
         </NotificationText>
         <CloseButton onClick={onClose}>
           <CloseIcon />
