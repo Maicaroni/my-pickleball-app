@@ -54,21 +54,21 @@ const PageTitle = styled.h1`
   font-weight: 800;
   letter-spacing: -0.5px;
 
-  @media (min-width: 768px) {
+    @media (min-width: 768px) {
     font-size: 2.5rem;
     margin-bottom: 1.25rem;
-  }
+    }
 `;
-
+  
 const PageDescription = styled.p`
   text-align: center;
-  color: #64748b;
+    color: #64748b;
   font-size: 1.1rem;
-  line-height: 1.6;
+    line-height: 1.6;
   max-width: 700px;
   margin: 0 auto 3rem;
   padding: 0 16px;
-
+    
   @media (max-width: 768px) {
     font-size: 1rem;
     margin-bottom: 2rem;
@@ -80,7 +80,7 @@ const SearchSection = styled.div`
   margin-bottom: 32px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+    gap: 16px;
 
   @media (min-width: 768px) {
     flex-direction: row;
@@ -821,6 +821,113 @@ const VenueDetailAmenityItem = styled.div`
   }
 `;
 
+const PhotoGallery = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+
+  @media (min-width: 640px) {
+    gap: 12px;
+  }
+`;
+
+const PhotoItem = styled.div`
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+
+  ${props => {
+    if (props.$total === 1) {
+      return `
+        grid-column: 1 / -1;
+        aspect-ratio: 16 / 9;
+      `;
+    } else if (props.$total === 2) {
+      return `
+        grid-column: span 1;
+      `;
+    } else if (props.$total === 3) {
+      if (props.$index === 0) {
+        return `
+          grid-column: span 2;
+          grid-row: span 2;
+        `;
+      }
+      return `
+        grid-column: span 1;
+      `;
+    } else if (props.$total === 4) {
+      return `
+        grid-column: span 1;
+      `;
+    } else if (props.$total === 5) {
+      if (props.$index < 2) {
+        return `
+          grid-column: span 1;
+        `;
+      } else if (props.$index === 2) {
+        return `
+          grid-column: span 1;
+          grid-row: span 2;
+        `;
+      }
+      return `
+        grid-column: span 1;
+      `;
+    } else if (props.$total >= 6) {
+      if (props.$index < 2) {
+        return `
+          grid-column: span 1;
+        `;
+      } else if (props.$index === 2) {
+        return `
+          grid-column: span 1;
+          grid-row: span 2;
+        `;
+      }
+      return `
+        grid-column: span 1;
+      `;
+    }
+  }}
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover img {
+    transform: scale(1.05);
+  }
+`;
+
+const PhotoOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+  backdrop-filter: blur(2px);
+`;
+
 const VenueDetailSidebar = styled.div``;
 
 const VenueDetailJoinCard = styled.div`
@@ -928,6 +1035,32 @@ const ClubsCourts = () => {
           website: 'https://manilapickleball.com',
           amenities: ['Pro Shop', 'Locker Rooms', 'Parking'],
           images: [],
+          photos: [
+            {
+              url: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=800&h=600&fit=crop',
+              caption: 'Main court area'
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop',
+              caption: 'Professional courts'
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1526676037777-05a232c2b57c?w=800&h=600&fit=crop',
+              caption: 'Club facilities'
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1577924111230-7f5ed91b08b8?w=800&h=600&fit=crop',
+              caption: 'Equipment storage'
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=800&h=600&fit=crop',
+              caption: 'Locker rooms'
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
+              caption: 'Outdoor courts'
+            }
+          ],
           isVerified: true
         },
         {
@@ -945,6 +1078,20 @@ const ClubsCourts = () => {
           contactPhone: '+63 917 123 4567',
           amenities: ['Air Conditioning', 'Equipment Rental'],
           images: [],
+          photos: [
+            {
+              url: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=600&fit=crop',
+              caption: 'Indoor courts'
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=800&h=600&fit=crop',
+              caption: 'Court facilities'
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop',
+              caption: 'Tournament setup'
+            }
+          ],
           isVerified: true
         },
         {
@@ -960,6 +1107,12 @@ const ClubsCourts = () => {
           contactEmail: 'qcpickleball@gmail.com',
           contactPhone: '+63 918 765 4321',
           images: [],
+          photos: [
+            {
+              url: 'https://images.unsplash.com/photo-1577924111230-7f5ed91b08b8?w=800&h=600&fit=crop',
+              caption: 'Community courts'
+            }
+          ],
           isVerified: true
         }
       ];
@@ -1264,6 +1417,31 @@ const ClubsCourts = () => {
                       </VenueDetailAmenityItem>
                     ))}
                   </VenueDetailAmenitiesList>
+                </VenueDetailSection>
+              )}
+
+              {selectedVenue.photos && selectedVenue.photos.length > 0 && (
+                <VenueDetailSection>
+                  <VenueDetailSectionTitle>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="9" cy="9" r="2"/>
+                      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                    </svg>
+                    Photo Gallery
+                  </VenueDetailSectionTitle>
+                  <PhotoGallery>
+                    {selectedVenue.photos.slice(0, 6).map((photo, index) => (
+                      <PhotoItem key={index} $index={index} $total={Math.min(selectedVenue.photos.length, 6)}>
+                        <img src={photo.url} alt={photo.caption || `Venue photo ${index + 1}`} />
+                        {index === 5 && selectedVenue.photos.length > 6 && (
+                          <PhotoOverlay>
+                            +{selectedVenue.photos.length - 6}
+                          </PhotoOverlay>
+                        )}
+                      </PhotoItem>
+                    ))}
+                  </PhotoGallery>
                 </VenueDetailSection>
               )}
             </VenueDetailLeft>

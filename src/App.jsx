@@ -16,25 +16,25 @@ function AppContent() {
   const { notification, hideNotification } = useAuth();
   
   return (
-    <div className="app">
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/forum" element={<Forum />} />
-        <Route path="/tournament" element={<Tournament />} />
-        <Route path="/ranks" element={<Ranks />} />
-        <Route path="/clubs-courts" element={<ClubsCourts />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/register" element={<Register />} />
-      </Routes>
-      <Footer />
+      <div className="app">
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/forum" element={<Forum />} />
+          <Route path="/tournament" element={<Tournament />} />
+          <Route path="/ranks" element={<Ranks />} />
+          <Route path="/clubs-courts" element={<ClubsCourts />} />
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/register" element={<Register />} />
+        </Routes>
+        <Footer />
       <Notification
         message={notification.message}
         type={notification.type}
         isVisible={notification.isVisible}
         onClose={hideNotification}
       />
-    </div>
+      </div>
   );
 }
 

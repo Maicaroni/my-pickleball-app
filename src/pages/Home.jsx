@@ -751,11 +751,11 @@ function Home() {
               )}
             </Subtitle>
             {!isAuthenticated && (
-              <CTASection>
-                <CTAButton to="/register" $primary $fullWidth>
-                  Get Started
-                </CTAButton>
-              </CTASection>
+            <CTASection>
+              <CTAButton to="/register" $primary $fullWidth>
+                Get Started
+              </CTAButton>
+            </CTASection>
             )}
           </HeroContent>
           <ScrollIndicator onClick={scrollToFeatures} $show={showScrollIndicator}>

@@ -397,29 +397,29 @@ const PostImages = styled.div`
       aspect-ratio: 1;
       border-radius: 8px;
       overflow: hidden;
-      
-      img {
-        width: 100%;
+  
+  img {
+    width: 100%;
         height: 100%;
         border-radius: 0;
       }
       
       &.overlay {
-        &::after {
-          content: '+' attr(data-remaining);
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+    &::after {
+      content: '+' attr(data-remaining);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
           font-size: 28px;
           font-weight: 700;
-          backdrop-filter: blur(2px);
+      backdrop-filter: blur(2px);
           border-radius: 8px;
           
           @media (max-width: 768px) {
@@ -2037,13 +2037,13 @@ function Forum() {
                       // Render first 3 images normally, 4th with overlay
                       <>
                         {selectedImages.slice(0, 3).map((image, index) => (
-                          <ImagePreview key={index} className="preview-image">
-                            <img src={image.url} alt={`Selected ${index + 1}`} />
-                            <RemoveImageButton onClick={() => removeImage(index)}>
-                              <CloseIcon />
-                            </RemoveImageButton>
-                          </ImagePreview>
-                        ))}
+                      <ImagePreview key={index} className="preview-image">
+                        <img src={image.url} alt={`Selected ${index + 1}`} />
+                        <RemoveImageButton onClick={() => removeImage(index)}>
+                          <CloseIcon />
+                        </RemoveImageButton>
+                      </ImagePreview>
+                    ))}
                         <ImagePreview className="preview-image overlay-preview" data-remaining={selectedImages.length - 3}>
                           <img src={selectedImages[3].url} alt={`Selected 4`} />
                           <RemoveImageButton onClick={() => removeImage(3)}>
@@ -2051,7 +2051,7 @@ function Forum() {
                           </RemoveImageButton>
                           <div className="overlay-indicator">
                             +{selectedImages.length - 3}
-                          </div>
+                  </div>
                         </ImagePreview>
                       </>
                     ) : (
@@ -2159,10 +2159,10 @@ function Forum() {
                       {post.images.slice(0, 3).map((image, index) => (
                         <div key={image.id} className="image-container">
                           <img
-                            src={image.url}
-                            alt={image.alt}
-                            onClick={() => openCarousel(post.images, index)}
-                            style={{ cursor: 'pointer' }}
+                      src={image.url}
+                      alt={image.alt}
+                      onClick={() => openCarousel(post.images, index)}
+                      style={{ cursor: 'pointer' }}
                           />
                         </div>
                       ))}
@@ -2187,7 +2187,7 @@ function Forum() {
                         alt={image.alt}
                         onClick={() => openCarousel(post.images, index)}
                         style={{ cursor: 'pointer' }}
-                      />
+                    />
                     ))
                   )}
                 </PostImages>
