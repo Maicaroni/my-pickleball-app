@@ -449,7 +449,8 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    birthDate: ''
+    birthDate: '',
+    gender: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -522,6 +523,10 @@ const Register = () => {
       }
     }
     
+    if (!formData.gender) {
+      newErrors.gender = 'Gender is required';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -559,7 +564,8 @@ const Register = () => {
           lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
-          birthDate: formData.birthDate
+          birthDate: formData.birthDate,
+          gender: formData.gender
         })
       });
   
@@ -703,6 +709,28 @@ const Register = () => {
               <ErrorMessage>
                 <WarningIcon />
                 {errors.birthDate}
+              </ErrorMessage>
+            )}
+          </InputGroup>
+
+          <InputGroup>
+            <Label htmlFor="gender">Gender</Label>
+            <Select
+              id="gender"
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              required
+              $hasError={!!errors.gender}
+            >
+              <option value="">Select your gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </Select>
+            {errors.gender && (
+              <ErrorMessage>
+                <WarningIcon />
+                {errors.gender}
               </ErrorMessage>
             )}
           </InputGroup>
