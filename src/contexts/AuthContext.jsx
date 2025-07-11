@@ -19,7 +19,7 @@ const AuthProvider = ({ children }) => {
     type: 'success'
   });
 
-  // Dummy user data for testing
+  // Dummy user data for testing/fallback
   const dummyCredentials = {
     email: 'john.doe@gmail.com',
     password: 'password123'
@@ -38,10 +38,9 @@ const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Check if user is already logged in (from localStorage)
     const storedUser = localStorage.getItem('user');
     const storedToken = localStorage.getItem('token');
-    
+
     if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
     }
@@ -69,7 +68,6 @@ const AuthProvider = ({ children }) => {
   };
 
   const login = (userData, token) => {
-    // Store user data and token
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', token);
     setUser(userData);
@@ -90,17 +88,10 @@ const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    // Clear user data and token
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     setUser(null);
     showNotification('User logged out', 'info');
-  };
-
-  // Function to simulate login with dummy data (for testing)
-  const loginWithDummyData = () => {
-    const dummyToken = 'dummy-jwt-token-12345';
-    login(dummyUser, dummyToken);
   };
 
   const value = {
@@ -108,7 +99,6 @@ const AuthProvider = ({ children }) => {
     login,
     loginWithCredentials,
     logout,
-    loginWithDummyData,
     authenticate,
     loading,
     isAuthenticated: !!user,
@@ -125,4 +115,4 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-export { AuthProvider, useAuth }; 
+export { AuthProvider, useAuth };

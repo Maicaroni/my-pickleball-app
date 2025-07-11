@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import styled from 'styled-components';
+import { useAuth } from '../contexts/AuthContext';
 import viteLogo from '/vite.svg';
 
 /**
@@ -387,7 +387,6 @@ const GoogleIcon = () => (
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const { loginWithDummyData } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -451,49 +450,50 @@ const SignIn = () => {
     }
   };
 
+  const { login } = useAuth(); // real one!
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setLoading(true);
     try {
-      // BACKEND INTEGRATION REQUIRED:
-      // 1. Make a POST request to /api/auth/login
-      // Expected request body:
-      // {
-      //   email: string,
-      //   password: string,
-      //   rememberMe: boolean
-      // }
-      // Expected response:
-      // {
-      //   token: string,
-      //   user: {
-      //     id: string,
-      //     email: string,
-      //     name: string,
-      //     roles: string[]
-      //   }
-      // }
-      // 2. Store the token in localStorage/sessionStorage based on rememberMe
-      // 3. Store user data in app state
-      // 4. Redirect to dashboard/home
-      
-      // For now, using dummy data for testing
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      loginWithDummyData();
-      navigate('/');
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      // Store token based on rememberMe
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem("token", data.token);
+      storage.setItem("user", JSON.stringify(data.user));
+
+      // Set to global state via AuthContext
+      login(data.user, data.token);
+
+      navigate("/"); // Redirect to home/dashboard
     } catch (err) {
       setErrors(prev => ({
         ...prev,
-        submit: err.message || 'Failed to sign in. Please try again.'
+        submit: err.message || "Failed to sign in. Please try again."
       }));
     } finally {
       setLoading(false);
     }
   };
-
+  
   const handleSocialLogin = async (provider) => {
     try {
       // BACKEND INTEGRATION REQUIRED:
@@ -507,6 +507,7 @@ const SignIn = () => {
       // - Redirect to dashboard/home
       
       console.log(`Signing in with ${provider}`); // Remove after backend integration
+    // eslint-disable-next-line no-unused-vars
     } catch (err) {
       setErrors(prev => ({
         ...prev,
