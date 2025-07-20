@@ -588,12 +588,18 @@ const Register = () => {
     }
   };
 
+    // BACKEND INTEGRATION REQUIRED:
   const handleSocialSignup = async (provider) => {
     try {
       // BACKEND INTEGRATION REQUIRED:
       // 1. For Google:
       //    - Endpoint: /api/auth/google/register
       //    - Use Google OAuth2 flow
+      //    - Additional user data might be required after OAuth
+      //
+      // 2. For Facebook:
+      //    - Endpoint: /api/auth/facebook/register
+      //    - Use Facebook OAuth flow
       //    - Additional user data might be required after OAuth
       //
       // Expected response format same as regular registration
