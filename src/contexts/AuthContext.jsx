@@ -26,15 +26,12 @@ const AuthProvider = ({ children }) => {
   };
 
   const dummyUser = {
-    id: 'user123',
+    id: '123',
     email: 'john.doe@gmail.com',
     firstName: 'John',
     lastName: 'Doe',
     name: 'John Doe',
-    avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=29ba9b&color=fff&size=40',
-    roles: ['user'],
-    joinDate: '2024-01-15',
-    isVerified: true
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
   };
 
   useEffect(() => {

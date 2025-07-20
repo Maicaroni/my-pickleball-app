@@ -10,6 +10,7 @@ import Ranks from './pages/Ranks';
 import ClubsCourts from './pages/ClubsCourts';
 import SignIn from './pages/SignIn';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
 import './App.css';
 
 function AppContent() {
@@ -26,6 +27,7 @@ function AppContent() {
           <Route path="/clubs-courts" element={<ClubsCourts />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
         <Footer />
       <Notification

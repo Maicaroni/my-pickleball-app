@@ -93,7 +93,7 @@ const CreatePostHeader = styled.button`
   width: 100%;
   background: none;
   border: none;
-  padding: 20px;
+  padding: 32px;
   text-align: left;
   color: #64748b;
   font-size: 15px;
@@ -105,7 +105,7 @@ const CreatePostHeader = styled.button`
   outline: none;
 
   @media (max-width: 768px) {
-    padding: 16px;
+    padding: 24px;
     gap: 12px;
   }
 
@@ -143,13 +143,13 @@ const CreatePostAvatar = styled.div`
 
 const CreatePostOptions = styled.div`
   border-top: 1px solid #e2e8f0;
-  padding: 16px 20px;
+  padding: 16px 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 
   @media (max-width: 768px) {
-    padding: 16px;
+    padding: 16px 24px;
     gap: 12px;
     flex-wrap: wrap;
   }
@@ -231,13 +231,13 @@ const Post = styled.article`
 `;
 
 const PostHeader = styled.div`
-  padding: 16px 20px;
+  padding: 16px 32px;
   display: flex;
   align-items: center;
   gap: 12px;
 
   @media (max-width: 768px) {
-    padding: 14px 16px;
+    padding: 14px 24px;
     gap: 12px;
   }
 `;
@@ -297,22 +297,49 @@ const PostAuthor = styled.div`
 `;
 
 const PostContent = styled.div`
-  padding: 0 20px 20px;
+  padding: 0 32px 12px;
+  text-align: left;
   
   @media (max-width: 768px) {
-    padding: 0 16px 18px;
+    padding: 0 24px 12px;
   }
   
   p {
-    margin: 0 0 16px;
+    margin: 0 0 8px;
     font-size: 15px;
     line-height: 1.6;
     color: #334155;
+    text-align: left;
 
     @media (max-width: 768px) {
       font-size: 14px;
-      margin: 0 0 14px;
+      margin: 0 0 8px;
     }
+  }
+`;
+
+const SeeMoreButton = styled.button`
+  background: none;
+  border: none;
+  color: #64748b;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  margin: 0 0 8px 0;
+  font-weight: 500;
+  transition: color 0.2s ease;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+    margin: 0 0 8px 0;
+  }
+
+  &:hover {
+    color: #29ba9b;
+  }
+
+  &:focus {
+    outline: none;
   }
 `;
 
@@ -321,10 +348,10 @@ const PostImages = styled.div`
   gap: 4px;
   border-radius: 8px;
   overflow: hidden;
-  margin: 0 20px;
+  margin: 8px 1px 0;
   
   @media (max-width: 768px) {
-    margin: 0;
+    margin: 8px 0 0;
     gap: 3px;
   }
   
@@ -444,14 +471,14 @@ const PostImages = styled.div`
 `;
 
 const PostActions = styled.div`
-  padding: 8px 20px;
+  padding: 8px 32px;
   display: flex;
   gap: 20px;
   border-top: 1px solid #e2e8f0;
-  margin-top: 16px;
+  margin-top: 8px;
 
   @media (max-width: 768px) {
-    padding: 6px 16px;
+    padding: 6px 24px;
     gap: 14px;
   }
 
@@ -523,14 +550,14 @@ const CommentSection = styled.div`
 `;
 
 const CommentInput = styled.div`
-  padding: 8px 20px;
+  padding: 8px 32px;
   display: flex;
   gap: 12px;
   align-items: center;
   background: white;
 
   @media (max-width: 768px) {
-    padding: 8px 16px;
+    padding: 8px 24px;
     gap: 10px;
   }
 `;
@@ -578,13 +605,13 @@ const CommentsList = styled.div`
 `;
 
 const CommentItem = styled.div`
-  padding: 6px 20px;
+  padding: 6px 32px;
   display: flex;
   gap: 12px;
   align-items: flex-start;
 
   @media (max-width: 768px) {
-    padding: 6px 16px;
+    padding: 6px 24px;
     gap: 10px;
   }
 
@@ -987,10 +1014,19 @@ const CreatePostContent = styled.div`
   padding: 16px;
 `;
 
+const CreatePostInputContainer = styled.div`
+  padding: 0 32px 16px;
+  
+  @media (max-width: 768px) {
+    padding: 0 24px 16px;
+  }
+`;
+
 const PostTextArea = styled.textarea`
   width: 100%;
-  min-height: 150px;
-  padding: 12px;
+  min-height: 48px; /* 2 lines: (15px * 1.6 * 2) = 48px */
+  height: auto;
+  padding: 8px 0px;
   border: none;
   border-radius: 4px;
   resize: none;
@@ -999,9 +1035,11 @@ const PostTextArea = styled.textarea`
   color: #334155;
   font-family: inherit;
   margin-bottom: 0px;
+  overflow: hidden;
   
   @media (max-width: 768px) {
     font-size: 14px;
+    min-height: 45px; /* 2 lines: (14px * 1.6 * 2) = 44.8px */
   }
   
   &:focus {
@@ -1094,6 +1132,118 @@ const LoadingSpinner = styled.div`
   }
 `;
 
+const NotificationPopup = styled.div`
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1050;
+  max-width: 380px;
+  width: 90%;
+  animation: slideDown 0.3s ease;
+  backdrop-filter: blur(8px);
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    top: 70px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    max-width: 340px;
+  }
+`;
+
+const NotificationContent = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+`;
+
+const NotificationIcon = styled.div`
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  border-radius: 50%;
+  background: #fbbf24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+
+  svg {
+    width: 12px;
+    height: 12px;
+    color: white;
+    stroke-width: 3;
+  }
+`;
+
+const NotificationText = styled.div`
+  flex: 1;
+  
+  h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.3;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 768px) {
+    h4 {
+      font-size: 13px;
+    }
+    
+    p {
+      font-size: 12px;
+    }
+  }
+`;
+
+const NotificationClose = styled.button`
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #94a3b8;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  margin-top: -2px;
+
+  &:hover {
+    color: #64748b;
+    background: #f1f5f9;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+  }
+`;
+
 const ErrorMessage = styled.div`
   text-align: center;
   padding: 2rem;
@@ -1157,13 +1307,20 @@ const CarouselSlide = styled.div`
 `;
 
 const CarouselImage = styled.img`
-  max-width: 90%;
-  max-height: 90%;
+  max-width: 95%;
+  max-height: 85vh;
+  width: auto;
+  height: auto;
   object-fit: contain;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   user-select: none;
   -webkit-user-drag: none;
+
+  @media (max-width: 768px) {
+    max-width: 90%;
+    max-height: 75vh;
+  }
 `;
 
 const CarouselButton = styled.button`
@@ -1227,11 +1384,11 @@ const ImageCounter = styled.div`
 
 const ImagePreviewContainer = styled.div`
   margin-top: 16px;
-  padding: 16px 0;
+  padding: 0;
 
   @media (max-width: 768px) {
-    padding: 12px 0;
-    margin-top: 12px;
+    padding: 0;
+    margin-top: 16px;
   }
   
   /* Use the same smart layout as posts */
@@ -1458,6 +1615,14 @@ function SendIcon() {
   );
 }
 
+function WarningIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 /**
  * Forum Component
  * 
@@ -1484,6 +1649,16 @@ function Forum() {
   const [postContent, setPostContent] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Notification state
+  const [notification, setNotification] = useState({
+    show: false,
+    title: '',
+    message: ''
+  });
+  
+  // Expanded posts state for "see more" functionality
+  const [expandedPosts, setExpandedPosts] = useState({});
   
   // Comments state - TODO: Backend should provide this data
   const [showComments, setShowComments] = useState({}); // { postId: boolean }
@@ -1512,6 +1687,46 @@ function Forum() {
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
+
+  // Show notification function
+  const showNotification = (title, message) => {
+    setNotification({
+      show: true,
+      title,
+      message
+    });
+    
+    // Auto-hide after 4 seconds
+    setTimeout(() => {
+      setNotification(prev => ({ ...prev, show: false }));
+    }, 4000);
+  };
+
+  // Hide notification function
+  const hideNotification = () => {
+    setNotification(prev => ({ ...prev, show: false }));
+  };
+
+  // Toggle post expansion
+  const togglePostExpansion = (postId) => {
+    setExpandedPosts(prev => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+  };
+
+  // Truncate text function
+  const truncateText = (text, maxLength = 200) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
+  };
+
+  // Auto-resize textarea
+  const handleTextareaResize = (e) => {
+    const textarea = e.target;
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.max(48, textarea.scrollHeight) + 'px'; // Min 48px for 2 lines with new line-height
+  };
 
   // Fetch posts on mount and page change
   useEffect(() => {
@@ -1787,6 +2002,15 @@ function Forum() {
       return;
     }
 
+    // Check if already at 4 image limit
+    if (selectedImages.length >= 4) {
+      showNotification(
+        'Upload Limit Reached',
+        'You can only upload a maximum of 4 images per post.'
+      );
+      return;
+    }
+
     // Directly open file picker
     document.getElementById('imageInput').click();
   };
@@ -1979,7 +2203,7 @@ function Forum() {
         initials: 'SL',
         avatarColor: '#234255'
       },
-      content: 'Great matches at the club today! Here are some highlights 📸',
+      content: 'Great matches at the club today! Here are some highlights 📸 The weather was absolutely perfect for pickleball - sunny but not too hot, with just a gentle breeze. We had some intense rallies that went on for what felt like forever! Sarah dominated the net with her incredible dinks, while Mike was crushing some amazing overhead smashes. The new court surface is playing really well, much better grip than the old one. Everyone improved their game today and we learned some new strategies. Looking forward to tomorrow\'s tournament - should be epic! 🏓🎾',
       images: [
         { id: '1', url: 'https://placehold.co/400x400/ff6b6b/FFF?text=Image+1+(Grid+Top-Left)', alt: 'Match highlight 1' },
         { id: '2', url: 'https://placehold.co/400x400/4ecdc4/FFF?text=Image+2+(Grid+Top-Right)', alt: 'Match highlight 2' },
@@ -2023,12 +2247,15 @@ function Forum() {
           </CreatePostHeader>
           
                       {showCreateModal && (
-            <div style={{ padding: '0 20px 16px' }}>
+            <CreatePostInputContainer>
               <PostTextArea
                 placeholder="Write something here..."
                 value={postContent}
-                onChange={(e) => setPostContent(e.target.value)}
-                style={{ width: '100%', minHeight: '80px' }}
+                onChange={(e) => {
+                  setPostContent(e.target.value);
+                  handleTextareaResize(e);
+                }}
+                style={{ width: '100%', minHeight: '48px', paddingLeft: '0px', paddingRight: '0px' }}
               />
               {selectedImages.length > 0 && (
                 <ImagePreviewContainer>
@@ -2068,13 +2295,24 @@ function Forum() {
                   </div>
                 </ImagePreviewContainer>
               )}
-            </div>
+            </CreatePostInputContainer>
           )}
           
           <CreatePostOptions>
-            <ImageUploadButton onClick={handlePhotoVideoClick}>
+            <ImageUploadButton 
+              onClick={handlePhotoVideoClick}
+              style={{
+                opacity: selectedImages.length >= 4 ? 0.5 : 1,
+                cursor: selectedImages.length >= 4 ? 'not-allowed' : 'pointer'
+              }}
+            >
               <ImageIcon />
-              Photo/Video
+              {selectedImages.length >= 4 
+                ? 'Max 4 images' 
+                : selectedImages.length === 0 
+                  ? 'Photo/Video' 
+                  : `Add Photo (${4 - selectedImages.length} left)`
+              }
             </ImageUploadButton>
             {showCreateModal && (
               <SubmitButton
@@ -2098,8 +2336,21 @@ function Forum() {
                 // Handle file selection from device storage
                 const files = Array.from(e.target.files);
                 if (files.length > 0) {
+                  // Calculate how many more images we can add (max 4 total)
+                  const remainingSlots = 4 - selectedImages.length;
+                  
+                  // Take only the number of files that fit within the limit
+                  const filesToProcess = files.slice(0, remainingSlots);
+                  
+                  if (files.length > remainingSlots) {
+                    showNotification(
+                      'Some Images Skipped',
+                      `You can only add ${remainingSlots} more image(s). Only the first ${remainingSlots} image(s) will be selected.`
+                    );
+                  }
+                  
                   // Create preview URLs for the selected images
-                  const imagePreviewsPromises = files.map(file => {
+                  const imagePreviewsPromises = filesToProcess.map(file => {
                     return new Promise((resolve) => {
                       const reader = new FileReader();
                       reader.onload = (e) => {
@@ -2114,7 +2365,7 @@ function Forum() {
                   });
 
                   Promise.all(imagePreviewsPromises).then(imagePreviews => {
-                    setSelectedImages(imagePreviews);
+                    setSelectedImages(prev => [...prev, ...imagePreviews]);
                     setShowCreateModal(true); // Auto-open the create modal when images are selected
                   });
 
@@ -2150,7 +2401,17 @@ function Forum() {
               </PostAuthor>
             </PostHeader>
             <PostContent>
-              <p>{post.content}</p>
+              <p>
+                {expandedPosts[post.id] || post.content.length <= 200 
+                  ? post.content 
+                  : truncateText(post.content, 200)
+                }
+              </p>
+              {post.content.length > 200 && (
+                <SeeMoreButton onClick={() => togglePostExpansion(post.id)}>
+                  {expandedPosts[post.id] ? 'See less' : 'See more'}
+                </SeeMoreButton>
+              )}
               {post.images?.length > 0 && (
                 <PostImages className={getImageLayoutClass(post.images)}>
                   {getImageLayoutClass(post.images) === 'four-images-with-overlay' ? (
@@ -2377,6 +2638,24 @@ function Forum() {
           <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
             No posts yet. Be the first to share!
           </div>
+        )}
+
+        {/* Notification Popup */}
+        {notification.show && (
+          <NotificationPopup>
+            <NotificationContent>
+              <NotificationIcon>
+                <WarningIcon />
+              </NotificationIcon>
+              <NotificationText>
+                <h4>{notification.title}</h4>
+                <p>{notification.message}</p>
+              </NotificationText>
+              <NotificationClose onClick={hideNotification}>
+                <CloseIcon />
+              </NotificationClose>
+            </NotificationContent>
+          </NotificationPopup>
         )}
 
         {showAuthModal && (
