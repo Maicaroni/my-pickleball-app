@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import logoImg from '../../public/ppl-logo.svg';
+import logoImg from '../../src/assets/ppl-logo.svg';
 
 const FooterContainer = styled.footer`
   background: white;

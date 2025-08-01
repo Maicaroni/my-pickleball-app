@@ -1,0 +1,7 @@
+const Feedbacks = () => {
+  return (
+    <div>Club Admins Page</div>
+  );
+};
+
+export default Feedbacks;
