@@ -1,14 +1,20 @@
+// routes/organizers.js
 const express = require("express");
 const router = express.Router();
-const Player = require("../models/User");
+const {
+  getVerifiedOrganizers,
+  getOrganizerRequests,
+  createOrganizer,
+  editOrganizer,
+  updateOrganizerStatus,
+  revertOrganizerToPlayer
+} = require("../controllers/organizerController");
 
-router.get("/count", async (req, res) => {
-  try {
-    const count = await User.countDocuments({ role: "organizer" });
-    res.json({ count });
-  } catch (err) {
-    res.status(500).json({ error: "Error getting organizer count" });
-  }
-});
+router.put('/revert/:id', revertOrganizerToPlayer);
+router.get("/verified", getVerifiedOrganizers);
+router.get("/requests", getOrganizerRequests);
+router.post("/", createOrganizer);
+router.put("/:id", editOrganizer);
+router.put("/status/:id", updateOrganizerStatus);
 
 module.exports = router;

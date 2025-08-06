@@ -7,22 +7,49 @@ const UserSchema = new mongoose.Schema({
   email:     { type: String, required: true, unique: true },
   password:  { type: String, required: true },
   birthDate: { type: Date, required: true },
+
   roles: {
     type: [String],
     enum: ['player', 'organizer', 'clubadmin', 'coach'],
     default: ['player']
   },
-  isConfirmed: { type: Boolean, default: false },      // for organizer/clubadmin approval
-  isVerifiedCoach: { type: Boolean, default: false },  // for verified coaches
-  createdAt: { type: Date, default: Date.now }
-});
 
-// Hash password before saving
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
+  isConfirmed: { type: Boolean, default: false },
+
+  // ✔️ Verified flags
+  isVerifiedCoach: { type: Boolean, default: false },
+  isVerifiedOrganizer: { type: Boolean, default: false },
+  isVerifiedClubAdmin: { type: Boolean, default: false }, // 🆕
+
+  // ✔️ Request objects
+  coachRequest: {
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending'
+    },
+    attachment: { type: String }
+  },
+
+  organizerRequest: {
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending'
+    },
+    attachment: { type: String }
+  },
+
+  clubAdminRequest: { // 🆕 Club admin request
+    status: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending'
+    },
+    attachment: { type: String }
+  },
+
+  createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model("User", UserSchema);

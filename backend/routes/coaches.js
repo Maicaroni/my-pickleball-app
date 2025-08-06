@@ -1,14 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const Player = require("../models/User"); // assuming coaches are just flagged players
+const {
+  getVerifiedCoaches,
+  getCoachRequests,
+  createUser,
+  editCoach,
+  updateCoachStatus,
+  revertCoachToPlayer
+} = require("../controllers/coachController");
+router.put('/revert/:id', revertCoachToPlayer);
+router.get("/verified", getVerifiedCoaches);
+router.get("/requests", getCoachRequests);
+router.post("/", createUser);
+router.put("/:id", editCoach);
+router.put("/status/:id", updateCoachStatus);
 
-router.get("/count", async (req, res) => {
-  try {
-    const count = await User.countDocuments({ role: "coach" });
-    res.json({ count });
-  } catch (err) {
-    res.status(500).json({ error: "Error getting coach count" });
-  }
-});
 
 module.exports = router;

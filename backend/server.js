@@ -14,9 +14,6 @@ const reportRoutes = require("./routes/reports");
 const logRoutes = require("./routes/logs");
 const userRoutes = require("./routes/users"); // ✅ this must match the filename
 
-
-
-
 const app = express();
 
 // ✅ CSP for dev (unsafe-eval allowed)
@@ -32,6 +29,7 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(express.json());
 
+
 // Connect to MongoDB Atlas
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected!"))
@@ -43,7 +41,7 @@ app.use('/api/rankings', rankingRoutes);
 app.use("/api/superadmin", superAdminRoutes);
 app.use("/api/coaches", coachRoutes);
 app.use("/api/organizers", organizerRoutes);
-app.use("/api/club-admins", clubAdminRoutes);
+app.use("/api/clubAdmins", clubAdminRoutes);
 app.use("/api/feedbacks", feedbackRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/logs", logRoutes);

@@ -1,15 +1,11 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const logSchema = new mongoose.Schema({
-  actor: { type: mongoose.Schema.Types.ObjectId, refPath: 'actorModel' },
-  actorModel: {
-    type: String,
-    enum: ['User', 'SuperAdmin'],
-    required: true
-  },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  email: String,
+  role: [String],
   action: String,
-  description: String,
   timestamp: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Log', logSchema);
+module.exports = mongoose.model("Log", logSchema);

@@ -101,11 +101,6 @@ const SuperAdminReports = () => {
 
         <main>
           <h1 className="title">User Reports</h1>
-          <ul className="breadcrumbs">
-            <li><a href="#">Home</a></li>
-            <li className="divider">/</li>
-            <li><a className="active">Reports</a></li>
-          </ul>
 
           <div className="data">
             <div className="content-data">

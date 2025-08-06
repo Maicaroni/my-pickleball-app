@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { message } from "antd";
 
 const SuperAdminNavbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
+  const navigate = useNavigate();
 
   const toggleProfileMenu = () => setIsProfileOpen((prev) => !prev);
 
@@ -16,6 +19,25 @@ const SuperAdminNavbar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      const adminId = localStorage.getItem("superadminId");
+
+      // Send logout log to backend
+      await axios.post("http://localhost:5000/api/superadmin/logout", { adminId });
+
+      // Clear local storage
+      localStorage.removeItem("superadminToken");
+      localStorage.removeItem("superadminId");
+
+      message.success("Logged out successfully!");
+      navigate("/superadmin/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      message.error("Logout failed");
+    }
+  };
 
   return (
     <nav className="flex items-center justify-between">
@@ -38,14 +60,19 @@ const SuperAdminNavbar = () => {
 
       <div className="profile ml-auto" onClick={toggleProfileMenu} ref={profileRef}>
         <span className="welcome-message">Welcome, Admin</span>
-        <img src="/admin-profile.png" alt="Profile" />
+        <i className="fas fa-user-circle text-2xl ml-2"></i> {/* FontAwesome profile icon */}
+
         <div className={`profile-link ${isProfileOpen ? "show" : ""}`}>
           <Link to="/superadmin/profile">
             <i className="fas fa-user"></i> Profile
           </Link>
-          <Link to="/logout">
+          <button
+            onClick={handleLogout}
+            className="w-full text-left px-4 py-2 hover:bg-gray-100"
+            style={{ border: "none", background: "transparent", cursor: "pointer" }}
+          >
             <i className="fas fa-sign-out-alt"></i> Logout
-          </Link>
+          </button>
         </div>
       </div>
     </nav>
