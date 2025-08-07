@@ -33,6 +33,7 @@ import AuthModal from '../components/AuthModal';
  * @property {string} updatedAt - Last update timestamp
  * @property {Object[]} brackets - Tournament brackets with approved players
  * @property {Object[]} registrations - Player registrations with status
+ * @property {Object} tournamentCategories - Multiple tournament categories with brackets
  */
 
 // Detailed View Styled Components - Convert from Modal to Full Page
@@ -598,8 +599,8 @@ const TabNavigation = styled.div`
   border-radius: 12px;
   padding: 6px;
   margin-bottom: 32px;
-  overflow-x: auto;
   border: 1px solid #e2e8f0;
+  width: 100%;
   
   @media (max-width: 768px) {
     margin-bottom: 24px;
@@ -608,6 +609,7 @@ const TabNavigation = styled.div`
 `;
 
 const TabButton = styled.button`
+  flex: 1;
   padding: 12px 20px;
   border: none;
   background: ${props => props.$active ? 'white' : 'transparent'};
@@ -621,6 +623,7 @@ const TabButton = styled.button`
   position: relative;
   box-shadow: ${props => props.$active ? '0 2px 4px rgba(0, 0, 0, 0.1)' : 'none'};
   outline: none;
+  text-align: center;
 
   &:hover {
     color: ${props => props.$active ? '#234255' : '#29ba9b'};
@@ -1016,12 +1019,12 @@ const SponsorDescription = styled.p`
 const TournamentBracket = styled.div`
   background: white;
   border-radius: 16px;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid #e2e8f0;
   width: 100%;
 
   @media (min-width: 768px) {
-    padding: 24px;
+    padding: 16px;
   }
 `;
 
@@ -1052,23 +1055,23 @@ const BracketColumn = styled.div`
 
 const BracketRound = styled.div`
   text-align: left;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 
   @media (min-width: 768px) {
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
   
   h4 {
     font-size: 0.85rem;
     font-weight: 600;
     color: #334155;
-    margin: 0 0 4px;
+    margin: 0 0 3px;
     line-height: 1.2;
     text-align: left;
 
     @media (min-width: 768px) {
       font-size: 1rem;
-      margin: 0 0 6px;
+      margin: 0 0 4px;
     }
   }
   
@@ -1089,7 +1092,7 @@ const MatchCard = styled.div`
   border: 2px solid ${props => props.$isWinner ? '#16a34a' : '#e2e8f0'};
   border-radius: 8px;
   padding: 8px 10px;
-  margin: 4px 0;
+  margin: 2px 0;
   transition: all 0.2s;
   position: relative;
   min-height: 50px;
@@ -1172,7 +1175,7 @@ const EmptyMatch = styled.div`
   border: 2px dashed #cbd5e1;
   border-radius: 12px;
   padding: 12px 16px;
-  margin: 8px 0;
+  margin: 4px 0;
   min-height: 60px;
   display: flex;
   align-items: center;
@@ -1219,54 +1222,59 @@ const ChampionshipSection = styled.div`
   
   .championship-trophy {
     font-size: 2rem;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 
     @media (min-width: 768px) {
       font-size: 2.5rem;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
   }
   
   .championship-match {
-    margin: 8px 0;
+    margin: 6px 0;
     width: 100%;
 
     @media (min-width: 768px) {
-      margin: 12px 0;
+      margin: 8px 0;
     }
   }
 `;
 
 const GroupStageSection = styled.div`
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 
   @media (min-width: 768px) {
-    margin-bottom: 32px;
+    margin-bottom: 20px;
   }
   
   .section-title {
     font-size: 1.1rem;
     font-weight: 700;
     color: #334155;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     text-align: center;
 
     @media (min-width: 768px) {
       font-size: 1.2rem;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
   }
   
   .groups-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 16px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 
     @media (min-width: 768px) {
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (min-width: 1200px) {
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
       gap: 24px;
-      margin-bottom: 32px;
     }
   }
   
@@ -1291,53 +1299,101 @@ const GroupStageSection = styled.div`
 const GroupCard = styled.div`
   background: white;
   border-radius: 12px;
-  padding: 20px;
+  padding: 16px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1;
+  }
+
+  @media (min-width: 768px) {
+    padding: 20px;
+  }
 `;
 
 const GroupHeader = styled.h4`
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #334155;
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   text-align: center;
-  padding: 8px 12px;
+  padding: 10px 14px;
   background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  @media (min-width: 768px) {
+    font-size: 1.1rem;
+    padding: 12px 16px;
+    margin: 0 0 16px;
+  }
 `;
 
 const StandingsTable = styled.div`
   .standings-header {
     display: grid;
-    grid-template-columns: 1fr 60px 60px;
+    grid-template-columns: 1fr 60px 60px 70px 70px;
     gap: 8px;
-    padding: 8px 12px;
+    padding: 12px 16px;
     background: #f8fafc;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.8rem;
     font-weight: 600;
     color: #64748b;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    
+    div:first-child {
+      text-align: left;
+    }
+
+    @media (min-width: 768px) {
+      grid-template-columns: 1fr 70px 70px 80px 80px;
+      gap: 10px;
+      padding: 14px 18px;
+      font-size: 0.85rem;
+    }
   }
 `;
 
 const StandingsRow = styled.div`
   display: grid;
-  grid-template-columns: 1fr 60px 60px;
+  grid-template-columns: 1fr 60px 60px 70px 70px;
   gap: 8px;
-  padding: 10px 12px;
-  border-radius: 6px;
+  padding: 12px 16px;
+  border-radius: 8px;
   font-size: 0.85rem;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   background: ${props => props.$qualified ? '#dcfce7' : '#f8fafc'};
   border: 1px solid ${props => props.$qualified ? '#bbf7d0' : '#e2e8f0'};
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${props => props.$qualified ? '#bbf7d0' : '#f1f5f9'};
+    border-color: ${props => props.$qualified ? '#86efac' : '#cbd5e1'};
+  }
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 70px 70px 80px 80px;
+    gap: 10px;
+    padding: 14px 18px;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
   
   .player-info {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+
+    @media (min-width: 768px) {
+      gap: 12px;
+    }
   }
   
   .position {
@@ -1351,18 +1407,48 @@ const StandingsRow = styled.div`
     justify-content: center;
     font-size: 0.75rem;
     font-weight: 600;
+    flex-shrink: 0;
+
+    @media (min-width: 768px) {
+      width: 22px;
+      height: 22px;
+      font-size: 0.8rem;
+    }
   }
   
   .player-name {
     font-weight: 500;
     color: ${props => props.$qualified ? '#166534' : '#334155'};
     text-align: left;
+    font-size: 0.85rem;
+    line-height: 1.3;
+
+    @media (min-width: 768px) {
+      font-size: 0.9rem;
+    }
   }
   
+  .round-wins, .round-losses, .win-points, .loss-points {
+    text-align: center;
+    font-weight: 600;
+    color: ${props => props.$qualified ? '#166534' : '#334155'};
+    font-size: 0.85rem;
+
+    @media (min-width: 768px) {
+      font-size: 0.9rem;
+    }
+  }
+  
+  /* Legacy support */
   .wins, .points {
     text-align: center;
     font-weight: 600;
     color: ${props => props.$qualified ? '#166534' : '#334155'};
+    font-size: 0.85rem;
+
+    @media (min-width: 768px) {
+      font-size: 0.9rem;
+    }
   }
 `;
 
@@ -1372,13 +1458,274 @@ const StickyActionBar = styled.div`
   padding: 24px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 90px;
+  position: static;
 
   @media (max-width: 1023px) {
-    position: relative;
-    top: 0;
     margin-top: 32px;
+  }
+`;
+
+
+
+// Category Card Components
+const CategoryCard = styled.div`
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  &:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    margin-bottom: 12px;
+  }
+`;
+
+const CategoryHeader = styled.div`
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+  border-bottom: ${props => props.$expanded ? '1px solid #e2e8f0' : 'none'};
+
+  &:hover {
+    background: #f8fafc;
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+  }
+`;
+
+const CategoryHeaderContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+const CategoryHeaderIcon = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  background: ${props => {
+    switch (props.category) {
+      case 'mens-singles': return 'linear-gradient(135deg, #3b82f6, #1e40af)';
+      case 'womens-singles': return 'linear-gradient(135deg, #ec4899, #be185d)';
+      case 'mens-doubles': return 'linear-gradient(135deg, #10b981, #047857)';
+      case 'womens-doubles': return 'linear-gradient(135deg, #f59e0b, #d97706)';
+      case 'mixed-doubles': return 'linear-gradient(135deg, #8b5cf6, #7c3aed)';
+      case 'senior-doubles': return 'linear-gradient(135deg, #ef4444, #dc2626)';
+      default: return 'linear-gradient(135deg, #64748b, #475569)';
+    }
+  }};
+  color: white;
+
+  @media (max-width: 768px) {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+`;
+
+const CategoryHeaderInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+  
+  .category-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 6px;
+    line-height: 1.3;
+
+    @media (max-width: 768px) {
+      font-size: 1.1rem;
+    }
+  }
+  
+  .category-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.9rem;
+    color: #64748b;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      font-size: 0.85rem;
+    }
+  }
+  
+  .category-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    
+    @media (max-width: 768px) {
+      gap: 12px;
+    }
+  }
+  
+  .stat-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    
+    svg {
+      width: 14px;
+      height: 14px;
+      color: #29ba9b;
+    }
+
+    @media (max-width: 768px) {
+      font-size: 0.75rem;
+      padding: 3px 6px;
+    }
+  }
+`;
+
+const CategoryExpandIcon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    color: #64748b;
+    transition: transform 0.2s ease;
+    transform: ${props => props.$expanded ? 'rotate(180deg)' : 'rotate(0deg)'};
+  }
+
+  ${CategoryHeader}:hover & {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+  }
+`;
+
+const CategoryBracketContent = styled.div`
+  padding: 16px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  animation: ${props => props.$expanded ? 'slideDown 0.3s ease' : 'slideUp 0.3s ease'};
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
+`;
+
+const BracketPlaceholder = styled.div`
+  text-align: center;
+  padding: 32px 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  
+  .placeholder-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+  }
+  
+  .placeholder-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 8px;
+  }
+  
+  .placeholder-text {
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin-bottom: 16px;
+  }
+  
+  .bracket-info {
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    display: inline-block;
+    min-width: 200px;
+    
+    .info-title {
+      color: #29ba9b;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+    
+    .info-details {
+      font-size: 0.8rem;
+      color: #64748b;
+      line-height: 1.4;
+      
+      div {
+        margin-bottom: 2px;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 24px 16px;
+    
+    .placeholder-icon {
+      font-size: 2rem;
+    }
+    
+    .placeholder-title {
+      font-size: 1rem;
+    }
+    
+    .placeholder-text {
+      font-size: 0.85rem;
+    }
   }
 `;
 
@@ -1597,22 +1944,17 @@ const TournamentTypeDisplay = styled.div`
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: ${props => {
-    switch (props.type) {
-      case 'intermediate': return '#fef3c7';
-      case 'advanced': return '#fef2f2';
-      case 'open': return '#f0f9ff';
-      default: return '#f8fafc';
-    }
-  }};
+  background: #ecfdf5;
   border-radius: 25px;
-  color: ${props => {
-    switch (props.type) {
-      case 'intermediate': return '#d97706';
-      case 'advanced': return '#dc2626';
-      case 'open': return '#0369a1';
-      default: return '#475569';
-    }
+  color: #059669;
+  border: 1px solid #6ee7b7;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #d1fae5;
+    border-color: #34d399;
+  }
   }};
   font-size: 0.8rem;
   font-weight: 600;
@@ -2008,6 +2350,268 @@ const getTournamentStatus = (tournamentDate, registrationDeadline, currentPartic
   }
 };
 
+// Registration Modal Styled Components
+const RegistrationModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+`;
+
+const RegistrationModalContent = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 0;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+`;
+
+const RegistrationModalHeader = styled.div`
+  padding: 24px 32px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const RegistrationModalTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #234255;
+  margin: 0;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #f1f5f9;
+    color: #334155;
+  }
+`;
+
+const RegistrationModalBody = styled.div`
+  padding: 32px;
+`;
+
+const RegistrationFormSection = styled.div`
+  margin-bottom: 24px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const RegistrationSectionTitle = styled.h3`
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #234255;
+  margin-bottom: 16px;
+  position: relative;
+  padding-bottom: 8px;
+  
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 30px;
+    height: 2px;
+    background-color: #29ba9b;
+  }
+`;
+
+const RegistrationFormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+`;
+
+const RegistrationLabel = styled.label`
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+`;
+
+const RegistrationInput = styled.input`
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #1a1a1a;
+  background: white;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: #29ba9b;
+    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
+  }
+  
+  &::placeholder {
+    color: #94a3b8;
+  }
+  
+  &:hover {
+    border-color: #cbd5e0;
+  }
+`;
+
+const RegistrationSelect = styled.select`
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #1a1a1a;
+  background: white;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #29ba9b;
+    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
+  }
+  
+  &:hover {
+    border-color: #cbd5e0;
+  }
+`;
+
+const RegistrationFormRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const FeeInfoBox = styled.div`
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+`;
+
+const FeeInfoTitle = styled.h4`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #234255;
+  margin: 0 0 8px 0;
+`;
+
+const FeeInfoText = styled.p`
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 0;
+`;
+
+const BankDetailsBox = styled.div`
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+`;
+
+const BankDetailsTitle = styled.h4`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #234255;
+  margin: 0 0 16px 0;
+`;
+
+const BankDetail = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const BankDetailLabel = styled.span`
+  font-weight: 500;
+  color: #64748b;
+  font-size: 0.9rem;
+`;
+
+const BankDetailValue = styled.span`
+  font-weight: 600;
+  color: #234255;
+  font-size: 0.9rem;
+`;
+
+const FileUploadArea = styled.div`
+  border: 2px dashed #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  background: #f8fafc;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  
+  &:hover {
+    border-color: #29ba9b;
+    background: #f0fffe;
+  }
+`;
+
+const FileUploadText = styled.p`
+  color: #64748b;
+  margin: 0;
+  font-size: 0.9rem;
+`;
+
+const RegistrationSubmitButton = styled.button`
+  width: 100%;
+  padding: 14px;
+  background: #29ba9b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 24px;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  
+  &:hover:not(:disabled) {
+    background: #25a589;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(41, 186, 155, 0.2);
+  }
+  
+  &:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
+    color: #94a3b8;
+  }
+`;
+
 function Tournament() {
   const { isAuthenticated } = useAuth();
   const [tournaments, setTournaments] = useState([]);
@@ -2023,6 +2627,23 @@ function Tournament() {
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [activeTab, setActiveTab] = useState('details');
   
+  // Add state for expanded categories (multiple can be open)
+  const [expandedCategories, setExpandedCategories] = useState({});
+  
+  // Registration modal state
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [registrationTournament, setRegistrationTournament] = useState(null);
+  const [registrationForm, setRegistrationForm] = useState({
+    category: '',
+    division: '',
+    ageCategory: '',
+    level: '',
+    fullName: '',
+    email: '',
+    contactNumber: '',
+    proofOfPayment: null
+  });
+  
   // Fee ranges
   const feeRanges = [
     { label: '₱0 - ₱3,000', min: 0, max: 3000 },
@@ -2031,9 +2652,56 @@ function Tournament() {
   ];
 
   const filteredTournaments = tournaments.filter(tournament => {
+    // Search by name or location
     const matchesSearch = tournament.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          tournament.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTier = !selectedTier || tournament.tier === parseInt(selectedTier);
+    
+    // Check if tournament matches selected tier/category
+    const matchesTier = !selectedTier || (() => {
+      console.log('Checking tournament:', tournament.name); // Debugging
+      
+      // Handle tournament categories structure
+      if (tournament.tournamentCategories) {
+        return Object.values(tournament.tournamentCategories).some(category => {
+          console.log('Checking category:', category); // Debugging
+          
+          // Check if we have valid category data
+          if (!category || !category.skillLevel) return false;
+          
+          if (selectedTier.startsWith('open-')) {
+            // For Open tier categories
+            const targetTier = parseInt(selectedTier.split('-')[1]);
+            // Convert skillLevel to lowercase for case-insensitive comparison
+            const skillLevel = category.skillLevel.toLowerCase();
+            const categoryTier = Number(category.tier) || 1; // Default to tier 1 if not specified
+            
+            console.log('Comparing:', { 
+              skillLevel,
+              categoryTier,
+              targetTier,
+              matches: skillLevel === 'open' && categoryTier === targetTier
+            }); // Debugging
+            
+            // Check if this is an Open category with matching tier
+            return skillLevel === 'open' && categoryTier === targetTier;
+          } else {
+            // For Intermediate and Advanced categories
+            return category.skillLevel.toLowerCase() === selectedTier.toLowerCase();
+          }
+        });
+      } else {
+        // Fallback for old data structure
+        if (selectedTier.startsWith('open-')) {
+          const targetTier = parseInt(selectedTier.split('-')[1]);
+          const tournamentTier = Number(tournament.tier) || 1; // Default to tier 1 if not specified
+          return tournament.tournamentType?.toLowerCase() === 'open' && 
+                 tournamentTier === targetTier;
+        }
+        return tournament.tournamentType?.toLowerCase() === selectedTier.toLowerCase();
+      }
+    })();
+
+    // Check fee range
     const matchesFeeRange = !selectedFeeRange || (
       tournament.entryFee >= feeRanges[parseInt(selectedFeeRange)].min &&
       tournament.entryFee <= feeRanges[parseInt(selectedFeeRange)].max
@@ -2048,8 +2716,27 @@ function Tournament() {
       setError(null);
 
       /**
-       * BACKEND INTEGRATION REQUIRED:
+       * CORRECT TOURNAMENT STRUCTURE:
        * 
+       * Tournament Categories:
+       * - Men's Singles, Women's Singles
+       * - Men's Doubles, Women's Doubles, Mixed Doubles
+       * 
+       * Each category has:
+       * - 3 Skill Levels: Intermediate, Advanced, Open
+       * - 3 Age Groups: 18+, 35+, 50+
+       * 
+       * Example Categories:
+       * - Men's Singles Intermediate 18+, Men's Singles Advanced 35+, etc.
+       * - Women's Singles Intermediate 18+, Women's Singles Advanced 35+, etc.
+       * - Mixed Doubles Intermediate 18+, Mixed Doubles Advanced 35+, etc.
+       * 
+       * Each category shows: 
+       * - First and Last Name (no stage names!)
+       * - Round Wins, Round Losses, Win Points, Loss Points
+       * - Top 2 advance (ranked by Round Wins, tiebreaker: Win Points - Loss Points)
+       * 
+       * BACKEND INTEGRATION REQUIRED:
        * Database Schema - Add these fields to tournaments table:
        * - endDate: timestamp (for multi-day tournaments)
        * - address: text (full venue address)
@@ -2123,6 +2810,312 @@ function Tournament() {
           contactEmail: 'championship@philippinepickleball.com',
           contactPhone: '+63 912 345 6789',
           divisions: ["Men's Singles", "Women's Singles", "Men's Doubles", "Women's Doubles", "Mixed Doubles"],
+          // Multiple Tournament Categories with Brackets
+          tournamentCategories: {
+            'mens-singles-intermediate-18': {
+              id: 'mens-singles-intermediate-18',
+              name: "Men's Singles Intermediate 18+",
+              ageGroup: '18+',
+              skillLevel: 'Intermediate',
+              participants: 16,
+              prizePool: 15000,
+              description: 'Men\'s singles intermediate level competition for players 18 and older',
+              groupStage: {
+                bracketA: [
+                  { id: '1', name: 'John Doe', rating: '3.5', roundWins: 3, roundLosses: 1, winPoints: 33, lossPoints: 21, position: 1, age: 24 },
+                  { id: '5', name: 'Carlos Rodriguez', rating: '3.4', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 2, age: 28 },
+                  { id: '9', name: 'Miguel Torres', rating: '3.3', roundWins: 2, roundLosses: 2, winPoints: 24, lossPoints: 28, position: 3, age: 31 },
+                  { id: '13', name: 'Alex Martinez', rating: '3.2', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 4, age: 26 }
+                ],
+                bracketB: [
+                  { id: '2', name: 'Michael Johnson', rating: '3.6', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 12, position: 1, age: 29 },
+                  { id: '6', name: 'Luis Chen', rating: '3.5', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 18, position: 2, age: 25 },
+                  { id: '10', name: 'Roberto Kim', rating: '3.3', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 33, position: 3, age: 33 },
+                  { id: '14', name: 'David Park', rating: '3.1', roundWins: 0, roundLosses: 4, winPoints: 15, lossPoints: 44, position: 4, age: 27 }
+                ],
+                bracketC: [
+                  { id: '3', name: 'Jason Park', rating: '3.7', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 19, position: 1, age: 30 },
+                  { id: '7', name: 'Anthony Chen', rating: '3.4', roundWins: 3, roundLosses: 1, winPoints: 31, lossPoints: 22, position: 2, age: 24 },
+                  { id: '11', name: 'Marcus Tan', rating: '3.2', roundWins: 2, roundLosses: 2, winPoints: 26, lossPoints: 26, position: 3, age: 32 },
+                  { id: '15', name: 'Steven Wong', rating: '3.0', roundWins: 0, roundLosses: 4, winPoints: 14, lossPoints: 44, position: 4, age: 26 }
+                ],
+                bracketD: [
+                  { id: '4', name: 'Patrick Lim', rating: '3.5', roundWins: 3, roundLosses: 1, winPoints: 32, lossPoints: 20, position: 1, age: 28 },
+                  { id: '8', name: 'Jonathan Wu', rating: '3.3', roundWins: 2, roundLosses: 2, winPoints: 29, lossPoints: 25, position: 2, age: 25 },
+                  { id: '12', name: 'Brandon Choi', rating: '3.1', roundWins: 2, roundLosses: 2, winPoints: 25, lossPoints: 29, position: 3, age: 29 },
+                  { id: '16', name: 'Daniel Ko', rating: '2.9', roundWins: 1, roundLosses: 3, winPoints: 20, lossPoints: 32, position: 4, age: 31 }
+                ]
+              },
+              knockoutStage: {
+                quarterFinals: [
+                  { 
+                    id: 'qf1', 
+                    player1: { name: 'John Doe', seed: 'A1' }, 
+                    player2: { name: 'Anthony Chen', seed: 'C2' },
+                    score: '11-8, 11-6',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf2', 
+                    player1: { name: 'Michael Johnson', seed: 'B1' }, 
+                    player2: { name: 'Jonathan Wu', seed: 'D2' },
+                    score: '11-9, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf3', 
+                    player1: { name: 'Jason Park', seed: 'C1' }, 
+                    player2: { name: 'Luis Chen', seed: 'B2' },
+                    score: '11-5, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf4', 
+                    player1: { name: 'Patrick Lim', seed: 'D1' }, 
+                    player2: { name: 'Carlos Rodriguez', seed: 'A2' },
+                    score: '11-7, 11-9',
+                    winner: 'player2',
+                    completed: true
+                  }
+                ],
+                semiFinals: [
+                  { 
+                    id: 'sf1', 
+                    player1: { name: 'John Doe', seed: 'QF1' }, 
+                    player2: { name: 'Michael Johnson', seed: 'QF2' },
+                    score: '11-9, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'sf2', 
+                    player1: { name: 'Jason Park', seed: 'QF3' }, 
+                    player2: { name: 'Carlos Rodriguez', seed: 'QF4' },
+                    score: '11-6, 11-10',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                final: {
+                  id: 'final',
+                  player1: { name: 'John Doe', seed: 'SF1' },
+                  player2: { name: 'Jason Park', seed: 'SF2' },
+                  score: '11-8, 11-9',
+                  winner: 'player1',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Michael Johnson', seed: 'SF1-L' },
+                  player2: { name: 'Carlos Rodriguez', seed: 'SF2-L' },
+                  score: '11-5, 11-7',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            },
+            'womens-singles-intermediate-18': {
+              id: 'womens-singles-intermediate-18',
+              name: "Women's Singles Intermediate 18+", 
+              ageGroup: '18+',
+              skillLevel: 'Intermediate',
+              participants: 12,
+              prizePool: 15000,
+              description: 'Competitive women\'s singles for intermediate players',
+              groupStage: {
+                bracketA: [
+                  { id: '1', name: 'Maria Santos', rating: '3.8', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 21, position: 1, age: 24 },
+                  { id: '4', name: 'Ana Reyes', rating: '3.6', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 2, age: 26 },
+                  { id: '7', name: 'Sofia Garcia', rating: '3.4', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 3, age: 28 }
+                ],
+                bracketB: [
+                  { id: '2', name: 'Elena Cruz', rating: '3.7', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 15, position: 1, age: 25 },
+                  { id: '5', name: 'Carmen Lopez', rating: '3.5', roundWins: 2, roundLosses: 2, winPoints: 29, lossPoints: 27, position: 2, age: 30 },
+                  { id: '8', name: 'Patricia Wong', rating: '3.3', roundWins: 0, roundLosses: 4, winPoints: 12, lossPoints: 44, position: 3, age: 27 }
+                ],
+                bracketC: [
+                  { id: '3', name: 'Andrea Martinez', rating: '3.9', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 19, position: 1, age: 23 },
+                  { id: '6', name: 'Rachel Gonzalez', rating: '3.7', roundWins: 2, roundLosses: 2, winPoints: 31, lossPoints: 24, position: 2, age: 29 },
+                  { id: '9', name: 'Lisa Johnson', rating: '3.5', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 35, position: 3, age: 31 }
+                ],
+                bracketD: [
+                  { id: '10', name: 'Sarah Kim', rating: '3.6', roundWins: 3, roundLosses: 1, winPoints: 36, lossPoints: 18, position: 1, age: 26 },
+                  { id: '11', name: 'Michelle Yang', rating: '3.4', roundWins: 2, roundLosses: 2, winPoints: 25, lossPoints: 29, position: 2, age: 28 },
+                  { id: '12', name: 'Victoria Huang', rating: '3.2', roundWins: 1, roundLosses: 3, winPoints: 19, lossPoints: 36, position: 3, age: 24 }
+                ]
+              },
+              knockoutStage: {
+                quarterFinals: [
+                  { 
+                    id: 'qf1', 
+                    player1: { name: 'Maria Santos', seed: 'A1' }, 
+                    player2: { name: 'Michelle Yang', seed: 'D2' },
+                    score: '11-7, 11-9',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf2', 
+                    player1: { name: 'Elena Cruz', seed: 'B1' }, 
+                    player2: { name: 'Rachel Gonzalez', seed: 'C2' },
+                    score: '11-8, 11-6',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf3', 
+                    player1: { name: 'Andrea Martinez', seed: 'C1' }, 
+                    player2: { name: 'Ana Reyes', seed: 'A2' },
+                    score: '11-5, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf4', 
+                    player1: { name: 'Sarah Kim', seed: 'D1' }, 
+                    player2: { name: 'Carmen Lopez', seed: 'B2' },
+                    score: '11-9, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                semiFinals: [
+                  { 
+                    id: 'sf1', 
+                    player1: { name: 'Maria Santos', seed: 'QF1' }, 
+                    player2: { name: 'Elena Cruz', seed: 'QF2' },
+                    score: '11-6, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'sf2', 
+                    player1: { name: 'Andrea Martinez', seed: 'QF3' }, 
+                    player2: { name: 'Sarah Kim', seed: 'QF4' },
+                    score: '11-9, 11-5',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                final: {
+                  id: 'final',
+                  player1: { name: 'Maria Santos', seed: 'SF1' },
+                  player2: { name: 'Andrea Martinez', seed: 'SF2' },
+                  score: '11-7, 11-9',
+                  winner: 'player1',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Elena Cruz', seed: 'SF1-L' },
+                  player2: { name: 'Sarah Kim', seed: 'SF2-L' },
+                  score: '11-4, 11-6',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            },
+            'mixed-doubles-open-18': {
+              id: 'mixed-doubles-open-18',
+              name: "Mixed Doubles Open 18+",
+              ageGroup: '18+',
+              skillLevel: 'Open',
+              participants: 8,
+              prizePool: 10000,
+              description: 'Open-level mixed doubles competition',
+              groupStage: {
+                bracketA: [
+                  { id: '1', name: 'John Doe & Maria Santos', rating: '4.2', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 21, position: 1, players: ['John Doe', 'Maria Santos'] },
+                  { id: '2', name: 'Carlos Rodriguez & Ana Reyes', rating: '4.0', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 30, position: 2, players: ['Carlos Rodriguez', 'Ana Reyes'] }
+                ],
+                bracketB: [
+                  { id: '3', name: 'Miguel Torres & Sofia Garcia', rating: '4.1', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 18, position: 1, players: ['Miguel Torres', 'Sofia Garcia'] },
+                  { id: '4', name: 'Luis Chen & Elena Cruz', rating: '3.9', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 38, position: 2, players: ['Luis Chen', 'Elena Cruz'] }
+                ],
+                bracketC: [
+                  { id: '5', name: 'Jason Park & Andrea Martinez', rating: '4.3', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 23, position: 1, players: ['Jason Park', 'Andrea Martinez'] },
+                  { id: '6', name: 'Patrick Lim & Rachel Gonzalez', rating: '3.8', roundWins: 2, roundLosses: 2, winPoints: 26, lossPoints: 28, position: 2, players: ['Patrick Lim', 'Rachel Gonzalez'] }
+                ],
+                bracketD: [
+                  { id: '7', name: 'Michael Johnson & Sarah Kim', rating: '4.0', roundWins: 2, roundLosses: 2, winPoints: 31, lossPoints: 25, position: 1, players: ['Michael Johnson', 'Sarah Kim'] },
+                  { id: '8', name: 'Anthony Chen & Carmen Lopez', rating: '3.7', roundWins: 1, roundLosses: 3, winPoints: 19, lossPoints: 35, position: 2, players: ['Anthony Chen', 'Carmen Lopez'] }
+                ]
+              },
+              knockoutStage: {
+                quarterFinals: [
+                  { 
+                    id: 'qf1', 
+                    player1: { name: 'John & Maria', seed: 'A1' }, 
+                    player2: { name: 'Anthony & Carmen', seed: 'D2' },
+                    score: '11-8, 11-6',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf2', 
+                    player1: { name: 'Miguel & Sofia', seed: 'B1' }, 
+                    player2: { name: 'Patrick & Rachel', seed: 'C2' },
+                    score: '11-9, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf3', 
+                    player1: { name: 'Jason & Andrea', seed: 'C1' }, 
+                    player2: { name: 'Luis & Elena', seed: 'B2' },
+                    score: '11-5, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf4', 
+                    player1: { name: 'Michael & Sarah', seed: 'D1' }, 
+                    player2: { name: 'Carlos & Ana', seed: 'A2' },
+                    score: '11-7, 11-9',
+                    winner: 'player2',
+                    completed: true
+                  }
+                ],
+                semiFinals: [
+                  { 
+                    id: 'sf1', 
+                    player1: { name: 'John & Maria', seed: 'QF1' }, 
+                    player2: { name: 'Miguel & Sofia', seed: 'QF2' },
+                    score: '11-9, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'sf2', 
+                    player1: { name: 'Jason & Andrea', seed: 'QF3' }, 
+                    player2: { name: 'Carlos & Ana', seed: 'QF4' },
+                    score: '11-6, 11-10',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                final: {
+                  id: 'final',
+                  player1: { name: 'John & Maria', seed: 'SF1' },
+                  player2: { name: 'Jason & Andrea', seed: 'SF2' },
+                  score: '11-8, 11-9',
+                  winner: 'player1',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Miguel & Sofia', seed: 'SF1-L' },
+                  player2: { name: 'Carlos & Ana', seed: 'SF2-L' },
+                  score: '11-5, 11-7',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            }
+          },
           rules: [
             'All matches follow official IFP rules',
             'Players must check in 30 minutes before their scheduled match',
@@ -2137,10 +3130,10 @@ function Tournament() {
               maxPlayers: 5, // 20 total capacity ÷ 4 brackets = 5 per bracket
               players: [
                 { id: '1', name: 'John "The Ace" Doe', status: 'approved', rating: '4.5', team: 'Manila Smashers' },
-                { id: '8', name: 'Elena "Blade" Cruz', status: 'approved', rating: '3.9', team: 'Alabang Aces' },
+                { id: '8', name: 'Elena Cruz', status: 'approved', rating: '3.9', team: 'Alabang Aces' },
                 { id: '13', name: 'James "Comet" Taylor', status: 'approved', rating: '3.6', team: 'Paranaque Phoenix' },
                 { id: '16', name: 'Sarah "Whirlwind" Kim', status: 'approved', rating: '3.4', team: 'Valenzuela Vipers' },
-                { id: '17', name: 'Alex "Thunder" Martinez', status: 'approved', rating: '3.2', team: 'Caloocan Cobras' }
+                                  { id: '17', name: 'Alex Martinez', status: 'approved', rating: '3.2', team: 'Caloocan Cobras' }
               ]
             },
             {
@@ -2148,7 +3141,7 @@ function Tournament() {
               name: 'Bracket B',
               maxPlayers: 5,
               players: [
-                { id: '2', name: 'Maria "Lightning" Santos', status: 'approved', rating: '4.3', team: 'QC Warriors' },
+                { id: '2', name: 'Maria Santos', status: 'approved', rating: '4.3', team: 'QC Warriors' },
                 { id: '7', name: 'Luis "Rocket" Chen', status: 'approved', rating: '4.0', team: 'Pasig Panthers' },
                 { id: '12', name: 'Patricia "Viper" Wong', status: 'approved', rating: '3.7', team: 'Mandaluyong Meteors' },
                 { id: '14', name: 'Lisa "Arrow" Johnson', status: 'approved', rating: '3.5', team: 'Las Pinas Lions' }
@@ -2171,23 +3164,23 @@ function Tournament() {
               maxPlayers: 5,
               players: [
                 { id: '4', name: 'Ana "Fire" Reyes', status: 'approved', rating: '4.2', team: 'Makati Sharks' },
-                { id: '5', name: 'Miguel "Storm" Torres', status: 'approved', rating: '4.6', team: 'Ortigas Eagles' },
+                { id: '5', name: 'Miguel Torres', status: 'approved', rating: '4.6', team: 'Ortigas Eagles' },
                 { id: '6', name: 'Sofia "Ice" Garcia', status: 'approved', rating: '4.1', team: 'Taguig Thunder' },
                 { id: '10', name: 'Carmen "Flash" Lopez', status: 'approved', rating: '3.8', team: 'Marikina Mavericks' },
-                { id: '18', name: 'Rachel "Storm" Gonzalez', status: 'approved', rating: '3.3', team: 'Malabon Mako' }
+                { id: '18', name: 'Rachel Gonzalez', status: 'approved', rating: '3.3', team: 'Malabon Mako' }
               ]
             }
           ],
           registrations: [
             // Approved players in brackets
             { id: '1', playerName: 'John "The Ace" Doe', registeredAt: '2025-01-10T10:30:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.5', team: 'Manila Smashers' },
-            { id: '2', playerName: 'Maria "Lightning" Santos', registeredAt: '2025-01-10T11:15:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.3', team: 'QC Warriors' },
+            { id: '2', playerName: 'Maria Santos', registeredAt: '2025-01-10T11:15:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.3', team: 'QC Warriors' },
             { id: '3', playerName: 'Carlos "The Wall" Rodriguez', registeredAt: '2025-01-10T14:20:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.4', team: 'BGC Titans' },
             { id: '4', playerName: 'Ana "Fire" Reyes', registeredAt: '2025-01-11T09:45:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.2', team: 'Makati Sharks' },
-            { id: '5', playerName: 'Miguel "Storm" Torres', registeredAt: '2025-01-11T13:10:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.6', team: 'Ortigas Eagles' },
+            { id: '5', playerName: 'Miguel Torres', registeredAt: '2025-01-11T13:10:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.6', team: 'Ortigas Eagles' },
             { id: '6', playerName: 'Sofia "Ice" Garcia', registeredAt: '2025-01-12T08:30:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.1', team: 'Taguig Thunder' },
             { id: '7', playerName: 'Luis "Rocket" Chen', registeredAt: '2025-01-12T16:45:00Z', status: 'approved', bracketId: 'bracket-2', rating: '4.0', team: 'Pasig Panthers' },
-            { id: '8', playerName: 'Elena "Blade" Cruz', registeredAt: '2025-01-13T12:00:00Z', status: 'approved', bracketId: 'bracket-2', rating: '3.9', team: 'Alabang Aces' },
+            { id: '8', playerName: 'Elena Cruz', registeredAt: '2025-01-13T12:00:00Z', status: 'approved', bracketId: 'bracket-2', rating: '3.9', team: 'Alabang Aces' },
             { id: '9', playerName: 'Roberto "Hammer" Kim', registeredAt: '2025-01-13T15:20:00Z', status: 'approved', bracketId: 'bracket-2', rating: '4.1', team: 'Greenhills Gladiators' },
             { id: '10', playerName: 'Carmen "Flash" Lopez', registeredAt: '2025-01-14T10:10:00Z', status: 'approved', bracketId: 'bracket-2', rating: '3.8', team: 'Marikina Mavericks' },
             { id: '11', playerName: 'David "Spike" Park', registeredAt: '2025-01-14T14:30:00Z', status: 'approved', bracketId: 'bracket-2', rating: '4.0', team: 'Cubao Crushers' },
@@ -2196,45 +3189,51 @@ function Tournament() {
             { id: '14', playerName: 'Lisa "Arrow" Johnson', registeredAt: '2025-01-15T16:15:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.5', team: 'Las Pinas Lions' },
             { id: '15', playerName: 'Michael "Bolt" Chang', registeredAt: '2025-01-16T09:20:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.8', team: 'Muntinlupa Mustangs' },
             { id: '16', playerName: 'Sarah "Whirlwind" Kim', registeredAt: '2025-01-16T14:45:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.4', team: 'Valenzuela Vipers' },
-            { id: '17', playerName: 'Alex "Thunder" Martinez', registeredAt: '2025-01-17T10:30:00Z', status: 'approved', bracketId: 'bracket-4', rating: '3.2', team: 'Caloocan Cobras' },
-            { id: '18', playerName: 'Rachel "Storm" Gonzalez', registeredAt: '2025-01-17T15:20:00Z', status: 'approved', bracketId: 'bracket-4', rating: '3.3', team: 'Malabon Mako' },
+            { id: '17', playerName: 'Alex Martinez', registeredAt: '2025-01-17T10:30:00Z', status: 'approved', bracketId: 'bracket-4', rating: '3.2', team: 'Caloocan Cobras' },
+            { id: '18', playerName: 'Rachel Gonzalez', registeredAt: '2025-01-17T15:20:00Z', status: 'approved', bracketId: 'bracket-4', rating: '3.3', team: 'Malabon Mako' },
             // Pending approvals
-            { id: '19', playerName: 'Kevin "Dash" Lim', registeredAt: '2025-01-18T09:15:00Z', status: 'pending', bracketId: null, rating: '3.1', team: 'Pasay Predators' },
-            { id: '20', playerName: 'Nina "Swift" Cruz', registeredAt: '2025-01-18T11:30:00Z', status: 'pending', bracketId: null, rating: '3.4', team: 'Quezon Quakes' },
-            { id: '21', playerName: 'Tony "Blast" Reyes', registeredAt: '2025-01-18T14:45:00Z', status: 'pending', bracketId: null, rating: '3.6', team: 'Masinag Magic' },
-            { id: '22', playerName: 'Grace "Speed" Tan', registeredAt: '2025-01-18T16:20:00Z', status: 'pending', bracketId: null, rating: '3.2', team: 'Fairview Falcons' },
+            { id: '19', playerName: 'Kevin Lim', registeredAt: '2025-01-18T09:15:00Z', status: 'pending', bracketId: null, rating: '3.1', team: 'Pasay Predators' },
+            { id: '20', playerName: 'Nina Cruz', registeredAt: '2025-01-18T11:30:00Z', status: 'pending', bracketId: null, rating: '3.4', team: 'Quezon Quakes' },
+            { id: '21', playerName: 'Tony Reyes', registeredAt: '2025-01-18T14:45:00Z', status: 'pending', bracketId: null, rating: '3.6', team: 'Masinag Magic' },
+            { id: '22', playerName: 'Grace Tan', registeredAt: '2025-01-18T16:20:00Z', status: 'pending', bracketId: null, rating: '3.2', team: 'Fairview Falcons' },
             // Rejected applications
-            { id: '23', playerName: 'Mark "Novice" Brown', registeredAt: '2025-01-19T10:00:00Z', status: 'rejected', bracketId: null, rating: '2.5', team: 'Independent', note: 'Rating below minimum requirement' },
-            { id: '24', playerName: 'Jenny "Beginner" Davis', registeredAt: '2025-01-19T13:15:00Z', status: 'rejected', bracketId: null, rating: '2.8', team: 'Independent', note: 'Incomplete documentation' }
+            { id: '23', playerName: 'Mark Brown', registeredAt: '2025-01-19T10:00:00Z', status: 'rejected', bracketId: null, rating: '2.5', team: 'Independent', note: 'Rating below minimum requirement' },
+            { id: '24', playerName: 'Jenny Davis', registeredAt: '2025-01-19T13:15:00Z', status: 'rejected', bracketId: null, rating: '2.8', team: 'Independent', note: 'Incomplete documentation' }
           ],
-          // Tournament Bracket Data
-          tournamentBracket: {
+          // Multiple Tournament Categories with Brackets
+          tournamentCategories: {
+            'mens-singles': {
+              id: 'mens-singles',
+              name: "Men's Singles Advanced 18+",
+              ageGroup: '18+',
+              skillLevel: 'Advanced',
+              icon: '👨',
+              participants: 16,
+              prizePool: 25000,
             groupStage: {
               bracketA: [
-                { id: '1', name: 'John Doe', rating: '4.5', wins: 4, points: 12, position: 1 },
-                { id: '8', name: 'Elena Cruz', rating: '3.9', wins: 3, points: 9, position: 2 },
-                { id: '13', name: 'James Taylor', rating: '3.6', wins: 2, points: 6, position: 3 },
-                { id: '16', name: 'Sarah Kim', rating: '3.4', wins: 1, points: 3, position: 4 },
-                { id: '17', name: 'Alex Martinez', rating: '3.2', wins: 0, points: 0, position: 5 }
+                  { id: '1', name: 'John Doe', rating: '4.8', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 12, position: 1, age: 24 },
+                  { id: '5', name: 'Carlos Rodriguez', rating: '4.6', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 18, position: 2, age: 28 },
+                  { id: '9', name: 'Miguel Torres', rating: '4.4', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 3, age: 31 },
+                  { id: '13', name: 'Alex Martinez', rating: '4.2', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 4, age: 26 }
               ],
               bracketB: [
-                { id: '2', name: 'Maria Santos', rating: '4.3', wins: 3, points: 9, position: 1 },
-                { id: '7', name: 'Luis Chen', rating: '4.0', wins: 3, points: 9, position: 2 },
-                { id: '12', name: 'Patricia Wong', rating: '3.7', wins: 2, points: 6, position: 3 },
-                { id: '14', name: 'Lisa Johnson', rating: '3.5', wins: 1, points: 3, position: 4 }
+                  { id: '2', name: 'Michael Johnson', rating: '4.7', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 10, position: 1, age: 29 },
+                  { id: '6', name: 'Luis Chen', rating: '4.5', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 15, position: 2, age: 25 },
+                  { id: '10', name: 'Roberto Kim', rating: '4.3', roundWins: 2, roundLosses: 2, winPoints: 26, lossPoints: 28, position: 3, age: 33 },
+                  { id: '14', name: 'David Park', rating: '4.1', roundWins: 1, roundLosses: 3, winPoints: 15, lossPoints: 37, position: 4, age: 27 }
               ],
               bracketC: [
-                { id: '3', name: 'Carlos Rodriguez', rating: '4.4', wins: 4, points: 12, position: 1 },
-                { id: '9', name: 'Roberto Kim', rating: '4.1', wins: 2, points: 6, position: 2 },
-                { id: '11', name: 'David Park', rating: '4.0', wins: 2, points: 6, position: 3 },
-                { id: '15', name: 'Michael Chang', rating: '3.8', wins: 1, points: 3, position: 4 }
+                  { id: '3', name: 'Jason Park', rating: '4.6', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 8, position: 1, age: 30 },
+                  { id: '7', name: 'Anthony Chen', rating: '4.4', roundWins: 3, roundLosses: 1, winPoints: 39, lossPoints: 12, position: 2, age: 24 },
+                  { id: '11', name: 'Marcus Tan', rating: '4.2', roundWins: 2, roundLosses: 2, winPoints: 24, lossPoints: 28, position: 3, age: 32 },
+                  { id: '15', name: 'Steven Wong', rating: '4.0', roundWins: 1, roundLosses: 3, winPoints: 12, lossPoints: 39, position: 4, age: 26 }
               ],
               bracketD: [
-                { id: '4', name: 'Ana Reyes', rating: '4.2', wins: 3, points: 9, position: 1 },
-                { id: '5', name: 'Miguel Torres', rating: '4.6', wins: 3, points: 9, position: 2 },
-                { id: '6', name: 'Sofia Garcia', rating: '4.1', wins: 2, points: 6, position: 3 },
-                { id: '10', name: 'Carmen Lopez', rating: '3.8', wins: 1, points: 3, position: 4 },
-                { id: '18', name: 'Rachel Gonzalez', rating: '3.3', wins: 0, points: 0, position: 5 }
+                  { id: '4', name: 'Patrick Lim', rating: '4.5', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 6, position: 1, age: 28 },
+                  { id: '8', name: 'Jonathan Wu', rating: '4.3', roundWins: 3, roundLosses: 1, winPoints: 36, lossPoints: 15, position: 2, age: 25 },
+                  { id: '12', name: 'Brandon Choi', rating: '4.1', roundWins: 2, roundLosses: 2, winPoints: 22, lossPoints: 30, position: 3, age: 29 },
+                  { id: '16', name: 'Daniel Ko', rating: '3.9', roundWins: 1, roundLosses: 3, winPoints: 15, lossPoints: 36, position: 4, age: 31 }
               ]
             },
             knockoutStage: {
@@ -2242,33 +3241,33 @@ function Tournament() {
                 { 
                   id: 'qf1', 
                   player1: { name: 'John Doe', seed: 'A1' }, 
-                  player2: { name: 'Roberto Kim', seed: 'C2' },
+                    player2: { name: 'Anthony Chen', seed: 'C2' },
                   score: '11-8, 11-6',
                   winner: 'player1',
                   completed: true
                 },
                 { 
                   id: 'qf2', 
-                  player1: { name: 'Maria Santos', seed: 'B1' }, 
-                  player2: { name: 'Miguel Torres', seed: 'D2' },
-                  score: '11-9, 9-11, 11-7',
+                    player1: { name: 'Michael Johnson', seed: 'B1' }, 
+                    player2: { name: 'Jonathan Wu', seed: 'D2' },
+                    score: '11-9, 11-7',
                   winner: 'player1',
                   completed: true
                 },
                 { 
                   id: 'qf3', 
-                  player1: { name: 'Carlos Rodriguez', seed: 'C1' }, 
-                  player2: { name: 'Elena Cruz', seed: 'A2' },
-                  score: '11-5, 11-3',
+                    player1: { name: 'Jason Park', seed: 'C1' }, 
+                    player2: { name: 'Luis Chen', seed: 'B2' },
+                    score: '11-5, 11-8',
                   winner: 'player1',
                   completed: true
                 },
                 { 
                   id: 'qf4', 
-                  player1: { name: 'Ana Reyes', seed: 'D1' }, 
-                  player2: { name: 'Luis Chen', seed: 'B2' },
+                    player1: { name: 'Patrick Lim', seed: 'D1' }, 
+                    player2: { name: 'Carlos Rodriguez', seed: 'A2' },
                   score: '11-7, 11-9',
-                  winner: 'player1',
+                    winner: 'player2',
                   completed: true
                 }
               ],
@@ -2276,16 +3275,16 @@ function Tournament() {
                 { 
                   id: 'sf1', 
                   player1: { name: 'John Doe', seed: 'QF1' }, 
-                  player2: { name: 'Maria Santos', seed: 'QF2' },
-                  score: '11-9, 11-13, 11-8',
+                    player2: { name: 'Michael Johnson', seed: 'QF2' },
+                    score: '11-9, 11-8',
                   winner: 'player1',
                   completed: true
                 },
                 { 
                   id: 'sf2', 
-                  player1: { name: 'Carlos Rodriguez', seed: 'QF3' }, 
-                  player2: { name: 'Ana Reyes', seed: 'QF4' },
-                  score: '11-6, 11-4',
+                    player1: { name: 'Jason Park', seed: 'QF3' }, 
+                    player2: { name: 'Carlos Rodriguez', seed: 'QF4' },
+                    score: '11-6, 11-10',
                   winner: 'player1',
                   completed: true
                 }
@@ -2293,18 +3292,217 @@ function Tournament() {
               final: {
                 id: 'final',
                 player1: { name: 'John Doe', seed: 'SF1' },
-                player2: { name: 'Carlos Rodriguez', seed: 'SF2' },
-                score: '11-8, 9-11, 11-9',
+                  player2: { name: 'Jason Park', seed: 'SF2' },
+                  score: '11-8, 11-9',
                 winner: 'player1',
                 completed: true
               },
               thirdPlace: {
                 id: 'thirdPlace',
-                player1: { name: 'Maria Santos', seed: 'SF1-L' },
-                player2: { name: 'Ana Reyes', seed: 'SF2-L' },
+                  player1: { name: 'Michael Johnson', seed: 'SF1-L' },
+                  player2: { name: 'Carlos Rodriguez', seed: 'SF2-L' },
+                  score: '11-5, 11-7',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            },
+            'womens-singles': {
+              id: 'womens-singles',
+              name: "Women's Singles 18+ Intermediate", 
+              ageGroup: '18+',
+              skillLevel: 'Intermediate',
+              icon: '👩',
+              participants: 12,
+              prizePool: 15000,
+              groupStage: {
+                bracketA: [
+                  { id: '1', name: 'Maria Santos', rating: '3.8', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 21, position: 1, age: 24 },
+                  { id: '4', name: 'Ana Reyes', rating: '3.6', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 2, age: 26 },
+                  { id: '7', name: 'Sofia Garcia', rating: '3.4', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 3, age: 28 }
+                ],
+                bracketB: [
+                  { id: '2', name: 'Elena Cruz', rating: '3.7', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 15, position: 1, age: 25 },
+                  { id: '5', name: 'Carmen Lopez', rating: '3.5', roundWins: 2, roundLosses: 2, winPoints: 29, lossPoints: 27, position: 2, age: 30 },
+                  { id: '8', name: 'Patricia Wong', rating: '3.3', roundWins: 0, roundLosses: 4, winPoints: 12, lossPoints: 44, position: 3, age: 27 }
+                ],
+                bracketC: [
+                  { id: '3', name: 'Andrea Martinez', rating: '3.9', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 19, position: 1, age: 23 },
+                  { id: '6', name: 'Rachel Gonzalez', rating: '3.7', roundWins: 2, roundLosses: 2, winPoints: 31, lossPoints: 24, position: 2, age: 29 },
+                  { id: '9', name: 'Lisa Johnson', rating: '3.5', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 35, position: 3, age: 31 }
+                ],
+                bracketD: [
+                  { id: '10', name: 'Sarah Kim', rating: '3.6', roundWins: 3, roundLosses: 1, winPoints: 36, lossPoints: 18, position: 1, age: 26 },
+                  { id: '11', name: 'Michelle Yang', rating: '3.4', roundWins: 2, roundLosses: 2, winPoints: 25, lossPoints: 29, position: 2, age: 28 },
+                  { id: '12', name: 'Victoria Huang', rating: '3.2', roundWins: 1, roundLosses: 3, winPoints: 19, lossPoints: 36, position: 3, age: 24 }
+                ]
+              },
+              knockoutStage: {
+                quarterFinals: [
+                  { 
+                    id: 'qf1', 
+                    player1: { name: 'Maria Santos', seed: 'A1' }, 
+                    player2: { name: 'Michelle Yang', seed: 'D2' },
+                    score: '11-7, 11-9',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf2', 
+                    player1: { name: 'Elena Cruz', seed: 'B1' }, 
+                    player2: { name: 'Rachel Gonzalez', seed: 'C2' },
+                    score: '11-8, 11-6',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf3', 
+                    player1: { name: 'Andrea Martinez', seed: 'C1' }, 
+                    player2: { name: 'Ana Reyes', seed: 'A2' },
+                    score: '11-5, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf4', 
+                    player1: { name: 'Sarah Kim', seed: 'D1' }, 
+                    player2: { name: 'Carmen Lopez', seed: 'B2' },
+                    score: '11-9, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                semiFinals: [
+                  { 
+                    id: 'sf1', 
+                    player1: { name: 'Maria Santos', seed: 'QF1' }, 
+                    player2: { name: 'Elena Cruz', seed: 'QF2' },
                 score: '11-6, 11-8',
                 winner: 'player1',
                 completed: true
+                  },
+                  { 
+                    id: 'sf2', 
+                    player1: { name: 'Andrea Martinez', seed: 'QF3' }, 
+                    player2: { name: 'Sarah Kim', seed: 'QF4' },
+                    score: '11-9, 11-5',
+                winner: 'player1',
+                completed: true
+              }
+                ],
+                final: {
+                  id: 'final',
+                  player1: { name: 'Maria Santos', seed: 'SF1' },
+                  player2: { name: 'Andrea Martinez', seed: 'SF2' },
+                  score: '11-7, 11-9',
+                  winner: 'player1',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Elena Cruz', seed: 'SF1-L' },
+                  player2: { name: 'Sarah Kim', seed: 'SF2-L' },
+                  score: '11-4, 11-6',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            },
+            'mixed-doubles-open-35': {
+              id: 'mixed-doubles-open-35',
+              name: "Mixed Doubles Open 35+",
+              ageGroup: '35+',
+              skillLevel: 'Open',
+              icon: '👫',
+              participants: 8,
+              prizePool: 10000,
+              groupStage: {
+                bracketA: [
+                  { id: '1', name: 'John Doe & Maria Santos', rating: '4.2', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 21, position: 1, players: ['John Doe', 'Maria Santos'] },
+                  { id: '2', name: 'Carlos Rodriguez & Ana Reyes', rating: '4.0', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 30, position: 2, players: ['Carlos Rodriguez', 'Ana Reyes'] }
+                ],
+                bracketB: [
+                  { id: '3', name: 'Miguel Torres & Sofia Garcia', rating: '4.1', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 18, position: 1, players: ['Miguel Torres', 'Sofia Garcia'] },
+                  { id: '4', name: 'Luis Chen & Elena Cruz', rating: '3.9', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 38, position: 2, players: ['Luis Chen', 'Elena Cruz'] }
+                ],
+                bracketC: [
+                  { id: '5', name: 'Jason Park & Andrea Martinez', rating: '4.3', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 23, position: 1, players: ['Jason Park', 'Andrea Martinez'] },
+                  { id: '6', name: 'Patrick Lim & Rachel Gonzalez', rating: '3.8', roundWins: 2, roundLosses: 2, winPoints: 26, lossPoints: 28, position: 2, players: ['Patrick Lim', 'Rachel Gonzalez'] }
+                ],
+                bracketD: [
+                  { id: '7', name: 'Michael Johnson & Sarah Kim', rating: '4.0', roundWins: 2, roundLosses: 2, winPoints: 31, lossPoints: 25, position: 1, players: ['Michael Johnson', 'Sarah Kim'] },
+                  { id: '8', name: 'Anthony Chen & Carmen Lopez', rating: '3.7', roundWins: 1, roundLosses: 3, winPoints: 19, lossPoints: 35, position: 2, players: ['Anthony Chen', 'Carmen Lopez'] }
+                ]
+              },
+              knockoutStage: {
+                quarterFinals: [
+                  { 
+                    id: 'qf1', 
+                    player1: { name: 'John & Maria', seed: 'A1' }, 
+                    player2: { name: 'Anthony & Carmen', seed: 'D2' },
+                    score: '11-8, 11-6',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf2', 
+                    player1: { name: 'Miguel & Sofia', seed: 'B1' }, 
+                    player2: { name: 'Patrick & Rachel', seed: 'C2' },
+                    score: '11-9, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf3', 
+                    player1: { name: 'Jason & Andrea', seed: 'C1' }, 
+                    player2: { name: 'Luis & Elena', seed: 'B2' },
+                    score: '11-5, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf4', 
+                    player1: { name: 'Michael & Sarah', seed: 'D1' }, 
+                    player2: { name: 'Carlos & Ana', seed: 'A2' },
+                    score: '11-7, 11-9',
+                    winner: 'player2',
+                    completed: true
+                  }
+                ],
+                semiFinals: [
+                  { 
+                    id: 'sf1', 
+                    player1: { name: 'John & Maria', seed: 'QF1' }, 
+                    player2: { name: 'Miguel & Sofia', seed: 'QF2' },
+                    score: '11-9, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'sf2', 
+                    player1: { name: 'Jason & Andrea', seed: 'QF3' }, 
+                    player2: { name: 'Carlos & Ana', seed: 'QF4' },
+                    score: '11-6, 11-10',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                final: {
+                  id: 'final',
+                  player1: { name: 'John & Maria', seed: 'SF1' },
+                  player2: { name: 'Jason & Andrea', seed: 'SF2' },
+                  score: '11-8, 11-9',
+                  winner: 'player1',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Miguel & Sofia', seed: 'SF1-L' },
+                  player2: { name: 'Carlos & Ana', seed: 'SF2-L' },
+                  score: '11-5, 11-7',
+                  winner: 'player1',
+                  completed: true
+                }
               }
             }
           }
@@ -2330,6 +3528,215 @@ function Tournament() {
           contactEmail: 'intermediate@philippinepickleball.com',
           contactPhone: '+63 912 345 6788',
           divisions: ["Mixed Doubles", "Men's Doubles", "Women's Doubles"],
+          // Multiple Tournament Categories with Brackets
+          tournamentCategories: {
+            'mens-doubles-intermediate-18': {
+              id: 'mens-doubles-intermediate-18',
+              name: "Men's Doubles Intermediate 18+",
+              ageGroup: '18+',
+              skillLevel: 'Intermediate',
+              participants: 8,
+              prizePool: 8000,
+              description: 'Competitive men\'s doubles for intermediate-level players',
+              groupStage: {
+                bracketA: [
+                  { id: '1', name: 'Mark Lee & Tony Yang', rating: '3.5', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 22, position: 1, players: ['Mark Lee', 'Tony Yang'] },
+                  { id: '2', name: 'Kevin Ng & Daniel Ko', rating: '3.4', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 2, players: ['Kevin Ng', 'Daniel Ko'] }
+                ],
+                bracketB: [
+                  { id: '3', name: 'Alex Chen & Ryan Lim', rating: '3.6', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 18, position: 1, players: ['Alex Chen', 'Ryan Lim'] },
+                  { id: '4', name: 'Chris Wang & Ben Chua', rating: '3.2', roundWins: 1, roundLosses: 3, winPoints: 20, lossPoints: 35, position: 2, players: ['Chris Wang', 'Ben Chua'] }
+                ],
+                bracketC: [
+                  { id: '5', name: 'Jake Huang & Sam Choi', rating: '3.3', roundWins: 3, roundLosses: 1, winPoints: 33, lossPoints: 21, position: 1, players: ['Jake Huang', 'Sam Choi'] },
+                  { id: '6', name: 'Eric Goh & Gary Yap', rating: '3.1', roundWins: 2, roundLosses: 2, winPoints: 25, lossPoints: 28, position: 2, players: ['Eric Goh', 'Gary Yap'] }
+                ],
+                bracketD: [
+                  { id: '7', name: 'Ken Lai & Max Teo', rating: '3.0', roundWins: 2, roundLosses: 2, winPoints: 29, lossPoints: 27, position: 1, players: ['Ken Lai', 'Max Teo'] },
+                  { id: '8', name: 'Ivan Soh & Oscar Chia', rating: '2.9', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 2, players: ['Ivan Soh', 'Oscar Chia'] }
+                ]
+              },
+              knockoutStage: {
+                quarterFinals: [
+                  { 
+                    id: 'qf1', 
+                    player1: { name: 'Mark & Tony', seed: 'A1' }, 
+                    player2: { name: 'Ivan & Oscar', seed: 'D2' },
+                    score: '11-6, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf2', 
+                    player1: { name: 'Alex & Ryan', seed: 'B1' }, 
+                    player2: { name: 'Eric & Gary', seed: 'C2' },
+                    score: '11-9, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf3', 
+                    player1: { name: 'Jake & Sam', seed: 'C1' }, 
+                    player2: { name: 'Chris & Ben', seed: 'B2' },
+                    score: '11-5, 11-10',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf4', 
+                    player1: { name: 'Ken & Max', seed: 'D1' }, 
+                    player2: { name: 'Kevin & Daniel', seed: 'A2' },
+                    score: '11-8, 11-6',
+                    winner: 'player2',
+                    completed: true
+                  }
+                ],
+                semiFinals: [
+                  { 
+                    id: 'sf1', 
+                    player1: { name: 'Mark & Tony', seed: 'QF1' }, 
+                    player2: { name: 'Alex & Ryan', seed: 'QF2' },
+                    score: '11-7, 11-9',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'sf2', 
+                    player1: { name: 'Jake & Sam', seed: 'QF3' }, 
+                    player2: { name: 'Kevin & Daniel', seed: 'QF4' },
+                    score: '11-6, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                final: {
+                  id: 'final',
+                  player1: { name: 'Mark & Tony', seed: 'SF1' },
+                  player2: { name: 'Jake & Sam', seed: 'SF2' },
+                  score: '11-9, 11-7',
+                  winner: 'player1',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Alex & Ryan', seed: 'SF1-L' },
+                  player2: { name: 'Kevin & Daniel', seed: 'SF2-L' },
+                  score: '11-4, 11-6',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            },
+            'womens-doubles': {
+              id: 'womens-doubles',
+              name: "Women's Doubles Intermediate 18+", 
+              ageGroup: '18+',
+              skillLevel: 'Intermediate',
+              icon: '👭',
+              participants: 8,
+              prizePool: 7000,
+              description: 'Women\'s doubles competition for developing players',
+              groupStage: {
+                bracketA: [
+                  { id: '1', name: 'Maya & Nina', rating: '3.3', wins: 1, points: 3, position: 1, players: ['Maya Patel', 'Nina Xu'] },
+                  { id: '2', name: 'Grace & Amy', rating: '3.2', wins: 1, points: 3, position: 2, players: ['Grace Liu', 'Amy Zhao'] }
+                ],
+                bracketB: [
+                  { id: '3', name: 'Jenny & Emma', rating: '3.4', wins: 1, points: 3, position: 1, players: ['Jenny Wu', 'Emma Zhou'] },
+                  { id: '4', name: 'Coco & Fiona', rating: '3.0', wins: 1, points: 3, position: 2, players: ['Coco Tan', 'Fiona Ong'] }
+                ],
+                bracketC: [
+                  { id: '5', name: 'Diana & Lisa', rating: '3.2', wins: 1, points: 3, position: 1, players: ['Diana Tan', 'Lisa Park'] },
+                  { id: '6', name: 'Helen & Joy', rating: '2.9', wins: 1, points: 3, position: 2, players: ['Helen Low', 'Joy Koh'] }
+                ],
+                bracketD: [
+                  { id: '7', name: 'Lily & Nora', rating: '2.8', wins: 1, points: 3, position: 1, players: ['Lily Sim', 'Nora Wee'] },
+                  { id: '8', name: 'Sarah & Priya', rating: '3.1', wins: 1, points: 3, position: 2, players: ['Sarah Kim', 'Priya Singh'] }
+                ]
+              },
+              knockoutStage: {
+                quarterFinals: [
+                  { 
+                    id: 'qf1', 
+                    player1: { name: 'Maya & Nina', seed: 'A1' }, 
+                    player2: { name: 'Sarah & Priya', seed: 'D2' },
+                    score: '11-8, 11-6',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf2', 
+                    player1: { name: 'Jenny & Emma', seed: 'B1' }, 
+                    player2: { name: 'Helen & Joy', seed: 'C2' },
+                    score: '11-5, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf3', 
+                    player1: { name: 'Diana & Lisa', seed: 'C1' }, 
+                    player2: { name: 'Coco & Fiona', seed: 'B2' },
+                    score: '11-9, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf4', 
+                    player1: { name: 'Lily & Nora', seed: 'D1' }, 
+                    player2: { name: 'Grace & Amy', seed: 'A2' },
+                    score: '11-7, 11-9',
+                    winner: 'player2',
+                    completed: true
+                  }
+                ],
+                semiFinals: [
+                  { 
+                    id: 'sf1', 
+                    player1: { name: 'Maya & Nina', seed: 'QF1' }, 
+                    player2: { name: 'Jenny & Emma', seed: 'QF2' },
+                    score: '11-6, 11-9',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'sf2', 
+                    player1: { name: 'Diana & Lisa', seed: 'QF3' }, 
+                    player2: { name: 'Grace & Amy', seed: 'QF4' },
+                    score: '11-8, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                final: {
+                  id: 'final',
+                  player1: { name: 'Maya & Nina', seed: 'SF1' },
+                  player2: { name: 'Diana & Lisa', seed: 'SF2' },
+                  score: '11-9, 11-8',
+                  winner: 'player1',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Jenny & Emma', seed: 'SF1-L' },
+                  player2: { name: 'Grace & Amy', seed: 'SF2-L' },
+                  score: '11-5, 11-7',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            },
+            'mixed-doubles': {
+              id: 'mixed-doubles',
+              name: "Mixed Doubles Intermediate 18+",
+              ageGroup: '18+',
+              skillLevel: 'Intermediate',
+              icon: '👫',
+              participants: 8,
+              prizePool: 5000,
+              description: 'Fun and competitive mixed doubles for all skill levels'
+              // No bracket data for recreational - just show placeholder
+            }
+          },
           rules: [
             'Open to players with 1-3 years experience',
             'Standard scoring system applies',
@@ -2534,6 +3941,264 @@ function Tournament() {
           contactEmail: 'indoor@philippinepickleball.com',
           contactPhone: '+63 912 345 6787',
           divisions: ["Men's Singles", "Women's Singles", "Men's Doubles", "Women's Doubles", "Mixed Doubles", "Senior Doubles"],
+          // Multiple Tournament Categories with Brackets
+          tournamentCategories: {
+            'mens-singles-advanced-35': {
+              id: 'mens-singles-advanced-35',
+              name: "Men's Singles Advanced 35+",
+              ageGroup: '35+',
+              skillLevel: 'Advanced',
+              participants: 8,
+              prizePool: 30000,
+              description: 'Elite men\'s singles competition for advanced players',
+              groupStage: {
+                bracketA: [
+                  { id: '1', name: 'Michael Johnson', rating: '4.8', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 19, position: 1, age: 38 },
+                  { id: '2', name: 'Anthony Chen', rating: '4.5', roundWins: 2, roundLosses: 2, winPoints: 32, lossPoints: 28, position: 2, age: 42 }
+                ],
+                bracketB: [
+                  { id: '3', name: 'Andrea Martinez', rating: '4.7', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 15, position: 1, age: 36 },
+                  { id: '4', name: 'Marcus Tan', rating: '4.4', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 39, position: 2, age: 40 }
+                ],
+                bracketC: [
+                  { id: '5', name: 'Jason Park', rating: '4.6', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 21, position: 1, age: 39 },
+                  { id: '6', name: 'Vanessa Liu', rating: '4.4', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 30, position: 2, age: 37 }
+                ],
+                bracketD: [
+                  { id: '7', name: 'Rachel Kim', rating: '4.5', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 12, position: 1, age: 35 },
+                  { id: '8', name: 'Steven Wong', rating: '4.3', roundWins: 0, roundLosses: 4, winPoints: 18, lossPoints: 44, position: 2, age: 41 }
+                ]
+              },
+              knockoutStage: {
+                quarterFinals: [
+                  { 
+                    id: 'qf1', 
+                    player1: { name: 'Michael Johnson', seed: 'A1' }, 
+                    player2: { name: 'Steven Wong', seed: 'D2' },
+                    score: '11-7, 11-9',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf2', 
+                    player1: { name: 'Andrea Martinez', seed: 'B1' }, 
+                    player2: { name: 'Vanessa Liu', seed: 'C2' },
+                    score: '11-5, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf3', 
+                    player1: { name: 'Jason Park', seed: 'C1' }, 
+                    player2: { name: 'Marcus Tan', seed: 'B2' },
+                    score: '11-9, 11-6',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf4', 
+                    player1: { name: 'Rachel Kim', seed: 'D1' }, 
+                    player2: { name: 'Anthony Chen', seed: 'A2' },
+                    score: '11-8, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                semiFinals: [
+                  { 
+                    id: 'sf1', 
+                    player1: { name: 'Michael Johnson', seed: 'QF1' }, 
+                    player2: { name: 'Andrea Martinez', seed: 'QF2' },
+                    score: '11-9, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'sf2', 
+                    player1: { name: 'Jason Park', seed: 'QF3' }, 
+                    player2: { name: 'Rachel Kim', seed: 'QF4' },
+                    score: '11-6, 11-10',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                final: {
+                  id: 'final',
+                  player1: { name: 'Michael Johnson', seed: 'SF1' },
+                  player2: { name: 'Jason Park', seed: 'SF2' },
+                  score: '11-8, 11-9',
+                  winner: 'player1',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Andrea Martinez', seed: 'SF1-L' },
+                  player2: { name: 'Rachel Kim', seed: 'SF2-L' },
+                  score: '11-5, 11-9',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            },
+            'womens-singles': {
+              id: 'womens-singles',
+              name: "Women's Singles Advanced 18+", 
+              ageGroup: '18+',
+              skillLevel: 'Advanced',
+              icon: '👩',
+              participants: 8,
+              prizePool: 25000,
+              description: 'High-level women\'s singles championship',
+              groupStage: {
+                bracketA: [
+                  { id: '1', name: 'Amanda Yeh', rating: '4.3', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 19, position: 1, age: 25 },
+                  { id: '2', name: 'Victoria Huang', rating: '4.1', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 30, position: 2, age: 24 }
+                ],
+                bracketB: [
+                  { id: '3', name: 'Michelle Yang', rating: '4.1', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 15, position: 1, age: 28 },
+                  { id: '4', name: 'Catherine Lee', rating: '4.2', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 38, position: 2, age: 26 }
+                ],
+                bracketC: [
+                  { id: '5', name: 'Jonathan Wu', rating: '4.2', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 21, position: 1, age: 27 },
+                  { id: '6', name: 'Patrick Lim', rating: '4.2', roundWins: 2, roundLosses: 2, winPoints: 26, lossPoints: 28, position: 2, age: 29 }
+                ],
+                bracketD: [
+                  { id: '7', name: 'Brandon Choi', rating: '4.1', roundWins: 2, roundLosses: 2, winPoints: 31, lossPoints: 25, position: 1, age: 30 },
+                  { id: '8', name: 'Daniel Ko', rating: '3.9', roundWins: 1, roundLosses: 3, winPoints: 19, lossPoints: 35, position: 2, age: 28 }
+                ]
+              },
+              knockoutStage: {
+                quarterFinals: [
+                  { 
+                    id: 'qf1', 
+                    player1: { name: 'Amanda Yeh', seed: 'A1' }, 
+                    player2: { name: 'Daniel Ko', seed: 'D2' },
+                    score: '11-6, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf2', 
+                    player1: { name: 'Michelle Yang', seed: 'B1' }, 
+                    player2: { name: 'Patrick Lim', seed: 'C2' },
+                    score: '11-9, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf3', 
+                    player1: { name: 'Jonathan Wu', seed: 'C1' }, 
+                    player2: { name: 'Catherine Lee', seed: 'B2' },
+                    score: '11-5, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf4', 
+                    player1: { name: 'Brandon Choi', seed: 'D1' }, 
+                    player2: { name: 'Victoria Huang', seed: 'A2' },
+                    score: '11-7, 11-9',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                semiFinals: [
+                  { 
+                    id: 'sf1', 
+                    player1: { name: 'Amanda Yeh', seed: 'QF1' }, 
+                    player2: { name: 'Michelle Yang', seed: 'QF2' },
+                    score: '11-8, 11-6',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'sf2', 
+                    player1: { name: 'Jonathan Wu', seed: 'QF3' }, 
+                    player2: { name: 'Brandon Choi', seed: 'QF4' },
+                    score: '11-9, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                final: {
+                  id: 'final',
+                  player1: { name: 'Amanda Yeh', seed: 'SF1' },
+                  player2: { name: 'Jonathan Wu', seed: 'SF2' },
+                  score: '11-7, 11-9',
+                  winner: 'player1',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Michelle Yang', seed: 'SF1-L' },
+                  player2: { name: 'Brandon Choi', seed: 'SF2-L' },
+                  score: '11-4, 11-6',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            },
+            'senior-doubles': {
+              id: 'senior-doubles',
+              name: "Mixed Doubles Open 50+",
+              ageGroup: '50+',
+              skillLevel: 'Open',
+              icon: '🎖️',
+              participants: 6,
+              prizePool: 20000,
+              description: 'Competitive doubles for experienced senior players',
+              groupStage: {
+                bracketA: [
+                  { id: '1', name: 'Robert & James Sr.', rating: '4.0', wins: 2, points: 6, position: 1, players: ['Robert Senior', 'James Wilson Sr.'], ages: [45, 48] },
+                  { id: '2', name: 'Frank & Thomas', rating: '3.8', wins: 1, points: 3, position: 2, players: ['Frank Miller', 'Thomas Brown'], ages: [42, 44] },
+                  { id: '3', name: 'William & Charles', rating: '3.6', wins: 0, points: 0, position: 3, players: ['William Davis', 'Charles Garcia'], ages: [41, 43] }
+                ],
+                bracketB: [
+                  { id: '4', name: 'Richard & Joseph', rating: '3.9', wins: 2, points: 6, position: 1, players: ['Richard Taylor', 'Joseph Anderson'], ages: [46, 47] },
+                  { id: '5', name: 'Paul & Mark Sr.', rating: '3.7', wins: 1, points: 3, position: 2, players: ['Paul Martinez', 'Mark Rodriguez Sr.'], ages: [40, 45] },
+                  { id: '6', name: 'Donald & Kenneth', rating: '3.5', wins: 0, points: 0, position: 3, players: ['Donald Wilson', 'Kenneth Lee'], ages: [44, 42] }
+                ]
+              },
+              knockoutStage: {
+                quarterFinals: [
+                  { 
+                    id: 'qf1', 
+                    player1: { name: 'Robert & James Sr.', seed: 'A1' }, 
+                    player2: { name: 'Paul & Mark Sr.', seed: 'B2' },
+                    score: '11-8, 11-6',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf2', 
+                    player1: { name: 'Richard & Joseph', seed: 'B1' }, 
+                    player2: { name: 'Frank & Thomas', seed: 'A2' },
+                    score: '11-9, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                semiFinals: [
+                  { 
+                    id: 'sf1', 
+                    player1: { name: 'Robert & James Sr.', seed: 'QF1' }, 
+                    player2: { name: 'Richard & Joseph', seed: 'QF2' },
+                    score: '11-9, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                final: {
+                  id: 'final',
+                  player1: { name: 'Robert & James Sr.', seed: 'SF1' },
+                  player2: { name: 'Richard & Joseph', seed: 'SF1-L' },
+                  score: '11-7, 11-9',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            }
+          },
           rules: [
             'USAPA tournament rules strictly enforced',
             'Seeded bracket based on ratings',
@@ -2722,6 +4387,13 @@ function Tournament() {
   const handleTournamentClick = (tournament) => {
     setSelectedTournament(tournament);
     setShowDetailedView(true);
+    // Optionally expand first category by default
+    if (tournament.tournamentCategories) {
+      const firstCategory = Object.keys(tournament.tournamentCategories)[0];
+      if (firstCategory) {
+        setExpandedCategories({ [firstCategory]: true });
+      }
+    }
   };
 
   // Handle closing detailed view
@@ -2729,6 +4401,28 @@ function Tournament() {
     setShowDetailedView(false);
     setSelectedTournament(null);
     setActiveTab('details'); // Reset to details tab
+    setExpandedCategories({}); // Reset expanded categories
+  };
+
+  // Toggle category expansion
+  const toggleCategoryExpansion = (categoryId) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [categoryId]: !prev[categoryId]
+    }));
+  };
+
+  // Get category icon for cards
+  const getCategoryIcon = (categoryId) => {
+    switch (categoryId) {
+      case 'mens-singles': return '👨';
+      case 'womens-singles': return '👩';
+      case 'mens-doubles': return '👥';
+      case 'womens-doubles': return '👭';
+      case 'mixed-doubles': return '👫';
+      case 'senior-doubles': return '🎖️';
+      default: return '🏓';
+    }
   };
 
   /**
@@ -2742,16 +4436,78 @@ function Tournament() {
       return;
     }
 
+    // Find the tournament
+    const tournament = tournaments.find(t => t.id === tournamentId);
+    if (tournament) {
+      setRegistrationTournament(tournament);
+      setShowRegistrationModal(true);
+      // Reset form
+      setRegistrationForm({
+        category: '',
+        division: '',
+        level: '',
+        name: '',
+        email: '',
+        contactNumber: '',
+        proofOfPayment: null
+      });
+    }
+  };
+
+  // Registration form handlers
+  const handleRegistrationFormChange = (field, value) => {
+    setRegistrationForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setRegistrationForm(prev => ({
+        ...prev,
+        proofOfPayment: file
+      }));
+    }
+  };
+
+  const handleRegistrationSubmit = async (e) => {
+    e.preventDefault();
+    
     try {
       // TODO: Replace with actual API call
-      // await api.post(`/tournaments/${tournamentId}/register`);
-      // Refresh tournaments after registration
-      // await fetchTournaments();
-      console.log('Registering for tournament:', tournamentId);
+      // const formData = new FormData();
+      // formData.append('tournamentId', registrationTournament.id);
+      // formData.append('category', registrationForm.category);
+      // formData.append('division', registrationForm.division);
+      // formData.append('level', registrationForm.level);
+      // formData.append('name', registrationForm.name);
+      // formData.append('email', registrationForm.email);
+      // formData.append('contactNumber', registrationForm.contactNumber);
+      // if (registrationForm.proofOfPayment) {
+      //   formData.append('proofOfPayment', registrationForm.proofOfPayment);
+      // }
+      // await api.post('/tournaments/register', formData);
+      
+      console.log('Registration submitted:', {
+        tournament: registrationTournament.name,
+        form: registrationForm
+      });
+      
+      // Close modal and show success message
+      setShowRegistrationModal(false);
+      alert('Registration submitted successfully! You will receive a confirmation email shortly.');
+      
     } catch (err) {
-      // Handle error
       console.error('Registration failed:', err);
+      alert('Registration failed. Please try again.');
     }
+  };
+
+  const closeRegistrationModal = () => {
+    setShowRegistrationModal(false);
+    setRegistrationTournament(null);
   };
 
   // Helper function to get tournament type icon
@@ -2818,19 +4574,76 @@ function Tournament() {
 
           <TournamentDetailBody>
             <TournamentDetailLeft>
-              <TournamentDetailTitle>
-                <h1>{selectedTournament.name}</h1>
-                <TournamentDetailType type={selectedTournament.tournamentType}>
-                  <span>{getTournamentTypeIcon(selectedTournament.tournamentType)}</span>
-                  {selectedTournament.tournamentType.charAt(0).toUpperCase() + selectedTournament.tournamentType.slice(1)} Tournament
-                </TournamentDetailType>
-              </TournamentDetailTitle>
+                {/* 
+                  Database Schema Reference:
+                  Tournament {
+                    id: string,
+                    name: string,
+                    description: string,
+                    tournamentCategories: {
+                      [categoryId: string]: {
+                        id: string,
+                        name: string,
+                        skillLevel: "Intermediate" | "Advanced" | "Open",
+                        tier?: 1 | 2 | 3,  // Required when skillLevel is "Open"
+                        prizePool: number,
+                        participants: number,
+                        maxParticipants: number,
+                        ageGroup: string,
+                        description: string,
+                        groupStage?: {...},
+                        knockoutStage?: {...}
+                      }
+                    }
+                  }
+                */}
+                <TournamentDetailTitle>
+                  <h1>{selectedTournament.name}</h1>
+                  <div style={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: '8px', 
+                    marginTop: '16px',
+                    marginBottom: '24px' 
+                  }}>
+                    {selectedTournament.tournamentCategories ? (
+                      (() => {
+                        // Get unique categories same as card view
+                        const categories = new Set();
+                        Object.values(selectedTournament.tournamentCategories).forEach(category => {
+                          if (category.skillLevel === 'Open') {
+                            categories.add(`Open - Tier ${category.tier || 1}`);
+                          } else if (['Intermediate', 'Advanced'].includes(category.skillLevel)) {
+                            categories.add(category.skillLevel);
+                          }
+                        });
+                        
+                        return Array.from(categories).map((categoryName, index) => (
+                          <TournamentTypeDisplay 
+                            key={index}
+                            style={{ 
+                              fontSize: '0.9rem', 
+                              padding: '8px 16px',
+                              fontWeight: '600'
+                            }}
+                          >
+                            {categoryName}
+                          </TournamentTypeDisplay>
+                        ));
+                      })()
+                    ) : (
+                      // Fallback for old data structure
+                      <TournamentTypeDisplay>
+                        {selectedTournament.tournamentType.charAt(0).toUpperCase() + selectedTournament.tournamentType.slice(1)}
+                        {selectedTournament.tournamentType === 'open' && ` - Tier ${selectedTournament.tier}`}
+                      </TournamentTypeDisplay>
+                    )}
+                  </div>
+                </TournamentDetailTitle>
 
-              <TournamentDetailDescription>
-                {selectedTournament.description}
-              </TournamentDetailDescription>
-
-              {/* Tab Navigation */}
+                <TournamentDetailDescription>
+                  {selectedTournament.description}
+                </TournamentDetailDescription>              {/* Tab Navigation */}
               <TabNavigation>
                 <TabButton 
                   $active={activeTab === 'details'} 
@@ -2848,13 +4661,7 @@ function Tournament() {
                   $active={activeTab === 'brackets'} 
                   onClick={() => setActiveTab('brackets')}
                 >
-                  Tournament Bracket
-                </TabButton>
-                <TabButton 
-                  $active={activeTab === 'sponsors'} 
-                  onClick={() => setActiveTab('sponsors')}
-                >
-                  Sponsors
+                  Tournament Brackets
                 </TabButton>
               </TabNavigation>
 
@@ -3055,259 +4862,314 @@ function Tournament() {
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      Tournament Bracket
+                      Tournament Brackets
                     </TournamentDetailSectionTitle>
-                    
-                    {selectedTournament.tournamentBracket ? (
-                      <>
-                        {/* Group Stage Section */}
-                        <GroupStageSection>
-                          <div className="section-title">Group Stage Results</div>
-                          <div className="groups-grid">
-                            {Object.entries(selectedTournament.tournamentBracket.groupStage).map(([bracketKey, players]) => (
-                              <GroupCard key={bracketKey}>
-                                <GroupHeader>Bracket {bracketKey.slice(-1).toUpperCase()}</GroupHeader>
-                                <StandingsTable>
-                                  <div className="standings-header">
-                                    <div>Player</div>
-                                    <div>Wins</div>
-                                    <div>Pts</div>
-                                  </div>
-                                  {players.map((player) => (
-                                    <StandingsRow key={player.id} $qualified={player.position <= 2}>
-                                      <div className="player-info">
-                                        <div className="position">{player.position}</div>
-                                        <div className="player-name">{player.name}</div>
-                                      </div>
-                                      <div className="wins">{player.wins}</div>
-                                      <div className="points">{player.points}</div>
-                                    </StandingsRow>
-                                  ))}
-                                </StandingsTable>
-                              </GroupCard>
-                            ))}
-                          </div>
-                          <div className="qualification-note">
-                            ✅ Top 2 players from each bracket advance to Quarter-Finals
-                          </div>
-                        </GroupStageSection>
 
-                        {/* Knockout Stage Bracket */}
-                        <TournamentBracket>
-                    <BracketContainer style={{ marginTop: '-100px' }}>
-                            {/* Quarter Finals */}
-                            <BracketColumn>
-                              <BracketRound>
-                                <h4>Quarter-Finals</h4>
-                                <div className="round-subtitle">Top 8 Players</div>
-                              </BracketRound>
-                              {selectedTournament.tournamentBracket.knockoutStage.quarterFinals.map((match) => (
-                                <MatchCard key={match.id} $isWinner={match.completed}>
-                                  <div className="match-info">
-                                    <div className="player-name">
-                                      <span className="player-seed">{match.player1.seed}</span>
-                                      {match.player1.name}
-                                    </div>
-                                    {match.completed && <div className="match-score">{match.winner === 'player1' ? '✓' : ''}</div>}
+                    {/* Display all categories as expandable cards */}
+                    {selectedTournament.tournamentCategories ? (
+                      <div>
+                        {Object.values(selectedTournament.tournamentCategories).map((category) => (
+                          <CategoryCard key={category.id}>
+                            <CategoryHeader 
+                              $expanded={expandedCategories[category.id]}
+                              onClick={() => toggleCategoryExpansion(category.id)}
+                            >
+                              <CategoryHeaderContent>
+                                <CategoryHeaderInfo>
+                                  <div className="category-title" style={{
+                                    fontSize: '1.1rem',
+                                    fontWeight: '600',
+                                    color: '#1e293b',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                  }}>
+                                    <span>{category.name.split(' ').slice(0, 2).join(' ')}</span>
+                                    <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
+                                    <span>{category.ageGroup}</span>
+                                    <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
+                                    <span style={{ color: '#059669' }}>
+                                      {category.skillLevel}
+                                      {category.skillLevel === 'Open' && ` - Tier ${category.tier || 1}`}
+                                    </span>
                                   </div>
-                                  <div className="match-info">
-                                    <div className="player-name">
-                                      <span className="player-seed">{match.player2.seed}</span>
-                                      {match.player2.name}
+                                </CategoryHeaderInfo>
+                                <CategoryExpandIcon $expanded={expandedCategories[category.id]}>
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                </CategoryExpandIcon>
+                              </CategoryHeaderContent>
+                            </CategoryHeader>
+                            
+                            {expandedCategories[category.id] && (
+                              <CategoryBracketContent $expanded={expandedCategories[category.id]}>
+                                {/* Group Stage Section - Always show if groupStage exists */}
+                                {category.groupStage && (
+                                  <GroupStageSection>
+                                    <div className="section-title">Group Stage Results</div>
+                                    <div className="groups-grid">
+                                      {Object.entries(category.groupStage).map(([bracketKey, players]) => (
+                                        <GroupCard key={bracketKey}>
+                                          <GroupHeader>Bracket {bracketKey.slice(-1).toUpperCase()}</GroupHeader>
+                                          <StandingsTable>
+                                            <div className="standings-header">
+                                              <div>Player</div>
+                                              <div>R.Wins</div>
+                                              <div>R.Loss</div>
+                                              <div>W.Pts</div>
+                                              <div>L.Pts</div>
+                                            </div>
+                                            {players.map((player) => (
+                                              <StandingsRow key={player.id} $qualified={player.position <= 2}>
+                                                <div className="player-info">
+                                                  <div className="position">{player.position}</div>
+                                                  <div className="player-name">{player.name}</div>
+                                                </div>
+                                                <div className="round-wins">{player.roundWins || player.wins || 0}</div>
+                                                <div className="round-losses">{player.roundLosses || 0}</div>
+                                                <div className="win-points">{player.winPoints || 0}</div>
+                                                <div className="loss-points">{player.lossPoints || 0}</div>
+                                              </StandingsRow>
+                                            ))}
+                                          </StandingsTable>
+                                        </GroupCard>
+                                      ))}
                                     </div>
-                                    {match.completed && <div className="match-score">{match.winner === 'player2' ? '✓' : ''}</div>}
-                                  </div>
-                                  {match.completed && <div className="match-result">{match.score}</div>}
-                                </MatchCard>
-                              ))}
-                            </BracketColumn>
+                                  </GroupStageSection>
+                                )}
 
-                            {/* Semi Finals */}
-                            <BracketColumn>
-                              <BracketRound>
-                                <h4>Semi-Finals</h4>
-                                <div className="round-subtitle">Final 4</div>
-                              </BracketRound>
-                              {selectedTournament.tournamentBracket.knockoutStage.semiFinals.map((match, index) => (
-                                <MatchCard 
-                                  key={match.id} 
-                                  $isWinner={match.completed} 
-                                  style={{ 
-                                    marginTop: index === 0 ? '0px' : '40px',
-                                    '@media (min-width: 768px)': {
-                                      marginTop: index === 0 ? '50px' : '30px'
-                                    }
-                                  }}
-                                >
-                                  <div className="match-info">
-                                    <div className="player-name">
-                                      <span className="player-seed">W{match.player1.seed}</span>
-                                      {match.player1.name}
-                                    </div>
-                                    {match.completed && <div className="match-score">{match.winner === 'player1' ? '✓' : ''}</div>}
-                                  </div>
-                                  <div className="match-info">
-                                    <div className="player-name">
-                                      <span className="player-seed">W{match.player2.seed}</span>
-                                      {match.player2.name}
-                                    </div>
-                                    {match.completed && <div className="match-score">{match.winner === 'player2' ? '✓' : ''}</div>}
-                                  </div>
-                                  {match.completed && <div className="match-result">{match.score}</div>}
-                                </MatchCard>
-                              ))}
-                            </BracketColumn>
+                                {/* Knockout Stage Bracket - Show if exists */}
+                                {category.knockoutStage ? (
+                                  <TournamentBracket>
+                                    <BracketContainer style={{ marginTop: '-80px' }}>
+                                      {/* Quarter Finals */}
+                                      <BracketColumn>
+                                        <BracketRound>
+                                          <h4>Quarter-Finals</h4>
+                                          <div className="round-subtitle">Top 8 Players</div>
+                                        </BracketRound>
+                                        {category.knockoutStage.quarterFinals.map((match) => (
+                                          <MatchCard key={match.id} $isWinner={match.completed}>
+                                            <div className="match-info">
+                                              <div className="player-name">
+                                                <span className="player-seed">{match.player1.seed}</span>
+                                                {match.player1.name}
+                                              </div>
+                                              {match.completed && <div className="match-score">{match.winner === 'player1' ? '✓' : ''}</div>}
+                                            </div>
+                                            <div className="match-info">
+                                              <div className="player-name">
+                                                <span className="player-seed">{match.player2.seed}</span>
+                                                {match.player2.name}
+                                              </div>
+                                              {match.completed && <div className="match-score">{match.winner === 'player2' ? '✓' : ''}</div>}
+                                            </div>
+                                            {match.completed && <div className="match-result">{match.score}</div>}
+                                          </MatchCard>
+                                        ))}
+                                      </BracketColumn>
 
-                                        {/* Championship */}
-            <ChampionshipSection style={{ marginTop: '200px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                <div className="championship-trophy">🏆</div>
-                <BracketRound style={{ margin: 0 }}>
-                  <h4>Championship</h4>
-                  <div className="round-subtitle">Final Match</div>
-                </BracketRound>
-              </div>
-                              {selectedTournament.tournamentBracket.knockoutStage.final && (
-                                <MatchCard 
-                                  className="championship-match" 
-                                  $isWinner={selectedTournament.tournamentBracket.knockoutStage.final.completed}
-                                >
-                                  <div className="match-info">
-                                    <div className="player-name">
-                                      <span className="player-seed">W{selectedTournament.tournamentBracket.knockoutStage.final.player1.seed}</span>
-                                      {selectedTournament.tournamentBracket.knockoutStage.final.player1.name}
-                                    </div>
-                                    {selectedTournament.tournamentBracket.knockoutStage.final.completed && (
-                                      <div className="match-score">
-                                        {selectedTournament.tournamentBracket.knockoutStage.final.winner === 'player1' ? '🥇' : '🥈'}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="match-info">
-                                    <div className="player-name">
-                                      <span className="player-seed">W{selectedTournament.tournamentBracket.knockoutStage.final.player2.seed}</span>
-                                      {selectedTournament.tournamentBracket.knockoutStage.final.player2.name}
-                                    </div>
-                                    {selectedTournament.tournamentBracket.knockoutStage.final.completed && (
-                                      <div className="match-score">
-                                        {selectedTournament.tournamentBracket.knockoutStage.final.winner === 'player2' ? '🥇' : '🥈'}
-                                      </div>
-                                    )}
-                                  </div>
-                                  {selectedTournament.tournamentBracket.knockoutStage.final.completed && (
-                                    <div className="match-result" style={{ fontWeight: 'bold', color: '#16a34a' }}>
-                                      {selectedTournament.tournamentBracket.knockoutStage.final.score}
-                                    </div>
-                                  )}
-                                </MatchCard>
+                                      {/* Semi Finals */}
+                                      <BracketColumn>
+                                        <BracketRound>
+                                          <h4>Semi-Finals</h4>
+                                          <div className="round-subtitle">Final 4</div>
+                                        </BracketRound>
+                                        {category.knockoutStage.semiFinals.map((match, index) => (
+                                          <MatchCard 
+                                            key={match.id} 
+                                            $isWinner={match.completed} 
+                                            style={{ 
+                                              marginTop: index === 0 ? '0px' : '40px',
+                                              '@media (min-width: 768px)': {
+                                                marginTop: index === 0 ? '50px' : '30px'
+                                              }
+                                            }}
+                                          >
+                                            <div className="match-info">
+                                              <div className="player-name">
+                                                <span className="player-seed">W{match.player1.seed}</span>
+                                                {match.player1.name}
+                                              </div>
+                                              {match.completed && <div className="match-score">{match.winner === 'player1' ? '✓' : ''}</div>}
+                                            </div>
+                                            <div className="match-info">
+                                              <div className="player-name">
+                                                <span className="player-seed">W{match.player2.seed}</span>
+                                                {match.player2.name}
+                                              </div>
+                                              {match.completed && <div className="match-score">{match.winner === 'player2' ? '✓' : ''}</div>}
+                                            </div>
+                                            {match.completed && <div className="match-result">{match.score}</div>}
+                                          </MatchCard>
+                                        ))}
+                                      </BracketColumn>
+
+                                      {/* Championship */}
+                                      <ChampionshipSection style={{ marginTop: '200px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '-10px' }}>
+                                          <div className="championship-trophy">🏆</div>
+                                          <BracketRound style={{ margin: 0 }}>
+                                            <h4>Championship</h4>
+                                            <div className="round-subtitle">Final Match</div>
+                                          </BracketRound>
+                                        </div>
+                                        {category.knockoutStage.final && (
+                                          <MatchCard 
+                                            className="championship-match" 
+                                            $isWinner={category.knockoutStage.final.completed}
+                                          >
+                                            <div className="match-info">
+                                              <div className="player-name">
+                                                <span className="player-seed">W{category.knockoutStage.final.player1.seed}</span>
+                                                {category.knockoutStage.final.player1.name}
+                                              </div>
+                                              {category.knockoutStage.final.completed && (
+                                                <div className="match-score">
+                                                  {category.knockoutStage.final.winner === 'player1' ? '🥇' : '🥈'}
+                                                </div>
+                                              )}
+                                            </div>
+                                            <div className="match-info">
+                                              <div className="player-name">
+                                                <span className="player-seed">W{category.knockoutStage.final.player2.seed}</span>
+                                                {category.knockoutStage.final.player2.name}
+                                              </div>
+                                              {category.knockoutStage.final.completed && (
+                                                <div className="match-score">
+                                                  {category.knockoutStage.final.winner === 'player2' ? '🥇' : '🥈'}
+                                                </div>
+                                              )}
+                                            </div>
+                                            {category.knockoutStage.final.completed && (
+                                              <div className="match-result" style={{ fontWeight: 'bold', color: '#16a34a' }}>
+                                                {category.knockoutStage.final.score}
+                                              </div>
                                             )}
+                                          </MatchCard>
+                                        )}
 
-              {/* Third Place Match */}
-              {selectedTournament.tournamentBracket.knockoutStage.thirdPlace && (
-                <div style={{ 
-                  marginTop: '100px', 
-                  marginLeft: 'auto',
-                  marginRight: '0',
-                  width: '100%',
-                  maxWidth: '300px'
-                }}>
-                  <BracketRound>
-                    <h4>Third Place</h4>
-                    <div className="round-subtitle">Bronze Medal Match</div>
-                  </BracketRound>
-                  <MatchCard 
-                    className="championship-match" 
-                    $isWinner={selectedTournament.tournamentBracket.knockoutStage.thirdPlace.completed}
-                    style={{ width: '100%' }}
-                  >
-                    <div className="match-info">
-                      <div className="player-name">
-                        <span className="player-seed">L{selectedTournament.tournamentBracket.knockoutStage.thirdPlace.player1.seed}</span>
-                        {selectedTournament.tournamentBracket.knockoutStage.thirdPlace.player1.name}
+                                        {/* Third Place Match */}
+                                        {category.knockoutStage.thirdPlace && (
+                                          <div style={{ 
+                                            marginTop: '100px', 
+                                            marginLeft: 'auto',
+                                            marginRight: '0',
+                                            width: '100%',
+                                            maxWidth: '300px'
+                                          }}>
+                                            <BracketRound>
+                                              <h4>Third Place</h4>
+                                              <div className="round-subtitle">Bronze Medal Match</div>
+                                            </BracketRound>
+                                            <MatchCard 
+                                              className="championship-match" 
+                                              $isWinner={category.knockoutStage.thirdPlace.completed}
+                                              style={{ width: '100%' }}
+                                            >
+                                              <div className="match-info">
+                                                <div className="player-name">
+                                                  <span className="player-seed">L{category.knockoutStage.thirdPlace.player1.seed}</span>
+                                                  {category.knockoutStage.thirdPlace.player1.name}
+                                                </div>
+                                                {category.knockoutStage.thirdPlace.completed && (
+                                                  <div className="match-score">
+                                                    {category.knockoutStage.thirdPlace.winner === 'player1' ? '🥉' : ''}
+                                                  </div>
+                                                )}
+                                              </div>
+                                              <div className="match-info">
+                                                <div className="player-name">
+                                                  <span className="player-seed">L{category.knockoutStage.thirdPlace.player2.seed}</span>
+                                                  {category.knockoutStage.thirdPlace.player2.name}
+                                                </div>
+                                                {category.knockoutStage.thirdPlace.completed && (
+                                                  <div className="match-score">
+                                                    {category.knockoutStage.thirdPlace.winner === 'player2' ? '🥉' : ''}
+                                                  </div>
+                                                )}
+                                              </div>
+                                              {category.knockoutStage.thirdPlace.completed && (
+                                                <div className="match-result" style={{ fontWeight: 'bold', color: '#16a34a' }}>
+                                                  {category.knockoutStage.thirdPlace.score}
+                                                </div>
+                                              )}
+                                            </MatchCard>
+                                          </div>
+                                        )}
+                                      </ChampionshipSection>
+                                    </BracketContainer>
+                                  </TournamentBracket>
+                                ) : (
+                                  // Show placeholder if no knockout stage yet
+                                  <div style={{ 
+                                    textAlign: 'center', 
+                                    padding: '32px 24px',
+                                    background: 'white',
+                                    borderRadius: '12px',
+                                    border: '1px solid #e2e8f0',
+                                    marginTop: '16px'
+                                  }}>
+                                    <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🏆</div>
+                                    <h3 style={{ color: '#334155', marginBottom: '8px', fontSize: '1.1rem' }}>Knockout Bracket Coming Soon</h3>
+                                    <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '16px' }}>
+                                      The knockout bracket will be generated once the group stage is complete.
+                                    </p>
+                                    <div style={{
+                                      background: '#f8fafc',
+                                      padding: '16px',
+                                      borderRadius: '8px',
+                                      border: '1px solid #e2e8f0',
+                                      display: 'inline-block',
+                                      minWidth: '200px'
+                                    }}>
+                                      <div style={{ color: '#29ba9b', fontWeight: '600', marginBottom: '8px', fontSize: '0.9rem' }}>
+                                        Category Details
+                                      </div>
+                                      <div style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: '1.4' }}>
+                                        <div style={{ marginBottom: '2px' }}>🎯 Skill Level: {category.skillLevel}</div>
+                                        <div style={{ marginBottom: '2px' }}>👥 Total Players: {category.participants}</div>
+                                        <div style={{ marginBottom: '2px' }}>🏆 Prize Pool: ₱{category.prizePool.toLocaleString()}</div>
+                                        <div style={{ marginBottom: '2px' }}>📅 Age Group: {category.ageGroup}</div>
+                                        <div>📝 {category.description}</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </CategoryBracketContent>
+                            )}
+                          </CategoryCard>
+                        ))}
                       </div>
-                      {selectedTournament.tournamentBracket.knockoutStage.thirdPlace.completed && (
-                        <div className="match-score">
-                          {selectedTournament.tournamentBracket.knockoutStage.thirdPlace.winner === 'player1' ? '🥉' : ''}
-                        </div>
-                      )}
-                    </div>
-                    <div className="match-info">
-                      <div className="player-name">
-                        <span className="player-seed">L{selectedTournament.tournamentBracket.knockoutStage.thirdPlace.player2.seed}</span>
-                        {selectedTournament.tournamentBracket.knockoutStage.thirdPlace.player2.name}
-                      </div>
-                      {selectedTournament.tournamentBracket.knockoutStage.thirdPlace.completed && (
-                        <div className="match-score">
-                          {selectedTournament.tournamentBracket.knockoutStage.thirdPlace.winner === 'player2' ? '🥉' : ''}
-                        </div>
-                      )}
-                    </div>
-                    {selectedTournament.tournamentBracket.knockoutStage.thirdPlace.completed && (
-                      <div className="match-result" style={{ fontWeight: 'bold', color: '#16a34a' }}>
-                        {selectedTournament.tournamentBracket.knockoutStage.thirdPlace.score}
-                      </div>
-                    )}
-                  </MatchCard>
-                </div>
-              )}
-                            </ChampionshipSection>
-                    </BracketContainer>
-                        </TournamentBracket>
-                      </>
                     ) : (
-                      <div style={{ 
-                        textAlign: 'center', 
-                        padding: '48px 24px',
-                        background: '#f8fafc',
-                        borderRadius: '16px',
-                        border: '1px dashed #e2e8f0'
-                      }}>
-                        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🏆</div>
-                        <h3 style={{ color: '#334155', marginBottom: '8px' }}>Tournament Bracket Not Available</h3>
-                        <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
-                          The tournament bracket will be generated once the group stage is complete and knockout matches begin.
-                        </p>
-                      </div>
+                      // Fallback for tournaments without categories
+                      <>
+                        {selectedTournament.tournamentBracket ? (
+                          <>
+                            {/* Original bracket display logic here */}
+                          </>
+                        ) : (
+                          <div style={{ 
+                            textAlign: 'center', 
+                            padding: '48px 24px',
+                            background: '#f8fafc',
+                            borderRadius: '16px',
+                            border: '1px dashed #e2e8f0'
+                          }}>
+                            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🏆</div>
+                            <h3 style={{ color: '#334155', marginBottom: '8px' }}>Tournament Bracket Not Available</h3>
+                            <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+                              The tournament bracket will be generated once the group stage is complete and knockout matches begin.
+                            </p>
+                          </div>
+                        )}
+                      </>
                     )}
                   </TournamentDetailSection>
                 )}
 
-                {activeTab === 'sponsors' && (
-                  <TournamentDetailSection>
-                    <TournamentDetailSectionTitle>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0016.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 002 8.5c0 2.29 1.51 4.04 3 5.5l7 7z" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      Tournament Sponsors
-                    </TournamentDetailSectionTitle>
-                    
-                    <SponsorsGrid>
-                      <SponsorCard>
-                        <SponsorLogo>🏓</SponsorLogo>
-                        <SponsorName>Pro Paddle Sports</SponsorName>
-                        <SponsorDescription>Premium pickleball equipment and gear for players of all levels.</SponsorDescription>
-                      </SponsorCard>
-                      
-                      <SponsorCard>
-                        <SponsorLogo>⚡</SponsorLogo>
-                        <SponsorName>Energy Plus</SponsorName>
-                        <SponsorDescription>Sports nutrition and energy drinks to keep you performing at your best.</SponsorDescription>
-                      </SponsorCard>
-                      
-                      <SponsorCard>
-                        <SponsorLogo>🏥</SponsorLogo>
-                        <SponsorName>SportsMed Clinic</SponsorName>
-                        <SponsorDescription>Sports medicine and injury prevention services for athletes.</SponsorDescription>
-                      </SponsorCard>
-                      
-                      <SponsorCard>
-                        <SponsorLogo>👕</SponsorLogo>
-                        <SponsorName>Athletic Wear Co.</SponsorName>
-                        <SponsorDescription>High-performance athletic apparel and accessories for competitive sports.</SponsorDescription>
-                      </SponsorCard>
-                    </SponsorsGrid>
-                  </TournamentDetailSection>
-                )}
+
               </TabContent>
             </TournamentDetailLeft>
 
@@ -3345,6 +5207,130 @@ function Tournament() {
                   </ShareButtonMain>
                 </ActionButtonsContainer>
               </StickyActionBar>
+
+              {/* Tournament Sponsors Section */}
+              <div style={{ marginTop: '32px' }}>
+                <TournamentDetailSection>
+                  <TournamentDetailSectionTitle>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0016.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 002 8.5c0 2.29 1.51 4.04 3 5.5l7 7z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Tournament Sponsors
+                  </TournamentDetailSectionTitle>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 0' }}>
+                      <img 
+                        src="https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg" 
+                        alt="Nike"
+                        style={{ 
+                          width: '45px', 
+                          height: '45px', 
+                          objectFit: 'contain', 
+                          borderRadius: '8px',
+                          background: 'white',
+                          padding: '6px',
+                          border: '1px solid #e2e8f0'
+                        }}
+                      />
+                      <SponsorName style={{ fontSize: '1rem', margin: '0', color: '#334155' }}>Nike Philippines</SponsorName>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 0' }}>
+                      <div style={{ 
+                        width: '45px', 
+                        height: '45px', 
+                        background: 'linear-gradient(135deg, #ff6600, #ff8800)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: '0.8rem',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        G
+                      </div>
+                      <SponsorName style={{ fontSize: '1rem', margin: '0', color: '#334155' }}>Gatorade</SponsorName>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 0' }}>
+                      <div style={{ 
+                        width: '45px', 
+                        height: '45px', 
+                        background: 'linear-gradient(135deg, #003d7a, #0066cc)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: '0.8rem',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        BDO
+                      </div>
+                      <SponsorName style={{ fontSize: '1rem', margin: '0', color: '#334155' }}>BDO Unibank</SponsorName>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 0' }}>
+                      <div style={{ 
+                        width: '45px', 
+                        height: '45px', 
+                        background: 'linear-gradient(135deg, #e31837, #ff4444)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontWeight: 'bold',
+                        fontSize: '0.8rem',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        🐝
+                      </div>
+                      <SponsorName style={{ fontSize: '1rem', margin: '0', color: '#334155' }}>Jollibee</SponsorName>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 0' }}>
+                      <img 
+                        src="https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=400&h=400&fit=crop&crop=center" 
+                        alt="Sports Equipment"
+                        style={{ 
+                          width: '45px', 
+                          height: '45px', 
+                          objectFit: 'cover', 
+                          borderRadius: '8px',
+                          border: '1px solid #e2e8f0'
+                        }}
+                      />
+                      <SponsorName style={{ fontSize: '1rem', margin: '0', color: '#334155' }}>Metro Sports Hub</SponsorName>
+                    </div>
+
+                    <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '18px', marginTop: '10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 0' }}>
+                        <div style={{ 
+                          width: '45px', 
+                          height: '45px', 
+                          background: '#f8fafc', 
+                          border: '2px dashed #cbd5e1', 
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '1.2rem',
+                          color: '#64748b',
+                          fontWeight: '500'
+                        }}>
+                          +
+                        </div>
+                        <SponsorName style={{ fontSize: '1rem', margin: '0', color: '#64748b', fontStyle: 'italic' }}>Become a Sponsor</SponsorName>
+                      </div>
+                    </div>
+                  </div>
+                </TournamentDetailSection>
+              </div>
             </TournamentDetailRight>
           </TournamentDetailBody>
         </TournamentDetailContent>
@@ -3356,6 +5342,183 @@ function Tournament() {
             title="Join the Tournament!"
             message="Sign in or register to participate in tournaments"
           />
+        )}
+
+        {showRegistrationModal && registrationTournament && (
+          <RegistrationModal onClick={closeRegistrationModal}>
+            <RegistrationModalContent onClick={e => e.stopPropagation()}>
+              <RegistrationModalHeader>
+                <RegistrationModalTitle>Register for {registrationTournament.name}</RegistrationModalTitle>
+                <CloseButton onClick={closeRegistrationModal}>×</CloseButton>
+              </RegistrationModalHeader>
+              
+              <RegistrationModalBody>
+                <form onSubmit={handleRegistrationSubmit}>
+                  {/* Category/Division/Level Selection */}
+                  <RegistrationFormSection>
+                    <RegistrationSectionTitle>Tournament Category</RegistrationSectionTitle>
+                    
+                    <RegistrationFormRow>
+                      <RegistrationFormGroup>
+                        <RegistrationLabel>Category</RegistrationLabel>
+                        <RegistrationSelect
+                          value={registrationForm.category}
+                          onChange={(e) => handleRegistrationFormChange('category', e.target.value)}
+                          required
+                        >
+                          <option value="">Select Category</option>
+                          <option value="mens-singles">Men's Singles</option>
+                          <option value="womens-singles">Women's Singles</option>
+                          <option value="mens-doubles">Men's Doubles</option>
+                          <option value="womens-doubles">Women's Doubles</option>
+                          <option value="mixed-doubles">Mixed Doubles</option>
+                        </RegistrationSelect>
+                      </RegistrationFormGroup>
+                      
+                      <RegistrationFormGroup>
+                        <RegistrationLabel>Age Category</RegistrationLabel>
+                        <RegistrationSelect
+                          value={registrationForm.ageCategory}
+                          onChange={(e) => handleRegistrationFormChange('ageCategory', e.target.value)}
+                          required
+                        >
+                          <option value="">Select Age Category</option>
+                          <option value="18+">18+</option>
+                          <option value="35+">35+</option>
+                          <option value="50+">50+</option>
+                        </RegistrationSelect>
+                      </RegistrationFormGroup>
+                    </RegistrationFormRow>
+                    
+                    <RegistrationFormRow>
+                      <RegistrationFormGroup>
+                        <RegistrationLabel>Skill Level</RegistrationLabel>
+                        <RegistrationSelect
+                          value={registrationForm.level}
+                          onChange={(e) => handleRegistrationFormChange('level', e.target.value)}
+                          required
+                        >
+                          <option value="">Select Skill Level</option>
+                          <option value="intermediate">Intermediate</option>
+                          <option value="advanced">Advanced</option>
+                          <option value="open-tier1">Open - Tier 1</option>
+                          <option value="open-tier2">Open - Tier 2</option>
+                          <option value="open-tier3">Open - Tier 3</option>
+                        </RegistrationSelect>
+                      </RegistrationFormGroup>
+                    </RegistrationFormRow>
+                  </RegistrationFormSection>
+
+                  {/* Personal Information */}
+                  <RegistrationFormSection>
+                    <RegistrationSectionTitle>Personal Information</RegistrationSectionTitle>
+                    
+                    <RegistrationFormRow>
+                      <RegistrationFormGroup>
+                        <RegistrationLabel>Full Name</RegistrationLabel>
+                        <RegistrationInput
+                          type="text"
+                          value={registrationForm.fullName}
+                          onChange={(e) => handleRegistrationFormChange('fullName', e.target.value)}
+                          placeholder="Enter your full name"
+                          required
+                        />
+                      </RegistrationFormGroup>
+                      
+                      <RegistrationFormGroup>
+                        <RegistrationLabel>Email Address</RegistrationLabel>
+                        <RegistrationInput
+                          type="email"
+                          value={registrationForm.email}
+                          onChange={(e) => handleRegistrationFormChange('email', e.target.value)}
+                          placeholder="your.email@example.com"
+                          required
+                        />
+                      </RegistrationFormGroup>
+                    </RegistrationFormRow>
+                    
+                    <RegistrationFormRow>
+                      <RegistrationFormGroup>
+                        <RegistrationLabel>Contact Number</RegistrationLabel>
+                        <RegistrationInput
+                          type="tel"
+                          value={registrationForm.contactNumber}
+                          onChange={(e) => handleRegistrationFormChange('contactNumber', e.target.value)}
+                          placeholder="+63 912 345 6789"
+                          required
+                        />
+                      </RegistrationFormGroup>
+                    </RegistrationFormRow>
+                  </RegistrationFormSection>
+
+                  {/* Fee Information */}
+                  <RegistrationFormSection>
+                    <RegistrationSectionTitle>Registration Fee</RegistrationSectionTitle>
+                    
+                    <FeeInfoBox>
+                      <FeeInfoTitle>Tournament Entry Fee</FeeInfoTitle>
+                      <FeeInfoText>₱{registrationTournament.entryFee} - Registration fee is required to secure your spot in the tournament.</FeeInfoText>
+                    </FeeInfoBox>
+                  </RegistrationFormSection>
+
+                  {/* Payment Section */}
+                  <RegistrationFormSection>
+                    <RegistrationSectionTitle>Payment Details</RegistrationSectionTitle>
+                    
+                    <BankDetailsBox>
+                      <BankDetailsTitle>Bank Transfer Details</BankDetailsTitle>
+                      <BankDetail>
+                        <BankDetailLabel>Bank Name:</BankDetailLabel>
+                        <BankDetailValue>-</BankDetailValue>
+                      </BankDetail>
+                      <BankDetail>
+                        <BankDetailLabel>Account Name:</BankDetailLabel>
+                        <BankDetailValue>-</BankDetailValue>
+                      </BankDetail>
+                      <BankDetail>
+                        <BankDetailLabel>Account Number:</BankDetailLabel>
+                        <BankDetailValue>-</BankDetailValue>
+                      </BankDetail>
+                      <BankDetail>
+                        <BankDetailLabel>Routing Number:</BankDetailLabel>
+                        <BankDetailValue>-</BankDetailValue>
+                      </BankDetail>
+                      <BankDetail>
+                        <BankDetailLabel>Reference:</BankDetailLabel>
+                        <BankDetailValue>-</BankDetailValue>
+                      </BankDetail>
+                    </BankDetailsBox>
+                    
+                    <RegistrationFormGroup>
+                      <RegistrationLabel>Proof of Payment</RegistrationLabel>
+                      <FileUploadArea>
+                        <input
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={handleFileUpload}
+                          style={{ display: 'none' }}
+                          id="proof-upload"
+                          required
+                        />
+                        <label htmlFor="proof-upload" style={{ cursor: 'pointer' }}>
+                          <FileUploadText>
+                            {registrationForm.proofOfPayment 
+                              ? `Selected: ${registrationForm.proofOfPayment.name}`
+                              : 'Click to upload proof of payment (Image or PDF)'
+                            }
+                          </FileUploadText>
+                        </label>
+                      </FileUploadArea>
+                    </RegistrationFormGroup>
+                  </RegistrationFormSection>
+
+                  <RegistrationSubmitButton type="submit">
+                    Submit Registration
+                  </RegistrationSubmitButton>
+                </form>
+              </RegistrationModalBody>
+            </RegistrationModalContent>
+          </RegistrationModal>
         )}
       </PageContainer>
     );
@@ -3386,9 +5549,11 @@ function Tournament() {
             onChange={(e) => setSelectedTier(e.target.value)}
           >
             <option value="">All Tiers</option>
-            <option value="1">Tier 1</option>
-            <option value="2">Tier 2</option>
-            <option value="3">Tier 3</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+            <option value="open-1">Open - Tier 1</option>
+            <option value="open-2">Open - Tier 2</option>
+            <option value="open-3">Open - Tier 3</option>
           </Select>
 
           <Select
@@ -3421,10 +5586,49 @@ function Tournament() {
             </TournamentBanner>
                           <TournamentInfo>
                 <TournamentName>{tournament.name}</TournamentName>
-                <TournamentTypeDisplay type={tournament.tournamentType}>
-                  {tournament.tournamentType.charAt(0).toUpperCase() + tournament.tournamentType.slice(1)} Tournament
-                  {tournament.tournamentType === 'open' && ` - Tier ${tournament.tier}`}
-                </TournamentTypeDisplay>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
+                  {tournament.tournamentCategories ? (
+                    (() => {
+                      // Get unique categories
+                      const categories = new Set();
+                      console.log('All tournament categories:', tournament.tournamentCategories);
+                      Object.values(tournament.tournamentCategories).forEach(category => {
+                        console.log('Processing category:', {
+                          skillLevel: category.skillLevel,
+                          tier: category.tier,
+                          fullCategory: category
+                        });
+                        if (category.skillLevel?.toLowerCase() === 'open') {
+                          // Ensure tier is a number, default to 1 if not specified
+                          const tier = Number(category.tier) || 1;
+                          categories.add(`Open - Tier ${tier}`);
+                        } else if (['Intermediate', 'Advanced'].includes(category.skillLevel)) {
+                          categories.add(category.skillLevel);
+                        }
+                      });
+                      
+                      return Array.from(categories).map((categoryName, index) => {
+                        const isOpen = categoryName.startsWith('Open');
+                        const type = isOpen ? 'open' : categoryName.toLowerCase();
+                        return (
+                          <TournamentTypeDisplay 
+                            key={index} 
+                            type={type}
+                            style={{ fontSize: '0.8rem', padding: '4px 10px' }}
+                          >
+                            {categoryName}
+                          </TournamentTypeDisplay>
+                        );
+                      });
+                    })()
+                  ) : (
+                    // Fallback for old data structure
+                    <TournamentTypeDisplay type={tournament.tournamentType}>
+                      {tournament.tournamentType.charAt(0).toUpperCase() + tournament.tournamentType.slice(1)}
+                      {tournament.tournamentType === 'open' && ` - Tier ${tournament.tier}`}
+                    </TournamentTypeDisplay>
+                  )}
+                </div>
               <TournamentDate>
                 <CalendarIcon />
                 {new Date(tournament.date).toLocaleDateString()}
@@ -3482,8 +5686,185 @@ function Tournament() {
           message="Sign in or register to participate in tournaments"
         />
       )}
+
+      {showRegistrationModal && registrationTournament && (
+        <RegistrationModal onClick={closeRegistrationModal}>
+          <RegistrationModalContent onClick={e => e.stopPropagation()}>
+            <RegistrationModalHeader>
+              <RegistrationModalTitle>Register for {registrationTournament.name}</RegistrationModalTitle>
+              <CloseButton onClick={closeRegistrationModal}>×</CloseButton>
+            </RegistrationModalHeader>
+            
+            <RegistrationModalBody>
+              <form onSubmit={handleRegistrationSubmit}>
+                {/* Category/Division/Level Selection */}
+                <RegistrationFormSection>
+                  <RegistrationSectionTitle>Tournament Category</RegistrationSectionTitle>
+                  
+                  <RegistrationFormRow>
+                    <RegistrationFormGroup>
+                      <RegistrationLabel>Category</RegistrationLabel>
+                      <RegistrationSelect
+                        value={registrationForm.category}
+                        onChange={(e) => handleRegistrationFormChange('category', e.target.value)}
+                        required
+                      >
+                        <option value="">Select Category</option>
+                        <option value="mens-singles">Men's Singles</option>
+                        <option value="womens-singles">Women's Singles</option>
+                        <option value="mens-doubles">Men's Doubles</option>
+                        <option value="womens-doubles">Women's Doubles</option>
+                        <option value="mixed-doubles">Mixed Doubles</option>
+                      </RegistrationSelect>
+                    </RegistrationFormGroup>
+                    
+                    <RegistrationFormGroup>
+                      <RegistrationLabel>Age Category</RegistrationLabel>
+                      <RegistrationSelect
+                        value={registrationForm.ageCategory}
+                        onChange={(e) => handleRegistrationFormChange('ageCategory', e.target.value)}
+                        required
+                      >
+                        <option value="">Select Age Category</option>
+                        <option value="18+">18+</option>
+                        <option value="35+">35+</option>
+                        <option value="50+">50+</option>
+                      </RegistrationSelect>
+                    </RegistrationFormGroup>
+                  </RegistrationFormRow>
+                  
+                  <RegistrationFormRow>
+                    <RegistrationFormGroup>
+                      <RegistrationLabel>Skill Level</RegistrationLabel>
+                      <RegistrationSelect
+                        value={registrationForm.level}
+                        onChange={(e) => handleRegistrationFormChange('level', e.target.value)}
+                        required
+                      >
+                        <option value="">Select Skill Level</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                        <option value="open-tier1">Open - Tier 1</option>
+                        <option value="open-tier2">Open - Tier 2</option>
+                        <option value="open-tier3">Open - Tier 3</option>
+                      </RegistrationSelect>
+                    </RegistrationFormGroup>
+                  </RegistrationFormRow>
+                </RegistrationFormSection>
+
+                {/* Personal Information */}
+                <RegistrationFormSection>
+                  <RegistrationSectionTitle>Personal Information</RegistrationSectionTitle>
+                  
+                  <RegistrationFormRow>
+                    <RegistrationFormGroup>
+                      <RegistrationLabel>Full Name</RegistrationLabel>
+                      <RegistrationInput
+                        type="text"
+                        value={registrationForm.fullName}
+                        onChange={(e) => handleRegistrationFormChange('fullName', e.target.value)}
+                        placeholder="Enter your full name"
+                        required
+                      />
+                    </RegistrationFormGroup>
+                    
+                    <RegistrationFormGroup>
+                      <RegistrationLabel>Email Address</RegistrationLabel>
+                      <RegistrationInput
+                        type="email"
+                        value={registrationForm.email}
+                        onChange={(e) => handleRegistrationFormChange('email', e.target.value)}
+                        placeholder="your.email@example.com"
+                        required
+                      />
+                    </RegistrationFormGroup>
+                  </RegistrationFormRow>
+                  
+                  <RegistrationFormRow>
+                    <RegistrationFormGroup>
+                      <RegistrationLabel>Contact Number</RegistrationLabel>
+                      <RegistrationInput
+                        type="tel"
+                        value={registrationForm.contactNumber}
+                        onChange={(e) => handleRegistrationFormChange('contactNumber', e.target.value)}
+                        placeholder="+63 912 345 6789"
+                        required
+                      />
+                    </RegistrationFormGroup>
+                  </RegistrationFormRow>
+                </RegistrationFormSection>
+
+                {/* Fee Information */}
+                <RegistrationFormSection>
+                  <RegistrationSectionTitle>Registration Fee</RegistrationSectionTitle>
+                  
+                  <FeeInfoBox>
+                    <FeeInfoTitle>Tournament Entry Fee</FeeInfoTitle>
+                    <FeeInfoText>₱{registrationTournament.entryFee} - Registration fee is required to secure your spot in the tournament.</FeeInfoText>
+                  </FeeInfoBox>
+                </RegistrationFormSection>
+
+                {/* Payment Section */}
+                <RegistrationFormSection>
+                  <RegistrationSectionTitle>Payment Details</RegistrationSectionTitle>
+                  
+                  <BankDetailsBox>
+                    <BankDetailsTitle>Bank Transfer Details</BankDetailsTitle>
+                    <BankDetail>
+                      <BankDetailLabel>Bank Name:</BankDetailLabel>
+                      <BankDetailValue>-</BankDetailValue>
+                    </BankDetail>
+                    <BankDetail>
+                      <BankDetailLabel>Account Name:</BankDetailLabel>
+                      <BankDetailValue>-</BankDetailValue>
+                    </BankDetail>
+                    <BankDetail>
+                      <BankDetailLabel>Account Number:</BankDetailLabel>
+                      <BankDetailValue>-</BankDetailValue>
+                    </BankDetail>
+                    <BankDetail>
+                      <BankDetailLabel>Routing Number:</BankDetailLabel>
+                      <BankDetailValue>-</BankDetailValue>
+                    </BankDetail>
+                    <BankDetail>
+                      <BankDetailLabel>Reference:</BankDetailLabel>
+                      <BankDetailValue>-</BankDetailValue>
+                    </BankDetail>
+                  </BankDetailsBox>
+                  
+                  <RegistrationFormGroup>
+                    <RegistrationLabel>Proof of Payment</RegistrationLabel>
+                    <FileUploadArea>
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={handleFileUpload}
+                        style={{ display: 'none' }}
+                        id="proof-upload"
+                        required
+                      />
+                      <label htmlFor="proof-upload" style={{ cursor: 'pointer' }}>
+                        <FileUploadText>
+                          {registrationForm.proofOfPayment 
+                            ? `Selected: ${registrationForm.proofOfPayment.name}`
+                            : 'Click to upload proof of payment (Image or PDF)'
+                          }
+                        </FileUploadText>
+                      </label>
+                    </FileUploadArea>
+                  </RegistrationFormGroup>
+                </RegistrationFormSection>
+
+                <RegistrationSubmitButton type="submit">
+                  Submit Registration
+                </RegistrationSubmitButton>
+              </form>
+            </RegistrationModalBody>
+          </RegistrationModalContent>
+        </RegistrationModal>
+      )}
     </PageContainer>
   );
 }
 
-export default Tournament; 
+export default Tournament;

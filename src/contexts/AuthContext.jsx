@@ -64,11 +64,13 @@ const AuthProvider = ({ children }) => {
     return email === dummyCredentials.email && password === dummyCredentials.password;
   };
 
-  const login = (userData, token) => {
+  const login = (userData, token, showWelcome = true) => {
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', token);
     setUser(userData);
-    showNotification(`Welcome back, ${userData.firstName}!`, 'success');
+    if (showWelcome) {
+      showNotification(`Welcome back, ${userData.firstName}!`, 'success');
+    }
   };
 
   const loginWithCredentials = (email, password) => {

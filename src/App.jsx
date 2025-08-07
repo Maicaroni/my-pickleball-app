@@ -11,6 +11,7 @@ import ClubsCourts from './pages/ClubsCourts';
 import SignIn from './pages/SignIn';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import HostTournament from './pages/HostTournament';
 import './App.css';
 
 function AppContent() {
@@ -28,6 +29,7 @@ function AppContent() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/host-tournament" element={<HostTournament />} />
         </Routes>
         <Footer />
       <Notification
