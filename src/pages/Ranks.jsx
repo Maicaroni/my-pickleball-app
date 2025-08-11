@@ -645,7 +645,7 @@ function Ranks() {
   const [currentDate, setCurrentDate] = useState('');
   const [ageGroup, setAgeGroup] = useState('');
 
-  const adultAgeGroups = ['19+', '35+', '50+'];
+  const adultAgeGroups = ['18+', '35+', '50+'];
 
   // Helper function to check if a player's age matches the selected age group
   const isInAgeGroup = (playerAge, selectedGroup) => {
@@ -658,8 +658,8 @@ function Ranks() {
   const filterRankings = (rankings) => {
     if (!rankings) return [];
     
-    // Filter by age (adults only - 19+)
-    let filtered = rankings.filter(player => player.age >= 19);
+    // Filter by age (adults only - 18+)
+    let filtered = rankings.filter(player => player.age >= 18);
 
     // Then filter by specific age group and search query
     filtered = filtered.filter(player => {
