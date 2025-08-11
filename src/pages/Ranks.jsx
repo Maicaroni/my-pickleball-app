@@ -47,6 +47,7 @@ const PageContainer = styled.div`
 
 const PageHeader = styled.div`
   margin-bottom: 40px;
+  text-align: center;
 `;
 
 const PageTitle = styled.h1`

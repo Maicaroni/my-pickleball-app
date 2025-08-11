@@ -1,6 +1,12 @@
 .App {
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: #ffffff;
+}
+
+/* Global spacing below navbar for all pages */
+.main-content {
+  padding-top: 20px;
+  min-height: calc(100vh - 72px); /* Account for navbar height */
 }
 
 /* Container for the entire app */

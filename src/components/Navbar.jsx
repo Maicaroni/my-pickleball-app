@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import styled from 'styled-components';
-import logoImg from '../../public/ppl-logo.svg';
+import logoImg from '../../ppl-logo.svg';
 
 const GlobalReset = styled.div`
   * {

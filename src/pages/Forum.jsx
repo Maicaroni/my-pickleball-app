@@ -33,12 +33,12 @@ import { useAuth } from '../contexts/AuthContext';
  */
 
 const PageContainer = styled.div`
-  padding: 70px 16px 24px;
+  padding: 80px 16px 24px;
   animation: fadeIn 0.3s ease;
   min-height: 100vh;
 
   @media (max-width: 768px) {
-    padding: 60px 0px 16px;
+    padding: 70px 0px 16px;
   }
 
   @keyframes fadeIn {
