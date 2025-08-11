@@ -1188,6 +1188,8 @@ function Navbar() {
     navigate(path);
     setIsProfileOpen(false);
     setIsNotificationOpen(false);
+    // Scroll to top when navigating to a new page
+    window.scrollTo(0, 0);
   };
 
   const handleLogout = () => {

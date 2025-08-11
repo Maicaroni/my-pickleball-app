@@ -23,7 +23,7 @@ import AuthModal from '../components/AuthModal';
  * @property {string} registrationDeadline - Registration deadline (ISO string)
  * @property {string} bannerUrl - Tournament banner image URL
  * @property {string[]} divisions - Available divisions (e.g., ["Men's Singles", "Mixed Doubles"])
- * @property {string} tournamentType - Tournament type ("intermediate", "advanced", "open")
+ * @property {string} tournamentType - Tournament type ("beginner", "intermediate", "advanced", "open")
  * @property {number} tier - Tournament tier (1, 2, 3)
  * @property {string} contactEmail - Contact email for inquiries
  * @property {string} contactPhone - Contact phone number
@@ -209,6 +209,7 @@ const TournamentDetailType = styled.div`
   padding: 8px 16px;
   background: ${props => {
     switch (props.type) {
+      case 'beginner': return '#f0fdf4';
       case 'intermediate': return '#fef3c7';
       case 'advanced': return '#fef2f2';
       case 'open': return '#f0f9ff';
@@ -218,6 +219,7 @@ const TournamentDetailType = styled.div`
   border-radius: 25px;
   color: ${props => {
     switch (props.type) {
+      case 'beginner': return '#15803d';
       case 'intermediate': return '#d97706';
       case 'advanced': return '#dc2626';
       case 'open': return '#0369a1';
@@ -229,6 +231,7 @@ const TournamentDetailType = styled.div`
   margin-bottom: 24px;
   border: 1px solid ${props => {
     switch (props.type) {
+      case 'beginner': return '#bbf7d0';
       case 'intermediate': return '#fde68a';
       case 'advanced': return '#fecaca';
       case 'open': return '#bae6fd';
@@ -1961,6 +1964,7 @@ const TournamentTypeDisplay = styled.div`
   margin-bottom: 16px;
   border: 1px solid ${props => {
     switch (props.type) {
+      case 'beginner': return '#bbf7d0';
       case 'intermediate': return '#fde68a';
       case 'advanced': return '#fecaca';
       case 'open': return '#bae6fd';
@@ -2630,6 +2634,9 @@ function Tournament() {
   // Add state for expanded categories (multiple can be open)
   const [expandedCategories, setExpandedCategories] = useState({});
   
+  // Add state for players search
+  const [playersSearchTerm, setPlayersSearchTerm] = useState('');
+  
   // Registration modal state
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [registrationTournament, setRegistrationTournament] = useState(null);
@@ -2646,9 +2653,9 @@ function Tournament() {
   
   // Fee ranges
   const feeRanges = [
-    { label: '₱0 - ₱3,000', min: 0, max: 3000 },
-    { label: '₱3,001 - ₱6,000', min: 3001, max: 6000 },
-    { label: '₱6,001 - ₱10,000', min: 6001, max: 10000 }
+    { label: '₱0 - ₱1,000', min: 0, max: 1000 },
+    { label: '₱1,001 - ₱2,000', min: 1001, max: 2000 },
+    { label: '₱2,001 - ₱3,000', min: 2001, max: 3000 }
   ];
 
   const filteredTournaments = tournaments.filter(tournament => {
@@ -2685,7 +2692,7 @@ function Tournament() {
             // Check if this is an Open category with matching tier
             return skillLevel === 'open' && categoryTier === targetTier;
           } else {
-            // For Intermediate and Advanced categories
+            // For Beginner, Intermediate and Advanced categories
             return category.skillLevel.toLowerCase() === selectedTier.toLowerCase();
           }
         });
@@ -2723,7 +2730,7 @@ function Tournament() {
        * - Men's Doubles, Women's Doubles, Mixed Doubles
        * 
        * Each category has:
-       * - 3 Skill Levels: Intermediate, Advanced, Open
+       * - 4 Skill Levels: Beginner, Intermediate, Advanced, Open
        * - 3 Age Groups: 18+, 35+, 50+
        * 
        * Example Categories:
@@ -2742,7 +2749,7 @@ function Tournament() {
        * - address: text (full venue address)
        * - latitude: decimal(10,8) (for map pin location)
        * - longitude: decimal(11,8) (for map pin location)
-       * - tournamentType: enum('intermediate', 'advanced', 'open')
+       * - tournamentType: enum('beginner', 'intermediate', 'advanced', 'open')
        * - description: text (tournament description)
        * - contactEmail: varchar(255)
        * - contactPhone: varchar(20)
@@ -4356,6 +4363,149 @@ function Tournament() {
               }
             }
           }
+        },
+        {
+          id: '4',
+          name: 'Beginner Friendly Tournament',
+          date: '2025-06-05T09:00:00Z',
+          endDate: '2025-06-05T16:00:00Z', // Single day
+          location: 'Community Recreation Center',
+          address: '789 Beginner Lane, Pasig City, Metro Manila',
+          latitude: 14.5696,
+          longitude: 121.0874,
+          entryFee: 300,
+          prizePool: 5000,
+          maxParticipants: 16,
+          currentParticipants: 12,
+          registrationDeadline: '2025-05-25T23:59:59Z',
+          bannerUrl: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+          tier: 1,
+          tournamentType: 'beginner',
+          description: 'Perfect for newcomers to pickleball! This beginner-friendly tournament welcomes players who are just learning the game. Great atmosphere for first-time competitors.',
+          contactEmail: 'beginner@philippinepickleball.com',
+          contactPhone: '+63 912 345 6789',
+          divisions: ["Mixed Doubles", "Men's Doubles", "Women's Doubles"],
+          // Multiple Tournament Categories with Brackets
+          tournamentCategories: {
+            'mixed-doubles-beginner-18': {
+              id: 'mixed-doubles-beginner-18',
+              name: "Mixed Doubles Beginner 18+",
+              ageGroup: '18+',
+              skillLevel: 'Beginner',
+              participants: 8,
+              prizePool: 3000,
+              description: 'Fun and welcoming mixed doubles for beginners',
+              groupStage: {
+                bracketA: [
+                  { name: 'James Wilson & Lisa Chen', roundWins: 2, roundLosses: 1, winPoints: 63, lossPoints: 58 },
+                  { name: 'Mark Torres & Sarah Kim', roundWins: 2, roundLosses: 1, winPoints: 61, lossPoints: 59 },
+                  { name: 'Alex Rivera & Emma Davis', roundWins: 1, roundLosses: 2, winPoints: 58, lossPoints: 62 },
+                  { name: 'Chris Lee & Nina Lopez', roundWins: 1, roundLosses: 2, winPoints: 56, lossPoints: 64 }
+                ],
+                bracketB: [
+                  { name: 'David Park & Amy Wong', roundWins: 3, roundLosses: 0, winPoints: 66, lossPoints: 44 },
+                  { name: 'Tom Garcia & Jen Liu', roundWins: 2, roundLosses: 1, winPoints: 58, lossPoints: 56 },
+                  { name: 'Ryan Ng & Kate Miller', roundWins: 1, roundLosses: 2, winPoints: 52, lossPoints: 60 },
+                  { name: 'Sam Cruz & Mia Taylor', roundWins: 0, roundLosses: 3, winPoints: 48, lossPoints: 66 }
+                ]
+              },
+              singleElimination: {
+                semifinals: {
+                  sf1: {
+                    id: 'sf1',
+                    player1: { name: 'James Wilson & Lisa Chen', seed: 'A1' },
+                    player2: { name: 'Tom Garcia & Jen Liu', seed: 'B2' },
+                    score: '11-8, 11-6',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  sf2: {
+                    id: 'sf2',
+                    player1: { name: 'David Park & Amy Wong', seed: 'B1' },
+                    player2: { name: 'Mark Torres & Sarah Kim', seed: 'A2' },
+                    score: '11-9, 8-11, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  }
+                },
+                finals: {
+                  id: 'finals',
+                  player1: { name: 'James Wilson & Lisa Chen', seed: 'SF1-W' },
+                  player2: { name: 'David Park & Amy Wong', seed: 'SF2-W' },
+                  score: '11-13, 11-9, 11-8',
+                  winner: 'player2',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Tom Garcia & Jen Liu', seed: 'SF1-L' },
+                  player2: { name: 'Mark Torres & Sarah Kim', seed: 'SF2-L' },
+                  score: '11-6, 11-4',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            },
+            'mens-doubles-beginner-18': {
+              id: 'mens-doubles-beginner-18',
+              name: "Men's Doubles Beginner 18+",
+              ageGroup: '18+',
+              skillLevel: 'Beginner',
+              participants: 8,
+              prizePool: 2000,
+              description: 'Entry-level men\'s doubles perfect for new players',
+              groupStage: {
+                bracketA: [
+                  { name: 'John Smith & Mike Johnson', roundWins: 2, roundLosses: 1, winPoints: 59, lossPoints: 55 },
+                  { name: 'Steve Davis & Paul Wilson', roundWins: 2, roundLosses: 1, winPoints: 57, lossPoints: 58 },
+                  { name: 'Rich Martinez & Tony Chen', roundWins: 1, roundLosses: 2, winPoints: 54, lossPoints: 60 },
+                  { name: 'Ben Lee & Dan Garcia', roundWins: 1, roundLosses: 2, winPoints: 53, lossPoints: 61 }
+                ],
+                bracketB: [
+                  { name: 'Carlos Torres & Jim Kim', roundWins: 3, roundLosses: 0, winPoints: 66, lossPoints: 48 },
+                  { name: 'Rob Taylor & Ed Liu', roundWins: 2, roundLosses: 1, winPoints: 58, lossPoints: 54 },
+                  { name: 'Matt Cruz & Joe Park', roundWins: 1, roundLosses: 2, winPoints: 52, lossPoints: 58 },
+                  { name: 'Sam Wong & Alex Ng', roundWins: 0, roundLosses: 3, winPoints: 46, lossPoints: 66 }
+                ]
+              },
+              singleElimination: {
+                semifinals: {
+                  sf1: {
+                    id: 'sf1',
+                    player1: { name: 'John Smith & Mike Johnson', seed: 'A1' },
+                    player2: { name: 'Rob Taylor & Ed Liu', seed: 'B2' },
+                    score: '11-7, 11-9',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  sf2: {
+                    id: 'sf2',
+                    player1: { name: 'Carlos Torres & Jim Kim', seed: 'B1' },
+                    player2: { name: 'Steve Davis & Paul Wilson', seed: 'A2' },
+                    score: '11-6, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  }
+                },
+                finals: {
+                  id: 'finals',
+                  player1: { name: 'John Smith & Mike Johnson', seed: 'SF1-W' },
+                  player2: { name: 'Carlos Torres & Jim Kim', seed: 'SF2-W' },
+                  score: '9-11, 11-7, 11-9',
+                  winner: 'player2',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Rob Taylor & Ed Liu', seed: 'SF1-L' },
+                  player2: { name: 'Steve Davis & Paul Wilson', seed: 'SF2-L' },
+                  score: '11-8, 11-6',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            }
+          }
         }
       ];
 
@@ -4402,6 +4552,7 @@ function Tournament() {
     setSelectedTournament(null);
     setActiveTab('details'); // Reset to details tab
     setExpandedCategories({}); // Reset expanded categories
+    setPlayersSearchTerm(''); // Reset players search
   };
 
   // Toggle category expansion
@@ -4513,6 +4664,7 @@ function Tournament() {
   // Helper function to get tournament type icon
   const getTournamentTypeIcon = (type) => {
     switch (type) {
+      case 'beginner': return '🌱';
       case 'intermediate': return '⚡';
       case 'advanced': return '🔥';
       case 'open': return '🏆';
@@ -4584,7 +4736,7 @@ function Tournament() {
                       [categoryId: string]: {
                         id: string,
                         name: string,
-                        skillLevel: "Intermediate" | "Advanced" | "Open",
+                        skillLevel: "Beginner" | "Intermediate" | "Advanced" | "Open",
                         tier?: 1 | 2 | 3,  // Required when skillLevel is "Open"
                         prizePool: number,
                         participants: number,
@@ -4649,7 +4801,7 @@ function Tournament() {
                   $active={activeTab === 'details'} 
                   onClick={() => setActiveTab('details')}
                 >
-                  Tournament Details
+                  Details
                 </TabButton>
                 <TabButton 
                   $active={activeTab === 'events'} 
@@ -4661,7 +4813,19 @@ function Tournament() {
                   $active={activeTab === 'brackets'} 
                   onClick={() => setActiveTab('brackets')}
                 >
-                  Tournament Brackets
+                  Brackets
+                </TabButton>
+                <TabButton 
+                  $active={activeTab === 'players'} 
+                  onClick={() => setActiveTab('players')}
+                >
+                  Players
+                </TabButton>
+                <TabButton 
+                  $active={activeTab === 'guidelines'} 
+                  onClick={() => setActiveTab('guidelines')}
+                >
+                  Guidelines
                 </TabButton>
               </TabNavigation>
 
@@ -5169,6 +5333,281 @@ function Tournament() {
                   </TournamentDetailSection>
                 )}
 
+                {activeTab === 'players' && (
+                  <TournamentDetailSection>
+                    <TournamentDetailSectionTitle>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m3 4.197a4 4 0 11-3-6.18" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Approved Players
+                    </TournamentDetailSectionTitle>
+                    
+                    {selectedTournament.registrations && selectedTournament.registrations.filter(reg => reg.status === 'approved').length > 0 ? (
+                      <div>
+                        {/* Search Bar */}
+                        <div style={{ marginBottom: '24px' }}>
+                          <div style={{
+                            position: 'relative',
+                            maxWidth: '400px',
+                            margin: '0 auto'
+                          }}>
+                            <input
+                              type="text"
+                              placeholder="Search players by name..."
+                              value={playersSearchTerm}
+                              onChange={(e) => setPlayersSearchTerm(e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '12px 16px 12px 44px',
+                                border: '1.5px solid #e2e8f0',
+                                borderRadius: '8px',
+                                fontSize: '1rem',
+                                color: '#1a1a1a',
+                                background: 'white',
+                                transition: 'all 0.2s ease',
+                                outline: 'none'
+                              }}
+                              onFocus={(e) => {
+                                e.target.style.borderColor = '#29ba9b';
+                                e.target.style.boxShadow = '0 0 0 3px rgba(41, 186, 155, 0.1)';
+                              }}
+                              onBlur={(e) => {
+                                e.target.style.borderColor = '#e2e8f0';
+                                e.target.style.boxShadow = 'none';
+                              }}
+                            />
+                            <div style={{
+                              position: 'absolute',
+                              left: '14px',
+                              top: '50%',
+                              transform: 'translateY(-50%)',
+                              color: '#94a3b8'
+                            }}>
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '18px', height: '18px' }}>
+                                <circle cx="11" cy="11" r="8" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="m21 21-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ 
+                          background: '#f8fafc', 
+                          padding: '16px', 
+                          borderRadius: '8px', 
+                          border: '1px solid #e2e8f0',
+                          marginBottom: '24px',
+                          textAlign: 'center'
+                        }}>
+                          <span style={{ color: '#64748b', fontSize: '0.9rem' }}>
+                            {(() => {
+                              const approvedPlayers = selectedTournament.registrations.filter(reg => reg.status === 'approved');
+                              const filteredPlayers = approvedPlayers.filter(player => {
+                                const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
+                                return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
+                              });
+                              return playersSearchTerm 
+                                ? `Showing ${filteredPlayers.length} of ${approvedPlayers.length} approved players`
+                                : `Total Approved Players: ${approvedPlayers.length}`;
+                            })()}
+                          </span>
+                        </div>
+                        
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                          gap: '16px'
+                        }}>
+                          {selectedTournament.registrations
+                            .filter(reg => reg.status === 'approved')
+                            .filter(player => {
+                              const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
+                              return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
+                            })
+                            .sort((a, b) => {
+                              const cleanNameA = a.playerName.replace(/["'].*?["']/g, '').trim();
+                              const cleanNameB = b.playerName.replace(/["'].*?["']/g, '').trim();
+                              return cleanNameA.localeCompare(cleanNameB);
+                            })
+                            .map((player, index) => (
+                              <div key={player.id} style={{
+                                background: 'white',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '12px',
+                                padding: '16px',
+                                transition: 'all 0.2s ease',
+                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                              }}>
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '12px',
+                                  marginBottom: '12px'
+                                }}>
+                                  <div style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: '50%',
+                                    background: '#29ba9b',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    fontWeight: '600',
+                                    fontSize: '14px'
+                                  }}>
+                                    {player.playerName.replace(/["'].*?["']/g, '').trim().split(' ').map(n => n[0]).join('').toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <div style={{
+                                      fontWeight: '600',
+                                      color: '#334155',
+                                      fontSize: '1rem'
+                                    }}>
+                                      {player.playerName.replace(/["'].*?["']/g, '').trim()}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                        
+                        {/* No results message */}
+                        {playersSearchTerm && 
+                         selectedTournament.registrations
+                           .filter(reg => reg.status === 'approved')
+                           .filter(player => {
+                             const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
+                             return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
+                           }).length === 0 && (
+                          <div style={{ 
+                            textAlign: 'center', 
+                            padding: '48px 24px',
+                            background: '#f8fafc',
+                            borderRadius: '16px',
+                            border: '1px dashed #e2e8f0',
+                            marginTop: '24px'
+                          }}>
+                            <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🔍</div>
+                            <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Players Found</h3>
+                            <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+                              No approved players match your search for "{playersSearchTerm}".
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ 
+                        textAlign: 'center', 
+                        padding: '48px 24px',
+                        background: '#f8fafc',
+                        borderRadius: '16px',
+                        border: '1px dashed #e2e8f0'
+                      }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>👥</div>
+                        <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Approved Players Yet</h3>
+                        <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+                          Players will appear here once their registration is approved by the tournament organizer.
+                        </p>
+                      </div>
+                    )}
+                  </TournamentDetailSection>
+                )}
+
+                {activeTab === 'guidelines' && (
+                  <TournamentDetailSection>
+                    <TournamentDetailSectionTitle>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Tournament Guidelines
+                    </TournamentDetailSectionTitle>
+                    
+                    {selectedTournament.rules && selectedTournament.rules.length > 0 ? (
+                      <div>
+                        <div style={{ 
+                          background: '#fef3c7', 
+                          padding: '16px', 
+                          borderRadius: '8px', 
+                          border: '1px solid #f59e0b',
+                          marginBottom: '24px'
+                        }}>
+                          <div style={{ 
+                            color: '#92400e', 
+                            fontWeight: '600', 
+                            marginBottom: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>
+                            <span>⚠️</span>
+                            Important Notice
+                          </div>
+                          <div style={{ color: '#92400e', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                            Please read and understand all tournament guidelines before participating. 
+                            Violations may result in disqualification.
+                          </div>
+                        </div>
+                        
+                        <div style={{
+                          background: 'white',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '12px',
+                          overflow: 'hidden'
+                        }}>
+                          {selectedTournament.rules.map((rule, index) => (
+                            <div key={index} style={{
+                              padding: '20px',
+                              borderBottom: index < selectedTournament.rules.length - 1 ? '1px solid #e2e8f0' : 'none',
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: '16px'
+                            }}>
+                              <div style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                background: '#29ba9b',
+                                color: 'white',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: '600',
+                                fontSize: '14px',
+                                flexShrink: 0
+                              }}>
+                                {index + 1}
+                              </div>
+                              <div style={{
+                                flex: 1,
+                                fontSize: '1rem',
+                                lineHeight: '1.6',
+                                color: '#334155'
+                              }}>
+                                {rule}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ 
+                        textAlign: 'center', 
+                        padding: '48px 24px',
+                        background: '#f8fafc',
+                        borderRadius: '16px',
+                        border: '1px dashed #e2e8f0'
+                      }}>
+                        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📋</div>
+                        <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Guidelines Available</h3>
+                        <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+                          Tournament guidelines will be posted by the organizer before the event begins.
+                        </p>
+                      </div>
+                    )}
+                  </TournamentDetailSection>
+                )}
+
 
               </TabContent>
             </TournamentDetailLeft>
@@ -5549,6 +5988,7 @@ function Tournament() {
             onChange={(e) => setSelectedTier(e.target.value)}
           >
             <option value="">All Tiers</option>
+            <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
             <option value="advanced">Advanced</option>
             <option value="open-1">Open - Tier 1</option>

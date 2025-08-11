@@ -132,6 +132,7 @@ const CreatePostAvatar = styled.div`
   border-radius: 50%;
   background: #f1f5f9;
   border: 2px solid #e2e8f0;
+  overflow: hidden;
 
   @media (max-width: 768px) {
     width: 36px;
@@ -2106,6 +2107,16 @@ function FlagIcon() {
   );
 }
 
+function DefaultProfileIcon() {
+  return (
+    <svg viewBox="0 0 100 100" width="100%" height="100%" style={{ width: '100%', height: '100%' }}>
+      <circle cx="50" cy="50" r="50" fill="#E5E7EB"/>
+      <circle cx="50" cy="35" r="15" fill="#9CA3AF"/>
+      <path d="M50 60c-20 0-35 10-35 25v15h70V85c0-15-15-25-35-25z" fill="#9CA3AF"/>
+    </svg>
+  );
+}
+
 /**
  * Forum Component
  * 
@@ -2794,7 +2805,7 @@ function Forum() {
         <CreatePost>
           <CreatePostHeader onClick={handleCreatePost}>
             <CreatePostAvatar style={{
-              background: isAuthenticated && user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
+              background: isAuthenticated && user?.avatar ? `url(${user.avatar}) center/cover` : '#f1f5f9',
               color: isAuthenticated && user?.avatar ? 'transparent' : 'white',
               display: 'flex',
               alignItems: 'center',
@@ -2802,10 +2813,13 @@ function Forum() {
               fontSize: '14px',
               fontWeight: '600'
             }}>
-              {isAuthenticated && !user?.avatar && user ? 
-                `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() : 
-                (!isAuthenticated ? '' : '')
-              }
+              {!isAuthenticated ? (
+                <DefaultProfileIcon />
+              ) : (
+                isAuthenticated && !user?.avatar && user ? 
+                  `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() : 
+                  ''
+              )}
             </CreatePostAvatar>
             {isAuthenticated ? "What's happening in pickleball?" : "Sign in to share what's happening in pickleball!"}
           </CreatePostHeader>

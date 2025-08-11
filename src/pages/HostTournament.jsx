@@ -789,6 +789,7 @@ const HostTournament = () => {
   ];
 
   const skillLevels = [
+    { value: 'beginner', label: 'Beginner', description: 'New to pickleball, learning basic rules and techniques' },
     { value: 'intermediate', label: 'Intermediate', description: 'Perfect for developing players' },
     { value: 'advanced', label: 'Advanced', description: 'Competitive players with solid fundamentals' },
     { value: 'open-tier-1', label: 'Open - Tier 1', description: 'Entry level competitive play' },

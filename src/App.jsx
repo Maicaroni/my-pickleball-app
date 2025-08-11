@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Forum from './pages/Forum';
 import Tournament from './pages/Tournament';
 import Profile from './pages/Profile';
@@ -17,6 +17,12 @@ import './styles/App.css';
 
 function AppContent() {
   const { notification, hideNotification } = useAuth();
+  const location = useLocation();
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
     <div className="App">

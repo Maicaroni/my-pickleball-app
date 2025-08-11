@@ -234,8 +234,39 @@ const EditButton = styled.button`
   }
 `;
 
+const ApplyCoachButton = styled.button`
+  background: #29ba9b;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #26a085;
+    transform: translateY(-1px);
+  }
+  
+  &:before {
+    content: '🏆';
+    margin-right: 6px;
+    font-size: 0.9rem;
+  }
+`;
+
 const HiddenFileInput = styled.input`
   display: none;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
 `;
 
 // Tab Components
@@ -1006,6 +1037,10 @@ const Profile = () => {
     navigate('/host-tournament');
   };
 
+  const handleApplyAsCoach = () => {
+    showNotification('Apply as Coach functionality coming soon!', 'info');
+  };
+
   // SearchIcon component for the club search
   const SearchIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1566,9 +1601,14 @@ const EditBioButton = styled.button`
           
           <div style={{ position: 'relative', flex: 1, maxWidth: '600px' }}>
             <div style={{ position: 'absolute', top: '-50px', right: '0', zIndex: 10 }}>
-              <EditButton onClick={handleEdit}>
-                Edit Profile
-              </EditButton>
+              <ButtonContainer>
+                <ApplyCoachButton onClick={handleApplyAsCoach}>
+                  Apply as Coach
+                </ApplyCoachButton>
+                <EditButton onClick={handleEdit}>
+                  Edit Profile
+                </EditButton>
+              </ButtonContainer>
             </div>
             
             <StatsContainer>
