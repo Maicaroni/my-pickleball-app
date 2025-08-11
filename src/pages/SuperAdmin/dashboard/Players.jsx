@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import '../style.css';
 import axios from 'axios';
 import Sidebar from '../../../components/Superadmin/SuperAdminSidebar';
 import Navbar from '../../../components/Superadmin/SuperAdminNavbar';
@@ -37,8 +38,10 @@ const Players = () => {
       await axios.delete(`/api/users/${selectedPlayer._id}`);
       setPlayers(players.filter((player) => player._id !== selectedPlayer._id));
       setShowDeleteModal(false);
+      message.success('Player deleted.');
     } catch (err) {
       console.error('Error deleting player:', err);
+      message.error('Failed to delete player.');
     }
   };
 
@@ -55,25 +58,20 @@ const Players = () => {
     }
   };
 
- const handleAddSubmit = async () => {
-  try {
-    const values = await addForm.validateFields();
-
-    // ✅ Convert birthDate to ISO format for backend
-    values.birthDate = new Date(values.birthDate).toISOString();
-
-    const res = await axios.post(`/api/users`, { ...values, role: 'player' });
-
-    fetchPlayers();
-    addForm.resetFields();
-    message.success('Player added successfully.');
-    setShowAddModal(false);
-  } catch (err) {
-    console.error('Error adding player:', err);
-    message.error('Failed to add player.');
-  }
-};
-
+  const handleAddSubmit = async () => {
+    try {
+      const values = await addForm.validateFields();
+      values.birthDate = new Date(values.birthDate).toISOString();
+      await axios.post(`/api/users`, { ...values, role: 'player' });
+      fetchPlayers();
+      addForm.resetFields();
+      message.success('Player added successfully.');
+      setShowAddModal(false);
+    } catch (err) {
+      console.error('Error adding player:', err);
+      message.error('Failed to add player.');
+    }
+  };
 
   const openEditModal = (player) => {
     setSelectedPlayer(player);
@@ -93,66 +91,86 @@ const Players = () => {
   return (
     <div className="app">
       <Sidebar />
-      <section id="content">
+      <section id="content" className="players-content">
         <Navbar />
-        <main className="p-6">
-          <h1 className="text-2xl font-bold text-nuBlue mb-6">Players</h1>
+        <main className="p-6 max-w-screen-lg mx-auto">
+          <h1 className="text-3xl font-extrabold text-nuBlue mb-8">Players</h1>
 
-          <div className="flex justify-between items-center mb-4">
-            <Button type="primary" className="bg-nuBlue text-white hover:bg-blue-700" onClick={() => setShowAddModal(true)}>
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-5">
+            <Button
+              type="primary"
+              className="bg-nuBlue text-white hover:bg-blue-700 rounded-lg px-5 py-3 shadow-md transition"
+              onClick={() => setShowAddModal(true)}
+            >
               Add Player (PWD Guide)
             </Button>
             <Input
               placeholder="Search players..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-1/3"
+              className="search-input rounded-lg shadow-sm"
+              style={{ maxWidth: '320px', padding: '10px 16px', fontSize: '16px' }}
+              allowClear
             />
           </div>
 
           {loading ? (
-            <p>Loading...</p>
+            <div className="loading-spinner text-center text-lg py-10">Loading...</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white rounded shadow-md">
-                <thead className="bg-nuBlue text-white">
+            <div className="overflow-x-auto rounded-lg shadow-lg border border-gray-300">
+              <table className="min-w-full bg-white rounded-lg table-auto border-collapse">
+                <thead className="bg-nuBlue text-white rounded-t-lg">
                   <tr>
-                    <th className="py-2 px-4 text-left">#</th>
-                    <th className="py-2 px-4 text-left">User</th>
-                    <th className="py-2 px-4 text-left">Username</th>
-                    <th className="py-2 px-4 text-left">Actions</th>
+                    <th className="py-4 px-8 text-left text-lg font-semibold">#</th>
+                    <th className="py-4 px-8 text-left text-lg font-semibold">User</th>
+                    <th className="py-4 px-8 text-left text-lg font-semibold">Username</th>
+                    <th className="py-4 px-8 text-left text-lg font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredPlayers.map((player, index) => (
-                    <tr key={player._id} className="border-b">
-                      <td className="py-2 px-4">{index + 1}</td>
-                      <td className="py-2 px-4">{player.firstName} {player.lastName}</td>
-                      <td className="py-2 px-4">{player.email.split('@')[0]}</td>
-                      <td className="py-2 px-4 flex gap-2">
-                        <button
-                          onClick={() => openEditModal(player)}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <FaEdit className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedPlayer(player);
-                            setShowDeleteModal(true);
-                          }}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <FaTrash className="w-5 h-5" />
-                        </button>
+                  {filteredPlayers.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="text-center py-10 text-gray-500 text-lg font-light">
+                        No players found.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredPlayers.map((player, index) => (
+                      <tr
+                        key={player._id}
+                        className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        <td className="py-4 px-8 text-base">{index + 1}</td>
+                        <td className="py-4 px-8 font-medium text-gray-900">{player.firstName} {player.lastName}</td>
+                        <td className="py-4 px-8 lowercase text-gray-700">{player.email.split('@')[0]}</td>
+                        <td className="py-4 px-8 flex gap-5">
+                          <button
+                            onClick={() => openEditModal(player)}
+                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                            aria-label={`Edit ${player.firstName}`}
+                          >
+                            <FaEdit size={20} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedPlayer(player);
+                              setShowDeleteModal(true);
+                            }}
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                            aria-label={`Delete ${player.firstName}`}
+                          >
+                            <FaTrash size={20} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
           )}
 
+          {/* Edit Modal */}
           <Modal
             title="Edit Player"
             open={showEditModal}
@@ -160,20 +178,40 @@ const Players = () => {
             onOk={handleEditSubmit}
             okText="Save"
             cancelText="Cancel"
+            destroyOnClose
+            bodyStyle={{ padding: '24px 32px' }}
+            okButtonProps={{ style: { borderRadius: '6px' } }}
+            cancelButtonProps={{ style: { borderRadius: '6px' } }}
           >
-            <Form layout="vertical" form={editForm} onFinish={handleEditSubmit}>
-              <Form.Item label="First Name" name="firstName" rules={[{ required: true, message: 'Please enter first name' }]}> 
-                <Input />
+            <Form layout="vertical" form={editForm} onFinish={handleEditSubmit} labelAlign="left">
+              <Form.Item
+                label="First Name"
+                name="firstName"
+                rules={[{ required: true, message: 'Please enter first name' }]}
+              >
+                <Input placeholder="First Name" size="large" />
               </Form.Item>
-              <Form.Item label="Last Name" name="lastName" rules={[{ required: true, message: 'Please enter last name' }]}> 
-                <Input />
+              <Form.Item
+                label="Last Name"
+                name="lastName"
+                rules={[{ required: true, message: 'Please enter last name' }]}
+              >
+                <Input placeholder="Last Name" size="large" />
               </Form.Item>
-              <Form.Item label="Email" name="email" rules={[{ required: true, message: 'Please enter email' }]}> 
-                <Input />
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  { required: true, message: 'Please enter email' },
+                  { type: 'email', message: 'Enter a valid email' },
+                ]}
+              >
+                <Input placeholder="Email" size="large" />
               </Form.Item>
             </Form>
           </Modal>
 
+          {/* Delete Modal */}
           <Modal
             title="Confirm Deletion"
             open={showDeleteModal}
@@ -181,10 +219,16 @@ const Players = () => {
             onOk={handleDeleteConfirmed}
             okText="Delete"
             cancelText="Cancel"
+            okButtonProps={{ danger: true, style: { borderRadius: '6px' } }}
+            cancelButtonProps={{ style: { borderRadius: '6px' } }}
+            destroyOnClose
           >
-            <p>Are you sure you want to delete <strong>{selectedPlayer?.firstName} {selectedPlayer?.lastName}</strong>?</p>
+            <p className="text-lg">
+              Are you sure you want to delete <strong>{selectedPlayer?.firstName} {selectedPlayer?.lastName}</strong>?
+            </p>
           </Modal>
 
+          {/* Add Modal */}
           <Modal
             title="Add Player"
             open={showAddModal}
@@ -192,33 +236,59 @@ const Players = () => {
             onOk={() => addForm.submit()}
             okText="Add"
             cancelText="Cancel"
+            destroyOnClose
+            bodyStyle={{ padding: '24px 32px' }}
+            okButtonProps={{ style: { borderRadius: '6px' } }}
+            cancelButtonProps={{ style: { borderRadius: '6px' } }}
           >
-            <Form layout="vertical" form={addForm} onFinish={handleAddSubmit}>
-              <Form.Item label="First Name" name="firstName" rules={[{ required: true, message: 'Please enter first name' }]}> 
-                <Input />
+            <Form layout="vertical" form={addForm} onFinish={handleAddSubmit} labelAlign="left">
+              <Form.Item
+                label="First Name"
+                name="firstName"
+                rules={[{ required: true, message: 'Please enter first name' }]}
+              >
+                <Input placeholder="First Name" size="large" />
               </Form.Item>
-              <Form.Item label="Last Name" name="lastName" rules={[{ required: true, message: 'Please enter last name' }]}> 
-                <Input />
+              <Form.Item
+                label="Last Name"
+                name="lastName"
+                rules={[{ required: true, message: 'Please enter last name' }]}
+              >
+                <Input placeholder="Last Name" size="large" />
               </Form.Item>
-              <Form.Item label="Email" name="email" rules={[{ required: true, message: 'Please enter email' }]}> 
-                <Input />
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  { required: true, message: 'Please enter email' },
+                  { type: 'email', message: 'Enter a valid email' },
+                ]}
+              >
+                <Input placeholder="Email" size="large" />
               </Form.Item>
-              <Form.Item label="Username" name="username" rules={[{ required: true, message: 'Please enter username' }]}> 
-                <Input />
+              <Form.Item
+                label="Username"
+                name="username"
+                rules={[{ required: true, message: 'Please enter username' }]}
+              >
+                <Input placeholder="Username" size="large" />
               </Form.Item>
               <Form.Item
                 label="Birthdate"
                 name="birthDate"
                 rules={[{ required: true, message: 'Please enter birthdate' }]}
               >
-                <Input type="date" />
+                <Input type="date" size="large" />
               </Form.Item>
-              <Form.Item label="Password" name="password" rules={[{ required: true, message: 'Please enter password' }]}> 
-                <Input.Password />
+              <Form.Item
+                label="Password"
+                name="password"
+                rules={[{ required: true, message: 'Please enter password' }]}
+              >
+                <Input.Password placeholder="Password" size="large" />
               </Form.Item>
             </Form>
           </Modal>
-
         </main>
       </section>
     </div>

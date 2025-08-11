@@ -16,7 +16,9 @@ const SuperAdminLogin = () => {
         password,
       });
 
+      // ✅ Save all required details
       localStorage.setItem("superadminToken", res.data.token);
+      localStorage.setItem("superadminId", res.data.admin._id); // <-- Added this line
       localStorage.setItem("superadminEmail", res.data.admin.email);
 
       navigate("/superadmin/dashboard");

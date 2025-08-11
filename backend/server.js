@@ -6,6 +6,7 @@ require("dotenv").config();
 const authRoutes = require("./routes/authRoutes");
 const rankingRoutes = require('./routes/rankings');
 const superAdminRoutes = require("./routes/superadmin");
+const analyticsRoutes = require('./routes/analytics');
 const coachRoutes = require("./routes/coaches");
 const organizerRoutes = require("./routes/organizers");
 const clubAdminRoutes = require("./routes/clubAdmins");
@@ -38,6 +39,7 @@ mongoose.connect(process.env.MONGO_URI)
 // Routes
 app.use("/api/auth", authRoutes);
 app.use('/api/rankings', rankingRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.use("/api/superadmin", superAdminRoutes);
 app.use("/api/coaches", coachRoutes);
 app.use("/api/organizers", organizerRoutes);

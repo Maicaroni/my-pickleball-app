@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { message } from "antd";
+import '../../pages/SuperAdmin/style.css'
 
 const SuperAdminNavbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -21,23 +22,29 @@ const SuperAdminNavbar = () => {
   }, []);
 
   const handleLogout = async () => {
-    try {
-      const adminId = localStorage.getItem("superadminId");
+  try {
+    const adminId = localStorage.getItem("superadminId");
 
-      // Send logout log to backend
-      await axios.post("http://localhost:5000/api/superadmin/logout", { adminId });
+    // Send logout log to backend
+    await axios.post("http://localhost:5000/api/superadmin/logout", { adminId });
 
-      // Clear local storage
-      localStorage.removeItem("superadminToken");
-      localStorage.removeItem("superadminId");
+    // ✅ Clear ALL stored session data
+    localStorage.removeItem("superadminToken");
+    localStorage.removeItem("superadminId");
+    localStorage.removeItem("superadminEmail");
 
-      message.success("Logged out successfully!");
-      navigate("/superadmin/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-      message.error("Logout failed");
-    }
-  };
+    // ✅ Remove default auth header in case it's set globally
+    delete axios.defaults.headers.common["Authorization"];
+
+    message.success("Logged out successfully!");
+
+    // Redirect to login
+    navigate("/superadmin/login");
+  } catch (error) {
+    console.error("Logout error:", error);
+    message.error("Logout failed");
+  }
+};
 
   return (
     <nav className="flex items-center justify-between">

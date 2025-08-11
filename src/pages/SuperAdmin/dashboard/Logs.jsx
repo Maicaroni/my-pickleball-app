@@ -25,9 +25,9 @@ const Logs = () => {
     const fieldsToSearch = [
       log?.action,
       log?.role,
-      log?.user?.firstName,
-      log?.user?.lastName,
-      log?.user?.email,
+      log?.userId?.firstName,
+      log?.userId?.lastName,
+      log?.userId?.email,
     ];
 
     return fieldsToSearch.some((field) =>
@@ -39,16 +39,16 @@ const Logs = () => {
   const columns = [
     {
       title: '🧑 User',
-      dataIndex: 'user',
+      dataIndex: 'userId',
       key: 'user',
-      render: (user) =>
-        user
-          ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+      render: (userId) =>
+        userId
+          ? `${userId.firstName || ''} ${userId.lastName || ''}`.trim()
           : 'Deleted User',
     },
     {
       title: '📧 Email',
-      dataIndex: ['user', 'email'],
+      dataIndex: ['userId', 'email'],
       key: 'email',
       render: (email) => email || 'N/A',
     },

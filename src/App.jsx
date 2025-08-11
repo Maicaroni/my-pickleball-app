@@ -18,6 +18,7 @@ import SuperAdminRegister from "./pages/SuperAdmin/SuperAdminRegister";
 import SuperAdminLayout from './layout/SuperAdminLayout';
 
 import SuperAdminDashboard from './pages/SuperAdmin/dashboard/SuperAdminDashboard';
+import AdminTournament from './pages/SuperAdmin/dashboard/AdminTournament';
 import Players from './pages/SuperAdmin/dashboard/Players';
 import Coaches from './pages/SuperAdmin/dashboard/Coaches';
 import Organizers from './pages/SuperAdmin/dashboard/Organizers';
@@ -30,7 +31,6 @@ import Profile from './pages/SuperAdmin/dashboard/Profile';
 
 import './App.css';
 import './index.css';
-import './pages/SuperAdmin/style.css';
 import 'antd/dist/reset.css'; // Ant Design v5 and up
 
 
@@ -58,6 +58,7 @@ function AppContent() {
         {/* SuperAdmin Layout with Nested Routes */}
        <Route path="/superadmin" element={<SuperAdminLayout />}>
         <Route path="dashboard" element={<SuperAdminDashboard />} />
+        <Route path="admintournament" element={<AdminTournament />} />
         <Route path="players" element={<Players />} />
         <Route path="coaches" element={<Coaches />} />
         <Route path="organizers" element={<Organizers />} />

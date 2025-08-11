@@ -1,84 +1,45 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  FaUsers,
-  FaChalkboardTeacher,
-  FaUserShield,
-  FaFileAlt,
-} from "react-icons/fa";
+import DashboardRoleCards from "./analytics/DashboardRoleCards"; // adjust path if needed
 
 const SuperAdminDashboard = () => {
-  const [stats, setStats] = useState({
+  const [roleCounts, setRoleCounts] = useState({
     players: 0,
     coaches: 0,
-    admins: 0,
-    reports: 0,
+    organizers: 0,
+    clubAdmins: 0,
   });
 
   useEffect(() => {
-    const fetchStats = async () => {
+    async function fetchRoleCounts() {
       try {
-        const [players, coaches, admins, reports] = await Promise.all([
-          axios.get("/api/players/count"),
-          axios.get("/api/coaches/count"),
-          axios.get("/api/club-admins/count"),
-          axios.get("/api/reports/count"),
-        ]);
-
-        setStats({
-          players: players.data.count || 0,
-          coaches: coaches.data.count || 0,
-          admins: admins.data.count || 0,
-          reports: reports.data.count || 0,
+        const { data } = await axios.get("/api/analytics");
+        setRoleCounts({
+          players: data.totalPlayers ?? 0,
+          coaches: data.totalCoaches ?? 0,
+          organizers: data.totalOrganizers ?? 0,
+          clubAdmins: data.totalClubAdmins ?? 0,
         });
-      } catch (err) {
-        console.error("Error fetching dashboard stats:", err);
+      } catch (error) {
+        console.error("Failed to fetch role counts", error);
       }
-    };
-
-    fetchStats();
+    }
+    fetchRoleCounts();
   }, []);
 
   return (
-    <div className="pt-4 pb-10 px-6">
-      <h1 className="text-2xl font-bold text-nuBlue mb-6">
-        Welcome, Super Admin 👋
-      </h1>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Welcome, Super Admin 👋</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          icon={<FaUsers />}
-          title="Total Players"
-          count={stats.players}
-        />
-        <StatCard
-          icon={<FaChalkboardTeacher />}
-          title="Active Coaches"
-          count={stats.coaches}
-        />
-        <StatCard
-          icon={<FaUserShield />}
-          title="Club Admins"
-          count={stats.admins}
-        />
-        <StatCard
-          icon={<FaFileAlt />}
-          title="Reports"
-          count={stats.reports}
-        />
-      </div>
+      {/* Role cards */}
+      <DashboardRoleCards
+        players={roleCounts.players}
+        coaches={roleCounts.coaches}
+        organizers={roleCounts.organizers}
+        clubAdmins={roleCounts.clubAdmins}
+      />
     </div>
   );
 };
-
-const StatCard = ({ icon, title, count }) => (
-  <div className="bg-white p-6 rounded-xl shadow-md flex items-center gap-4 hover:shadow-lg transition-all duration-200">
-    <div className="text-3xl text-nuBlue">{icon}</div>
-    <div>
-      <p className="text-gray-500">{title}</p>
-      <h3 className="text-xl font-bold text-nuBlue">{count}</h3>
-    </div>
-  </div>
-);
 
 export default SuperAdminDashboard;
