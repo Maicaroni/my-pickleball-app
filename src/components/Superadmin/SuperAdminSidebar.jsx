@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaChartLine, FaTrophy, FaUsers, FaChalkboardTeacher, FaUserTie, FaBuilding, FaFileAlt, FaCommentDots, FaSyncAlt, FaList } from 'react-icons/fa';
+import { FaChartLine, FaTrophy, FaUsers, FaChalkboardTeacher, FaUserTie, FaBuilding, FaFileAlt, FaCommentDots, FaSyncAlt, FaList, FaComments, FaCrown, FaTableTennis } from 'react-icons/fa';
 import '../../pages/SuperAdmin/style.css'
 
 const sidebarSections = [
@@ -9,6 +9,9 @@ const sidebarSections = [
     items: [
       { name: 'Dashboard', path: '/superadmin/dashboard', icon: <FaChartLine /> },
       { name: 'Tournaments', path: '/superadmin/admintournament', icon: <FaTrophy /> },
+      { name: 'Forum', path: '/superadmin/forumanalytics', icon: <FaComments /> },
+      { name: 'Clubs & Courts', path: '/superadmin/clubsandcourts', icon: <FaTableTennis /> },
+      { name: 'Rankings', path: '/superadmin/rankings', icon: <FaCrown /> },
     ],
   },
   {

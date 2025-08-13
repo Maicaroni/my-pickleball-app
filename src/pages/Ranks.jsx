@@ -25,6 +25,7 @@ const PageContainer = styled.div`
 
 const PageHeader = styled.div`
   margin-bottom: 40px;
+  text-align: center;
 `;
 
 const PageTitle = styled.h1`
@@ -605,7 +606,7 @@ function Ranks() {
   const [currentDate, setCurrentDate] = useState('');
   const [ageGroup, setAgeGroup] = useState('');
 
-  const adultAgeGroups = ['19+', '35+', '50+'];
+  const adultAgeGroups = ['18+', '35+', '50+'];
 
   const isInAgeGroup = (playerAge, selectedGroup) => {
     if (!selectedGroup) return true;
@@ -631,6 +632,7 @@ function Ranks() {
     let filtered = normalized.filter(player => player.age >= 19);
   
     // Step 2: Filter by search + age group
+
     filtered = filtered.filter(player => {
       const matchesSearch = !searchQuery || player.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesAgeGroup = isInAgeGroup(player.age, ageGroup);

@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/my-pickleball-app/', // for local dev. change to '/my-pickleball-app/' when deploying
+  base: '/',
   server: {
     host: true,
     port: 5173,

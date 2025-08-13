@@ -17,7 +17,7 @@
   --green: #29ba9b;     /* Accent color */
 }
 
-
+/* Body & Html */
 body {
   background: var(--mint-light);
   overflow-x: hidden;
@@ -32,7 +32,6 @@ li {
   list-style: none;
 }
 
-/* Sidebar */
 /* Sidebar */
 #sidebar {
   position: fixed;
@@ -117,6 +116,8 @@ li {
 
 /* Navbar */
 nav {
+   border-bottom: 1px solid #ddd;  /* subtle border */
+  padding-bottom: 10px;
   background: var(--white);
   height: 64px;
   padding: 0 20px;
@@ -217,24 +218,144 @@ nav .profile .profile-link a:hover {
   left: 60px;
 }
 
-/* Search + Table */
+#content.players-content {
+  padding-top: 80px; /* push everything below fixed navbar */
+}
+/* Players tab tweaks */
+.players-content main {
+  margin-top: 100px;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+  padding: 32px 40px;
+  margin-top: 24px;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Search Input */
 .search-input {
+  border: 1.5px solid #d1d5db;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, width 0.3s ease;
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.search-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+  outline: none;
+}
+
+/* Table */
+table {
+  border-collapse: separate;
+  border-spacing: 0 8px; /* less vertical spacing */
   width: 100%;
 }
-@media (min-width: 576px) {
-  .search-input {
-    width: 300px;
-  }
+
+thead th {
+  border-bottom: none !important;
+  padding: 8px 12px;   /* reduced padding */
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;     /* slightly smaller font */
+  color: var(--dark-blue);
 }
-@media (min-width: 768px) {
-  .search-input {
-    width: 400px;
-  }
+
+tbody tr {
+  background: #f9fafb;
+  border-radius: 6px;  /* slightly smaller radius */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 0 0 transparent;
 }
+
+tbody tr:hover {
+  background: #e0f2fe;
+  box-shadow: 0 3px 6px rgb(30 64 175 / 0.1); /* slightly smaller shadow */
+}
+
+tbody td {
+  vertical-align: middle;
+  padding: 8px 12px !important;  /* reduce top/bottom padding */
+  font-size: 14px;                /* smaller font */
+  color: var(--black);
+}
+
+/* Smaller icons in action buttons */
+tbody td button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Buttons */
+.ant-btn-primary {
+  background-color: var(--green);
+  border-color: var(--green);
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgb(41 186 155 / 0.3);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+  background-color: #28a088;
+  border-color: #28a088;
+  box-shadow: 0 6px 12px rgb(40 160 136 / 0.5);
+}
+
+.ant-btn-primary:disabled {
+  background-color: #a1d4ca;
+  border-color: #a1d4ca;
+  box-shadow: none;
+}
+
+/* Delete Button */
 .table-delete-button {
   background-color: var(--red) !important;
   border-color: var(--red) !important;
   color: var(--white);
+  transition: background-color 0.3s ease;
+  border-radius: 6px;
+}
+
+.table-delete-button:hover {
+  background-color: #d32f45 !important;
+  border-color: #d32f45 !important;
+}
+
+/* Modal Titles & Body */
+.ant-modal-title {
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--dark-blue);
+}
+
+.ant-modal-body {
+  font-size: 16px;
+  color: var(--black);
+}
+
+.ant-modal-footer button {
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 6px;
+}
+
+/* Icons in buttons */
+button svg {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+button:hover svg {
+  transform: scale(1.1);
 }
 
 /* Spinner */
@@ -245,242 +366,27 @@ nav .profile .profile-link a:hover {
   height: 20vh;
 }
 
-/* Logs */
-.logs-list {
-  padding: 10px;
-}
-.log-item {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  margin-bottom: 10px;
-}
-.log-item strong {
-  display: inline-block;
-  margin-right: 5px;
-}
-@media (max-width: 768px) {
-  .logs-list {
-    font-size: 14px;
-  }
-}
-
-/* Form */
-.form-group {
-  margin-bottom: 20px;
-}
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-}
-
-/* Buttons */
-.btn-send {
-  background: var(--mint-dark);
-  color: var(--white);
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  transition: 0.3s ease;
-}
-.btn-send:hover {
-  background: var(--mint);
-}
-
-/* Dropdowns */
-.dropdown {
-  position: relative;
-  display: inline-block;
-}
-.dropdown-toggle {
-  cursor: pointer;
-}
-.dropdown-menu {
-  display: block;
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background: var(--white);
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-  list-style: none;
-  padding: 10px;
-  margin: 0;
-  width: 200px;
-  z-index: 1000;
-}
-.dropdown-menu li {
-  margin-bottom: 10px;
-}
-.dropdown-menu li a {
-  text-decoration: none;
-  color: var(--black);
-  display: flex;
-  align-items: center;
-}
-.dropdown-menu li a:hover {
-  background: var(--mint-light);
-}
-
-/* Profile Page Styling */
-.main-content {
-  margin-left: 260px; /* Same as sidebar width */
-  padding: 40px 20px;
-}
-
-.profile-container {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
-
-.id-card {
-  background: var(--white);
-  width: 380px;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  overflow: hidden;
-  text-align: center;
-  padding-bottom: 20px;
-  border: 1px solid rgba(0,0,0,0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.id-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-}
-
-.id-card-header {
-  background: var(--dark-blue);
-  color: var(--white);
-  padding: 30px 20px;
-}
-
-.id-card-header h2 {
-  font-size: 1.4rem;
-  margin-bottom: 5px;
-}
-
-.id-card-header .role {
-  font-size: 0.9rem;
-  opacity: 0.85;
-}
-
-.avatar {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  margin-bottom: 12px;
-  border: 4px solid var(--green);
-  object-fit: cover;
-  background: var(--white);
-}
-
-.id-card-body {
-  padding: 20px;
-  font-size: 14px;
-  text-align: left;
-}
-
-.id-card-body p {
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.id-card-body strong {
-  color: var(--green);
-}
-
-/* Players tab tweaks */
-.players-content main {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-  padding: 32px 40px;
-  margin-top: 24px;
-}
-
-.search-input {
-  border: 1.5px solid #d1d5db; /* Light gray border */
-  transition: border-color 0.3s ease;
-}
-.search-input:focus {
-  border-color: #2563eb; /* Tailwind blue-600 */
-  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.3);
-  outline: none;
-}
-
-/* Table */
-table {
-  border-collapse: separate;
-  border-spacing: 0 12px; /* Adds vertical spacing between rows */
-}
-thead th {
-  border-bottom: none !important;
-}
-
-tbody tr {
-  background: #f9fafb;
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
-}
-tbody tr:hover {
-  background: #e0f2fe; /* Light blue hover */
-}
-
-tbody td {
-  vertical-align: middle;
-  padding-top: 16px !important;
-  padding-bottom: 16px !important;
-}
-
-/* Buttons */
-.ant-btn-primary {
-  font-weight: 600;
-  font-size: 16px;
-  box-shadow: 0 4px 8px rgb(37 99 235 / 0.3);
-  border-radius: 8px;
-}
-.ant-btn-primary:hover {
-  background-color: #1e40af;
-  box-shadow: 0 6px 12px rgb(30 64 175 / 0.5);
-}
-
-/* Modal buttons */
-.ant-modal-footer button {
-  border-radius: 6px;
-}
-
-/* Icons */
-button svg {
-  transition: transform 0.2s ease;
-}
-button:hover svg {
-  transform: scale(1.1);
-  cursor: pointer;
-}
-
-
-@media screen and (max-width: 768px) {
-  .main-content {
-    margin-left: 60px; /* Sidebar collapsed width */
-  }
-  .id-card {
-    width: 90%;
-  }
-}
-
-
 /* Responsive */
-@media screen and (max-width: 768px) {
+@media (max-width: 768px) {
   #content {
     width: calc(100% - 60px);
+    padding: 16px;
   }
-  nav .divider {
-    display: none;
+
+  .players-content main {
+    padding: 24px 20px;
+  padding-top: 100px; /* Adds space below navbar */
+    max-width: 100%;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Sidebar collapsed adjustments */
+  .main-content {
+    margin-left: 60px;
   }
 }

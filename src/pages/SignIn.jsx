@@ -4,21 +4,6 @@ import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import viteLogo from '/vite.svg';
 
-/**
- * @typedef {Object} SignInCredentials
- * @property {string} email - User's email
- * @property {string} password - User's password
- */
-
-/**
- * @typedef {Object} AuthResponse
- * @property {string} token - JWT token
- * @property {Object} user - User details
- * @property {string} user.id - User's unique identifier
- * @property {string} user.email - User's email
- * @property {string} user.name - User's full name
- * @property {string[]} user.roles - User's roles (e.g., ['user', 'admin'])
- */
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -131,7 +116,7 @@ const Input = styled.input`
   padding: 12px 16px;
   border: 2px solid #e2e8f0;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 13px;
   background: white;
   transition: all 0.2s;
 
@@ -143,7 +128,7 @@ const Input = styled.input`
 
   &::placeholder {
     color: #94a3b8;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   ${props => props.$hasPassword && `
@@ -450,49 +435,27 @@ const SignIn = () => {
     }
   };
 
-  const { login } = useAuth(); // real one!
+  const { login, loginWithCredentials } = useAuth();
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
-    setLoading(true);
-    try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-
-      // Store token based on rememberMe
-      const storage = rememberMe ? localStorage : sessionStorage;
-      storage.setItem("token", data.token);
-      storage.setItem("user", JSON.stringify(data.user));
-
-      // Set to global state via AuthContext
-      login(data.user, data.token);
-
-      navigate("/"); // Redirect to home/dashboard
-    } catch (err) {
-      setErrors(prev => ({
-        ...prev,
-        submit: err.message || "Failed to sign in. Please try again."
-      }));
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const result = await loginWithCredentials(formData.email, formData.password);
+    if (result.success) {
+      navigate("/");
+    } else {
+      setErrors(prev => ({ ...prev, submit: result.error }));
     }
-  };
+  } catch (error) {
+    setErrors(prev => ({ ...prev, submit: "Unexpected error. Please try again." }));
+  } finally {
+    setLoading(false);
+  }
+};
+
   
   const handleSocialLogin = async (provider) => {
     try {

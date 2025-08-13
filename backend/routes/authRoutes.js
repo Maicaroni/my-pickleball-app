@@ -23,7 +23,12 @@ const createLog = async (user, action) => {
 // Register Route
 router.post("/register", async (req, res) => {
   try {
-    const { firstName, lastName, email, password, birthDate, roles } = req.body;
+    const { firstName, lastName, email, password, birthDate, gender, roles } = req.body;
+
+    // Validate required fields upfront (optional)
+    if (!firstName || !lastName || !email || !password || !birthDate || !gender) {
+      return res.status(400).json({ message: "Please fill all required fields." });
+    }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: "Email already registered" });
@@ -37,7 +42,8 @@ router.post("/register", async (req, res) => {
       email,
       password: hashedPassword,
       birthDate,
-      roles: roles?.length ? roles : ['player']
+      gender,
+      roles: roles?.length ? roles : ["player"],
     });
 
     await newUser.save();
@@ -57,8 +63,9 @@ router.post("/register", async (req, res) => {
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         birthDate: newUser.birthDate,
-        roles: newUser.roles
-      }
+        gender: newUser.gender,
+        roles: newUser.roles,
+      },
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -70,6 +77,9 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password)
+      return res.status(400).json({ message: "Email and password are required." });
 
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Invalid email or password" });
@@ -93,8 +103,9 @@ router.post("/login", async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         birthDate: user.birthDate,
-        roles: user.roles
-      }
+        gender: user.gender,
+        roles: user.roles,
+      },
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -102,7 +113,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Logout Route (now uses JWT token from headers)
+// Logout Route (expects JWT token in headers)
 router.post("/logout", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;

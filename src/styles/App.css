@@ -1,0 +1,93 @@
+.App {
+  min-height: 100vh;
+  background-color: #ffffff;
+}
+
+/* Global spacing below navbar for all pages */
+.main-content {
+  padding-top: 20px;
+  min-height: calc(100vh - 72px); /* Account for navbar height */
+}
+
+/* Container for the entire app */
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 0 12px;
+  }
+}
+
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading states */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  color: #64748b;
+}
+
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e2e8f0;
+  border-top: 2px solid #29ba9b;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Error states */
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #ef4444;
+  background: #fef2f2;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+/* Success states */
+.success {
+  text-align: center;
+  padding: 2rem;
+  color: #22c55e;
+  background: #f0fdf4;
+  border-radius: 8px;
+  margin: 1rem 0;
+}

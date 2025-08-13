@@ -1,3 +1,4 @@
+
 import { Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Toaster } from 'react-hot-toast';
@@ -12,6 +13,7 @@ import Ranks from './pages/Ranks';
 import ClubsCourts from './pages/ClubsCourts';
 import SignIn from './pages/SignIn';
 import Register from './pages/Register';
+import Profile from './pages/Profile';
 
 import SuperAdminLogin from "./pages/SuperAdmin/SuperAdminLogin";
 import SuperAdminRegister from "./pages/SuperAdmin/SuperAdminRegister";
@@ -27,13 +29,13 @@ import Reports from './pages/SuperAdmin/dashboard/Reports';
 import Feedbacks from './pages/SuperAdmin/dashboard/Feedbacks';
 import SystemUpdates from './pages/SuperAdmin/dashboard/SystemUpdates';
 import Logs from './pages/SuperAdmin/dashboard/Logs';
-import Profile from './pages/SuperAdmin/dashboard/Profile';
+import AdminProfile from './pages/SuperAdmin/dashboard/Profile';
+import ForumAnalytics from './pages/SuperAdmin/dashboard/ForumAnalytics';
+import ClubsAndCourts from './pages/SuperAdmin/dashboard/ClubsAndCourts';
+import Rankings from './pages/SuperAdmin/dashboard/Rankings';
 
-import './App.css';
 import './index.css';
 import 'antd/dist/reset.css'; // Ant Design v5 and up
-
-
 
 
 function AppContent() {
@@ -50,6 +52,7 @@ function AppContent() {
         <Route path="/clubs-courts" element={<><Navbar /><ClubsCourts /><Footer /></>} />
         <Route path="/signin" element={<><Navbar /><SignIn /><Footer /></>} />
         <Route path="/register" element={<><Navbar /><Register /><Footer /></>} />
+        <Route path="/profile" element={<><Navbar /><Profile /><Footer /></>} />
 
         {/* SuperAdmin Auth Pages */}
         <Route path="/superadmin/register" element={<SuperAdminRegister />} />
@@ -59,6 +62,9 @@ function AppContent() {
        <Route path="/superadmin" element={<SuperAdminLayout />}>
         <Route path="dashboard" element={<SuperAdminDashboard />} />
         <Route path="admintournament" element={<AdminTournament />} />
+        <Route path="forumanalytics" element={<ForumAnalytics />} />
+        <Route path="clubsandcourts" element={<ClubsAndCourts />} />
+        <Route path="rankings" element={<Rankings />} />
         <Route path="players" element={<Players />} />
         <Route path="coaches" element={<Coaches />} />
         <Route path="organizers" element={<Organizers />} />
@@ -67,7 +73,7 @@ function AppContent() {
         <Route path="feedbacks" element={<Feedbacks />} />
         <Route path="system-updates" element={<SystemUpdates />} />
         <Route path="logs" element={<Logs />} />
-        <Route path="profile" element={<Profile />} />
+        <Route path="profile" element={<AdminProfile />} />
         </Route>
       </Routes>
 
