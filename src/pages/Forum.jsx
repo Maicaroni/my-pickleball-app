@@ -2326,7 +2326,7 @@ const fetchPosts = async () => {
     setLoading(true);
     setError(null);
 
-    const response = await axios.get(`http://localhost:5000/api/posts?page=${page}&limit=10`, {
+    const response = await axios.get(`http://localhost:5000/api/posts?status=approved&page=${page}&limit=10`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
 
@@ -2352,6 +2352,7 @@ const fetchPosts = async () => {
 const handleInteraction = async (e, action, postId) => {
   e.preventDefault();
 
+  // Redirect guests to login modal
   if (!isAuthenticated) {
     setShowAuthModal(true);
     return;
@@ -2374,14 +2375,17 @@ const handleInteraction = async (e, action, postId) => {
           })
         );
 
-        const response = await axios.put(
+        // API call to update like
+        const token = localStorage.getItem('token') || '';
+        const likeResponse = await axios.put(
           `http://localhost:5000/api/posts/${postId}/like`,
           {},
-          { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        const { likeCount, isLiked } = response.data;
+        const { likeCount, isLiked } = likeResponse.data;
 
+        // Sync posts with server response
         setPosts(prevPosts =>
           prevPosts.map(post => {
             if (post._id === postId) {
@@ -2392,37 +2396,44 @@ const handleInteraction = async (e, action, postId) => {
         );
         break;
 
-      case 'comment':
-        const isOpening = !showComments[postId];
+case 'comment':
+  const isOpening = !showComments[postId];
 
-        setShowComments(prev => ({
-          ...prev,
-          [postId]: !prev[postId]
-        }));
+  setShowComments(prev => ({
+    ...prev,
+    [postId]: !prev[postId]
+  }));
 
-        if (!commentInputs[postId]) {
-          setCommentInputs(prev => ({ ...prev, [postId]: '' }));
-        }
+  if (!commentInputs[postId]) {
+    setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+  }
 
-        if (isOpening && !postComments[postId]) {
-          try {
-            const commentsResponse = await axios.get(
-              `http://localhost:5000/api/posts/${postId}/comments`,
-              { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-            );
-            setPostComments(prev => ({
-              ...prev,
-              [postId]: commentsResponse.data,
-            }));
-          } catch (error) {
-            console.error('Failed to fetch comments:', error);
-            setPostComments(prev => ({ ...prev, [postId]: [] }));
-          }
-        }
-        break;
+  // Fetch comments only if opening and not already loaded
+  if (isOpening && !postComments[postId]) {
+    try {
+      const token = localStorage.getItem('token'); // ✅ get token first
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const commentsResponse = await axios.get(
+        `http://localhost:5000/api/posts/${postId}/comments`,
+        { headers }
+      );
+
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: commentsResponse.data.comments || [],
+      }));
+    } catch (error) {
+      console.error('Failed to fetch comments:', error);
+      setPostComments(prev => ({ ...prev, [postId]: [] }));
+    }
+  }
+  break;
+
     }
   } catch (err) {
     console.error('Error handling interaction:', err);
+
+    // Rollback optimistic like if API fails
     if (action === 'like') {
       setPosts(prevPosts =>
         prevPosts.map(post => {
@@ -2442,6 +2453,8 @@ const handleInteraction = async (e, action, postId) => {
 
 
 
+
+
 const handleSubmitComment = async (postId) => {
   const commentText = commentInputs[postId]?.trim();
   if (!commentText || !isAuthenticated) return;
@@ -2455,7 +2468,7 @@ const handleSubmitComment = async (postId) => {
       { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
     );
 
-    const newComment = response.data;
+    const newComment = response.data.comment; // ✅ get the comment, not the whole response
 
     setPostComments(prev => ({
       ...prev,
@@ -2479,7 +2492,6 @@ const handleSubmitComment = async (postId) => {
   }
 };
 
-
 const handleSubmitReply = async (commentId, postId) => {
   const replyText = replyInputs[commentId]?.trim();
   if (!replyText || !isAuthenticated) return;
@@ -2490,12 +2502,10 @@ const handleSubmitReply = async (commentId, postId) => {
     const response = await axios.post(
       `http://localhost:5000/api/posts/${postId}/comments/${commentId}/replies`,
       { content: replyText },
-      {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      }
+      { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
     );
 
-    const newReply = response.data;
+    const newReply = response.data.reply; // ✅ get the reply, not the whole response
 
     setPostComments(prev => ({
       ...prev,
@@ -2503,11 +2513,11 @@ const handleSubmitReply = async (commentId, postId) => {
         if (comment._id === commentId) {
           return {
             ...comment,
-            replies: [...(comment.replies || []), newReply]
+            replies: [...(comment.replies || []), newReply],
           };
         }
         return comment;
-      })
+      }),
     }));
 
     setReplyInputs(prev => ({ ...prev, [commentId]: '' }));
@@ -2519,6 +2529,7 @@ const handleSubmitReply = async (commentId, postId) => {
     setSubmittingReply(prev => ({ ...prev, [commentId]: false }));
   }
 };
+
 
   /**
    * Handles showing reply input for a comment
@@ -2576,7 +2587,8 @@ const createPost = async (postData) => {
     document.getElementById('imageInput').click();
   };
 
-const handleSubmitPost = async () => {
+const handleSubmitPost = async (e) => {
+  e.preventDefault();
   if (!postContent.trim() && selectedImages.length === 0) return;
 
   try {
@@ -2584,18 +2596,28 @@ const handleSubmitPost = async () => {
 
     const postData = {
       content: postContent.trim(),
-      images: selectedImages.map(img => ({ url: img.url, alt: img.alt || 'User uploaded image' })),
+      images: selectedImages.map(img => ({
+        url: img.url,
+        alt: img.alt || 'User uploaded image'
+      })),
     };
 
     const response = await createPost(postData);
 
     if (response.success && response.post) {
-      setPosts(prevPosts => [response.post, ...prevPosts]);
-      showNotification('Post created successfully!', 'success');
+      if (response.approved) {
+        // Only add to feed if approved
+        setPosts(prevPosts => [response.post, ...prevPosts]);
+        showNotification('Post created successfully!', 'success');
+      } else {
+        // Don't add to feed — only notify user
+        showNotification('Your post has been sent for superadmin approval.', 'info');
+      }
     } else {
       showNotification('Failed to create post. Please try again.', 'error');
     }
 
+    // Reset form
     setPostContent('');
     setSelectedImages([]);
     setShowCreateModal(false);
@@ -2607,6 +2629,8 @@ const handleSubmitPost = async () => {
     setIsSubmitting(false);
   }
 };
+
+
 
   const removeImage = (indexToRemove) => {
     setSelectedImages(prev => prev.filter((_, index) => index !== indexToRemove));
@@ -2772,6 +2796,7 @@ const confirmDelete = async () => {
   }
 };
 
+
 // Cancel delete in modal
 const cancelDelete = () => {
   setShowDeleteModal(false);
@@ -2790,6 +2815,85 @@ const handleReportClick = (postId) => {
   setSelectedReportReason('');
   setCustomReportReason('');
 };
+
+const handleDeleteComment = async (postId, commentId) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: prev[postId].filter(comment => comment._id !== commentId)
+      }));
+      setPosts(prevPosts =>
+        prevPosts.map(post => {
+          if (post._id === postId) {
+            return { ...post, commentCount: post.commentCount - 1 };
+          }
+          return post;
+        })
+      );
+      showNotification('Comment deleted!', 'success');
+    } else {
+      const data = await response.json();
+      showNotification(data.message || 'Failed to delete comment', 'error');
+    }
+  } catch (err) {
+    console.error(err);
+    showNotification('Failed to delete comment', 'error');
+  }
+};
+
+
+const handleDeleteReply = async (postId, commentId, replyId) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: prev[postId].map(comment => {
+          if (comment._id === commentId) {
+            return {
+              ...comment,
+              replies: comment.replies.filter(r => r._id !== replyId)
+            };
+          }
+          return comment;
+        })
+      }));
+      showNotification('Reply deleted!', 'success');
+    } else {
+      const data = await response.json();
+      showNotification(data.message || 'Failed to delete reply', 'error');
+    }
+  } catch (err) {
+    console.error(err);
+    showNotification('Failed to delete reply', 'error');
+  }
+};
+
+const formatTime = (createdAt) => {
+  const now = new Date();
+  const date = new Date(createdAt);
+  const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  const diffInDays = Math.floor(diffInHours / 24);
+
+  if (diffInMinutes < 60) return `${diffInMinutes || 1}m`;
+  if (diffInHours < 24) return `${diffInHours}h`;
+  return `${diffInDays}d`;
+};
+
+
 
 // Submit report
 const handleReportSubmit = async () => {
@@ -2856,6 +2960,7 @@ const handleReportCancel = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [currentImageIndex]);
 
+  
   return (
     <PageContainer>
       <ForumContainer>
@@ -2951,14 +3056,15 @@ const handleReportCancel = () => {
             </ImageUploadButton>
             {showCreateModal && (
               <SubmitButton
-                disabled={!postContent.trim()}
-                onClick={handleSubmitPost}
-                width="auto"
-                padding="8px 12px"
-                marginTop="0"
-              >
-                {isSubmitting ? 'Posting...' : 'Post'}
-              </SubmitButton>
+  type="button"
+  disabled={!postContent.trim()}
+  onClick={handleSubmitPost}
+  width="auto"
+  padding="8px 12px"
+  marginTop="0"
+>
+  {isSubmitting ? 'Posting...' : 'Post'}
+</SubmitButton>
             )}
             <input
               id="imageInput"
@@ -3024,304 +3130,323 @@ const handleReportCancel = () => {
           </ErrorMessage>
         )}
 
-{!loading && !error && posts.map(post => (
-  <PostContainer key={post._id}>
+{!loading && !error && posts
+  .filter(post => post.status === 'approved' || user) // show approved posts even if not logged in
+  .map(post => (
+    <PostContainer key={post._id}>
       <Post>
-      <PostHeader>
-        <Avatar style={{ 
-          background: post.author.avatar ? `url(${post.author.avatar}) center/cover` : post.author.avatarColor,
-          color: post.author.avatar ? 'transparent' : 'white'
-        }}>
-          {!post.author.avatar ? post.author.initials : ''}
-        </Avatar>
-
-        <PostAuthor>
-          <h3>
-            {post.author.firstName && post.author.lastName
-              ? `${post.author.firstName} ${post.author.lastName}`
-              : post.author.initials || 'User'}
-          </h3>
-          <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-        </PostAuthor>
-
-        {/* Moved menu here so it's top-right inside PostHeader */}
-        <MenuContainer>
-          <MenuToggle
-            onClick={() =>
-              setOpenMenu(prev => ({
-                ...prev,
-                [post._id]: !prev[post._id]
-              }))
-            }
+        <PostHeader>
+          <Avatar
+            style={{
+              background: post.author?.avatarUrl
+                ? `url(${post.author.avatarUrl}) center/cover`
+                : '#4df3c9ff'
+            }}
           >
-            <FaEllipsisH />
-          </MenuToggle>
+            {!post.author?.avatarUrl ? (post.author?.initials || '') : ''}
+          </Avatar>
 
-          {openMenu[post._id] && (
-            <MenuDropdown>
-  {post.author._id === user.id ? (
-    <Dropdown.Item onClick={() => handleDeleteClick(post._id)}>
-      <FiTrash2 style={{ marginRight: "8px", color: "#ef4444" }} /> Delete
-    </Dropdown.Item>
-  ) : (
-    <Dropdown.Item onClick={() => handleReportClick(post._id)}>
-      <FiFlag style={{ marginRight: "8px", color: "#f59e0b" }} /> Report
-    </Dropdown.Item>
-  )}
-</MenuDropdown>
+          <PostAuthor>
+            <h3>
+              {post.author
+                ? [post.author.firstName, post.author.lastName].filter(Boolean).join(' ')
+                : 'Unknown User'}
+            </h3>
+          </PostAuthor>
 
+          {/* Top-right menu */}
+          <MenuContainer>
+            <MenuToggle
+              onClick={() =>
+                setOpenMenu(prev => ({
+                  ...prev,
+                  [post._id]: !prev[post._id]
+                }))
+              }
+            >
+              <FaEllipsisH />
+            </MenuToggle>
+
+            {openMenu[post._id] && (
+              <MenuDropdown>
+                {post.author?._id === user?.id ? (
+                  <Dropdown.Item onClick={() => handleDeleteClick(post._id)}>
+                    <FiTrash2 style={{ marginRight: "8px", color: "#ef4444" }} /> Delete
+                  </Dropdown.Item>
+                ) : (
+                  <Dropdown.Item onClick={() => handleReportClick(post._id)}>
+                    <FiFlag style={{ marginRight: "8px", color: "#f59e0b" }} /> Report
+                  </Dropdown.Item>
+                )}
+              </MenuDropdown>
+            )}
+          </MenuContainer>
+        </PostHeader>
+
+        <PostContent>
+          <p>
+            {expandedPosts[post._id] || (post.content?.length || 0) <= 200
+              ? post.content || ''
+              : truncateText(post.content || '', 200)}
+          </p>
+
+          {(post.content?.length || 0) > 200 && (
+            <SeeMoreButton onClick={() => togglePostExpansion(post._id)}>
+              {expandedPosts[post._id] ? 'See less' : 'See more'}
+            </SeeMoreButton>
           )}
-        </MenuContainer>
-      </PostHeader>
-      <PostContent>
-        <p>
-          {expandedPosts[post._id] || post.content.length <= 200 
-            ? post.content 
-            : truncateText(post.content, 200)
-          }
-        </p>
-        {post.content.length > 200 && (
-          <SeeMoreButton onClick={() => togglePostExpansion(post._id)}>
-            {expandedPosts[post._id] ? 'See less' : 'See more'}
-          </SeeMoreButton>
-        )}
-        {post.images?.length > 0 && (
-          <PostImages className={getImageLayoutClass(post.images)}>
-            {getImageLayoutClass(post.images) === 'four-images-with-overlay' ? (
-              <>
-                {post.images.slice(0, 3).map((image, index) => (
-                  <div key={image.id||index} className="image-container">
-                    <img
-                      src={image.url}
-                      alt={image.alt}
-                      onClick={() => openCarousel(post.images, index)}
+
+          {post.images?.length > 0 && (
+            <PostImages className={getImageLayoutClass(post.images)}>
+              {getImageLayoutClass(post.images) === 'four-images-with-overlay' ? (
+                <>
+                  {post.images.slice(0, 3).map((image, index) => (
+                    <div key={image.id || index} className="image-container">
+                      <img
+                        src={image.url}
+                        alt={image.alt || 'Post image'}
+                        onClick={() => openCarousel(post.images, index)}
+                        style={{ cursor: 'pointer' }}
+                      />
+                    </div>
+                  ))}
+                  {post.images.length > 3 && (
+                    <div 
+                      className="image-container overlay" 
+                      data-remaining={post.images.length - 3}
+                      onClick={() => openCarousel(post.images, 3)}
                       style={{ cursor: 'pointer' }}
-                    />
+                    >
+                      <img src={post.images[3]?.url} alt={post.images[3]?.alt || 'Post image'} />
+                    </div>
+                  )}
+                </>
+              ) : (
+                post.images.map((image, index) => (
+                  <img
+                    key={image.id || index}
+                    src={image.url}
+                    alt={image.alt || 'Post image'}
+                    onClick={() => openCarousel(post.images, index)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                ))
+              )}
+            </PostImages>
+          )}
+        </PostContent>
+
+<PostActions>
+  <button
+    onClick={(e) => {
+      if (!user) {
+        setShowAuthModal(true);
+        return;
+      }
+      handleInteraction(e, 'like', post._id);
+    }}
+    style={{
+      color: post.isLiked ? '#ef4444' : '#64748b',
+      fontWeight: post.isLiked ? '600' : '400'
+    }}
+  >
+    <HeartIcon filled={post.isLiked} /> {post.likeCount}
+  </button>
+
+  <button
+    onClick={(e) => {
+      if (!user) {
+        setShowAuthModal(true);
+        return;
+      }
+      handleInteraction(e, 'comment', post._id);
+    }}
+  >
+    <CommentIcon /> {post.commentCount}
+  </button>
+</PostActions>
+
+
+
+        {/* Comments Section (only if logged in) */}
+        {user && showComments[post._id] && (
+          <CommentSection>
+            {/* Add Comment Input */}
+            <CommentInput>
+              <CommentAvatar
+                style={{
+                  background: user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
+                  color: user?.avatar ? 'transparent' : 'white'
+                }}
+              >
+                {!user?.avatar && typeof user?.name === 'string'
+                  ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                  : ''}
+              </CommentAvatar>
+
+              <CommentTextArea
+                placeholder="Add a comment..."
+                value={commentInputs[post._id] || ''}
+                onChange={e =>
+                  setCommentInputs(prev => ({ ...prev, [post._id]: e.target.value }))
+                }
+                onKeyPress={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSubmitComment(post._id);
+                  }
+                }}
+              />
+
+              <CommentSubmitButton
+                onClick={() => handleSubmitComment(post._id)}
+                disabled={!commentInputs[post._id]?.trim() || submittingComment[post._id]}
+              >
+                <SendIcon />
+              </CommentSubmitButton>
+            </CommentInput>
+
+            {/* Comments List */}
+            {postComments[post._id]?.length > 0 && (
+              <CommentsList>
+                {postComments[post._id].map(comment => (
+                  <div key={comment._id}>
+                    <CommentItem>
+                      <CommentAvatar
+                        style={{
+                          background: comment.author?.avatar ? `url(${comment.author.avatar}) center/cover` : '#29ba9b',
+                          color: comment.author?.avatar ? 'transparent' : 'white'
+                        }}
+                      >
+                        {!comment.author?.avatar ? comment.author?.initials : ''}
+                      </CommentAvatar>
+
+                      <CommentItemContent>
+                        <p className="comment-content">
+                          <span className="comment-author">{comment.author?.firstName} {comment.author?.lastName}</span>
+                          <span className="comment-text">{comment.content}</span>
+                        </p>
+
+                        <div className="comment-meta">
+                          <span className="comment-time">{formatTime(comment.createdAt)}</span>
+
+                          {comment.author?._id === user?.id ? (
+                            <button
+                              className="comment-delete"
+                              onClick={() => handleDeleteComment(post._id, comment._id)}
+                            >
+                              <FiTrash2 color="#ef4444" />
+                            </button>
+                          ) : (
+                            <button
+                              className="comment-report"
+                              onClick={() => handleReportClick(comment._id)}
+                            >
+                              <FiFlag color="#f59e0b" />
+                            </button>
+                          )}
+
+                          <button
+                            className="comment-reply"
+                            onClick={() => handleReplyClick(comment._id)}
+                          >
+                            Reply
+                          </button>
+                        </div>
+                      </CommentItemContent>
+                    </CommentItem>
+
+                    {/* Replies */}
+                    {showReplies[comment._id] && comment.replies?.length > 0 && (
+                      <ReplySection>
+                        {comment.replies.map(reply => (
+                          <ReplyItem key={reply._id}>
+                            <ReplyAvatar
+                              style={{
+                                background: reply.author?.avatar ? `url(${reply.author.avatar}) center/cover` : '#29ba9b',
+                                color: reply.author?.avatar ? 'transparent' : 'white'
+                              }}
+                            >
+                              {!reply.author?.avatar ? reply.author?.initials : ''}
+                            </ReplyAvatar>
+
+                            <ReplyContent>
+                              <p className="reply-content">
+                                <span className="reply-author">{reply.author?.firstName} {reply.author?.lastName}</span>
+                                <span className="reply-text">{reply.content}</span>
+                              </p>
+
+                              <div className="reply-meta">
+                                <span className="reply-time">{formatTime(reply.createdAt)}</span>
+
+                                {reply.author?._id === user?.id ? (
+                                  <button
+                                    className="reply-delete"
+                                    onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
+                                  >
+                                    <FiTrash2 color="#ef4444" />
+                                  </button>
+                                ) : (
+                                  <button
+                                    className="reply-report"
+                                    onClick={() => handleDeleteReply(reply._id)}
+                                  >
+                                    <FiTrash2 color="#ef4444" />
+                                  </button>
+                                )}
+                              </div>
+                            </ReplyContent>
+                          </ReplyItem>
+                        ))}
+                      </ReplySection>
+                    )}
+
+                    {/* Reply Input */}
+                    {showReplyInput[comment._id] && (
+                      <ReplySection>
+                        <ReplyInput>
+                          <ReplyAvatar
+                            style={{
+                              background: user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
+                              color: user?.avatar ? 'transparent' : 'white'
+                            }}
+                          >
+                            {!user?.avatar && typeof user?.name === 'string'
+                              ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                              : ''}
+                          </ReplyAvatar>
+                          <ReplyTextArea
+                            placeholder="Reply..."
+                            value={replyInputs[comment._id] || ''}
+                            onChange={e =>
+                              setReplyInputs(prev => ({ ...prev, [comment._id]: e.target.value }))
+                            }
+                            onKeyPress={e => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleSubmitReply(comment._id, post._id);
+                              }
+                            }}
+                          />
+                          <ReplySubmitButton
+                            onClick={() => handleSubmitReply(comment._id, post._id)}
+                            disabled={!replyInputs[comment._id]?.trim() || submittingReply[comment._id]}
+                          >
+                            <SendIcon />
+                          </ReplySubmitButton>
+                        </ReplyInput>
+                      </ReplySection>
+                    )}
                   </div>
                 ))}
-                <div 
-                  className="image-container overlay" 
-                  data-remaining={post.images.length - 3}
-                  onClick={() => openCarousel(post.images, 3)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <img src={post.images[3].url} alt={post.images[3].alt} />
-                </div>
-              </>
-            ) : (
-              post.images.map((image, index) => (
-                <img
-                  key={image.id}
-                  src={image.url}
-                  alt={image.alt}
-                  onClick={() => openCarousel(post.images, index)}
-                  style={{ cursor: 'pointer' }}
-                />
-              ))
+              </CommentsList>
             )}
-          </PostImages>
+          </CommentSection>
         )}
-      </PostContent>
-
-      <PostActions>
-        <button 
-          onClick={(e) => handleInteraction(e, 'like', post._id)}
-          style={{ 
-            color: post.isLiked ? '#ef4444' : '#64748b',
-            fontWeight: post.isLiked ? '600' : '400'
-          }}
-        >
-          <HeartIcon filled={post.isLiked} />
-          {post.likeCount}
-        </button>
-        <button onClick={(e) => handleInteraction(e, 'comment', post._id)}>
-          <CommentIcon />
-          {post.commentCount}
-        </button>
-      </PostActions>
-      
-      {/* Comments Section */}
-      {isAuthenticated && showComments[post._id] && (
-        <CommentSection>
-          <CommentInput>
-            <CommentAvatar style={{
-              background: user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
-              color: user?.avatar ? 'transparent' : 'white'
-            }}>
-              {!user?.avatar && typeof user?.name === 'string'
-  ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
-  : ''}
-
-
-            </CommentAvatar>
-            <CommentTextArea
-              placeholder="Add a comment..."
-              value={commentInputs[post._id] || ''}
-              onChange={(e) => setCommentInputs(prev => ({
-                ...prev,
-                [post._id]: e.target.value
-              }))}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleSubmitComment(post._id);
-                }
-              }}
-            />
-            <CommentSubmitButton
-              onClick={() => handleSubmitComment(post._id)}
-              disabled={!commentInputs[post._id]?.trim() || submittingComment[post._id]}
-            >
-              <SendIcon />
-            </CommentSubmitButton>
-          </CommentInput>
-
-          {/* Comments List */}
-          {postComments[post._id] && postComments[post._id].length > 0 && (
-            <CommentsList>
-              {postComments[post._id].map((comment) => (
-                <div key={comment._id}>
-                  <CommentItem>
-                    <CommentAvatar style={{
-                      background: comment.author.avatar ? `url(${comment.author.avatar}) center/cover` : '#29ba9b',
-                      color: comment.author.avatar ? 'transparent' : 'white'
-                    }}>
-                      {!comment.author.avatar ? comment.author.initials : ''}
-                    </CommentAvatar>
-                    <CommentItemContent>
-                      <p className="comment-content">
-                        <span className="comment-author">{comment.author.firstName} {comment.author.lastName}</span>
-                        <span className="comment-text">{comment.content}</span>
-                      </p>
-                      <div className="comment-meta">
-                        <span className="comment-time">
-                          {(() => {
-                            const now = new Date();
-                            const commentDate = new Date(comment.createdAt);
-                            const diffInMinutes = Math.floor((now - commentDate) / (1000 * 60));
-                            const diffInHours = Math.floor(diffInMinutes / 60);
-                            const diffInDays = Math.floor(diffInHours / 24);
-                            
-                            if (diffInMinutes < 60) return `${diffInMinutes || 1}m`;
-                            if (diffInHours < 24) return `${diffInHours}h`;
-                            return `${diffInDays}d`;
-                          })()}
-                        </span>
-                        <button 
-                          className="comment-reply"
-                          onClick={() => handleReplyClick(comment._id)}
-                        >
-                          Reply
-                        </button>
-                      </div>
-                    </CommentItemContent>
-                  </CommentItem>
-
-                  {/* Replies */}
-                  {comment.replies && comment.replies.length > 0 && (
-                    <ViewRepliesButton>
-                      <div className="view-replies">
-                        <button onClick={() => setShowReplies(prev => ({
-                          ...prev,
-                          [comment._id]: !prev[comment._id]
-                        }))}>
-                          {showReplies[comment._id] 
-                            ? 'Hide replies' 
-                            : `View replies (${comment.replies.length})`
-                          }
-                        </button>
-                      </div>
-                    </ViewRepliesButton>
-                  )}
-
-                  {showReplies[comment._id] && comment.replies && comment.replies.length > 0 && (
-                    <ReplySection>
-                      {comment.replies.map(reply => (
-                        <ReplyItem key={reply._id}>
-                          <ReplyAvatar style={{
-                            background: reply.author.avatar ? `url(${reply.author.avatar}) center/cover` : '#29ba9b',
-                            color: reply.author.avatar ? 'transparent' : 'white'
-                          }}>
-                            {!reply.author.avatar ? reply.author.initials : ''}
-                          </ReplyAvatar>
-                          <ReplyContent>
-                            <p className="reply-content">
-                              <span className="reply-author">{reply.author.firstName} {reply.author.lastName}</span>
-                              <span className="reply-text">{reply.content}</span>
-                            </p>
-                            <div className="reply-meta">
-                              <span className="reply-time">
-                                {(() => {
-                                  const now = new Date();
-                                  const replyDate = new Date(reply.createdAt);
-                                  const diffInMinutes = Math.floor((now - replyDate) / (1000 * 60));
-                                  const diffInHours = Math.floor(diffInMinutes / 60);
-                                  const diffInDays = Math.floor(diffInHours / 24);
-                                  
-                                  if (diffInMinutes < 60) return `${diffInMinutes || 1}m`;
-                                  if (diffInHours < 24) return `${diffInHours}h`;
-                                  return `${diffInDays}d`;
-                                })()}
-                              </span>
-                              <button 
-                                className="reply-reply"
-                                onClick={() => handleReplyClick(comment._id)}
-                              >
-                                Reply
-                              </button>
-                            </div>
-                          </ReplyContent>
-                        </ReplyItem>
-                      ))}
-                    </ReplySection>
-                  )}
-
-                  {/* Reply Input */}
-                  {showReplyInput[comment._id] && (
-                    <ReplySection>
-                      <ReplyInput>
-                        <ReplyAvatar style={{
-                          background: user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
-                          color: user?.avatar ? 'transparent' : 'white'
-                        }}>
-                          {!user?.avatar && typeof user?.name === 'string'
-  ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
-  : ''}
-
-                        </ReplyAvatar>
-                        <ReplyTextArea
-                          placeholder="Reply..."
-                          value={replyInputs[comment._id] || ''}
-                          onChange={(e) => setReplyInputs(prev => ({
-                            ...prev,
-                            [comment._id]: e.target.value
-                          }))}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleSubmitReply(comment._id, post._id);
-                            }
-                          }}
-                        />
-                        <ReplySubmitButton
-                          onClick={() => handleSubmitReply(comment._id, post._id)}
-                          disabled={!replyInputs[comment._id]?.trim() || submittingReply[comment._id]}
-                        >
-                          <SendIcon />
-                        </ReplySubmitButton>
-                      </ReplyInput>
-                    </ReplySection>
-                  )}
-
-                </div>
-              ))}
-            </CommentsList>
-          )}
-        </CommentSection>
-      )}
-    </Post>
-  </PostContainer>
+      </Post>
+    </PostContainer>
 ))}
+
 
         {!loading && !error && posts.length === 0 && (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>

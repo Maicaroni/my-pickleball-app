@@ -5,8 +5,9 @@ module.exports = (req, res, next) => {
   console.log('Authorization header:', authHeader); // DEBUG
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.log('No token or invalid auth header'); // DEBUG
-    return res.status(401).json({ message: 'No token, authorization denied' });
+    console.log('No token or invalid auth header, treating as guest'); // DEBUG
+    req.user = null; // guest user
+    return next();
   }
 
   const token = authHeader.split(' ')[1];
@@ -19,6 +20,7 @@ module.exports = (req, res, next) => {
     next();
   } catch (err) {
     console.error('JWT verification error:', err.message);
-    return res.status(401).json({ message: 'Token is not valid' });
+    req.user = null; // treat as guest if token is invalid
+    next();
   }
 };

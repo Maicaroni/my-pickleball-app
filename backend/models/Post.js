@@ -8,19 +8,24 @@ const postSchema = new mongoose.Schema({
   commentCount: { type: Number, default: 0 },
   likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   comments: [
-            {
-              author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-              content: String,
-              createdAt: Date,
-              replies: [
-                {
-                  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-                  content: String,
-                  createdAt: Date,
-                }
-              ]
-            }
-          ]
+    {
+      author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      content: String,
+      createdAt: Date,
+      replies: [
+        {
+          author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+          content: String,
+          createdAt: Date,
+        }
+      ]
+    }
+  ],
+  status: { 
+    type: String, 
+    enum: ['pending', 'approved', 'rejected'], 
+    default: 'pending' 
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Post', postSchema);
