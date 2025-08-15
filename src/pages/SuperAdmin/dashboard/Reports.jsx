@@ -17,46 +17,44 @@ const Reports = () => {
   const pageSize = 20;
 
   // Fetch reports
-const fetchReports = async () => {
-  setLoading(true);
-  try {
-    const res = await axios.get('http://localhost:5000/api/reports');
-    setReports(res.data);
-  } catch (err) {
-    console.error('Error fetching reports:', err);
-    message.error(err.response?.data?.message || 'Failed to fetch reports');
-  } finally {
-    setLoading(false);
-  }
-};
-
+  const fetchReports = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get('http://localhost:5000/api/reports');
+      setReports(res.data);
+    } catch (err) {
+      console.error('Error fetching reports:', err);
+      message.error(err.response?.data?.message || 'Failed to fetch reports');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchReports();
   }, []);
 
-  // Resolve report
-  const handleResolve = async (reportId) => {
+  // Resolve report(s)
+  const handleResolve = async (reportIds) => {
     try {
       const token = localStorage.getItem('superadminToken');
-      if (!token) {
-        message.error('No token found');
-        return;
-      }
+      if (!token) return message.error('No token found');
 
-      await axios.put(
-        `http://localhost:5000/api/reports/${reportId}/resolve`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      await Promise.all(
+        reportIds.map((id) =>
+          axios.put(
+            `http://localhost:5000/api/reports/${id}/resolve`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+        )
       );
 
-      message.success('Report marked as resolved!');
+      message.success('Report(s) marked as resolved!');
       fetchReports();
     } catch (err) {
       console.error(err);
-      message.error('Failed to resolve report.');
+      message.error('Failed to resolve report(s).');
     }
   };
 
@@ -65,16 +63,11 @@ const fetchReports = async () => {
     if (!selectedReport) return;
     try {
       const token = localStorage.getItem('superadminToken');
-      if (!token) {
-        message.error('No token found');
-        return;
-      }
+      if (!token) return message.error('No token found');
 
       await axios.delete(
         `http://localhost:5000/api/reports/${selectedReport._id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setReports(reports.filter((r) => r._id !== selectedReport._id));
@@ -86,9 +79,19 @@ const fetchReports = async () => {
     }
   };
 
-  // Filter reports for current page
+  // Group reports by post
+  const groupedReports = reports.reduce((acc, report) => {
+    const postId = report.post?._id || 'unknown';
+    if (!acc[postId]) acc[postId] = { reports: [], post: report.post };
+    acc[postId].reports.push(report);
+    return acc;
+  }, {});
+
+  const groupedReportsArray = Object.values(groupedReports);
+
+  // Pagination
   const startIndex = (currentPage - 1) * pageSize;
-  const currentReports = reports.slice(startIndex, startIndex + pageSize);
+  const currentReports = groupedReportsArray.slice(startIndex, startIndex + pageSize);
 
   return (
     <div className="app">
@@ -99,90 +102,61 @@ const fetchReports = async () => {
           <h1 className="text-3xl font-extrabold text-nuBlue mb-8">Reports</h1>
 
           {loading ? (
-            <div className="loading-spinner text-center text-lg py-10">
-              Loading...
-            </div>
+            <div className="loading-spinner text-center text-lg py-10">Loading...</div>
           ) : (
             <>
               <div className="overflow-x-auto rounded-lg shadow-lg border border-gray-300">
                 <table className="min-w-full bg-white rounded-lg table-auto border-collapse">
                   <thead className="bg-nuBlue text-white rounded-t-lg">
                     <tr>
-                      <th className="py-4 px-8 text-left text-lg font-semibold">
-                        Report ID
-                      </th>
-                      <th className="py-4 px-8 text-left text-lg font-semibold">
-                        Post Content
-                      </th>
-                      <th className="py-4 px-8 text-left text-lg font-semibold">
-                        Reported By
-                      </th>
-                      <th className="py-4 px-8 text-left text-lg font-semibold">
-                        Reason
-                      </th>
-                      <th className="py-4 px-8 text-left text-lg font-semibold">
-                        Status
-                      </th>
-                      <th className="py-4 px-8 text-left text-lg font-semibold">
-                        Actions
-                      </th>
+                      <th className="py-4 px-8 text-left text-lg font-semibold">Post ID</th>
+                      <th className="py-4 px-8 text-left text-lg font-semibold">Post Content</th>
+                      <th className="py-4 px-8 text-left text-lg font-semibold"># Reports</th>
+                      <th className="py-4 px-8 text-left text-lg font-semibold">Reported By</th>
+                      <th className="py-4 px-8 text-left text-lg font-semibold">Reason</th>
+                      <th className="py-4 px-8 text-left text-lg font-semibold">Status</th>
+                      <th className="py-4 px-8 text-left text-lg font-semibold">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {currentReports.length === 0 ? (
                       <tr>
-                        <td
-                          colSpan={6}
-                          className="text-center py-10 text-gray-500 text-lg font-light"
-                        >
+                        <td colSpan={7} className="text-center py-10 text-gray-500 text-lg font-light">
                           No reports found.
                         </td>
                       </tr>
                     ) : (
-                      currentReports.map((report) => (
-                        <tr
-                          key={report._id}
-                          className="border-b hover:bg-gray-50 transition-colors"
-                        >
-                          <td className="py-4 px-8 text-base">
-                            {report._id.slice(-6)}
+                      currentReports.map((group, idx) => (
+                        <tr key={group.post?._id || idx} className="border-b hover:bg-gray-50 transition-colors">
+                          <td className="py-4 px-8 text-base cursor-pointer" title={group.post?._id || '-'}>
+                            {group.post?._id.slice(0, 3) + group.post?._id.slice(-3)}
+                          </td>
+                          <td className="py-4 px-8">{group.post?.content || '-'}</td>
+                          <td className="py-4 px-8 font-semibold">{group.reports.length}</td>
+                          <td className="py-4 px-8">
+                            {group.reports.map(r => r.reportedBy ? `${r.reportedBy.firstName} ${r.reportedBy.lastName}` : '-').join(', ')}
                           </td>
                           <td className="py-4 px-8">
-                            {report.post?.content || '-'}
+                            {group.reports.map(r => r.reason + (r.customReason ? `: ${r.customReason}` : '')).join(', ')}
                           </td>
                           <td className="py-4 px-8">
-                            {report.reportedBy
-                              ? `${report.reportedBy.firstName} ${report.reportedBy.lastName}`
-                              : '-'}
-                          </td>
-                          <td className="py-4 px-8">
-                            {report.reason}
-                            {report.customReason
-                              ? `: ${report.customReason}`
-                              : ''}
-                          </td>
-                          <td className="py-4 px-8">
-                            {report.resolved ? (
-                              <Tag color="green">Resolved</Tag>
-                            ) : (
-                              <Tag color="red">Pending</Tag>
-                            )}
+                            {group.reports.every(r => r.resolved) ? <Tag color="green">Resolved</Tag> : <Tag color="red">Pending</Tag>}
                           </td>
                           <td className="py-4 px-8 flex gap-4">
-                            {!report.resolved && (
+                            {!group.reports.every(r => r.resolved) && (
                               <Button
                                 type="primary"
                                 icon={<FaCheck />}
-                                onClick={() => handleResolve(report._id)}
+                                onClick={() => handleResolve(group.reports.map(r => r._id))}
                               >
-                                Resolve
+                                Resolve All
                               </Button>
                             )}
                             <Button
                               danger
                               icon={<FaTrash />}
                               onClick={() => {
-                                setSelectedReport(report);
+                                setSelectedReport(group.reports[0]); // delete first report for now
                                 setShowDeleteModal(true);
                               }}
                             >
@@ -197,12 +171,12 @@ const fetchReports = async () => {
               </div>
 
               {/* Pagination */}
-              {reports.length > pageSize && (
+              {groupedReportsArray.length > pageSize && (
                 <div className="flex justify-center mt-6">
                   <Pagination
                     current={currentPage}
                     pageSize={pageSize}
-                    total={reports.length}
+                    total={groupedReportsArray.length}
                     onChange={(page) => setCurrentPage(page)}
                     showSizeChanger={false}
                   />
