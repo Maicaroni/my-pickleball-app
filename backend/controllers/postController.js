@@ -121,6 +121,7 @@ exports.getComments = async (req, res) => {
   try {
     const post = await Post.findById(req.params.postId)
       .populate('comments.author', 'firstName lastName avatarUrl initials username')
+      .populate('comments.replies.author', 'firstName lastName avatarUrl initials username') // ✅ populate reply authors
       .lean();
 
     if (!post) return res.status(404).json({ message: 'Post not found' });
@@ -130,6 +131,7 @@ exports.getComments = async (req, res) => {
     res.status(500).json({ message: 'Server error fetching comments' });
   }
 };
+
 
 exports.addComment = async (req, res) => {
   try {
@@ -171,15 +173,25 @@ exports.addReply = async (req, res) => {
 
     const newReply = { author: userId, content, createdAt: new Date() };
     comment.replies.push(newReply);
-    await post.save();
-    await post.populate('comments.replies.author', 'firstName lastName avatarUrl initials username');
 
-    res.status(201).json({ success: true, reply: comment.replies[comment.replies.length - 1] });
+    await post.save();
+
+    // Populate only the newly added reply author
+    const populatedPost = await Post.findById(req.params.postId)
+      .populate('comments.replies.author', 'firstName lastName avatarUrl initials username')
+      .lean();
+
+    const latestReply = populatedPost.comments
+      .find(c => c._id.toString() === req.params.commentId)
+      .replies.slice(-1)[0];
+
+    res.status(201).json({ success: true, reply: latestReply });
   } catch (error) {
     console.error('Add reply error:', error);
     res.status(500).json({ message: 'Server error adding reply' });
   }
 };
+
 
 // =========================
 // Delete post, comment, reply
@@ -209,7 +221,12 @@ exports.deleteComment = async (req, res) => {
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
-    if (post.author.toString() !== userId) return res.status(403).json({ message: 'Not authorized' });
+    const comment = post.comments.id(req.params.commentId);
+    if (!comment) return res.status(404).json({ message: 'Comment not found' });
+
+    // Allow deletion if comment author or post author
+    if (comment.author.toString() !== userId && post.author.toString() !== userId)
+      return res.status(403).json({ message: 'Not authorized' });
 
     post.comments = post.comments.filter(c => c._id.toString() !== req.params.commentId);
     post.commentCount = post.comments.length;
@@ -230,10 +247,18 @@ exports.deleteReply = async (req, res) => {
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
-    if (post.author.toString() !== userId) return res.status(403).json({ message: 'Not authorized' });
-
     const comment = post.comments.id(req.params.commentId);
     if (!comment) return res.status(404).json({ message: 'Comment not found' });
+
+    const reply = comment.replies.id(req.params.replyId);
+    if (!reply) return res.status(404).json({ message: 'Reply not found' });
+
+    // Allow deletion if reply author, comment author, or post author
+    if (
+      reply.author.toString() !== userId &&
+      comment.author.toString() !== userId &&
+      post.author.toString() !== userId
+    ) return res.status(403).json({ message: 'Not authorized' });
 
     comment.replies = comment.replies.filter(r => r._id.toString() !== req.params.replyId);
     await post.save();
@@ -244,6 +269,7 @@ exports.deleteReply = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 // =========================
 // SuperAdmin delete post

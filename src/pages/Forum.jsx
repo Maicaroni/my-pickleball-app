@@ -769,7 +769,24 @@ const CommentItemContent = styled.div`
       }
     }
   }
+    .comment-delete {
+      font-size: 12px;
+      color: #8e8e8e;
+      font-weight: 600;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      
+      
+      &:hover {
+        color: #262626;
+      }
+    }
+  }
 `;
+
+
 
 const ViewRepliesButton = styled.div`
   padding-left: 36px;
@@ -2320,31 +2337,67 @@ const [postToDelete, setPostToDelete] = useState(null);
   };
 
   // Fetch posts on mount and page change
+// Fetch posts on mount and page change
 useEffect(() => {
-const fetchPosts = async () => {
-  try {
-    setLoading(true);
-    setError(null);
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    const response = await axios.get(`http://localhost:5000/api/posts?status=approved&page=${page}&limit=10`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
+      const response = await axios.get(
+        `http://localhost:5000/api/posts?status=approved&page=${page}&limit=10`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
 
-    const { posts: newPosts, totalCount } = response.data;
+      const { posts: newPosts, totalCount } = response.data;
 
-    if (page === 1) {
-      setPosts(newPosts);
-    } else {
-      setPosts(prev => [...prev, ...newPosts]);
+      if (page === 1) {
+        setPosts(newPosts);
+      } else {
+        setPosts(prev => [...prev, ...newPosts]);
+      }
+
+      setHasMore(page * 10 < totalCount);
+
+      // Fetch comments for all posts on first load
+      for (const post of newPosts) {
+        try {
+          const token = localStorage.getItem('token'); 
+          const headers = token ? { Authorization: `Bearer ${token}` } : {};
+          const commentsResponse = await axios.get(
+            `http://localhost:5000/api/posts/${post._id}/comments`,
+            { headers }
+          );
+
+          const comments = commentsResponse.data.comments || [];
+
+          // Store comments in state
+          setPostComments(prev => ({
+            ...prev,
+            [post._id]: comments,
+          }));
+
+          // Auto-show replies for comments that already have them
+          const repliesToShow = {};
+          comments.forEach(comment => {
+            if (comment.replies?.length > 0) {
+              repliesToShow[comment._id] = true;
+            }
+          });
+          setShowReplies(prev => ({ ...prev, ...repliesToShow }));
+
+        } catch (err) {
+          console.error(`Failed to fetch comments for post ${post._id}:`, err);
+          setPostComments(prev => ({ ...prev, [post._id]: [] }));
+        }
+      }
+
+    } catch (err) {
+      setError('Failed to load posts. Please try again later.');
+    } finally {
+      setLoading(false);
     }
-
-    setHasMore(page * 10 < totalCount);
-  } catch (err) {
-    setError('Failed to load posts. Please try again later.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   fetchPosts();
 }, [page]);
@@ -3269,179 +3322,180 @@ const handleReportCancel = () => {
 
 
         {/* Comments Section (only if logged in) */}
-        {user && showComments[post._id] && (
-          <CommentSection>
-            {/* Add Comment Input */}
-            <CommentInput>
+{user && showComments[post._id] && (
+  <CommentSection>
+    {/* Add Comment Input */}
+    <CommentInput>
+      <CommentAvatar
+        style={{
+          background: user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
+          color: user?.avatar ? 'transparent' : 'white'
+        }}
+      >
+        {!user?.avatar && typeof user?.name === 'string'
+          ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+          : ''}
+      </CommentAvatar>
+
+      <CommentTextArea
+        placeholder="Add a comment..."
+        value={commentInputs[post._id] || ''}
+        onChange={e =>
+          setCommentInputs(prev => ({ ...prev, [post._id]: e.target.value }))
+        }
+        onKeyPress={e => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSubmitComment(post._id);
+          }
+        }}
+      />
+
+      <CommentSubmitButton
+        onClick={() => handleSubmitComment(post._id)}
+        disabled={!commentInputs[post._id]?.trim() || submittingComment[post._id]}
+      >
+        <SendIcon />
+      </CommentSubmitButton>
+    </CommentInput>
+
+    {/* Comments List */}
+    {postComments[post._id]?.length > 0 && (
+      <CommentsList>
+        {postComments[post._id].map(comment => (
+          <div key={comment._id}>
+            <CommentItem>
               <CommentAvatar
                 style={{
-                  background: user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
-                  color: user?.avatar ? 'transparent' : 'white'
+                  background: comment.author?.avatar ? `url(${comment.author.avatar}) center/cover` : '#29ba9b',
+                  color: comment.author?.avatar ? 'transparent' : 'white'
                 }}
               >
-                {!user?.avatar && typeof user?.name === 'string'
-                  ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
-                  : ''}
+                {!comment.author?.avatar ? comment.author?.initials : ''}
               </CommentAvatar>
 
-              <CommentTextArea
-                placeholder="Add a comment..."
-                value={commentInputs[post._id] || ''}
-                onChange={e =>
-                  setCommentInputs(prev => ({ ...prev, [post._id]: e.target.value }))
-                }
-                onKeyPress={e => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSubmitComment(post._id);
-                  }
-                }}
-              />
+              <CommentItemContent>
+                <p className="comment-content">
+                  <span className="comment-author">{comment.author?.firstName} {comment.author?.lastName}</span>
+                  <span className="comment-text">{comment.content}</span>
+                </p>
 
-              <CommentSubmitButton
-                onClick={() => handleSubmitComment(post._id)}
-                disabled={!commentInputs[post._id]?.trim() || submittingComment[post._id]}
-              >
-                <SendIcon />
-              </CommentSubmitButton>
-            </CommentInput>
-
-            {/* Comments List */}
-            {postComments[post._id]?.length > 0 && (
-              <CommentsList>
-                {postComments[post._id].map(comment => (
-                  <div key={comment._id}>
-                    <CommentItem>
-                      <CommentAvatar
-                        style={{
-                          background: comment.author?.avatar ? `url(${comment.author.avatar}) center/cover` : '#29ba9b',
-                          color: comment.author?.avatar ? 'transparent' : 'white'
-                        }}
-                      >
-                        {!comment.author?.avatar ? comment.author?.initials : ''}
-                      </CommentAvatar>
-
-                      <CommentItemContent>
-                        <p className="comment-content">
-                          <span className="comment-author">{comment.author?.firstName} {comment.author?.lastName}</span>
-                          <span className="comment-text">{comment.content}</span>
-                        </p>
-
-                        <div className="comment-meta">
-                          <span className="comment-time">{formatTime(comment.createdAt)}</span>
-
-                          {comment.author?._id === user?.id ? (
-                            <button
-                              className="comment-delete"
-                              onClick={() => handleDeleteComment(post._id, comment._id)}
-                            >
-                              <FiTrash2 color="#ef4444" />
-                            </button>
-                          ) : (
-                            <button
-                              className="comment-report"
-                              onClick={() => handleReportClick(comment._id)}
-                            >
-                              <FiFlag color="#f59e0b" />
-                            </button>
-                          )}
-
-                          <button
-                            className="comment-reply"
-                            onClick={() => handleReplyClick(comment._id)}
-                          >
-                            Reply
-                          </button>
-                        </div>
-                      </CommentItemContent>
-                    </CommentItem>
-
-                    {/* Replies */}
-                    {showReplies[comment._id] && comment.replies?.length > 0 && (
-                      <ReplySection>
-                        {comment.replies.map(reply => (
-                          <ReplyItem key={reply._id}>
-                            <ReplyAvatar
-                              style={{
-                                background: reply.author?.avatar ? `url(${reply.author.avatar}) center/cover` : '#29ba9b',
-                                color: reply.author?.avatar ? 'transparent' : 'white'
-                              }}
-                            >
-                              {!reply.author?.avatar ? reply.author?.initials : ''}
-                            </ReplyAvatar>
-
-                            <ReplyContent>
-                              <p className="reply-content">
-                                <span className="reply-author">{reply.author?.firstName} {reply.author?.lastName}</span>
-                                <span className="reply-text">{reply.content}</span>
-                              </p>
-
-                              <div className="reply-meta">
-                                <span className="reply-time">{formatTime(reply.createdAt)}</span>
-
-                                {reply.author?._id === user?.id ? (
-                                  <button
-                                    className="reply-delete"
-                                    onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
-                                  >
-                                    <FiTrash2 color="#ef4444" />
-                                  </button>
-                                ) : (
-                                  <button
-                                    className="reply-report"
-                                    onClick={() => handleDeleteReply(reply._id)}
-                                  >
-                                    <FiTrash2 color="#ef4444" />
-                                  </button>
-                                )}
-                              </div>
-                            </ReplyContent>
-                          </ReplyItem>
-                        ))}
-                      </ReplySection>
-                    )}
-
-                    {/* Reply Input */}
-                    {showReplyInput[comment._id] && (
-                      <ReplySection>
-                        <ReplyInput>
-                          <ReplyAvatar
-                            style={{
-                              background: user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
-                              color: user?.avatar ? 'transparent' : 'white'
-                            }}
-                          >
-                            {!user?.avatar && typeof user?.name === 'string'
-                              ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
-                              : ''}
-                          </ReplyAvatar>
-                          <ReplyTextArea
-                            placeholder="Reply..."
-                            value={replyInputs[comment._id] || ''}
-                            onChange={e =>
-                              setReplyInputs(prev => ({ ...prev, [comment._id]: e.target.value }))
-                            }
-                            onKeyPress={e => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                handleSubmitReply(comment._id, post._id);
-                              }
-                            }}
-                          />
-                          <ReplySubmitButton
-                            onClick={() => handleSubmitReply(comment._id, post._id)}
-                            disabled={!replyInputs[comment._id]?.trim() || submittingReply[comment._id]}
-                          >
-                            <SendIcon />
-                          </ReplySubmitButton>
-                        </ReplyInput>
-                      </ReplySection>
-                    )}
+                <div className="comment-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span className="comment-time" style={{ marginRight: '10px' }}>{formatTime(comment.createdAt)}</span>
+                    <button className="comment-reply" style={{ marginRight: '10px' }} onClick={() => handleReplyClick(comment._id)} >Reply</button>
+                                   {(comment.author?._id === user?.id || post.author?._id === user?.id) && (
+  <button 
+    className="comment-delete" 
+    onClick={() => handleDeleteComment(post._id, comment._id)}
+  >
+    Delete
+  </button>
+)}
                   </div>
-                ))}
-              </CommentsList>
+                  
+                </div>
+                
+              </CommentItemContent>
+            </CommentItem>
+
+            {comment.replies && comment.replies.length > 0 && (
+  <ViewRepliesButton>
+    <div className="view-replies">
+      <button onClick={() => setShowReplies(prev => ({
+        ...prev,
+        [comment._id]: !prev[comment._id]  // use _id instead of id
+      }))}>
+        {showReplies[comment._id] 
+          ? 'Hide replies' 
+          : `View replies (${comment.replies.length})`} 
+      </button>
+    </div>
+  </ViewRepliesButton>
+)}
+
+            {/* Replies */}
+{showReplies[comment._id] && comment.replies?.length > 0 && (
+  <ReplySection>
+    {comment.replies.map(reply => (
+      <ReplyItem key={reply._id}>
+        <ReplyAvatar
+          style={{
+            background: reply.author?.avatar ? `url(${reply.author.avatar}) center/cover` : '#29ba9b',
+            color: reply.author?.avatar ? 'transparent' : 'white'
+          }}
+        >
+          {!reply.author?.avatar ? reply.author?.initials : ''}
+        </ReplyAvatar>
+
+        <ReplyContent>
+          <p className="reply-content">
+            <span className="reply-author">{reply.author?.firstName} {reply.author?.lastName}</span>
+            <span className="reply-text">{reply.content}</span>
+          </p>
+
+          <div className="reply-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+    <span className="reply-time">{formatTime(reply.createdAt)}</span>
+                  {(reply.author?._id === user?.id || comment.author?._id === user?.id || post.author?._id === user?.id) && (
+    <button
+      className="reply-delete"
+      onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
+      style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+    >
+      <FiTrash2 color="#ef4444" />
+    </button>
+  )}
+  </div>
+</div>
+        </ReplyContent>
+      </ReplyItem>
+    ))}
+  </ReplySection>
+)}
+
+
+            {/* Reply Input */}
+            {showReplyInput[comment._id] && (
+              <ReplySection>
+                <ReplyInput>
+                  <ReplyAvatar
+                    style={{
+                      background: user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
+                      color: user?.avatar ? 'transparent' : 'white'
+                    }}
+                  >
+                    {!user?.avatar && typeof user?.name === 'string'
+                      ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                      : ''}
+                  </ReplyAvatar>
+                  <ReplyTextArea
+                    placeholder="Reply..."
+                    value={replyInputs[comment._id] || ''}
+                    onChange={e =>
+                      setReplyInputs(prev => ({ ...prev, [comment._id]: e.target.value }))
+                    }
+                    onKeyPress={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSubmitReply(comment._id, post._id);
+                      }
+                    }}
+                  />
+                  <ReplySubmitButton
+                    onClick={() => handleSubmitReply(comment._id, post._id)}
+                    disabled={!replyInputs[comment._id]?.trim() || submittingReply[comment._id]}
+                  >
+                    <SendIcon />
+                  </ReplySubmitButton>
+                </ReplyInput>
+              </ReplySection>
             )}
-          </CommentSection>
+          </div>
+        ))}
+      </CommentsList>
+    )}
+  </CommentSection>
         )}
       </Post>
     </PostContainer>
@@ -3507,6 +3561,34 @@ const handleReportCancel = () => {
     </div>
   </div>
 )}
+
+{showDeleteModal && (
+  <div style={{
+    position: "fixed",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999
+  }}>
+    <div style={{
+      background: "white",
+      padding: "20px",
+      borderRadius: "10px",
+      maxWidth: "300px",
+      textAlign: "center"
+    }}>
+      <h3>Are you sure?</h3>
+      <p>This action cannot be undone.</p>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "20px" }}>
+        <button onClick={cancelDelete} style={{ padding: "8px 12px" }}>Cancel</button>
+        <button onClick={confirmDelete} style={{ padding: "8px 12px", background: "red", color: "white" }}>Delete</button>
+      </div>
+    </div>
+  </div>
+)}
+
         {/* Report Modal */}
         {showReportModal && (
           <ReportModal onClick={handleReportCancel}>
