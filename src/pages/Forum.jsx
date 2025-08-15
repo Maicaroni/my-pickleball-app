@@ -970,7 +970,6 @@ const ReplyContent = styled.div`
       font-weight: 600;
       margin-right: 6px;
     }
-    
     .reply-text {
       font-weight: 400;
     }
@@ -986,6 +985,18 @@ const ReplyContent = styled.div`
       font-size: 11px;
       color: #8e8e8e;
       font-weight: 400;
+    }
+      .reply-delete{
+    font-size: 11px;
+      color: #8e8e8e;
+      font-weight: 600;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      
+      &:hover {
+        color: #262626;
     }
     
     .reply-reply {
@@ -3369,37 +3380,28 @@ const handleReportCancel = () => {
                 style={{
                   background: comment.author?.avatar ? `url(${comment.author.avatar}) center/cover` : '#29ba9b',
                   color: comment.author?.avatar ? 'transparent' : 'white'
-                }}
-              >
+                      }}>
                 {!comment.author?.avatar ? comment.author?.initials : ''}
-              </CommentAvatar>
-
+            </CommentAvatar>
               <CommentItemContent>
                 <p className="comment-content">
                   <span className="comment-author">{comment.author?.firstName} {comment.author?.lastName}</span>
                   <span className="comment-text">{comment.content}</span>
                 </p>
-
                 <div className="comment-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <span className="comment-time" style={{ marginRight: '10px' }}>{formatTime(comment.createdAt)}</span>
                     <button className="comment-reply" style={{ marginRight: '10px' }} onClick={() => handleReplyClick(comment._id)} >Reply</button>
-                                   {(comment.author?._id === user?.id || post.author?._id === user?.id) && (
-  <button 
-    className="comment-delete" 
-    onClick={() => handleDeleteComment(post._id, comment._id)}
-  >
-    Delete
-  </button>
-)}
-                  </div>
-                  
-                </div>
-                
+                    {(comment.author?._id === user?.id || post.author?._id === user?.id) && (
+                    <button className="comment-delete" onClick={() => handleDeleteComment(post._id, comment._id)} >Delete</button>
+                    )}
+                  </div> 
+                </div>                
               </CommentItemContent>
             </CommentItem>
 
-            {comment.replies && comment.replies.length > 0 && (
+
+{comment.replies && comment.replies.length > 0 && (
   <ViewRepliesButton>
     <div className="view-replies">
       <button onClick={() => setShowReplies(prev => ({
@@ -3437,15 +3439,9 @@ const handleReportCancel = () => {
           <div className="reply-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
     <span className="reply-time">{formatTime(reply.createdAt)}</span>
-                  {(reply.author?._id === user?.id || comment.author?._id === user?.id || post.author?._id === user?.id) && (
-    <button
-      className="reply-delete"
-      onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
-      style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-    >
-      <FiTrash2 color="#ef4444" />
-    </button>
-  )}
+    {(reply.author?._id === user?.id || comment.author?._id === user?.id || post.author?._id === user?.id) && (
+   <button className="reply-delete" onClick={() => handleDeleteReply(post._id, comment._id, reply._id)} >Delete</button>
+    )}
   </div>
 </div>
         </ReplyContent>
