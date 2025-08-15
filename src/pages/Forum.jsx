@@ -2230,19 +2230,6 @@ function DefaultProfileIcon() {
   );
 }
 
-/**
- * Forum Component
- * 
- * Main forum page displaying posts and create post functionality.
- * Requires authentication for interactions.
- * 
- * API Endpoints needed:
- * - GET /api/posts - Fetch posts with pagination
- * - POST /api/posts - Create new post
- * - POST /api/posts/:id/like - Like/unlike post
- * - GET /api/posts/:id/comments - Fetch post comments
- * - POST /api/posts/:id/comments - Add comment
- */
 function Forum() {
   // Auth context
   const { user, isAuthenticated } = useAuth();
@@ -2256,6 +2243,11 @@ function Forum() {
   const [postContent, setPostContent] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteCommentTarget, setDeleteCommentTarget] = useState(null); // { postId, commentId } or null
+  const [showDeleteCommentModal, setShowDeleteCommentModal] = useState(false);
+  const [deleteReplyTarget, setDeleteReplyTarget] = useState(null); // { postId, commentId, replyId } or null
+  const [showDeleteReplyModal, setShowDeleteReplyModal] = useState(false);
+  
   // Notification state
   const [notification, setNotification] = useState({
     show: false,
@@ -2555,6 +2547,58 @@ const handleSubmitComment = async (postId) => {
     setSubmittingComment(prev => ({ ...prev, [postId]: false }));
   }
 };
+
+const handleDeleteCommentClick = (postId, commentId) => {
+  setDeleteCommentTarget({ postId, commentId });
+  setShowDeleteCommentModal(true);
+};
+
+const cancelDeleteComment = () => {
+  setDeleteCommentTarget(null);
+  setShowDeleteCommentModal(false);
+};
+
+const confirmDeleteComment = async () => {
+  if (!deleteCommentTarget) return;
+
+  const { postId, commentId } = deleteCommentTarget;
+
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: prev[postId].filter(comment => comment._id !== commentId)
+      }));
+      setPosts(prevPosts =>
+        prevPosts.map(post => {
+          if (post._id === postId) {
+            return { ...post, commentCount: post.commentCount - 1 };
+          }
+          return post;
+        })
+      );
+      showNotification('Comment deleted!', 'success');
+    } else {
+      const data = await response.json();
+      showNotification(data.message || 'Failed to delete comment', 'error');
+    }
+  } catch (err) {
+    console.error(err);
+    showNotification('Failed to delete comment', 'error');
+  } finally {
+    setDeleteCommentTarget(null);
+    setShowDeleteCommentModal(false);
+  }
+};
+
+
+
 
 const handleSubmitReply = async (commentId, postId) => {
   const replyText = replyInputs[commentId]?.trim();
@@ -2880,40 +2924,26 @@ const handleReportClick = (postId) => {
   setCustomReportReason('');
 };
 
-const handleDeleteComment = async (postId, commentId) => {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
 
-    if (response.ok) {
-      setPostComments(prev => ({
-        ...prev,
-        [postId]: prev[postId].filter(comment => comment._id !== commentId)
-      }));
-      setPosts(prevPosts =>
-        prevPosts.map(post => {
-          if (post._id === postId) {
-            return { ...post, commentCount: post.commentCount - 1 };
-          }
-          return post;
-        })
-      );
-      showNotification('Comment deleted!', 'success');
-    } else {
-      const data = await response.json();
-      showNotification(data.message || 'Failed to delete comment', 'error');
-    }
-  } catch (err) {
-    console.error(err);
-    showNotification('Failed to delete comment', 'error');
-  }
+
+// When clicking delete on a reply
+const handleDeleteReplyClick = (postId, commentId, replyId) => {
+  setDeleteReplyTarget({ postId, commentId, replyId });
+  setShowDeleteReplyModal(true);
 };
 
+// Cancel deletion
+const cancelDeleteReply = () => {
+  setDeleteReplyTarget(null);
+  setShowDeleteReplyModal(false);
+};
 
-const handleDeleteReply = async (postId, commentId, replyId) => {
+// Confirm deletion
+const confirmDeleteReply = async () => {
+  if (!deleteReplyTarget) return;
+
+  const { postId, commentId, replyId } = deleteReplyTarget;
+
   try {
     const token = localStorage.getItem('token');
     const response = await fetch(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, {
@@ -2922,6 +2952,7 @@ const handleDeleteReply = async (postId, commentId, replyId) => {
     });
 
     if (response.ok) {
+      // Remove reply from state
       setPostComments(prev => ({
         ...prev,
         [postId]: prev[postId].map(comment => {
@@ -2932,8 +2963,9 @@ const handleDeleteReply = async (postId, commentId, replyId) => {
             };
           }
           return comment;
-        })
+        }),
       }));
+
       showNotification('Reply deleted!', 'success');
     } else {
       const data = await response.json();
@@ -2942,6 +2974,9 @@ const handleDeleteReply = async (postId, commentId, replyId) => {
   } catch (err) {
     console.error(err);
     showNotification('Failed to delete reply', 'error');
+  } finally {
+    setDeleteReplyTarget(null);
+    setShowDeleteReplyModal(false);
   }
 };
 
@@ -3393,7 +3428,7 @@ const handleReportCancel = () => {
                     <span className="comment-time" style={{ marginRight: '10px' }}>{formatTime(comment.createdAt)}</span>
                     <button className="comment-reply" style={{ marginRight: '10px' }} onClick={() => handleReplyClick(comment._id)} >Reply</button>
                     {(comment.author?._id === user?.id || post.author?._id === user?.id) && (
-                    <button className="comment-delete" onClick={() => handleDeleteComment(post._id, comment._id)} >Delete</button>
+                    <button className="comment-delete" onClick={() => handleDeleteCommentClick(post._id, comment._id)} >Delete</button>
                     )}
                   </div> 
                 </div>                
@@ -3440,7 +3475,7 @@ const handleReportCancel = () => {
   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
     <span className="reply-time">{formatTime(reply.createdAt)}</span>
     {(reply.author?._id === user?.id || comment.author?._id === user?.id || post.author?._id === user?.id) && (
-   <button className="reply-delete" onClick={() => handleDeleteReply(post._id, comment._id, reply._id)} >Delete</button>
+   <button className="reply-delete" onClick={() => handleDeleteReplyClick(post._id, comment._id, reply._id)} >Delete</button>
     )}
   </div>
 </div>
@@ -3557,8 +3592,7 @@ const handleReportCancel = () => {
     </div>
   </div>
 )}
-
-{showDeleteModal && (
+{showDeleteCommentModal && (
   <div style={{
     position: "fixed",
     top: 0, left: 0, right: 0, bottom: 0,
@@ -3575,15 +3609,42 @@ const handleReportCancel = () => {
       maxWidth: "300px",
       textAlign: "center"
     }}>
-      <h3>Are you sure?</h3>
+      <h3>Are you sure you want to delete this comment?</h3>
       <p>This action cannot be undone.</p>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "20px" }}>
-        <button onClick={cancelDelete} style={{ padding: "8px 12px" }}>Cancel</button>
-        <button onClick={confirmDelete} style={{ padding: "8px 12px", background: "red", color: "white" }}>Delete</button>
+        <button onClick={cancelDeleteComment} style={{ padding: "8px 12px" }}>Cancel</button>
+        <button onClick={confirmDeleteComment} style={{ padding: "8px 12px", background: "red", color: "white" }}>Delete</button>
       </div>
     </div>
   </div>
 )}
+{showDeleteReplyModal && (
+  <div style={{
+    position: "fixed",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999
+  }}>
+    <div style={{
+      background: "white",
+      padding: "20px",
+      borderRadius: "10px",
+      maxWidth: "300px",
+      textAlign: "center"
+    }}>
+      <h3>Are you sure you want to delete this reply?</h3>
+      <p>This action cannot be undone.</p>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "20px" }}>
+        <button onClick={cancelDeleteReply} style={{ padding: "8px 12px" }}>Cancel</button>
+        <button onClick={confirmDeleteReply} style={{ padding: "8px 12px", background: "red", color: "white" }}>Delete</button>
+      </div>
+    </div>
+  </div>
+)}
+
 
         {/* Report Modal */}
         {showReportModal && (
