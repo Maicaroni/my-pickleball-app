@@ -4,13 +4,16 @@ import axios from 'axios';
 import Sidebar from '../../../components/Superadmin/SuperAdminSidebar';
 import Navbar from '../../../components/Superadmin/SuperAdminNavbar';
 import { Modal, Button, message, Pagination, Tag } from 'antd';
-import { FaTrash, FaCheck } from 'react-icons/fa';
+import { FaTrash, FaCheck, FaEye } from 'react-icons/fa';
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [postModalOpen, setPostModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [selectedAttachment, setSelectedAttachment] = useState(null);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,7 +23,8 @@ const Reports = () => {
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/reports');
+      const res = await axios.get('http://localhost:5000/api/reports'); 
+      // Make sure backend populates post.author
       setReports(res.data);
     } catch (err) {
       console.error('Error fetching reports:', err);
@@ -34,7 +38,6 @@ const Reports = () => {
     fetchReports();
   }, []);
 
-  // Resolve report(s)
   const handleResolve = async (reportIds) => {
     try {
       const token = localStorage.getItem('superadminToken');
@@ -58,7 +61,6 @@ const Reports = () => {
     }
   };
 
-  // Delete report
   const handleDeleteConfirmed = async () => {
     if (!selectedReport) return;
     try {
@@ -89,7 +91,6 @@ const Reports = () => {
 
   const groupedReportsArray = Object.values(groupedReports);
 
-  // Pagination
   const startIndex = (currentPage - 1) * pageSize;
   const currentReports = groupedReportsArray.slice(startIndex, startIndex + pageSize);
 
@@ -131,7 +132,17 @@ const Reports = () => {
                           <td className="py-4 px-8 text-base cursor-pointer" title={group.post?._id || '-'}>
                             {group.post?._id.slice(0, 3) + group.post?._id.slice(-3)}
                           </td>
-                          <td className="py-4 px-8">{group.post?.content || '-'}</td>
+                          <td className="py-4 px-8">
+                            <Button
+                              icon={<FaEye />}
+                              onClick={() => {
+                                setSelectedPost(group.post); // <-- group.post must have author populated
+                                setPostModalOpen(true);
+                              }}
+                            >
+                              View
+                            </Button>
+                          </td>
                           <td className="py-4 px-8 font-semibold">{group.reports.length}</td>
                           <td className="py-4 px-8">
                             {group.reports.map(r => r.reportedBy ? `${r.reportedBy.firstName} ${r.reportedBy.lastName}` : '-').join(', ')}
@@ -156,7 +167,7 @@ const Reports = () => {
                               danger
                               icon={<FaTrash />}
                               onClick={() => {
-                                setSelectedReport(group.reports[0]); // delete first report for now
+                                setSelectedReport(group.reports[0]);
                                 setShowDeleteModal(true);
                               }}
                             >
@@ -170,7 +181,6 @@ const Reports = () => {
                 </table>
               </div>
 
-              {/* Pagination */}
               {groupedReportsArray.length > pageSize && (
                 <div className="flex justify-center mt-6">
                   <Pagination
@@ -185,6 +195,56 @@ const Reports = () => {
             </>
           )}
 
+          {/* Post Modal */}
+          <Modal
+            title={`Post Content`}
+            open={postModalOpen}
+            onCancel={() => setPostModalOpen(false)}
+            footer={null}
+            width={700}
+          >
+            <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+              <h3 className="font-semibold mb-2">Content:</h3>
+              <p className="mb-4 whitespace-pre-wrap">{selectedPost?.content}</p>
+
+              {selectedPost?.images?.length > 0 && (
+                <>
+                  <h3 className="font-semibold mb-2">Attachments:</h3>
+                  <div className="flex gap-2 flex-wrap">
+                    {selectedPost.images.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={img.url || img}
+                        alt={`Attachment ${idx + 1}`}
+                        style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain', borderRadius: '6px', cursor: 'pointer' }}
+                        onClick={() => setSelectedAttachment(img.url || img)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </Modal>
+
+          {/* Full-size Attachment Modal */}
+          <Modal
+            title="Attachment"
+            open={!!selectedAttachment}
+            onCancel={() => setSelectedAttachment(null)}
+            footer={null}
+            width={800}
+          >
+            {selectedAttachment?.endsWith?.('.pdf') ? (
+              <embed src={selectedAttachment} width="100%" height="500px" type="application/pdf" />
+            ) : (
+              <img
+                src={selectedAttachment}
+                alt="Attachment"
+                style={{ width: '100%', maxHeight: '80vh', objectFit: 'contain', display: 'block' }}
+              />
+            )}
+          </Modal>
+
           {/* Delete Modal */}
           <Modal
             title="Confirm Deletion"
@@ -195,12 +255,11 @@ const Reports = () => {
             cancelText="Cancel"
             okButtonProps={{ danger: true, style: { borderRadius: '6px' } }}
             cancelButtonProps={{ style: { borderRadius: '6px' } }}
-            destroyOnClose
+            destroyOnHidden
           >
-            <p className="text-lg">
-              Are you sure you want to delete this report?
-            </p>
+            <p className="text-lg">Are you sure you want to delete this report?</p>
           </Modal>
+
         </main>
       </section>
     </div>
