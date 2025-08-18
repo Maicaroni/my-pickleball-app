@@ -3,12 +3,11 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ frontend ]
-  pull_request:
-    branches: [ frontend ]
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/frontend'
     
     steps:
     - name: Checkout
