@@ -4,13 +4,6 @@ import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import viteLogo from '/vite.svg';
 
-/**
- * @typedef {Object} RegisterData
- * @property {string} name - User's full name
- * @property {string} email - User's email
- * @property {string} password - User's password
- * @property {string} confirmPassword - Password confirmation
- */
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -523,8 +516,6 @@ const GoogleIcon = () => (
   </svg>
 );
 
-
-
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -630,7 +621,7 @@ const Register = () => {
     }
   };
 
-  const { login } = useAuth();
+  const { setAuth } = useAuth();
   const handleSubmit = async (e) => {
     e.preventDefault();
   
@@ -664,7 +655,7 @@ const Register = () => {
       localStorage.setItem("user", JSON.stringify(data.user));
   
       // ✅ Set it in global context
-      login(data.user, data.token);
+      setAuth(data.user, data.token);
   
       // ✅ Navigate to home/dashboard
       navigate("/");

@@ -4,21 +4,6 @@ import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import viteLogo from '/vite.svg';
 
-/**
- * @typedef {Object} SignInCredentials
- * @property {string} email - User's email
- * @property {string} password - User's password
- */
-
-/**
- * @typedef {Object} AuthResponse
- * @property {string} token - JWT token
- * @property {Object} user - User details
- * @property {string} user.id - User's unique identifier
- * @property {string} user.email - User's email
- * @property {string} user.name - User's full name
- * @property {string[]} user.roles - User's roles (e.g., ['user', 'admin'])
- */
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -452,57 +437,25 @@ const SignIn = () => {
 
   const { login, loginWithCredentials } = useAuth();
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
-    setLoading(true);
-    try {
-      // First try to connect to the backend
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-
-      // Store token based on rememberMe
-      const storage = rememberMe ? localStorage : sessionStorage;
-      storage.setItem("token", data.token);
-      storage.setItem("user", JSON.stringify(data.user));
-
-      // Set to global state via AuthContext
-      login(data.user, data.token);
-
-      navigate("/"); // Redirect to home/dashboard
-    } catch (err) {
-      // If backend fails, try dummy authentication as fallback
-      console.log("Backend not available, trying dummy authentication...");
-      
-      const dummyResult = loginWithCredentials(formData.email, formData.password);
-      
-      if (dummyResult.success) {
-        navigate("/"); // Redirect to home/dashboard
-      } else {
-        setErrors(prev => ({
-          ...prev,
-          submit: dummyResult.error || "Invalid credentials. Try: john.doe@gmail.com / password123"
-        }));
-      }
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const result = await loginWithCredentials(formData.email, formData.password);
+    if (result.success) {
+      navigate("/");
+    } else {
+      setErrors(prev => ({ ...prev, submit: result.error }));
     }
-  };
+  } catch (error) {
+    setErrors(prev => ({ ...prev, submit: "Unexpected error. Please try again." }));
+  } finally {
+    setLoading(false);
+  }
+};
+
   
   const handleSocialLogin = async (provider) => {
     try {

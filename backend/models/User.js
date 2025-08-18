@@ -6,7 +6,19 @@ const UserSchema = new mongoose.Schema({
   lastName:  { type: String, required: true },
   email:     { type: String, required: true, unique: true },
   password:  { type: String, required: true },
-  birthDate: { type: Date, required: true },
+  birthDate: { type: Date,   required: true },
+  gender:    { type: String, enum: ['male', 'female'], required: true},
+
+  // ✅ Profile picture (optional)
+  avatarUrl: { 
+    type: String, 
+    default: null // will be null if no uploaded picture
+  },
+
+  // ✅ Automatically store initials for fallback
+  initials: { 
+    type: String 
+  },
 
   roles: {
     type: [String],
@@ -16,12 +28,12 @@ const UserSchema = new mongoose.Schema({
 
   isConfirmed: { type: Boolean, default: false },
 
-  // ✔️ Verified flags
+  //Verified flags
   isVerifiedCoach: { type: Boolean, default: false },
   isVerifiedOrganizer: { type: Boolean, default: false },
-  isVerifiedClubAdmin: { type: Boolean, default: false }, // 🆕
+  isVerifiedClubAdmin: { type: Boolean, default: false },
 
-  // ✔️ Request objects
+  // Request objects
   coachRequest: {
     status: {
       type: String,
@@ -40,7 +52,7 @@ const UserSchema = new mongoose.Schema({
     attachment: { type: String }
   },
 
-  clubAdminRequest: { // 🆕 Club admin request
+  clubAdminRequest: { 
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],
@@ -50,6 +62,14 @@ const UserSchema = new mongoose.Schema({
   },
 
   createdAt: { type: Date, default: Date.now }
+});
+
+// ✅ Middleware to auto-generate initials if missing
+UserSchema.pre("save", function(next) {
+  if (!this.initials && this.firstName) {
+    this.initials = this.firstName.charAt(0).toUpperCase();
+  }
+  next();
 });
 
 module.exports = mongoose.model("User", UserSchema);

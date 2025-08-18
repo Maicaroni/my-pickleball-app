@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const RankingCategory = require('../models/RankingCategory');
+const RankingCategory = require('../models/Rankings');
 
 // GET all ranking categories
 router.get('/', async (req, res) => {

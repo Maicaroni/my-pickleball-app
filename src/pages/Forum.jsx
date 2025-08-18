@@ -1,36 +1,121 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import { FaEllipsisH } from 'react-icons/fa';
 import AuthModal from '../components/AuthModal';
 import { useAuth } from '../contexts/AuthContext';
+import { FiTrash2 } from "react-icons/fi"; // trash icon
+import { FiFlag } from "react-icons/fi"; 
+import Dropdown from 'react-bootstrap/Dropdown';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-// Types for TypeScript (if using TS, move these to types/forum.ts)
-/**
- * @typedef {Object} User
- * @property {string} id - Unique identifier
- * @property {string} username - User's display name
- * @property {string} avatarUrl - URL to user's avatar image (optional)
- * @property {string} initials - User's initials for avatar fallback
- */
 
-/**
- * @typedef {Object} Image
- * @property {string} id - Unique identifier
- * @property {string} url - Image URL
- * @property {string} alt - Alt text for accessibility
- */
+import axios from 'axios';
 
-/**
- * @typedef {Object} Post
- * @property {string} id - Unique identifier
- * @property {User} author - Post author
- * @property {string} content - Post text content
- * @property {Image[]} images - Array of post images
- * @property {string} createdAt - ISO timestamp
- * @property {number} likeCount - Number of likes
- * @property {number} commentCount - Number of comments
- * @property {boolean} isLiked - Whether current user has liked
- */
+
+export const ModalBackdrop = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+export const ModalBox = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  animation: fadeIn 0.2s ease-in-out;
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+`;
+
+export const ModalActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+`;
+
+export const CancelButton = styled.button`
+  background: #f1f5f9;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #64748b;
+
+  &:hover {
+    background: #e2e8f0;
+  }
+`;
+
+export const DangerButton = styled.button`
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+
+  &:hover {
+    background: #dc2626;
+  }
+`;
+export const MenuContainer = styled.div`
+  position: relative;
+`;
+
+export const MenuToggle = styled.button`
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    opacity: 0.7;
+  }
+`;
+
+export const MenuDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+  z-index: 10;
+  min-width: 120px;
+`;
+
+export const MenuItem = styled.button`
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+`;
 
 const PageContainer = styled.div`
   padding: 80px 16px 24px;
@@ -684,7 +769,24 @@ const CommentItemContent = styled.div`
       }
     }
   }
+    .comment-delete {
+      font-size: 12px;
+      color: #8e8e8e;
+      font-weight: 600;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      
+      
+      &:hover {
+        color: #262626;
+      }
+    }
+  }
 `;
+
+
 
 const ViewRepliesButton = styled.div`
   padding-left: 36px;
@@ -868,7 +970,6 @@ const ReplyContent = styled.div`
       font-weight: 600;
       margin-right: 6px;
     }
-    
     .reply-text {
       font-weight: 400;
     }
@@ -884,6 +985,18 @@ const ReplyContent = styled.div`
       font-size: 11px;
       color: #8e8e8e;
       font-weight: 400;
+    }
+      .reply-delete{
+    font-size: 11px;
+      color: #8e8e8e;
+      font-weight: 600;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      
+      &:hover {
+        color: #262626;
     }
     
     .reply-reply {
@@ -1066,7 +1179,7 @@ const ImageUploadArea = styled.div`
   }
 `;
 
-const SubmitButton = styled.button`
+const SubmitButton = styled(({ marginTop, ...rest }) => <button {...rest} />)`
   width: ${props => props.width || '100%'};
   padding: ${props => props.padding || '12px'};
   background: #29ba9b;
@@ -2117,23 +2230,10 @@ function DefaultProfileIcon() {
   );
 }
 
-/**
- * Forum Component
- * 
- * Main forum page displaying posts and create post functionality.
- * Requires authentication for interactions.
- * 
- * API Endpoints needed:
- * - GET /api/posts - Fetch posts with pagination
- * - POST /api/posts - Create new post
- * - POST /api/posts/:id/like - Like/unlike post
- * - GET /api/posts/:id/comments - Fetch post comments
- * - POST /api/posts/:id/comments - Add comment
- */
 function Forum() {
   // Auth context
   const { user, isAuthenticated } = useAuth();
-  
+
   // State management
   const [posts, setPosts] = useState([]); // Post[]
   const [loading, setLoading] = useState(true);
@@ -2143,6 +2243,10 @@ function Forum() {
   const [postContent, setPostContent] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteCommentTarget, setDeleteCommentTarget] = useState(null); // { postId, commentId } or null
+  const [showDeleteCommentModal, setShowDeleteCommentModal] = useState(false);
+  const [deleteReplyTarget, setDeleteReplyTarget] = useState(null); // { postId, commentId, replyId } or null
+  const [showDeleteReplyModal, setShowDeleteReplyModal] = useState(false);
   
   // Notification state
   const [notification, setNotification] = useState({
@@ -2171,7 +2275,14 @@ function Forum() {
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentImages, setCurrentImages] = useState([]);
+  
+  // Elipsis State
+  const [openMenu, setOpenMenu] = useState({});
 
+  //Delete Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+const [postToDelete, setPostToDelete] = useState(null);
+    
   // Report modal state
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportingPostId, setReportingPostId] = useState(null);
@@ -2229,261 +2340,328 @@ function Forum() {
   };
 
   // Fetch posts on mount and page change
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Simulating API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // TODO: Replace with actual API call when backend is ready
-        // const response = await fetch('/api/posts');
-        // const data = await response.json();
-        // setPosts(data);
-        
-        // For now, use example posts
-        setPosts(examplePosts);
-        setHasMore(false);
-      } catch (err) {
-        setError('Failed to load posts. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPosts();
-  }, [page]);
-
-  /**
-   * Handles post interaction (like, comment toggle)
-   * Requires authentication
-   * @param {Event} e - Event object
-   * @param {string} action - Type of interaction ('like' | 'comment')
-   * @param {string} postId - Post identifier
-   */
-  const handleInteraction = async (e, action, postId) => {
-    e.preventDefault();
-    
-    if (!isAuthenticated) {
-      setShowAuthModal(true);
-      return;
-    }
-
+// Fetch posts on mount and page change
+useEffect(() => {
+  const fetchPosts = async () => {
     try {
-      switch (action) {
-        case 'like':
-          // TODO: Backend API call
-          // const response = await fetch(`/api/posts/${postId}/like`, {
-          //   method: 'POST',
-          //   headers: {
-          //     'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          //     'Content-Type': 'application/json'
-          //   }
-          // });
-          // const updatedPost = await response.json();
-          
-          // For now, update local state optimistically
-          setPosts(prevPosts => 
-            prevPosts.map(post => {
-              if (post.id === postId) {
-                return {
-                  ...post,
-                  isLiked: !post.isLiked,
-                  likeCount: post.isLiked ? post.likeCount - 1 : post.likeCount + 1
-                };
-              }
-              return post;
-            })
-          );
-          break;
-          
-        case 'comment':
-          // Toggle comment section visibility
-          setShowComments(prev => ({
-            ...prev,
-            [postId]: !prev[postId]
-          }));
-          
-          // Initialize comment input if not exists
-          if (!commentInputs[postId]) {
-            setCommentInputs(prev => ({
-              ...prev,
-              [postId]: ''
-            }));
-          }
-          
-          // Fetch comments if opening and not already loaded
-          // TODO: Backend API call
-          if (!showComments[postId] && !postComments[postId]) {
-            // const commentsResponse = await fetch(`/api/posts/${postId}/comments`);
-            // const comments = await commentsResponse.json();
-            // setPostComments(prev => ({ ...prev, [postId]: comments }));
-            
-            // For now, initialize with empty array
-            setPostComments(prev => ({ ...prev, [postId]: [] }));
-          }
-          break;
+      setLoading(true);
+      setError(null);
+
+      const response = await axios.get(
+        `http://localhost:5000/api/posts?status=approved&page=${page}&limit=10`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      );
+
+      const { posts: newPosts, totalCount } = response.data;
+
+      if (page === 1) {
+        setPosts(newPosts);
+      } else {
+        setPosts(prev => [...prev, ...newPosts]);
       }
+
+      setHasMore(page * 10 < totalCount);
+
+      // Fetch comments for all posts on first load
+      for (const post of newPosts) {
+        try {
+          const token = localStorage.getItem('token'); 
+          const headers = token ? { Authorization: `Bearer ${token}` } : {};
+          const commentsResponse = await axios.get(
+            `http://localhost:5000/api/posts/${post._id}/comments`,
+            { headers }
+          );
+
+          const comments = commentsResponse.data.comments || [];
+
+          // Store comments in state
+          setPostComments(prev => ({
+            ...prev,
+            [post._id]: comments,
+          }));
+
+          // Auto-show replies for comments that already have them
+          const repliesToShow = {};
+          comments.forEach(comment => {
+            if (comment.replies?.length > 0) {
+              repliesToShow[comment._id] = true;
+            }
+          });
+          setShowReplies(prev => ({ ...prev, ...repliesToShow }));
+
+        } catch (err) {
+          console.error(`Failed to fetch comments for post ${post._id}:`, err);
+          setPostComments(prev => ({ ...prev, [post._id]: [] }));
+        }
+      }
+
     } catch (err) {
-      console.error('Error handling interaction:', err);
+      setError('Failed to load posts. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  /**
-   * Handles submitting a new comment
-   * @param {string} postId - Post identifier
-   */
-  const handleSubmitComment = async (postId) => {
-    const commentText = commentInputs[postId]?.trim();
-    if (!commentText || !isAuthenticated) return;
+  fetchPosts();
+}, [page]);
 
+const handleInteraction = async (e, action, postId) => {
+  e.preventDefault();
+
+  // Redirect guests to login modal
+  if (!isAuthenticated) {
+    setShowAuthModal(true);
+    return;
+  }
+
+  try {
+    switch (action) {
+      case 'like':
+        // Optimistic UI update
+        setPosts(prevPosts =>
+          prevPosts.map(post => {
+            if (post._id === postId) {
+              return {
+                ...post,
+                isLiked: !post.isLiked,
+                likeCount: post.isLiked ? post.likeCount - 1 : post.likeCount + 1,
+              };
+            }
+            return post;
+          })
+        );
+
+        // API call to update like
+        const token = localStorage.getItem('token') || '';
+        const likeResponse = await axios.put(
+          `http://localhost:5000/api/posts/${postId}/like`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        const { likeCount, isLiked } = likeResponse.data;
+
+        // Sync posts with server response
+        setPosts(prevPosts =>
+          prevPosts.map(post => {
+            if (post._id === postId) {
+              return { ...post, isLiked, likeCount };
+            }
+            return post;
+          })
+        );
+        break;
+
+case 'comment':
+  const isOpening = !showComments[postId];
+
+  setShowComments(prev => ({
+    ...prev,
+    [postId]: !prev[postId]
+  }));
+
+  if (!commentInputs[postId]) {
+    setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+  }
+
+  // Fetch comments only if opening and not already loaded
+  if (isOpening && !postComments[postId]) {
     try {
-      setSubmittingComment(prev => ({ ...prev, [postId]: true }));
+      const token = localStorage.getItem('token'); // ✅ get token first
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const commentsResponse = await axios.get(
+        `http://localhost:5000/api/posts/${postId}/comments`,
+        { headers }
+      );
 
-      // TODO: Backend API call
-      // const response = await fetch(`/api/posts/${postId}/comments`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({ content: commentText })
-      // });
-      // const newComment = await response.json();
-
-      // For now, create optimistic comment
-      const newComment = {
-        id: Date.now().toString(),
-        author: {
-          id: user.id,
-          name: user.name,
-          initials: user.name.split(' ').map(n => n[0]).join('').toUpperCase(),
-          avatar: user.avatar || null
-        },
-        content: commentText,
-        createdAt: new Date().toISOString()
-      };
-
-      // Update local state
       setPostComments(prev => ({
         ...prev,
-        [postId]: [newComment, ...(prev[postId] || [])]
+        [postId]: commentsResponse.data.comments || [],
       }));
+    } catch (error) {
+      console.error('Failed to fetch comments:', error);
+      setPostComments(prev => ({ ...prev, [postId]: [] }));
+    }
+  }
+  break;
 
-      // Update comment count in posts
-      setPosts(prevPosts => 
+    }
+  } catch (err) {
+    console.error('Error handling interaction:', err);
+
+    // Rollback optimistic like if API fails
+    if (action === 'like') {
+      setPosts(prevPosts =>
         prevPosts.map(post => {
-          if (post.id === postId) {
-            return { ...post, commentCount: post.commentCount + 1 };
+          if (post._id === postId) {
+            return {
+              ...post,
+              isLiked: !post.isLiked,
+              likeCount: post.isLiked ? post.likeCount - 1 : post.likeCount + 1,
+            };
           }
           return post;
         })
       );
-
-      // Clear input
-      setCommentInputs(prev => ({ ...prev, [postId]: '' }));
-
-    } catch (err) {
-      console.error('Error submitting comment:', err);
-    } finally {
-      setSubmittingComment(prev => ({ ...prev, [postId]: false }));
     }
-  };
+  }
+};
 
-  /**
-   * Handles submitting a reply to a comment
-   * @param {string} commentId - Comment identifier to reply to
-   * @param {string} postId - Post identifier
-   */
-  const handleSubmitReply = async (commentId, postId) => {
-    const replyText = replyInputs[commentId]?.trim();
-    if (!replyText || !isAuthenticated) return;
 
-    try {
-      setSubmittingReply(prev => ({ ...prev, [commentId]: true }));
 
-      // TODO: Backend API call
-      // const response = await fetch(`/api/comments/${commentId}/replies`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify({ content: replyText })
-      // });
-      // const newReply = await response.json();
 
-      // For now, create optimistic reply
-      const newReply = {
-        id: Date.now().toString(),
-        author: {
-          id: user.id,
-          name: user.name,
-          initials: user.name.split(' ').map(n => n[0]).join('').toUpperCase(),
-          avatar: user.avatar || null
-        },
-        content: replyText,
-        createdAt: new Date().toISOString(),
-        parentId: commentId
-      };
 
-      // Update local state - add reply to the specific comment
+const handleSubmitComment = async (postId) => {
+  const commentText = commentInputs[postId]?.trim();
+  if (!commentText || !isAuthenticated) return;
+
+  try {
+    setSubmittingComment(prev => ({ ...prev, [postId]: true }));
+
+    const response = await axios.post(
+      `http://localhost:5000/api/posts/${postId}/comments`,
+      { content: commentText },
+      { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+    );
+
+    const newComment = response.data.comment; // ✅ get the comment, not the whole response
+
+    setPostComments(prev => ({
+      ...prev,
+      [postId]: [newComment, ...(prev[postId] || [])],
+    }));
+
+    setPosts(prevPosts =>
+      prevPosts.map(post => {
+        if (post._id === postId) {
+          return { ...post, commentCount: post.commentCount + 1 };
+        }
+        return post;
+      })
+    );
+
+    setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+  } catch (err) {
+    console.error('Error submitting comment:', err);
+  } finally {
+    setSubmittingComment(prev => ({ ...prev, [postId]: false }));
+  }
+};
+
+const handleDeleteCommentClick = (postId, commentId) => {
+  setDeleteCommentTarget({ postId, commentId });
+  setShowDeleteCommentModal(true);
+};
+
+const cancelDeleteComment = () => {
+  setDeleteCommentTarget(null);
+  setShowDeleteCommentModal(false);
+};
+
+const confirmDeleteComment = async () => {
+  if (!deleteCommentTarget) return;
+
+  const { postId, commentId } = deleteCommentTarget;
+
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (response.ok) {
       setPostComments(prev => ({
         ...prev,
-        [postId]: prev[postId].map(comment => {
-          if (comment.id === commentId) {
-            return {
-              ...comment,
-              replies: [...(comment.replies || []), newReply]
-            };
-          }
-          return comment;
-        })
+        [postId]: prev[postId].filter(comment => comment._id !== commentId)
       }));
-
-      // Clear reply input and hide input field
-      setReplyInputs(prev => ({ ...prev, [commentId]: '' }));
-      setShowReplyInput(prev => ({ ...prev, [commentId]: false }));
-
-      // Show replies section if it was hidden
-      setShowReplies(prev => ({ ...prev, [commentId]: true }));
-
-    } catch (err) {
-      console.error('Error submitting reply:', err);
-    } finally {
-      setSubmittingReply(prev => ({ ...prev, [commentId]: false }));
+      setPosts(prevPosts =>
+        prevPosts.map(post => {
+          if (post._id === postId) {
+            return { ...post, commentCount: post.commentCount - 1 };
+          }
+          return post;
+        })
+      );
+      showNotification('Comment deleted!', 'success');
+    } else {
+      const data = await response.json();
+      showNotification(data.message || 'Failed to delete comment', 'error');
     }
-  };
+  } catch (err) {
+    console.error(err);
+    showNotification('Failed to delete comment', 'error');
+  } finally {
+    setDeleteCommentTarget(null);
+    setShowDeleteCommentModal(false);
+  }
+};
+
+
+
+
+const handleSubmitReply = async (commentId, postId) => {
+  const replyText = replyInputs[commentId]?.trim();
+  if (!replyText || !isAuthenticated) return;
+
+  try {
+    setSubmittingReply(prev => ({ ...prev, [commentId]: true }));
+
+    const response = await axios.post(
+      `http://localhost:5000/api/posts/${postId}/comments/${commentId}/replies`,
+      { content: replyText },
+      { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+    );
+
+    const newReply = response.data.reply; // ✅ get the reply, not the whole response
+
+    setPostComments(prev => ({
+      ...prev,
+      [postId]: prev[postId].map(comment => {
+        if (comment._id === commentId) {
+          return {
+            ...comment,
+            replies: [...(comment.replies || []), newReply],
+          };
+        }
+        return comment;
+      }),
+    }));
+
+    setReplyInputs(prev => ({ ...prev, [commentId]: '' }));
+    setShowReplyInput(prev => ({ ...prev, [commentId]: false }));
+    setShowReplies(prev => ({ ...prev, [commentId]: true }));
+  } catch (err) {
+    console.error('Error submitting reply:', err);
+  } finally {
+    setSubmittingReply(prev => ({ ...prev, [commentId]: false }));
+  }
+};
+
 
   /**
    * Handles showing reply input for a comment
    * @param {string} commentId - Comment identifier
    */
-  const handleReplyClick = (commentId) => {
-    setShowReplyInput(prev => ({ ...prev, [commentId]: !prev[commentId] }));
-    
-    // Initialize reply input if not exists
-    if (!replyInputs[commentId]) {
-      setReplyInputs(prev => ({ ...prev, [commentId]: '' }));
-    }
-  };
+const handleReplyClick = (commentId) => {
+  setShowReplyInput(prev => ({ ...prev, [commentId]: !prev[commentId] }));
+  if (!replyInputs[commentId]) {
+    setReplyInputs(prev => ({ ...prev, [commentId]: '' }));
+  }
+};
 
-  /**
-   * Creates a new post
-   * Requires authentication
-   * @param {Object} postData - Post data including text and images
-   */
-  const createPost = async (postData) => {
-    try {
-      // TODO: Replace with actual API call
-      // const response = await api.post('/posts', postData);
-      // setPosts(prev => [response.data, ...prev]);
-    } catch (err) {
-      // Handle error
-    }
-  };
+const createPost = async (postData) => {
+  try {
+    const response = await axios.post('http://localhost:5000/api/posts', postData, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    return { success: true, post: response.data };
+  } catch (err) {
+    console.error('Create post error:', err);
+    return { success: false };
+  }
+};
+
 
   const handleCreatePost = async (e) => {
     e.preventDefault();
@@ -2517,52 +2695,50 @@ function Forum() {
     document.getElementById('imageInput').click();
   };
 
-  const handleSubmitPost = async () => {
-    if (!postContent.trim() && selectedImages.length === 0) return;
-    
-    try {
-      setIsSubmitting(true);
-      
-      // Create new post object
-      const newPost = {
-        id: Date.now().toString(), // Generate unique ID
-        author: {
-          id: user.id,
-          username: `${user.firstName} ${user.lastName}`,
-          initials: `${user.firstName[0]}${user.lastName[0]}`.toUpperCase(),
-          avatarColor: '#29ba9b',
-          avatar: user.avatar || null
-        },
-        content: postContent.trim(),
-        images: selectedImages.map((image, index) => ({
-          id: `${Date.now()}_${index}`,
-          url: image.url,
-          alt: `User uploaded image ${index + 1}`
-        })),
-        createdAt: new Date().toISOString(),
-        likeCount: 0,
-        commentCount: 0,
-        isLiked: false
-      };
+const handleSubmitPost = async (e) => {
+  e.preventDefault();
+  if (!postContent.trim() && selectedImages.length === 0) return;
 
-      // Add new post to the beginning of posts array (most recent first)
-      setPosts(prevPosts => [newPost, ...prevPosts]);
-      
-      // TODO: Replace with actual API call when backend is ready
-      // await createPost({ content: postContent, images: selectedImages });
-      
-      // Close the expanded create post interface
-      setShowCreateModal(false);
-      setPostContent("");
-      setSelectedImages([]);
-      
-    } catch (err) {
-      // Handle error
-      console.error('Error creating post:', err);
-    } finally {
-      setIsSubmitting(false);
+  try {
+    setIsSubmitting(true);
+
+    const postData = {
+      content: postContent.trim(),
+      images: selectedImages.map(img => ({
+        url: img.url,
+        alt: img.alt || 'User uploaded image'
+      })),
+    };
+
+    const response = await createPost(postData);
+
+    if (response.success && response.post) {
+      if (response.approved) {
+        // Only add to feed if approved
+        setPosts(prevPosts => [response.post, ...prevPosts]);
+        showNotification('Post created successfully!', 'success');
+      } else {
+        // Don't add to feed — only notify user
+        showNotification('Your post has been sent for superadmin approval.', 'info');
+      }
+    } else {
+      showNotification('Failed to create post. Please try again.', 'error');
     }
-  };
+
+    // Reset form
+    setPostContent('');
+    setSelectedImages([]);
+    setShowCreateModal(false);
+
+  } catch (err) {
+    console.error('Error creating post:', err);
+    showNotification('Failed to create post. Please try again.', 'error');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
 
   const removeImage = (indexToRemove) => {
     setSelectedImages(prev => prev.filter((_, index) => index !== indexToRemove));
@@ -2686,66 +2862,192 @@ function Forum() {
     });
   };
 
-  // Report handling functions
-  const handleReportClick = (postId) => {
-    if (!isAuthenticated) {
-      setShowAuthModal(true);
-      return;
-    }
-    
-    setReportingPostId(postId);
-    setShowReportModal(true);
-    setSelectedReportReason('');
-  };
+// When user clicks delete from dropdown
+// When user clicks delete from dropdown
+const handleDeleteClick = (postId) => {
+  setPostToDelete(postId);
+  setShowDeleteModal(true);
+};
 
-  const handleReportSubmit = async () => {
-    if (!selectedReportReason || !reportingPostId) return;
-    
-    // If "Other" is selected, require custom reason
-    if (selectedReportReason === 'Other' && !customReportReason.trim()) {
-      showNotification(
-        'Missing Information',
-        'Please provide a reason for reporting this post.'
-      );
-      return;
-    }
-    
-    try {
-      const reportReason = selectedReportReason === 'Other' ? customReportReason : selectedReportReason;
-      
-      // TODO: Replace with actual API call when backend is ready
-      // await fetch(`/api/posts/${reportingPostId}/report`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${token}`
-      //   },
-      //   body: JSON.stringify({ reason: reportReason })
-      // });
-      
-      showNotification(
-        'Report Submitted',
-        'Thank you for your report. We\'ll review this content and take appropriate action if needed.'
-      );
-      
-      setShowReportModal(false);
-      setReportingPostId(null);
-      setSelectedReportReason('');
-      setCustomReportReason('');
-    } catch (err) {
-      showNotification(
-        'Report Failed',
-        'Unable to submit your report. Please try again later.'
-      );
-    }
-  };
+// Confirm delete in modal
+const confirmDelete = async () => {
+  if (!postToDelete) return;
 
-  const handleReportCancel = () => {
+  try {
+    const token = user?.token || localStorage.getItem("token");
+    if (!token) throw new Error("No auth token found");
+
+    const response = await fetch(`/api/posts/${postToDelete}`, {
+      method: "DELETE",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
+
+    if (response.ok) {
+      setPosts(prevPosts => prevPosts.filter(post => post._id !== postToDelete));
+      showNotification('Post deleted successfully!', 'success');
+    } else if (response.status === 401 || response.status === 403) {
+      showNotification('You are not authorized. Please login again.', 'error');
+    } else {
+      const data = await response.json();
+      showNotification(data.message || 'Failed to delete post. Please try again.', 'error');
+    }
+
+  } catch (error) {
+    console.error(error);
+    showNotification('Failed to delete post. Please try again.', 'error');
+  } finally {
+    setShowDeleteModal(false);
+    setPostToDelete(null);
+  }
+};
+
+
+// Cancel delete in modal
+const cancelDelete = () => {
+  setShowDeleteModal(false);
+  setPostToDelete(null);
+};
+
+// When user clicks "Report" from dropdown
+const handleReportClick = (postId) => {
+  if (!isAuthenticated) {
+    setShowAuthModal(true);
+    return;
+  }
+
+  setReportingPostId(postId);
+  setShowReportModal(true);
+  setSelectedReportReason('');
+  setCustomReportReason('');
+};
+
+
+
+// When clicking delete on a reply
+const handleDeleteReplyClick = (postId, commentId, replyId) => {
+  setDeleteReplyTarget({ postId, commentId, replyId });
+  setShowDeleteReplyModal(true);
+};
+
+// Cancel deletion
+const cancelDeleteReply = () => {
+  setDeleteReplyTarget(null);
+  setShowDeleteReplyModal(false);
+};
+
+// Confirm deletion
+const confirmDeleteReply = async () => {
+  if (!deleteReplyTarget) return;
+
+  const { postId, commentId, replyId } = deleteReplyTarget;
+
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      // Remove reply from state
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: prev[postId].map(comment => {
+          if (comment._id === commentId) {
+            return {
+              ...comment,
+              replies: comment.replies.filter(r => r._id !== replyId)
+            };
+          }
+          return comment;
+        }),
+      }));
+
+      showNotification('Reply deleted!', 'success');
+    } else {
+      const data = await response.json();
+      showNotification(data.message || 'Failed to delete reply', 'error');
+    }
+  } catch (err) {
+    console.error(err);
+    showNotification('Failed to delete reply', 'error');
+  } finally {
+    setDeleteReplyTarget(null);
+    setShowDeleteReplyModal(false);
+  }
+};
+
+const formatTime = (createdAt) => {
+  const now = new Date();
+  const date = new Date(createdAt);
+  const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  const diffInDays = Math.floor(diffInHours / 24);
+
+  if (diffInMinutes < 60) return `${diffInMinutes || 1}m`;
+  if (diffInHours < 24) return `${diffInHours}h`;
+  return `${diffInDays}d`;
+};
+
+
+
+// Submit report
+const handleReportSubmit = async () => {
+  if (!selectedReportReason || !reportingPostId) return;
+
+  // If "Other", make sure custom reason is provided
+  if (selectedReportReason === 'Other' && !customReportReason.trim()) {
+    showNotification(
+      'Missing Information',
+      'Please provide a reason for reporting this post.'
+    );
+    return;
+  }
+
+  try {
+    const token = user?.token || localStorage.getItem("token");
+    if (!token) throw new Error("No auth token found");
+
+    const reportReason = selectedReportReason === 'Other' ? customReportReason : selectedReportReason;
+
+    // API call to backend
+    await axios.post(
+      `/api/reports/${reportingPostId}`,
+      { reason: reportReason, customReason: selectedReportReason === 'Other' ? customReportReason : '' },
+      { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+    );
+
+    showNotification(
+      'Report Submitted',
+      "Thank you! We'll review this content."
+    );
+
+    // Reset modal state
     setShowReportModal(false);
     setReportingPostId(null);
     setSelectedReportReason('');
     setCustomReportReason('');
-  };
+
+  } catch (err) {
+    console.error(err);
+    showNotification(
+      'Report Failed',
+      'Unable to submit your report. Please try again later.'
+    );
+  }
+};
+
+// Cancel report
+const handleReportCancel = () => {
+  setShowReportModal(false);
+  setReportingPostId(null);
+  setSelectedReportReason('');
+  setCustomReportReason('');
+};
+
 
   // Handle window resize
   useEffect(() => {
@@ -2757,48 +3059,7 @@ function Forum() {
     return () => window.removeEventListener('resize', handleResize);
   }, [currentImageIndex]);
 
-  // Example post data structure for backend integration
-  const examplePosts = [
-    {
-      id: '1',
-      author: {
-        id: '101',
-        username: 'Sarah Lee',
-        initials: 'SL',
-        avatarColor: '#234255'
-      },
-      content: 'Great matches at the club today! Here are some highlights 📸 The weather was absolutely perfect for pickleball - sunny but not too hot, with just a gentle breeze. We had some intense rallies that went on for what felt like forever! Sarah dominated the net with her incredible dinks, while Mike was crushing some amazing overhead smashes. The new court surface is playing really well, much better grip than the old one. Everyone improved their game today and we learned some new strategies. Looking forward to tomorrow\'s tournament - should be epic! 🏓🎾',
-      images: [
-        { id: '1', url: 'https://placehold.co/400x400/ff6b6b/FFF?text=Image+1+(Grid+Top-Left)', alt: 'Match highlight 1' },
-        { id: '2', url: 'https://placehold.co/400x400/4ecdc4/FFF?text=Image+2+(Grid+Top-Right)', alt: 'Match highlight 2' },
-        { id: '3', url: 'https://placehold.co/400x400/45b7d1/FFF?text=Image+3+(Grid+Bottom-Left)', alt: 'Match highlight 3' },
-        { id: '4', url: 'https://placehold.co/400x400/f7b731/FFF?text=Image+4+(Grid+Bottom-Right+with+Overlay)', alt: 'Match highlight 4' },
-      ],
-      createdAt: '2025-06-16T10:00:00Z',
-      likeCount: 245,
-      commentCount: 18,
-      isLiked: false
-    },
-    {
-      id: '2',
-      author: {
-        id: '102',
-        username: 'Mike Chen',
-        initials: 'MC',
-        avatarColor: '#29ba9b'
-      },
-      content: "New paddles just arrived! Can't wait to try them out this weekend 🏓",
-      images: [
-        { id: '5', url: 'https://placehold.co/400x400/29ba9b/FFF?text=Paddle+1', alt: 'New paddle front' },
-        { id: '6', url: 'https://placehold.co/400x400/29ba9b/FFF?text=Paddle+2', alt: 'New paddle back' }
-      ],
-      createdAt: '2025-06-16T08:00:00Z',
-      likeCount: 132,
-      commentCount: 24,
-      isLiked: false
-    }
-  ];
-
+  
   return (
     <PageContainer>
       <ForumContainer>
@@ -2894,14 +3155,15 @@ function Forum() {
             </ImageUploadButton>
             {showCreateModal && (
               <SubmitButton
-                disabled={!postContent.trim()}
-                onClick={handleSubmitPost}
-                width="auto"
-                padding="8px 12px"
-                marginTop="0"
-              >
-                {isSubmitting ? 'Posting...' : 'Post'}
-              </SubmitButton>
+  type="button"
+  disabled={!postContent.trim()}
+  onClick={handleSubmitPost}
+  width="auto"
+  padding="8px 12px"
+  marginTop="0"
+>
+  {isSubmitting ? 'Posting...' : 'Post'}
+</SubmitButton>
             )}
             <input
               id="imageInput"
@@ -2967,271 +3229,309 @@ function Forum() {
           </ErrorMessage>
         )}
 
-        {!loading && !error && posts.map(post => (
-          <PostContainer key={post.id}>
-            <ReportButton onClick={() => handleReportClick(post.id)}>
-              <FlagIcon />
-              <ReportTooltip className="report-tooltip">Report post</ReportTooltip>
-            </ReportButton>
-            <Post>
-              <PostHeader>
-                <Avatar style={{ 
-                  background: post.author.avatar ? `url(${post.author.avatar}) center/cover` : post.author.avatarColor,
-                  color: post.author.avatar ? 'transparent' : 'white'
-                }}>
-                  {!post.author.avatar ? post.author.initials : ''}
-                </Avatar>
-                <PostAuthor>
-                  <h3>{post.author.username}</h3>
-                  <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                </PostAuthor>
-              </PostHeader>
-            <PostContent>
-              <p>
-                {expandedPosts[post.id] || post.content.length <= 200 
-                  ? post.content 
-                  : truncateText(post.content, 200)
-                }
-              </p>
-              {post.content.length > 200 && (
-                <SeeMoreButton onClick={() => togglePostExpansion(post.id)}>
-                  {expandedPosts[post.id] ? 'See less' : 'See more'}
-                </SeeMoreButton>
-              )}
-              {post.images?.length > 0 && (
-                <PostImages className={getImageLayoutClass(post.images)}>
-                  {getImageLayoutClass(post.images) === 'four-images-with-overlay' ? (
-                    // Render first 3 images normally, 4th with overlay
-                    <>
-                      {post.images.slice(0, 3).map((image, index) => (
-                        <div key={image.id} className="image-container">
-                          <img
-                      src={image.url}
-                      alt={image.alt}
-                      onClick={() => openCarousel(post.images, index)}
-                      style={{ cursor: 'pointer' }}
-                          />
-                        </div>
-                      ))}
-                      <div 
-                        className="image-container overlay" 
-                        data-remaining={post.images.length - 3}
-                        onClick={() => openCarousel(post.images, 3)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <img
-                          src={post.images[3].url}
-                          alt={post.images[3].alt}
-                        />
-                      </div>
-                    </>
-                  ) : (
-                    // Render normally for 1-4 images
-                    post.images.map((image, index) => (
+{!loading && !error && posts
+  .filter(post => post.status === 'approved' || user) // show approved posts even if not logged in
+  .map(post => (
+    <PostContainer key={post._id}>
+      <Post>
+        <PostHeader>
+          <Avatar
+            style={{
+              background: post.author?.avatarUrl
+                ? `url(${post.author.avatarUrl}) center/cover`
+                : '#4df3c9ff'
+            }}
+          >
+            {!post.author?.avatarUrl ? (post.author?.initials || '') : ''}
+          </Avatar>
+
+          <PostAuthor>
+            <h3>
+              {post.author
+                ? [post.author.firstName, post.author.lastName].filter(Boolean).join(' ')
+                : 'Unknown User'}
+            </h3>
+          </PostAuthor>
+
+          {/* Top-right menu */}
+          <MenuContainer>
+            <MenuToggle
+              onClick={() =>
+                setOpenMenu(prev => ({
+                  ...prev,
+                  [post._id]: !prev[post._id]
+                }))
+              }
+            >
+              <FaEllipsisH />
+            </MenuToggle>
+
+            {openMenu[post._id] && (
+              <MenuDropdown>
+                {post.author?._id === user?.id ? (
+                  <Dropdown.Item onClick={() => handleDeleteClick(post._id)}>
+                    <FiTrash2 style={{ marginRight: "8px", color: "#ef4444" }} /> Delete
+                  </Dropdown.Item>
+                ) : (
+                  <Dropdown.Item onClick={() => handleReportClick(post._id)}>
+                    <FiFlag style={{ marginRight: "8px", color: "#f59e0b" }} /> Report
+                  </Dropdown.Item>
+                )}
+              </MenuDropdown>
+            )}
+          </MenuContainer>
+        </PostHeader>
+
+        <PostContent>
+          <p>
+            {expandedPosts[post._id] || (post.content?.length || 0) <= 200
+              ? post.content || ''
+              : truncateText(post.content || '', 200)}
+          </p>
+
+          {(post.content?.length || 0) > 200 && (
+            <SeeMoreButton onClick={() => togglePostExpansion(post._id)}>
+              {expandedPosts[post._id] ? 'See less' : 'See more'}
+            </SeeMoreButton>
+          )}
+
+          {post.images?.length > 0 && (
+            <PostImages className={getImageLayoutClass(post.images)}>
+              {getImageLayoutClass(post.images) === 'four-images-with-overlay' ? (
+                <>
+                  {post.images.slice(0, 3).map((image, index) => (
+                    <div key={image.id || index} className="image-container">
                       <img
-                        key={image.id}
                         src={image.url}
-                        alt={image.alt}
+                        alt={image.alt || 'Post image'}
                         onClick={() => openCarousel(post.images, index)}
                         style={{ cursor: 'pointer' }}
-                    />
-                    ))
+                      />
+                    </div>
+                  ))}
+                  {post.images.length > 3 && (
+                    <div 
+                      className="image-container overlay" 
+                      data-remaining={post.images.length - 3}
+                      onClick={() => openCarousel(post.images, 3)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <img src={post.images[3]?.url} alt={post.images[3]?.alt || 'Post image'} />
+                    </div>
                   )}
-                </PostImages>
+                </>
+              ) : (
+                post.images.map((image, index) => (
+                  <img
+                    key={image.id || index}
+                    src={image.url}
+                    alt={image.alt || 'Post image'}
+                    onClick={() => openCarousel(post.images, index)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                ))
               )}
-            </PostContent>
-            <PostActions>
-              <button 
-                onClick={(e) => handleInteraction(e, 'like', post.id)}
-                style={{ 
-                  color: post.isLiked ? '#ef4444' : '#64748b',
-                  fontWeight: post.isLiked ? '600' : '400'
-                }}
-              >
-                <HeartIcon filled={post.isLiked} />
-                {post.likeCount}
-              </button>
-              <button onClick={(e) => handleInteraction(e, 'comment', post.id)}>
-                <CommentIcon />
-                {post.commentCount}
-              </button>
-            </PostActions>
-            
-            {/* Comments Section - Only show if logged in and comments are toggled */}
-            {isAuthenticated && showComments[post.id] && (
-              <CommentSection>
-                <CommentInput>
-                  <CommentAvatar style={{
-                    background: user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
-                    color: user?.avatar ? 'transparent' : 'white'
-                  }}>
-                    {!user?.avatar ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : ''}
-                  </CommentAvatar>
-                  <CommentTextArea
-                    placeholder="Add a comment..."
-                    value={commentInputs[post.id] || ''}
-                    onChange={(e) => setCommentInputs(prev => ({
-                      ...prev,
-                      [post.id]: e.target.value
-                    }))}
-                    onKeyPress={(e) => {
+            </PostImages>
+          )}
+        </PostContent>
+
+<PostActions>
+  <button
+    onClick={(e) => {
+      if (!user) {
+        setShowAuthModal(true);
+        return;
+      }
+      handleInteraction(e, 'like', post._id);
+    }}
+    style={{
+      color: post.isLiked ? '#ef4444' : '#64748b',
+      fontWeight: post.isLiked ? '600' : '400'
+    }}
+  >
+    <HeartIcon filled={post.isLiked} /> {post.likeCount}
+  </button>
+
+  <button
+    onClick={(e) => {
+      if (!user) {
+        setShowAuthModal(true);
+        return;
+      }
+      handleInteraction(e, 'comment', post._id);
+    }}
+  >
+    <CommentIcon /> {post.commentCount}
+  </button>
+</PostActions>
+
+
+
+        {/* Comments Section (only if logged in) */}
+{user && showComments[post._id] && (
+  <CommentSection>
+    {/* Add Comment Input */}
+    <CommentInput>
+      <CommentAvatar
+        style={{
+          background: user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
+          color: user?.avatar ? 'transparent' : 'white'
+        }}
+      >
+        {!user?.avatar && typeof user?.name === 'string'
+          ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+          : ''}
+      </CommentAvatar>
+
+      <CommentTextArea
+        placeholder="Add a comment..."
+        value={commentInputs[post._id] || ''}
+        onChange={e =>
+          setCommentInputs(prev => ({ ...prev, [post._id]: e.target.value }))
+        }
+        onKeyPress={e => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSubmitComment(post._id);
+          }
+        }}
+      />
+
+      <CommentSubmitButton
+        onClick={() => handleSubmitComment(post._id)}
+        disabled={!commentInputs[post._id]?.trim() || submittingComment[post._id]}
+      >
+        <SendIcon />
+      </CommentSubmitButton>
+    </CommentInput>
+
+    {/* Comments List */}
+    {postComments[post._id]?.length > 0 && (
+      <CommentsList>
+        {postComments[post._id].map(comment => (
+          <div key={comment._id}>
+            <CommentItem>
+              <CommentAvatar
+                style={{
+                  background: comment.author?.avatar ? `url(${comment.author.avatar}) center/cover` : '#29ba9b',
+                  color: comment.author?.avatar ? 'transparent' : 'white'
+                      }}>
+                {!comment.author?.avatar ? comment.author?.initials : ''}
+            </CommentAvatar>
+              <CommentItemContent>
+                <p className="comment-content">
+                  <span className="comment-author">{comment.author?.firstName} {comment.author?.lastName}</span>
+                  <span className="comment-text">{comment.content}</span>
+                </p>
+                <div className="comment-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span className="comment-time" style={{ marginRight: '10px' }}>{formatTime(comment.createdAt)}</span>
+                    <button className="comment-reply" style={{ marginRight: '10px' }} onClick={() => handleReplyClick(comment._id)} >Reply</button>
+                    {(comment.author?._id === user?.id || post.author?._id === user?.id) && (
+                    <button className="comment-delete" onClick={() => handleDeleteCommentClick(post._id, comment._id)} >Delete</button>
+                    )}
+                  </div> 
+                </div>                
+              </CommentItemContent>
+            </CommentItem>
+
+
+{comment.replies && comment.replies.length > 0 && (
+  <ViewRepliesButton>
+    <div className="view-replies">
+      <button onClick={() => setShowReplies(prev => ({
+        ...prev,
+        [comment._id]: !prev[comment._id]  // use _id instead of id
+      }))}>
+        {showReplies[comment._id] 
+          ? 'Hide replies' 
+          : `View replies (${comment.replies.length})`} 
+      </button>
+    </div>
+  </ViewRepliesButton>
+)}
+
+            {/* Replies */}
+{showReplies[comment._id] && comment.replies?.length > 0 && (
+  <ReplySection>
+    {comment.replies.map(reply => (
+      <ReplyItem key={reply._id}>
+        <ReplyAvatar
+          style={{
+            background: reply.author?.avatar ? `url(${reply.author.avatar}) center/cover` : '#29ba9b',
+            color: reply.author?.avatar ? 'transparent' : 'white'
+          }}
+        >
+          {!reply.author?.avatar ? reply.author?.initials : ''}
+        </ReplyAvatar>
+
+        <ReplyContent>
+          <p className="reply-content">
+            <span className="reply-author">{reply.author?.firstName} {reply.author?.lastName}</span>
+            <span className="reply-text">{reply.content}</span>
+          </p>
+
+          <div className="reply-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+    <span className="reply-time">{formatTime(reply.createdAt)}</span>
+    {(reply.author?._id === user?.id || comment.author?._id === user?.id || post.author?._id === user?.id) && (
+   <button className="reply-delete" onClick={() => handleDeleteReplyClick(post._id, comment._id, reply._id)} >Delete</button>
+    )}
+  </div>
+</div>
+        </ReplyContent>
+      </ReplyItem>
+    ))}
+  </ReplySection>
+)}
+
+
+            {/* Reply Input */}
+            {showReplyInput[comment._id] && (
+              <ReplySection>
+                <ReplyInput>
+                  <ReplyAvatar
+                    style={{
+                      background: user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
+                      color: user?.avatar ? 'transparent' : 'white'
+                    }}
+                  >
+                    {!user?.avatar && typeof user?.name === 'string'
+                      ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                      : ''}
+                  </ReplyAvatar>
+                  <ReplyTextArea
+                    placeholder="Reply..."
+                    value={replyInputs[comment._id] || ''}
+                    onChange={e =>
+                      setReplyInputs(prev => ({ ...prev, [comment._id]: e.target.value }))
+                    }
+                    onKeyPress={e => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
-                        handleSubmitComment(post.id);
+                        handleSubmitReply(comment._id, post._id);
                       }
                     }}
                   />
-                  <CommentSubmitButton
-                    onClick={() => handleSubmitComment(post.id)}
-                    disabled={!commentInputs[post.id]?.trim() || submittingComment[post.id]}
+                  <ReplySubmitButton
+                    onClick={() => handleSubmitReply(comment._id, post._id)}
+                    disabled={!replyInputs[comment._id]?.trim() || submittingReply[comment._id]}
                   >
                     <SendIcon />
-                  </CommentSubmitButton>
-                </CommentInput>
-                
-                {/* Comments List */}
-                {postComments[post.id] && postComments[post.id].length > 0 && (
-                  <CommentsList>
-                    {postComments[post.id].map((comment, index) => (
-                      <div key={comment.id}>
-                        <CommentItem>
-                          <CommentAvatar style={{
-                            background: comment.author.avatar ? `url(${comment.author.avatar}) center/cover` : '#29ba9b',
-                            color: comment.author.avatar ? 'transparent' : 'white'
-                          }}>
-                            {!comment.author.avatar ? comment.author.initials : ''}
-                          </CommentAvatar>
-                          <CommentItemContent>
-                            <p className="comment-content">
-                              <span className="comment-author">{comment.author.name}</span>
-                              <span className="comment-text">{comment.content}</span>
-                            </p>
-                            <div className="comment-meta">
-                              <span className="comment-time">
-                                {(() => {
-                                  const now = new Date();
-                                  const commentDate = new Date(comment.createdAt);
-                                  const diffInMinutes = Math.floor((now - commentDate) / (1000 * 60));
-                                  const diffInHours = Math.floor(diffInMinutes / 60);
-                                  const diffInDays = Math.floor(diffInHours / 24);
-                                  
-                                  if (diffInMinutes < 60) return `${diffInMinutes || 1}m`;
-                                  if (diffInHours < 24) return `${diffInHours}h`;
-                                  return `${diffInDays}d`;
-                                })()}
-                              </span>
-                              <button 
-                                className="comment-reply"
-                                onClick={() => handleReplyClick(comment.id)}
-                              >
-                                Reply
-                              </button>
-                            </div>
-                          </CommentItemContent>
-                        </CommentItem>
-
-                        {/* Toggle View/Hide replies button - below main comment */}
-                        {comment.replies && comment.replies.length > 0 && (
-                          <ViewRepliesButton>
-                            <div className="view-replies">
-                              <button onClick={() => setShowReplies(prev => ({
-                                ...prev,
-                                [comment.id]: !prev[comment.id]
-                              }))}>
-                                {showReplies[comment.id] 
-                                  ? 'Hide replies' 
-                                  : `View replies (${comment.replies.length})`
-                                }
-                              </button>
-                            </div>
-                          </ViewRepliesButton>
-                        )}
-                        
-                        {/* Replies Section */}
-                        {showReplies[comment.id] && comment.replies && comment.replies.length > 0 && (
-                          <ReplySection>
-                            {comment.replies.map(reply => (
-                              <ReplyItem key={reply.id}>
-                                <ReplyAvatar style={{
-                                  background: reply.author.avatar ? `url(${reply.author.avatar}) center/cover` : '#29ba9b',
-                                  color: reply.author.avatar ? 'transparent' : 'white'
-                                }}>
-                                  {!reply.author.avatar ? reply.author.initials : ''}
-                                </ReplyAvatar>
-                                <ReplyContent>
-                                  <p className="reply-content">
-                                    <span className="reply-author">{reply.author.name}</span>
-                                    <span className="reply-text">{reply.content}</span>
-                                  </p>
-                                  <div className="reply-meta">
-                                    <span className="reply-time">
-                                      {(() => {
-                                        const now = new Date();
-                                        const replyDate = new Date(reply.createdAt);
-                                        const diffInMinutes = Math.floor((now - replyDate) / (1000 * 60));
-                                        const diffInHours = Math.floor(diffInMinutes / 60);
-                                        const diffInDays = Math.floor(diffInHours / 24);
-                                        
-                                        if (diffInMinutes < 60) return `${diffInMinutes || 1}m`;
-                                        if (diffInHours < 24) return `${diffInHours}h`;
-                                        return `${diffInDays}d`;
-                                      })()}
-                                    </span>
-                                    <button 
-                                      className="reply-reply"
-                                      onClick={() => handleReplyClick(comment.id)}
-                                    >
-                                      Reply
-                                    </button>
-                                  </div>
-                                </ReplyContent>
-                              </ReplyItem>
-                            ))}
-                          </ReplySection>
-                        )}
-
-                        {/* Reply Input Section - at the end */}
-                        {showReplyInput[comment.id] && (
-                          <ReplySection>
-                            <ReplyInput>
-                              <ReplyAvatar style={{
-                                background: user?.avatar ? `url(${user.avatar}) center/cover` : '#29ba9b',
-                                color: user?.avatar ? 'transparent' : 'white'
-                              }}>
-                                {!user?.avatar ? user.name.split(' ').map(n => n[0]).join('').toUpperCase() : ''}
-                              </ReplyAvatar>
-                              <ReplyTextArea
-                                placeholder="Reply..."
-                                value={replyInputs[comment.id] || ''}
-                                onChange={(e) => setReplyInputs(prev => ({
-                                  ...prev,
-                                  [comment.id]: e.target.value
-                                }))}
-                                onKeyPress={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    handleSubmitReply(comment.id, post.id);
-                                  }
-                                }}
-                              />
-                              <ReplySubmitButton
-                                onClick={() => handleSubmitReply(comment.id, post.id)}
-                                disabled={!replyInputs[comment.id]?.trim() || submittingReply[comment.id]}
-                              >
-                                <SendIcon />
-                              </ReplySubmitButton>
-                            </ReplyInput>
-                          </ReplySection>
-                        )}
-                      </div>
-                    ))}
-                  </CommentsList>
-                )}
-              </CommentSection>
+                  </ReplySubmitButton>
+                </ReplyInput>
+              </ReplySection>
             )}
-            </Post>
-          </PostContainer>
+          </div>
         ))}
+      </CommentsList>
+    )}
+  </CommentSection>
+        )}
+      </Post>
+    </PostContainer>
+))}
+
 
         {!loading && !error && posts.length === 0 && (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
@@ -3265,6 +3565,86 @@ function Forum() {
             message="Sign in or register to interact with the community"
           />
         )}
+
+{showDeleteModal && (
+  <div style={{
+    position: "fixed",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999
+  }}>
+    <div style={{
+      background: "white",
+      padding: "20px",
+      borderRadius: "10px",
+      maxWidth: "300px",
+      textAlign: "center"
+    }}>
+      <h3>Are you sure?</h3>
+      <p>This action cannot be undone.</p>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "20px" }}>
+        <button onClick={cancelDelete} style={{ padding: "8px 12px" }}>Cancel</button>
+        <button onClick={confirmDelete} style={{ padding: "8px 12px", background: "red", color: "white" }}>Delete</button>
+      </div>
+    </div>
+  </div>
+)}
+{showDeleteCommentModal && (
+  <div style={{
+    position: "fixed",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999
+  }}>
+    <div style={{
+      background: "white",
+      padding: "20px",
+      borderRadius: "10px",
+      maxWidth: "300px",
+      textAlign: "center"
+    }}>
+      <h3>Are you sure you want to delete this comment?</h3>
+      <p>This action cannot be undone.</p>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "20px" }}>
+        <button onClick={cancelDeleteComment} style={{ padding: "8px 12px" }}>Cancel</button>
+        <button onClick={confirmDeleteComment} style={{ padding: "8px 12px", background: "red", color: "white" }}>Delete</button>
+      </div>
+    </div>
+  </div>
+)}
+{showDeleteReplyModal && (
+  <div style={{
+    position: "fixed",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999
+  }}>
+    <div style={{
+      background: "white",
+      padding: "20px",
+      borderRadius: "10px",
+      maxWidth: "300px",
+      textAlign: "center"
+    }}>
+      <h3>Are you sure you want to delete this reply?</h3>
+      <p>This action cannot be undone.</p>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "20px" }}>
+        <button onClick={cancelDeleteReply} style={{ padding: "8px 12px" }}>Cancel</button>
+        <button onClick={confirmDeleteReply} style={{ padding: "8px 12px", background: "red", color: "white" }}>Delete</button>
+      </div>
+    </div>
+  </div>
+)}
+
 
         {/* Report Modal */}
         {showReportModal && (
@@ -3337,7 +3717,7 @@ function Forum() {
               >
                 {currentImages.map((image, index) => (
                   <CarouselSlide 
-                    key={image.id}
+                    key={image.id || image._id}
                   >
                     <CarouselImage
                       src={image.url}

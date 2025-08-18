@@ -527,9 +527,13 @@ const RemoveButton = styled.button`
 
 const CategoryRow = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
   margin-bottom: 16px;
+  
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -725,6 +729,329 @@ const QRCodeInstructions = styled.p`
   margin: 0 auto;
 `;
 
+const DateSelector = styled.div`
+  margin-bottom: 16px;
+`;
+
+const MultiDateInput = styled.input`
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #1a1a1a;
+  background: white;
+  transition: all 0.2s ease;
+  width: 100%;
+  cursor: pointer;
+  
+  &:focus {
+    outline: none;
+    border-color: #29ba9b;
+    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
+  }
+  
+  &:hover {
+    border-color: #cbd5e0;
+  }
+
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.8;
+  }
+`;
+
+const DateHelperText = styled.p`
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 8px 0 0 0;
+  font-style: italic;
+`;
+
+const CalendarContainer = styled.div`
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: white;
+  margin-bottom: 12px;
+`;
+
+const CalendarHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+
+const CalendarNav = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  color: #6b7280;
+  
+  &:hover {
+    background: #f3f4f6;
+    color: #374151;
+  }
+`;
+
+const CalendarTitle = styled.h3`
+  margin: 0;
+  color: #374151;
+  font-size: 1.1rem;
+  font-weight: 600;
+`;
+
+const CalendarGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 16px;
+`;
+
+const CalendarDayHeader = styled.div`
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  padding: 8px 4px;
+`;
+
+const CalendarDay = styled.button`
+  padding: 8px 4px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: ${props => {
+    if (props.selected) return '#29ba9b';
+    if (props.today) return '#f0fffe';
+    if (props.otherMonth) return 'transparent';
+    return 'white';
+  }};
+  color: ${props => {
+    if (props.selected) return 'white';
+    if (props.otherMonth) return '#cbd5e0';
+    if (props.today) return '#29ba9b';
+    return '#374151';
+  }};
+  
+  &:hover {
+    background: ${props => {
+      if (props.selected) return '#26a085';
+      if (props.otherMonth) return 'transparent';
+      return '#f0fffe';
+    }};
+  }
+  
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+`;
+
+const CalendarActions = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+`;
+
+const CalendarButton = styled.button`
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid;
+  
+  ${props => props.variant === 'primary' ? `
+    background: #29ba9b;
+    color: white;
+    border-color: #29ba9b;
+    
+    &:hover {
+      background: #26a085;
+      border-color: #26a085;
+    }
+  ` : `
+    background: white;
+    color: #6b7280;
+    border-color: #e2e8f0;
+    
+    &:hover {
+      background: #f8fafc;
+      border-color: #cbd5e0;
+    }
+  `}
+`;
+
+const CalendarToggle = styled.button`
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #374151;
+  background: white;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  &:focus {
+    outline: none;
+    border-color: #29ba9b;
+    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
+  }
+  
+  &:hover {
+    border-color: #cbd5e0;
+  }
+`;
+
+const SelectedDatesContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+`;
+
+const DateTag = styled.div`
+  background: #f0fffe;
+  border: 1px solid #29ba9b;
+  border-radius: 20px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: #234255;
+`;
+
+const RemoveDateButton = styled.button`
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  
+  &:hover {
+    color: #dc2626;
+  }
+`;
+
+const RichTextContainer = styled.div`
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  transition: all 0.2s ease;
+  
+  &:focus-within {
+    border-color: #29ba9b;
+    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
+  }
+`;
+
+const RichTextToolbar = styled.div`
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 8px 8px 0 0;
+`;
+
+const ToolbarButton = styled.button`
+  background: ${props => props.active ? '#29ba9b' : 'white'};
+  color: ${props => props.active ? 'white' : '#374151'};
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 60px;
+  user-select: none;
+  
+  &:hover {
+    background: ${props => props.active ? '#26a085' : '#f3f4f6'};
+    border-color: #cbd5e0;
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(41, 186, 155, 0.2);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+`;
+
+const RichTextEditor = styled.div`
+  min-height: 100px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  color: #1a1a1a;
+  background: white;
+  border-radius: 0 0 8px 8px;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  
+  &:empty:before {
+    content: attr(data-placeholder);
+    color: #94a3b8;
+    font-size: 1rem;
+  }
+  
+  /* Style lists */
+  ul {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+  
+  li {
+    margin: 4px 0;
+  }
+  
+  /* Style bold and italic */
+  strong {
+    font-weight: 600;
+  }
+  
+  em {
+    font-style: italic;
+  }
+  
+  /* Prevent nested formatting issues */
+  p {
+    margin: 8px 0;
+  }
+  
+  p:first-child {
+    margin-top: 0;
+  }
+  
+  p:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* Tab support */
+  tab-size: 4;
+  -moz-tab-size: 4;
+`;
+
 const HostTournament = () => {
   const { user, showNotification } = useAuth();
   const navigate = useNavigate();
@@ -732,12 +1059,12 @@ const HostTournament = () => {
   const [formData, setFormData] = useState({
     tournamentName: '',
     description: '',
-    startDate: '',
-    endDate: '',
+    tournamentPicture: null,
+    registrationInstructions: '',
+    tournamentDates: [],
     registrationDeadline: '',
     category: '',
     skillLevel: '',
-    maxParticipants: '',
     entryFee: '',
     prizePool: '',
     venueName: '',
@@ -748,14 +1075,30 @@ const HostTournament = () => {
     contactEmail: '',
     contactPhone: '',
     rules: '',
+    events: '',
+    paymentMethods: [
+      {
+        id: 1,
+        bankName: '',
+        accountName: '',
+        accountNumber: '',
+        qrCodeImage: null
+      }
+    ],
     additionalInfo: '',
     tournamentCategories: []
   });
   
-  const [paymentProof, setPaymentProof] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [showMap, setShowMap] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [tempSelectedDates, setTempSelectedDates] = useState([]);
+  
+  // Rich text editor refs
+  const rulesEditorRef = useRef(null);
+  const eventsEditorRef = useRef(null);
 
   // Initialize with one empty category
   useEffect(() => {
@@ -764,7 +1107,9 @@ const HostTournament = () => {
         id: Date.now(),
         division: '',
         ageCategory: '',
-        skillLevel: ''
+        skillLevel: '',
+        maxParticipants: '',
+        prizePool: ''
       };
       
       setFormData(prev => ({
@@ -774,12 +1119,23 @@ const HostTournament = () => {
     }
   }, []);
 
+  // Initialize rich text editor content
+  useEffect(() => {
+    if (rulesEditorRef.current && formData.rules) {
+      rulesEditorRef.current.innerHTML = formData.rules;
+    }
+    if (eventsEditorRef.current && formData.events) {
+      eventsEditorRef.current.innerHTML = formData.events;
+    }
+  }, [formData.rules, formData.events]);
+
   const divisions = [
     'Men\'s Singles',
     'Women\'s Singles', 
     'Men\'s Doubles',
     'Women\'s Doubles',
-    'Mixed Doubles'
+    'Mixed Doubles',
+    'Team'
   ];
 
   const ageCategories = [
@@ -789,12 +1145,12 @@ const HostTournament = () => {
   ];
 
   const skillLevels = [
-    { value: 'beginner', label: 'Beginner', description: 'New to pickleball, learning basic rules and techniques' },
-    { value: 'intermediate', label: 'Intermediate', description: 'Perfect for developing players' },
-    { value: 'advanced', label: 'Advanced', description: 'Competitive players with solid fundamentals' },
-    { value: 'open-tier-1', label: 'Open - Tier 1', description: 'Entry level competitive play' },
-    { value: 'open-tier-2', label: 'Open - Tier 2', description: 'Intermediate competitive play' },
-    { value: 'open-tier-3', label: 'Open - Tier 3', description: 'Advanced competitive play' }
+    { value: 'beginner', label: 'Beginner', isOpen: false },
+    { value: 'intermediate', label: 'Intermediate', isOpen: false },
+    { value: 'advanced', label: 'Advanced', isOpen: false },
+    { value: 'open-tier-1', label: 'Open - Tier 1', isOpen: true },
+    { value: 'open-tier-2', label: 'Open - Tier 2', isOpen: true },
+    { value: 'open-tier-3', label: 'Open - Tier 3', isOpen: true }
   ];
 
   const handleInputChange = (e) => {
@@ -803,6 +1159,182 @@ const HostTournament = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const toggleCalendar = () => {
+    if (showCalendar) {
+      setTempSelectedDates([]);
+    } else {
+      setTempSelectedDates([...formData.tournamentDates]);
+    }
+    setShowCalendar(!showCalendar);
+  };
+
+  const handleDateSelect = (dateStr) => {
+    if (tempSelectedDates.includes(dateStr)) {
+      setTempSelectedDates(tempSelectedDates.filter(date => date !== dateStr));
+    } else {
+      setTempSelectedDates([...tempSelectedDates, dateStr].sort());
+    }
+  };
+
+  const confirmDateSelection = () => {
+    setFormData(prev => ({
+      ...prev,
+      tournamentDates: tempSelectedDates
+    }));
+    setShowCalendar(false);
+  };
+
+  const cancelDateSelection = () => {
+    setTempSelectedDates([]);
+    setShowCalendar(false);
+  };
+
+  const handleDateRemove = (dateToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      tournamentDates: prev.tournamentDates.filter(date => date !== dateToRemove)
+    }));
+  };
+
+  // Rich text editor functions
+  const execCommand = (command, value = null) => {
+    document.execCommand(command, false, value);
+  };
+
+  const formatText = (command, editorRef) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+      
+      // Save the current selection
+      const selection = window.getSelection();
+      if (selection.rangeCount === 0) {
+        // If no selection, place cursor at end
+        const range = document.createRange();
+        range.selectNodeContents(editorRef.current);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+      
+      execCommand(command);
+      editorRef.current.focus(); // Refocus after command
+    }
+  };
+
+  const insertBulletList = (editorRef) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+      
+      // Save the current selection
+      const selection = window.getSelection();
+      if (selection.rangeCount === 0) {
+        // If no selection, place cursor at end
+        const range = document.createRange();
+        range.selectNodeContents(editorRef.current);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+      
+      execCommand('insertUnorderedList');
+      editorRef.current.focus(); // Refocus after command
+    }
+  };
+
+  const handleRichTextChange = (field, editorRef) => {
+    if (editorRef.current) {
+      const content = editorRef.current.innerHTML;
+      setFormData(prev => ({
+        ...prev,
+        [field]: content
+      }));
+    }
+  };
+
+  const handleRichTextInput = (field, editorRef) => {
+    if (editorRef.current) {
+      const content = editorRef.current.innerHTML;
+      // Update state without re-rendering the contentEditable
+      formData[field] = content;
+    }
+  };
+
+  const handleKeyDown = (e, field, editorRef) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      
+      // Insert tab character or spaces
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const tabNode = document.createTextNode('\u00A0\u00A0\u00A0\u00A0'); // 4 non-breaking spaces
+        range.deleteContents();
+        range.insertNode(tabNode);
+        
+        // Move cursor after the inserted tab
+        range.setStartAfter(tabNode);
+        range.setEndAfter(tabNode);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+      
+      // Update the content
+      handleRichTextInput(field, editorRef);
+    }
+  };
+
+  const isCommandActive = (command) => {
+    return document.queryCommandState(command);
+  };
+
+  const navigateMonth = (direction) => {
+    const newMonth = new Date(currentMonth);
+    newMonth.setMonth(currentMonth.getMonth() + direction);
+    setCurrentMonth(newMonth);
+  };
+
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    const days = [];
+    
+    // Add previous month's trailing days
+    const prevMonth = new Date(year, month - 1, 0);
+    for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+      days.push({
+        day: prevMonth.getDate() - i,
+        date: new Date(year, month - 1, prevMonth.getDate() - i),
+        otherMonth: true
+      });
+    }
+    
+    // Add current month's days
+    for (let day = 1; day <= daysInMonth; day++) {
+      days.push({
+        day,
+        date: new Date(year, month, day),
+        otherMonth: false
+      });
+    }
+    
+    // Add next month's leading days
+    const remainingCells = 42 - days.length; // 6 rows × 7 days
+    for (let day = 1; day <= remainingCells; day++) {
+      days.push({
+        day,
+        date: new Date(year, month + 1, day),
+        otherMonth: true
+      });
+    }
+    
+    return days;
   };
 
 
@@ -824,12 +1356,137 @@ const HostTournament = () => {
         return;
       }
       
-      setPaymentProof(file);
     }
   };
 
-  const removeFile = () => {
-    setPaymentProof(null);
+  const handleTournamentPictureUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type and size for tournament picture
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      
+      if (!allowedTypes.includes(file.type)) {
+        showNotification('Please upload a valid image (JPG, PNG)', 'error');
+        return;
+      }
+      
+      if (file.size > maxSize) {
+        showNotification('File size must be less than 5MB', 'error');
+        return;
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        tournamentPicture: file
+      }));
+    }
+  };
+
+  const removeTournamentPicture = () => {
+    setFormData(prev => ({
+      ...prev,
+      tournamentPicture: null
+    }));
+  };
+
+  const handleQRCodeUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type and size for QR code image
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      
+      if (!allowedTypes.includes(file.type)) {
+        showNotification('Please upload a valid image (JPG, PNG)', 'error');
+        return;
+      }
+      
+      if (file.size > maxSize) {
+        showNotification('File size must be less than 5MB', 'error');
+        return;
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        qrCodeImage: file
+      }));
+    }
+  };
+
+  const removeQRCodeImage = (paymentMethodId) => {
+    setFormData(prev => ({
+      ...prev,
+      paymentMethods: prev.paymentMethods.map(method => 
+        method.id === paymentMethodId 
+          ? { ...method, qrCodeImage: null }
+          : method
+      )
+    }));
+  };
+
+  const addPaymentMethod = () => {
+    if (formData.paymentMethods.length >= 3) {
+      showNotification('Maximum of 3 payment methods allowed', 'error');
+      return;
+    }
+    
+    const newPaymentMethod = {
+      id: Date.now(),
+      bankName: '',
+      accountName: '',
+      accountNumber: '',
+      qrCodeImage: null
+    };
+    
+    setFormData(prev => ({
+      ...prev,
+      paymentMethods: [...prev.paymentMethods, newPaymentMethod]
+    }));
+  };
+
+  const removePaymentMethod = (paymentMethodId) => {
+    if (formData.paymentMethods.length <= 1) {
+      showNotification('At least one payment method is required', 'error');
+      return;
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      paymentMethods: prev.paymentMethods.filter(method => method.id !== paymentMethodId)
+    }));
+  };
+
+  const updatePaymentMethod = (paymentMethodId, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      paymentMethods: prev.paymentMethods.map(method => 
+        method.id === paymentMethodId 
+          ? { ...method, [field]: value }
+          : method
+      )
+    }));
+  };
+
+  const handleQRCodeUploadForMethod = (paymentMethodId, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type and size
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      
+      if (!allowedTypes.includes(file.type)) {
+        showNotification('Please upload a valid image (JPG, PNG)', 'error');
+        return;
+      }
+      
+      if (file.size > maxSize) {
+        showNotification('File size must be less than 5MB', 'error');
+        return;
+      }
+      
+      updatePaymentMethod(paymentMethodId, 'qrCodeImage', file);
+    }
   };
 
   const handleMapClick = () => {
@@ -881,7 +1538,9 @@ const HostTournament = () => {
       id: Date.now(),
       division: '',
       ageCategory: '',
-      skillLevel: ''
+      skillLevel: '',
+      maxParticipants: '',
+      prizePool: ''
     };
     
     setFormData(prev => ({
@@ -899,9 +1558,22 @@ const HostTournament = () => {
 
   const updateTournamentCategory = (categoryId, field, value) => {
     setFormData(prev => {
-      const updatedCategories = prev.tournamentCategories.map(cat =>
-        cat.id === categoryId ? { ...cat, [field]: value } : cat
-      );
+      const updatedCategories = prev.tournamentCategories.map(cat => {
+        if (cat.id === categoryId) {
+          const updatedCat = { ...cat, [field]: value };
+          
+          // If skill level is being updated and it's an "Open" category, clear age category
+          if (field === 'skillLevel') {
+            const selectedSkillLevel = skillLevels.find(skill => skill.value === value);
+            if (selectedSkillLevel && selectedSkillLevel.isOpen) {
+              updatedCat.ageCategory = '';
+            }
+          }
+          
+          return updatedCat;
+        }
+        return cat;
+      });
       return {
         ...prev,
         tournamentCategories: updatedCategories
@@ -915,8 +1587,8 @@ const HostTournament = () => {
 
     // Validate required fields
     const requiredFields = [
-      'tournamentName', 'description', 'startDate', 'endDate', 
-      'registrationDeadline', 'category', 'skillLevel', 'maxParticipants',
+      'tournamentName', 'description', 'registrationInstructions',
+      'registrationDeadline', 'category', 'skillLevel',
       'entryFee', 'venueName', 'venueAddress', 'venueCity', 'contactEmail'
     ];
 
@@ -928,6 +1600,12 @@ const HostTournament = () => {
       return;
     }
 
+    if (formData.tournamentDates.length === 0) {
+      showNotification('Please add at least one tournament date', 'error');
+      setIsSubmitting(false);
+      return;
+    }
+
     if (formData.tournamentCategories.length === 0) {
       showNotification('Please add at least one tournament category', 'error');
       setIsSubmitting(false);
@@ -935,18 +1613,20 @@ const HostTournament = () => {
     }
 
     // Validate that all tournament categories are complete
-    const incompleteCategories = formData.tournamentCategories.filter(cat => 
-      !cat.division || !cat.ageCategory || !cat.skillLevel
-    );
+    const incompleteCategories = formData.tournamentCategories.filter(cat => {
+      const selectedSkillLevel = skillLevels.find(skill => skill.value === cat.skillLevel);
+      const isOpenCategory = selectedSkillLevel && selectedSkillLevel.isOpen;
+      
+      // For open categories, age is not required, but maxParticipants is always required
+      if (isOpenCategory) {
+        return !cat.division || !cat.skillLevel || !cat.maxParticipants;
+      } else {
+        return !cat.division || !cat.ageCategory || !cat.skillLevel || !cat.maxParticipants;
+      }
+    });
     
     if (incompleteCategories.length > 0) {
-      showNotification('Please complete all tournament category fields (Division, Age Category, Skill Level)', 'error');
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!paymentProof) {
-      showNotification('Please upload proof of payment', 'error');
+      showNotification('Please complete all required tournament category fields', 'error');
       setIsSubmitting(false);
       return;
     }
@@ -996,7 +1676,7 @@ const HostTournament = () => {
         {/* Basic Information */}
         <FormSection>
           <SectionTitle>Basic Information</SectionTitle>
-          <FormGroup>
+          <FormGroup style={{ marginTop: '24px' }}>
             <Label>Tournament Name *</Label>
             <Input
               type="text"
@@ -1008,8 +1688,8 @@ const HostTournament = () => {
             />
           </FormGroup>
           
-          <FormGroup>
-            <Label>Description *</Label>
+          <FormGroup style={{ marginTop: '24px' }}>
+            <Label>Tournament Description *</Label>
             <TextArea
               name="description"
               value={formData.description}
@@ -1018,59 +1698,190 @@ const HostTournament = () => {
               required
             />
           </FormGroup>
+
+          <FormGroup style={{ marginTop: '24px' }}>
+            <Label>Tournament Picture</Label>
+            {!formData.tournamentPicture ? (
+              <FileUploadArea onClick={() => document.getElementById('tournament-picture-upload').click()}>
+                <FileUploadIcon>🖼️</FileUploadIcon>
+                <FileUploadText>Click to upload tournament picture</FileUploadText>
+                <FileUploadSubtext>JPG or PNG (max 5MB)</FileUploadSubtext>
+              </FileUploadArea>
+            ) : (
+              <div style={{ position: 'relative', marginTop: '12px' }}>
+                <img 
+                  src={URL.createObjectURL(formData.tournamentPicture)} 
+                  alt="Tournament Picture" 
+                  style={{ 
+                    width: '100%', 
+                    height: '400px', 
+                    objectFit: 'cover',
+                    borderRadius: '20px',
+                    border: '2px solid #e2e8f0',
+                    display: 'block'
+                  }} 
+                />
+                <button
+                  type="button"
+                  onClick={removeTournamentPicture}
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    background: 'transparent',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                    padding: '0',
+                    lineHeight: '1'
+                  }}
+                >
+                  ×
+                </button>
+                <div style={{ 
+                  marginTop: '8px', 
+                  fontSize: '0.875rem', 
+                  color: '#6b7280',
+                  fontStyle: 'italic'
+                }}>
+                  {formData.tournamentPicture.name}
+                </div>
+              </div>
+            )}
+            <HiddenFileInput
+              id="tournament-picture-upload"
+              type="file"
+              accept=".jpg,.jpeg,.png"
+              onChange={handleTournamentPictureUpload}
+              />
+            </FormGroup>
+          
+          <FormGroup style={{ marginTop: '24px' }}>
+            <Label>Registration Instructions *</Label>
+            <TextArea
+              name="registrationInstructions"
+              value={formData.registrationInstructions}
+                onChange={handleInputChange}
+              placeholder="Provide clear instructions on how participants can register for your tournament"
+                required
+              />
+            </FormGroup>
         </FormSection>
 
         {/* Tournament Details */}
         <FormSection>
           <SectionTitle>Tournament Details</SectionTitle>
-          <FormRow>
-            <FormGroup>
-              <Label>Start Date *</Label>
-              <Input
-                type="date"
-                name="startDate"
-                value={formData.startDate}
-                onChange={handleInputChange}
-                required
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label>End Date *</Label>
-              <Input
-                type="date"
-                name="endDate"
-                value={formData.endDate}
-                onChange={handleInputChange}
-                required
-              />
-            </FormGroup>
-          </FormRow>
+          
+          <FormGroup>
+            <Label>Tournament Date Selection *</Label>
+            <DateSelector>
+              <CalendarToggle type="button" onClick={toggleCalendar}>
+                <span>
+                  {formData.tournamentDates.length === 0 
+                    ? "Click to select tournament dates" 
+                    : `${formData.tournamentDates.length} date${formData.tournamentDates.length !== 1 ? 's' : ''} selected`
+                  }
+                </span>
+                <span>{showCalendar ? '▲' : '▼'}</span>
+              </CalendarToggle>
+              
+              {showCalendar && (
+                <CalendarContainer>
+                  <CalendarHeader>
+                    <CalendarNav type="button" onClick={() => navigateMonth(-1)}>
+                      ◀
+                    </CalendarNav>
+                    <CalendarTitle>
+                      {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </CalendarTitle>
+                    <CalendarNav type="button" onClick={() => navigateMonth(1)}>
+                      ▶
+                    </CalendarNav>
+                  </CalendarHeader>
+                  
+                  <CalendarGrid>
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                      <CalendarDayHeader key={day}>{day}</CalendarDayHeader>
+                    ))}
+                    
+                    {getDaysInMonth(currentMonth).map((dayObj, index) => {
+                      const dateStr = dayObj.date.toISOString().split('T')[0];
+                      const isSelected = tempSelectedDates.includes(dateStr);
+                      const isToday = dateStr === new Date().toISOString().split('T')[0];
+                      
+                      return (
+                        <CalendarDay
+                          key={index}
+                          type="button"
+                          selected={isSelected}
+                          today={isToday}
+                          otherMonth={dayObj.otherMonth}
+                          onClick={() => !dayObj.otherMonth && handleDateSelect(dateStr)}
+                        >
+                          {dayObj.day}
+                        </CalendarDay>
+                      );
+                    })}
+                  </CalendarGrid>
+                  
+                  <CalendarActions>
+                    <div>
+                      <span style={{ color: '#6b7280', fontSize: '0.875rem' }}>
+                        {tempSelectedDates.length} date{tempSelectedDates.length !== 1 ? 's' : ''} selected
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <CalendarButton type="button" onClick={cancelDateSelection}>
+                        Cancel
+                      </CalendarButton>
+                      <CalendarButton 
+                        type="button" 
+                        variant="primary" 
+                        onClick={confirmDateSelection}
+                        disabled={tempSelectedDates.length === 0}
+                      >
+                        OK
+                      </CalendarButton>
+                    </div>
+                  </CalendarActions>
+                </CalendarContainer>
+              )}
+              
+              {formData.tournamentDates.length > 0 && (
+                <SelectedDatesContainer>
+                  {formData.tournamentDates.map((date, index) => (
+                    <DateTag key={index}>
+                      {new Date(date).toLocaleDateString('en-US', { 
+                        weekday: 'short', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
+                      <RemoveDateButton 
+                        type="button"
+                        onClick={() => handleDateRemove(date)}
+                      >
+                        ×
+                      </RemoveDateButton>
+                    </DateTag>
+                  ))}
+                </SelectedDatesContainer>
+              )}
+            </DateSelector>
+          </FormGroup>
 
-          <FormRow>
-            <FormGroup>
-              <Label>Registration Deadline *</Label>
-              <Input
-                type="date"
-                name="registrationDeadline"
-                value={formData.registrationDeadline}
-                onChange={handleInputChange}
-                required
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label>Max Participants *</Label>
-              <Input
-                type="number"
-                name="maxParticipants"
-                value={formData.maxParticipants}
-                onChange={handleInputChange}
-                placeholder="e.g., 24"
-                min="1"
-                max="24"
-                required
-              />
-            </FormGroup>
-          </FormRow>
+          <FormGroup>
+            <Label>Registration Deadline *</Label>
+            <Input
+              type="date"
+              name="registrationDeadline"
+              value={formData.registrationDeadline}
+              onChange={handleInputChange}
+              required
+            />
+          </FormGroup>
 
           <FormGroup>
             <Label>Tournament Categories *</Label>
@@ -1104,21 +1915,6 @@ const HostTournament = () => {
                   </FormGroup>
                   
                   <FormGroup>
-                    <Label>Age Category *</Label>
-                    <Select
-                      key={`age-${category.id}`}
-                      value={category.ageCategory || ''}
-                      onChange={(e) => updateTournamentCategory(category.id, 'ageCategory', e.target.value)}
-                      required
-                    >
-                      <option value="">Select age category</option>
-                      {ageCategories.map(age => (
-                        <option key={age} value={age}>{age}</option>
-                      ))}
-                    </Select>
-                  </FormGroup>
-                  
-                  <FormGroup>
                     <Label>Skill Level *</Label>
                     <Select
                       key={`skill-${category.id}`}
@@ -1133,6 +1929,74 @@ const HostTournament = () => {
                         </option>
                       ))}
                     </Select>
+                  </FormGroup>
+                  
+                  <FormGroup>
+                    <Label>
+                      Age {(() => {
+                        const selectedSkillLevel = skillLevels.find(skill => skill.value === category.skillLevel);
+                        const isOpenCategory = selectedSkillLevel && selectedSkillLevel.isOpen;
+                        return isOpenCategory ? '' : '*';
+                      })()}
+                    </Label>
+                    <Select
+                      key={`age-${category.id}`}
+                      value={(() => {
+                        const selectedSkillLevel = skillLevels.find(skill => skill.value === category.skillLevel);
+                        const isOpenCategory = selectedSkillLevel && selectedSkillLevel.isOpen;
+                        return isOpenCategory ? '' : (category.ageCategory || '');
+                      })()}
+                      onChange={(e) => updateTournamentCategory(category.id, 'ageCategory', e.target.value)}
+                      disabled={(() => {
+                        const selectedSkillLevel = skillLevels.find(skill => skill.value === category.skillLevel);
+                        return selectedSkillLevel && selectedSkillLevel.isOpen;
+                      })()}
+                      required={(() => {
+                        const selectedSkillLevel = skillLevels.find(skill => skill.value === category.skillLevel);
+                        return !(selectedSkillLevel && selectedSkillLevel.isOpen);
+                      })()}
+                    >
+                      <option value="">
+                        {(() => {
+                          const selectedSkillLevel = skillLevels.find(skill => skill.value === category.skillLevel);
+                          const isOpenCategory = selectedSkillLevel && selectedSkillLevel.isOpen;
+                          return isOpenCategory ? 'N/A for Open categories' : 'Select age category';
+                        })()}
+                      </option>
+                      {ageCategories.map(age => (
+                        <option key={age} value={age}>{age}</option>
+                      ))}
+                    </Select>
+                  </FormGroup>
+                  
+                  <FormGroup>
+                    <Label>Participant Limit *</Label>
+                    <Select
+                      key={`limit-${category.id}`}
+                      value={category.maxParticipants || ''}
+                      onChange={(e) => updateTournamentCategory(category.id, 'maxParticipants', e.target.value)}
+                      required
+                    >
+                      <option value="">Select participant limit</option>
+                      <option value="16">16 players</option>
+                      <option value="20">20 players</option>
+                      <option value="24">24 players</option>
+                      <option value="28">28 players</option>
+                      <option value="32">32 players</option>
+                    </Select>
+                  </FormGroup>
+                  
+                  <FormGroup>
+                    <Label>Prize Pool (Optional)</Label>
+                    <Input
+                      type="number"
+                      key={`prize-${category.id}`}
+                      value={category.prizePool || ''}
+                      onChange={(e) => updateTournamentCategory(category.id, 'prizePool', e.target.value)}
+                      placeholder="Enter prize pool amount"
+                      min="0"
+                      step="100"
+                    />
                   </FormGroup>
                 </CategoryRow>
               </CategoryBuilder>
@@ -1149,7 +2013,21 @@ const HostTournament = () => {
                 <SummaryList>
                   {formData.tournamentCategories.map((category, index) => (
                     <SummaryItem key={category.id}>
-                      <strong>Category {index + 1}:</strong> {category.division} - {category.ageCategory} - {category.skillLevel ? skillLevels.find(s => s.value === category.skillLevel)?.label : 'Not selected'}
+                      <strong>Category {index + 1}:</strong> {(() => {
+                        const divisionText = category.division || 'Division not selected';
+                        const selectedSkillLevel = skillLevels.find(skill => skill.value === category.skillLevel);
+                        const skillLevelLabel = selectedSkillLevel?.label || 'Skill level not selected';
+                        const limitText = category.maxParticipants ? `(${category.maxParticipants} players)` : '(Limit not set)';
+                        const prizeText = category.prizePool ? ` - Prize: ₱${parseInt(category.prizePool).toLocaleString()}` : '';
+                        const isOpenCategory = selectedSkillLevel && selectedSkillLevel.isOpen;
+                        
+                        if (isOpenCategory) {
+                          return `${divisionText} - ${skillLevelLabel} ${limitText}${prizeText}`;
+                        } else {
+                          const ageText = category.ageCategory || 'Age not selected';
+                          return `${divisionText} - ${skillLevelLabel} - ${ageText} ${limitText}${prizeText}`;
+                        }
+                      })()}
                     </SummaryItem>
                   ))}
                 </SummaryList>
@@ -1173,18 +2051,6 @@ const HostTournament = () => {
                 min="0"
                 step="0.01"
                 required
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label>Prize Pool (Optional)</Label>
-              <Input
-                type="number"
-                name="prizePool"
-                value={formData.prizePool}
-                onChange={handleInputChange}
-                placeholder="0.00"
-                min="0"
-                step="0.01"
               />
             </FormGroup>
           </FormRow>
@@ -1274,96 +2140,246 @@ const HostTournament = () => {
           </FormRow>
         </FormSection>
 
-        {/* Tournament Rules */}
+        {/* Payment Proof */}
         <FormSection>
-          <SectionTitle>Tournament Rules</SectionTitle>
+          <SectionTitle>Payment Details</SectionTitle>
+          <PaymentInfoBox>
+
+            <PaymentInfoText>
+              Upload your bank account information or QR code so players can send their registration payments directly to you.
+              </PaymentInfoText>
+          </PaymentInfoBox>
+
+          {/* Payment Methods Section */}
+          <BankDetailsSection>
+ 
+            
+            {formData.paymentMethods.map((paymentMethod, index) => (
+              <div key={paymentMethod.id}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', marginTop: index > 0 ? '32px' : '0' }}>
+                  <h4 style={{ color: '#234255', fontWeight: '600', margin: 0 }}>
+                    Payment Method {index + 1}
+                  </h4>
+                  {formData.paymentMethods.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removePaymentMethod(paymentMethod.id)}
+                      style={{
+                        background: '#ff4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '4px 8px',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+                
+                <PaymentMethodsContainer>
+                  <BankDetailsBox>
+                    <BankDetailsHeader>Bank Transfer Details</BankDetailsHeader>
+                    <FormGroup>
+                      <Label>Bank Name</Label>
+                      <Input
+                        type="text"
+                        value={paymentMethod.bankName}
+                        onChange={(e) => updatePaymentMethod(paymentMethod.id, 'bankName', e.target.value)}
+                        placeholder="Enter your bank name"
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Account Name</Label>
+                      <Input
+                        type="text"
+                        value={paymentMethod.accountName}
+                        onChange={(e) => updatePaymentMethod(paymentMethod.id, 'accountName', e.target.value)}
+                        placeholder="Enter account holder name"
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Account Number</Label>
+                      <Input
+                        type="text"
+                        value={paymentMethod.accountNumber}
+                        onChange={(e) => updatePaymentMethod(paymentMethod.id, 'accountNumber', e.target.value)}
+                        placeholder="Enter your account number"
+                      />
+                    </FormGroup>
+                  </BankDetailsBox>
+
+                  <QRCodeSection>
+                    <QRCodeHeader>Quick Payment</QRCodeHeader>
+                    <QRCodeContainer>
+                      {!paymentMethod.qrCodeImage ? (
+                        <QRCodePlaceholder onClick={() => document.getElementById(`qr-code-upload-${paymentMethod.id}`).click()}>
+                          <QRCodeIcon>📱</QRCodeIcon>
+                          <QRCodeText>Upload QR Code</QRCodeText>
+                          <QRCodeSubtext>Click to upload your payment QR code screenshot</QRCodeSubtext>
+                        </QRCodePlaceholder>
+                      ) : (
+                        <div style={{ position: 'relative' }}>
+                          <img 
+                            src={URL.createObjectURL(paymentMethod.qrCodeImage)} 
+                            alt="QR Code" 
+                            style={{ 
+                              width: '100%', 
+                              height: '200px', 
+                              objectFit: 'contain',
+                              borderRadius: '8px',
+                              border: '2px solid #e0e0e0'
+                            }} 
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeQRCodeImage(paymentMethod.id)}
+                            style={{
+                              position: 'absolute',
+                              top: '8px',
+                              right: '8px',
+                              background: 'transparent',
+                              color: 'white',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontSize: '20px',
+                              fontWeight: 'bold',
+                              textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                              padding: '0',
+                              lineHeight: '1'
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      )}
+                    </QRCodeContainer>
+                    <QRCodeInstructions>
+                      Upload a screenshot of your payment QR code so players can easily pay registration fees
+                    </QRCodeInstructions>
+                    <HiddenFileInput
+                      id={`qr-code-upload-${paymentMethod.id}`}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleQRCodeUploadForMethod(paymentMethod.id, e)}
+                    />
+                  </QRCodeSection>
+                </PaymentMethodsContainer>
+              </div>
+            ))}
+            
+            {formData.paymentMethods.length < 3 && (
+              <AddCategoryButton onClick={addPaymentMethod} style={{ marginTop: '16px' }}>
+                <span>➕</span>
+                Add Another Payment Method
+              </AddCategoryButton>
+            )}
+          </BankDetailsSection>
+
+                  {/* Tournament Guidelines */}
+        <FormSection>
+          <SectionTitle>Tournament Guidelines</SectionTitle>
           <FormGroup>
-            <TextArea
-              name="rules"
-              value={formData.rules}
-              onChange={handleInputChange}
-              placeholder="Specify any special rules or regulations for your tournament"
-            />
+            <Label>Rules and Regulations</Label>
+            <RichTextContainer>
+              <RichTextToolbar>
+                <ToolbarButton
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    formatText('bold', rulesEditorRef);
+                  }}
+                  title="Bold"
+                >
+                  <strong>B</strong>
+                </ToolbarButton>
+                <ToolbarButton
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    formatText('italic', rulesEditorRef);
+                  }}
+                  title="Italic"
+                >
+                  <em>I</em>
+                </ToolbarButton>
+                <ToolbarButton
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    insertBulletList(rulesEditorRef);
+                  }}
+                  title="Bullet List"
+                >
+                  • List
+                </ToolbarButton>
+              </RichTextToolbar>
+              <RichTextEditor
+                ref={rulesEditorRef}
+                contentEditable
+                suppressContentEditableWarning={true}
+                data-placeholder="Specify any special rules or regulations for your tournament. Use the toolbar above to format your text."
+                onInput={() => handleRichTextInput('rules', rulesEditorRef)}
+                onBlur={() => handleRichTextChange('rules', rulesEditorRef)}
+                onKeyDown={(e) => handleKeyDown(e, 'rules', rulesEditorRef)}
+              />
+            </RichTextContainer>
           </FormGroup>
         </FormSection>
 
-        {/* Payment Proof */}
+        {/* Tournament Events */}
         <FormSection>
-          <SectionTitle>Payment Verification</SectionTitle>
-          <PaymentInfoBox>
-            <PaymentInfoTitle>Tournament Hosting Fee Required</PaymentInfoTitle>
-            <PaymentInfoText>
-              A hosting fee is required to submit your tournament for approval. 
-              Please upload proof of payment (receipt, bank transfer confirmation, etc.) 
-              to complete your submission.
-            </PaymentInfoText>
-          </PaymentInfoBox>
-
-          {/* Bank Details Section */}
-          <BankDetailsSection>
-            <BankDetailsTitle>Payment Information</BankDetailsTitle>
-            <PaymentMethodsContainer>
-              <BankDetailsBox>
-                 <BankDetailsHeader>Bank Transfer Details</BankDetailsHeader>
-                 <BankDetail>
-                   <BankDetailLabel>Bank Name:</BankDetailLabel>
-                   <BankDetailValue>-</BankDetailValue>
-                 </BankDetail>
-                 <BankDetail>
-                   <BankDetailLabel>Account Name:</BankDetailLabel>
-                   <BankDetailValue>-</BankDetailValue>
-                 </BankDetail>
-                 <BankDetail>
-                   <BankDetailLabel>Account Number:</BankDetailLabel>
-                   <BankDetailValue>-</BankDetailValue>
-                 </BankDetail>
-                 <BankDetail>
-                   <BankDetailLabel>Routing Number:</BankDetailLabel>
-                   <BankDetailValue>-</BankDetailValue>
-                 </BankDetail>
-                 <BankDetail>
-                   <BankDetailLabel>Reference:</BankDetailLabel>
-                   <BankDetailValue>-</BankDetailValue>
-                 </BankDetail>
-               </BankDetailsBox>
-
-              <QRCodeSection>
-                 <QRCodeHeader>Quick Payment</QRCodeHeader>
-                 <QRCodeContainer>
-                   <QRCodePlaceholder>
-                     <QRCodeIcon>📱</QRCodeIcon>
-                     <QRCodeText>QR Code</QRCodeText>
-                     <QRCodeSubtext>Payment Details</QRCodeSubtext>
-                   </QRCodePlaceholder>
-                 </QRCodeContainer>
-                 <QRCodeInstructions>
-                   Scan with your banking app or payment service to pay the hosting fee instantly
-                 </QRCodeInstructions>
-               </QRCodeSection>
-            </PaymentMethodsContainer>
-          </BankDetailsSection>
-
+          <SectionTitle>Tournament Events</SectionTitle>
           <FormGroup>
-            <Label>Upload Proof of Payment *</Label>
-            {!paymentProof ? (
-              <FileUploadArea onClick={() => document.getElementById('payment-upload').click()}>
-                <FileUploadIcon>📄</FileUploadIcon>
-                <FileUploadText>Click to upload payment proof</FileUploadText>
-                <FileUploadSubtext>JPG, PNG, or PDF (max 5MB)</FileUploadSubtext>
-              </FileUploadArea>
-            ) : (
-              <UploadedFile>
-                <FileName>{paymentProof.name}</FileName>
-                <RemoveFileButton onClick={removeFile}>×</RemoveFileButton>
-              </UploadedFile>
-            )}
-            <HiddenFileInput
-              id="payment-upload"
-              type="file"
-              accept=".jpg,.jpeg,.png,.pdf"
-              onChange={handleFileUpload}
-            />
+            <Label>Event Schedule and Activities</Label>
+            <RichTextContainer>
+              <RichTextToolbar>
+                <ToolbarButton
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    formatText('bold', eventsEditorRef);
+                  }}
+                  title="Bold"
+                >
+                  <strong>B</strong>
+                </ToolbarButton>
+                <ToolbarButton
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    formatText('italic', eventsEditorRef);
+                  }}
+                  title="Italic"
+                >
+                  <em>I</em>
+                </ToolbarButton>
+                <ToolbarButton
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    insertBulletList(eventsEditorRef);
+                  }}
+                  title="Bullet List"
+                >
+                  • List
+                </ToolbarButton>
+              </RichTextToolbar>
+              <RichTextEditor
+                ref={eventsEditorRef}
+                contentEditable
+                suppressContentEditableWarning={true}
+                data-placeholder="Describe the tournament events, schedule, and activities that will take place. Use the toolbar above to format your text."
+                onInput={() => handleRichTextInput('events', eventsEditorRef)}
+                onBlur={() => handleRichTextChange('events', eventsEditorRef)}
+                onKeyDown={(e) => handleKeyDown(e, 'events', eventsEditorRef)}
+              />
+            </RichTextContainer>
           </FormGroup>
+        </FormSection>
+
         </FormSection>
 
         <ButtonGroup>

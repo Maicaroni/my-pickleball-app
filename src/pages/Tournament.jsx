@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from '../components/AuthModal';
@@ -49,7 +49,6 @@ const BackButton = styled.button`
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  margin-bottom: 32px;
 
   &:hover {
     background: #e2e8f0;
@@ -62,7 +61,36 @@ const BackButton = styled.button`
   }
 
   @media (max-width: 768px) {
-    margin-bottom: 24px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+`;
+
+const EditTournamentButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #29ba9b;
+  border: 2px solid #29ba9b;
+  border-radius: 12px;
+  padding: 12px 20px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #26a085;
+    border-color: #26a085;
+    transform: translateY(-1px);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  @media (max-width: 768px) {
     padding: 10px 16px;
     font-size: 14px;
   }
@@ -135,7 +163,7 @@ const TournamentDetailStatusBadge = styled.div`
   z-index: 10;
   
   ${props => {
-    switch (props.status.toLowerCase()) {
+    switch (props.$status.toLowerCase()) {
       case 'open':
         return `
           background: rgba(220, 252, 231, 0.95);
@@ -360,25 +388,25 @@ const DetailItemLabel = styled.div`
 
 const DetailItemValue = styled.div`
   font-size: 1.1rem;
-  font-weight: 700;
-  color: #234255;
+  font-weight: 500;
+  color: #334155;
   text-align: right;
 
   &.price {
-    font-size: 1.3rem;
-    color: #29ba9b;
+    font-size: 1.1rem;
+    color: #334155;
   }
 
   &.deadline {
-    color: #dc2626;
+    color: #334155;
   }
 
   @media (max-width: 768px) {
     text-align: left;
-    font-size: 1rem;
+    font-size: 1.1rem;
     
     &.price {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
     }
   }
 `;
@@ -1898,7 +1926,7 @@ const StatusBadge = styled.div`
   z-index: 1;
   
   ${props => {
-    switch (props.status.toLowerCase()) {
+    switch (props.$status.toLowerCase()) {
       case 'open':
         return `
           background: rgba(220, 252, 231, 0.9);
@@ -1990,15 +2018,28 @@ const TournamentDate = styled.div`
 `;
 
 const TournamentLocation = styled(TournamentDate)`
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+`;
+
+const TournamentSkillLevels = styled(TournamentDate)`
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 0.9rem;
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    color: #29ba9b;
+    flex-shrink: 0;
+  }
 `;
 
 const TournamentStats = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 16px;
-  margin-top: auto;
+  margin-top: 16px;
   margin-bottom: 16px;
 `;
 
@@ -2376,7 +2417,8 @@ const RegistrationModalContent = styled.div`
   max-width: 600px;
   width: 100%;
   max-height: 90vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 `;
 
@@ -2413,6 +2455,8 @@ const CloseButton = styled.button`
 
 const RegistrationModalBody = styled.div`
   padding: 32px;
+  overflow-y: auto;
+  flex: 1;
 `;
 
 const RegistrationFormSection = styled.div`
@@ -2536,7 +2580,9 @@ const BankDetailsBox = styled.div`
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 20px;
-  margin-bottom: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 
 const BankDetailsTitle = styled.h4`
@@ -2548,25 +2594,26 @@ const BankDetailsTitle = styled.h4`
 
 const BankDetail = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
+  flex-direction: column;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
   
   &:last-child {
-    margin-bottom: 0;
+    border-bottom: none;
   }
 `;
 
 const BankDetailLabel = styled.span`
   font-weight: 500;
   color: #64748b;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
 `;
 
 const BankDetailValue = styled.span`
   font-weight: 600;
   color: #234255;
-  font-size: 0.9rem;
+  font-size: 1rem;
 `;
 
 const FileUploadArea = styled.div`
@@ -2577,6 +2624,121 @@ const FileUploadArea = styled.div`
   background: #f8fafc;
   transition: all 0.2s ease;
   cursor: pointer;
+`;
+
+const ImagePreviewContainer = styled.div`
+  position: relative;
+  margin-top: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+`;
+
+const PreviewImage = styled.img`
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  display: block;
+`;
+
+const DeleteImageButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(239, 68, 68, 1);
+    transform: scale(1.1);
+  }
+`;
+
+const FileName = styled.div`
+  padding: 8px 12px;
+  background: #f1f5f9;
+  font-size: 0.875rem;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+`;
+
+const PaymentMethodsContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 16px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const QRCodeSection = styled.div`
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+
+const QRCodeHeader = styled.h4`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #234255;
+  margin: 0 0 16px 0;
+`;
+
+const QRCodeContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+`;
+
+const QRCodePlaceholder = styled.div`
+  width: 200px;
+  height: 200px;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+`;
+
+const QRCodeIcon = styled.div`
+  font-size: 3rem;
+  margin-bottom: 8px;
+`;
+
+const QRCodeText = styled.p`
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 4px 0;
+  color: #64748b;
+`;
+
+const QRCodeSubtext = styled.p`
+  font-size: 0.8rem;
+  margin: 0;
+  color: #94a3b8;
+  text-align: center;
+  line-height: 1.3;
   
   &:hover {
     border-color: #29ba9b;
@@ -2616,8 +2778,267 @@ const RegistrationSubmitButton = styled.button`
   }
 `;
 
+// Player Selection Components
+const PlayerSlot = styled.div`
+  border: 2px dashed #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: ${props => props.$filled ? '#f0fffe' : '#f8fafc'};
+  border-color: ${props => props.$filled ? '#29ba9b' : '#e2e8f0'};
+  
+  &:hover {
+    border-color: #29ba9b;
+    background: #f0fffe;
+  }
+`;
+
+const PlayerSlotContent = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const RemovePlayerButton = styled.button`
+  background: transparent;
+  color: #ef4444;
+  border: none;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+  
+  &:hover {
+    color: #dc2626;
+    transform: scale(1.1);
+  }
+`;
+
+const PlayerInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const PlayerName = styled.span`
+  font-weight: 600;
+  color: #234255;
+  font-size: 0.95rem;
+`;
+
+const PlayerDetails = styled.span`
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-top: 2px;
+`;
+
+const PlayerSlotLabel = styled.span`
+  font-size: 0.9rem;
+  color: #64748b;
+  font-style: italic;
+`;
+
+const AddPlayerIcon = styled.div`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #29ba9b;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+`;
+
+const PlayerSelectionModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  padding: 20px;
+`;
+
+const PlayerSelectionContent = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 0;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+`;
+
+const PlayerSelectionHeader = styled.div`
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const PlayerSelectionTitle = styled.h3`
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #234255;
+  margin: 0;
+`;
+
+const PlayerSelectionBody = styled.div`
+  padding: 20px 24px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+`;
+
+const PlayerSearchInput = styled.input`
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+  
+  &:focus {
+    outline: none;
+    border-color: #29ba9b;
+    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
+  }
+`;
+
+const PlayerListItem = styled.div`
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: #29ba9b;
+    background: #f0fffe;
+  }
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const PlayerListInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+`;
+
+const PlayerListName = styled.span`
+  font-weight: 600;
+  color: #234255;
+`;
+
+const PlayerListMeta = styled.div`
+  display: block;
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.4;
+`;
+
+const PlayerListContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+`;
+
+const GenderBadge = styled.span`
+  background: ${props => props.$gender === 'male' ? '#dbeafe' : '#fce7f3'};
+  color: ${props => props.$gender === 'male' ? '#1e40af' : '#be185d'};
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: capitalize;
+`;
+
+const RequiredBadge = styled.span`
+  background: #fef3c7;
+  color: #92400e;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+`;
+
+const TournamentActionButtons = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  justify-content: center;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+`;
+
+const ActionButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid;
+  min-width: 100px;
+  justify-content: center;
+  
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  ${props => props.variant === 'primary' ? `
+    background: #29ba9b;
+    color: white;
+    border-color: #29ba9b;
+    
+    &:hover {
+      background: #239b83;
+      transform: translateY(-1px);
+    }
+  ` : `
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #e2e8f0;
+    
+    &:hover {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+    }
+  `}
+`;
+
 function Tournament() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -2637,25 +3058,169 @@ function Tournament() {
   // Add state for players search
   const [playersSearchTerm, setPlayersSearchTerm] = useState('');
   
+  // Add state for player tabs (pending/approved)
+  const [activePlayerTab, setActivePlayerTab] = useState('approved');
+  
+  // Add state for selected category in players section
+  const [selectedPlayerCategory, setSelectedPlayerCategory] = useState('all');
+  
   // Registration modal state
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [registrationTournament, setRegistrationTournament] = useState(null);
+  
+  // View form modal state (for profile view)
+  const [showViewFormModal, setShowViewFormModal] = useState(false);
+  const [viewFormTournament, setViewFormTournament] = useState(null);
+  
+
+  
+  // Player selection state
+  const [showPlayerSelectionModal, setShowPlayerSelectionModal] = useState(false);
+  const [playerSelectionType, setPlayerSelectionType] = useState(''); // 'partner', 'team-0', 'team-1', etc.
+  const [playerSearchTerm, setPlayerSearchTerm] = useState('');
+  const [registeredPlayers, setRegisteredPlayers] = useState([
+    { 
+      pplId: 'PPL001', 
+      name: 'John Doe', 
+      gender: 'male',
+      age: 28,
+      duprRatings: {
+        singles: '4.5',
+        doubles: '4.3'
+      }
+    },
+    { 
+      pplId: 'PPL002', 
+      name: 'Maria Santos', 
+      gender: 'female',
+      age: 32,
+      duprRatings: {
+        singles: '4.2',
+        doubles: '4.3'
+      }
+    },
+    { 
+      pplId: 'PPL003', 
+      name: 'Michael Johnson', 
+      gender: 'male',
+      age: 25,
+      duprRatings: {
+        singles: '3.8',
+        doubles: '3.9'
+      }
+    },
+    { 
+      pplId: 'PPL004', 
+      name: 'Elena Cruz', 
+      gender: 'female',
+      age: 29,
+      duprRatings: {
+        singles: '4.0',
+        doubles: '4.1'
+      }
+    },
+    { 
+      pplId: 'PPL005', 
+      name: 'Carlos Rodriguez', 
+      gender: 'male',
+      age: 35,
+      duprRatings: {
+        singles: '3.5',
+        doubles: '3.6'
+      }
+    },
+    { 
+      pplId: 'PPL006', 
+      name: 'Andrea Martinez', 
+      gender: 'female',
+      age: 27,
+      duprRatings: {
+        singles: '4.3',
+        doubles: '4.4'
+      }
+    },
+    { 
+      pplId: 'PPL007', 
+      name: 'Jason Park', 
+      gender: 'male',
+      age: 31,
+      duprRatings: {
+        singles: '3.9',
+        doubles: '4.0'
+      }
+    },
+    { 
+      pplId: 'PPL008', 
+      name: 'Sarah Kim', 
+      gender: 'female',
+      age: 26,
+      duprRatings: {
+        singles: '3.7',
+        doubles: '3.8'
+      }
+    }
+  ]);
   const [registrationForm, setRegistrationForm] = useState({
     category: '',
-    division: '',
-    ageCategory: '',
-    level: '',
-    fullName: '',
+    // Player information
+    primaryPlayer: {
+      pplId: '',
+      name: '',
+      gender: 'male',
+      duprRatings: {
+        singles: '',
+        doubles: ''
+      }
+    },
+    partner: {
+      pplId: '',
+      name: '',
+      gender: ''
+    },
+    teamMembers: [
+      { pplId: '', name: '', gender: 'male', required: true, label: 'Team Player 1' },
+      { pplId: '', name: '', gender: 'female', required: true, label: 'Team Player 2' },
+      { pplId: '', name: '', gender: 'male', required: true, label: 'Team Player 3' },
+      { pplId: '', name: '', gender: 'female', required: false, label: 'Additional Player 1 (Optional)' },
+      { pplId: '', name: '', gender: 'male', required: false, label: 'Additional Player 2 (Optional)' }
+    ],
+    // Contact information
     email: '',
     contactNumber: '',
     proofOfPayment: null
   });
   
+  // Initialize user's gender in registration form
+  useEffect(() => {
+    if (user && user.gender) {
+      setRegistrationForm(prev => ({
+        ...prev,
+        primaryPlayer: {
+          ...prev.primaryPlayer,
+          gender: user.gender
+        }
+      }));
+    }
+  }, [user]);
+  
+  // Force re-render of category dropdown when player ages or DUPR ratings change
+  const [categoryFilterKey, setCategoryFilterKey] = useState(0);
+  useEffect(() => {
+    // Trigger re-render of category dropdown when player information changes
+    setCategoryFilterKey(prev => prev + 1);
+  }, [
+    registrationForm.primaryPlayer?.age,
+    registrationForm.primaryPlayer?.duprRatings,
+    registrationForm.partner?.age,
+    registrationForm.partner?.duprRatings,
+    registrationForm.teamMembers
+  ]);
+  
   // Fee ranges
   const feeRanges = [
     { label: '₱0 - ₱1,000', min: 0, max: 1000 },
-    { label: '₱1,001 - ₱2,000', min: 1001, max: 2000 },
-    { label: '₱2,001 - ₱3,000', min: 2001, max: 3000 }
+    { label: '₱1,001 - ₱3,000', min: 1001, max: 3000 },
+    { label: '₱3,001 - ₱6,000', min: 3001, max: 6000 }
   ];
 
   const filteredTournaments = tournaments.filter(tournament => {
@@ -2819,12 +3384,13 @@ function Tournament() {
           divisions: ["Men's Singles", "Women's Singles", "Men's Doubles", "Women's Doubles", "Mixed Doubles"],
           // Multiple Tournament Categories with Brackets
           tournamentCategories: {
-            'mens-singles-intermediate-18': {
-              id: 'mens-singles-intermediate-18',
+            't1-mens-singles-intermediate-18': {
+              id: 't1-mens-singles-intermediate-18',
               name: "Men's Singles Intermediate 18+",
               ageGroup: '18+',
               skillLevel: 'Intermediate',
               participants: 16,
+              maxParticipants: 16,
               prizePool: 15000,
               description: 'Men\'s singles intermediate level competition for players 18 and older',
               groupStage: {
@@ -2915,7 +3481,7 @@ function Tournament() {
                   completed: true
                 },
                 thirdPlace: {
-                  id: 'thirdPlace',
+                id: 'thirdPlace',
                   player1: { name: 'Michael Johnson', seed: 'SF1-L' },
                   player2: { name: 'Carlos Rodriguez', seed: 'SF2-L' },
                   score: '11-5, 11-7',
@@ -2924,12 +3490,13 @@ function Tournament() {
                 }
               }
             },
-            'womens-singles-intermediate-18': {
-              id: 'womens-singles-intermediate-18',
+            't1-womens-singles-intermediate-18': {
+              id: 't1-womens-singles-intermediate-18',
               name: "Women's Singles Intermediate 18+", 
               ageGroup: '18+',
               skillLevel: 'Intermediate',
               participants: 12,
+              maxParticipants: 16,
               prizePool: 15000,
               description: 'Competitive women\'s singles for intermediate players',
               groupStage: {
@@ -3031,6 +3598,7 @@ function Tournament() {
               ageGroup: '18+',
               skillLevel: 'Open',
               participants: 8,
+              maxParticipants: 8,
               prizePool: 10000,
               description: 'Open-level mixed doubles competition',
               groupStage: {
@@ -3121,6 +3689,214 @@ function Tournament() {
                   completed: true
                 }
               }
+            },
+            't2-mens-singles': {
+              id: 't2-mens-singles',
+              name: "Men's Singles Advanced 18+",
+              ageGroup: '18+',
+              skillLevel: 'Advanced',
+              icon: '👨',
+              participants: 16,
+              maxParticipants: 16,
+              prizePool: 25000,
+              groupStage: {
+                bracketA: [
+                  { id: '1', name: 'John Doe', rating: '4.8', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 12, position: 1, age: 24 },
+                  { id: '5', name: 'Carlos Rodriguez', rating: '4.6', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 18, position: 2, age: 28 },
+                  { id: '9', name: 'Miguel Torres', rating: '4.4', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 3, age: 31 },
+                  { id: '13', name: 'Alex Martinez', rating: '4.2', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 4, age: 26 }
+                ],
+                bracketB: [
+                  { id: '2', name: 'Michael Johnson', rating: '4.7', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 10, position: 1, age: 29 },
+                  { id: '6', name: 'Luis Chen', rating: '4.5', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 15, position: 2, age: 25 },
+                  { id: '10', name: 'Roberto Kim', rating: '4.3', roundWins: 2, roundLosses: 2, winPoints: 26, lossPoints: 28, position: 3, age: 33 },
+                  { id: '14', name: 'David Park', rating: '4.1', roundWins: 1, roundLosses: 3, winPoints: 15, lossPoints: 37, position: 4, age: 27 }
+                ],
+                bracketC: [
+                  { id: '3', name: 'Jason Park', rating: '4.6', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 8, position: 1, age: 30 },
+                  { id: '7', name: 'Anthony Chen', rating: '4.4', roundWins: 3, roundLosses: 1, winPoints: 39, lossPoints: 12, position: 2, age: 24 },
+                  { id: '11', name: 'Marcus Tan', rating: '4.2', roundWins: 2, roundLosses: 2, winPoints: 24, lossPoints: 28, position: 3, age: 32 },
+                  { id: '15', name: 'Steven Wong', rating: '4.0', roundWins: 1, roundLosses: 3, winPoints: 12, lossPoints: 39, position: 4, age: 26 }
+                ],
+                bracketD: [
+                  { id: '4', name: 'Patrick Lim', rating: '4.5', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 6, position: 1, age: 28 },
+                  { id: '8', name: 'Jonathan Wu', rating: '4.3', roundWins: 3, roundLosses: 1, winPoints: 36, lossPoints: 15, position: 2, age: 25 },
+                  { id: '12', name: 'Brandon Choi', rating: '4.1', roundWins: 2, roundLosses: 2, winPoints: 22, lossPoints: 30, position: 3, age: 29 },
+                  { id: '16', name: 'Daniel Ko', rating: '3.9', roundWins: 1, roundLosses: 3, winPoints: 15, lossPoints: 36, position: 4, age: 31 }
+                ]
+              },
+              knockoutStage: {
+                quarterFinals: [
+                  { 
+                    id: 'qf1', 
+                    player1: { name: 'John Doe', seed: 'A1' }, 
+                    player2: { name: 'Anthony Chen', seed: 'C2' },
+                    score: '11-8, 11-6',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf2', 
+                    player1: { name: 'Michael Johnson', seed: 'B1' }, 
+                    player2: { name: 'Jonathan Wu', seed: 'D2' },
+                    score: '11-9, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf3', 
+                    player1: { name: 'Jason Park', seed: 'C1' }, 
+                    player2: { name: 'Luis Chen', seed: 'B2' },
+                    score: '11-5, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf4', 
+                    player1: { name: 'Patrick Lim', seed: 'D1' }, 
+                    player2: { name: 'Carlos Rodriguez', seed: 'A2' },
+                    score: '11-7, 11-9',
+                    winner: 'player2',
+                    completed: true
+                  }
+                ],
+                semiFinals: [
+                  { 
+                    id: 'sf1', 
+                    player1: { name: 'John Doe', seed: 'QF1' }, 
+                    player2: { name: 'Michael Johnson', seed: 'QF2' },
+                    score: '11-9, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'sf2', 
+                    player1: { name: 'Jason Park', seed: 'QF3' }, 
+                    player2: { name: 'Carlos Rodriguez', seed: 'QF4' },
+                    score: '11-6, 11-10',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                final: {
+                  id: 'final',
+                  player1: { name: 'John Doe', seed: 'SF1' },
+                  player2: { name: 'Jason Park', seed: 'SF2' },
+                  score: '11-8, 11-9',
+                  winner: 'player1',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Michael Johnson', seed: 'SF1-L' },
+                  player2: { name: 'Carlos Rodriguez', seed: 'SF2-L' },
+                  score: '11-5, 11-7',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
+            },
+            't2-womens-singles': {
+              id: 't2-womens-singles',
+              name: "Women's Singles 18+ Intermediate", 
+              ageGroup: '18+',
+              skillLevel: 'Intermediate',
+              icon: '👩',
+              participants: 12,
+              maxParticipants: 12,
+              prizePool: 15000,
+              groupStage: {
+                bracketA: [
+                  { id: '1', name: 'Maria Santos', rating: '3.8', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 21, position: 1, age: 24 },
+                  { id: '4', name: 'Ana Reyes', rating: '3.6', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 2, age: 26 },
+                  { id: '7', name: 'Sofia Garcia', rating: '3.4', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 3, age: 28 }
+                ],
+                bracketB: [
+                  { id: '2', name: 'Elena Cruz', rating: '3.7', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 15, position: 1, age: 25 },
+                  { id: '5', name: 'Carmen Lopez', rating: '3.5', roundWins: 2, roundLosses: 2, winPoints: 29, lossPoints: 27, position: 2, age: 30 },
+                  { id: '8', name: 'Patricia Wong', rating: '3.3', roundWins: 0, roundLosses: 4, winPoints: 12, lossPoints: 44, position: 3, age: 27 }
+                ],
+                bracketC: [
+                  { id: '3', name: 'Andrea Martinez', rating: '3.9', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 19, position: 1, age: 23 },
+                  { id: '6', name: 'Rachel Gonzalez', rating: '3.7', roundWins: 2, roundLosses: 2, winPoints: 31, lossPoints: 24, position: 2, age: 29 },
+                  { id: '9', name: 'Lisa Johnson', rating: '3.5', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 35, position: 3, age: 31 }
+                ],
+                bracketD: [
+                  { id: '10', name: 'Sarah Kim', rating: '3.6', roundWins: 3, roundLosses: 1, winPoints: 36, lossPoints: 18, position: 1, age: 26 },
+                  { id: '11', name: 'Michelle Yang', rating: '3.4', roundWins: 2, roundLosses: 2, winPoints: 25, lossPoints: 29, position: 2, age: 28 },
+                  { id: '12', name: 'Victoria Huang', rating: '3.2', roundWins: 1, roundLosses: 3, winPoints: 19, lossPoints: 36, position: 3, age: 24 }
+                ]
+              },
+              knockoutStage: {
+                quarterFinals: [
+                  { 
+                    id: 'qf1', 
+                    player1: { name: 'Maria Santos', seed: 'A1' }, 
+                    player2: { name: 'Michelle Yang', seed: 'D2' },
+                    score: '11-7, 11-9',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf2', 
+                    player1: { name: 'Elena Cruz', seed: 'B1' }, 
+                    player2: { name: 'Rachel Gonzalez', seed: 'C2' },
+                    score: '11-8, 11-6',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf3', 
+                    player1: { name: 'Andrea Martinez', seed: 'C1' }, 
+                    player2: { name: 'Ana Reyes', seed: 'A2' },
+                    score: '11-5, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'qf4', 
+                    player1: { name: 'Sarah Kim', seed: 'D1' }, 
+                    player2: { name: 'Carmen Lopez', seed: 'B2' },
+                    score: '11-9, 11-7',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                semiFinals: [
+                  { 
+                    id: 'sf1', 
+                    player1: { name: 'Maria Santos', seed: 'QF1' }, 
+                    player2: { name: 'Elena Cruz', seed: 'QF2' },
+                    score: '11-6, 11-8',
+                    winner: 'player1',
+                    completed: true
+                  },
+                  { 
+                    id: 'sf2', 
+                    player1: { name: 'Andrea Martinez', seed: 'QF3' }, 
+                    player2: { name: 'Sarah Kim', seed: 'QF4' },
+                    score: '11-9, 11-5',
+                    winner: 'player1',
+                    completed: true
+                  }
+                ],
+                final: {
+                  id: 'final',
+                  player1: { name: 'Maria Santos', seed: 'SF1' },
+                  player2: { name: 'Andrea Martinez', seed: 'SF2' },
+                  score: '11-7, 11-9',
+                  winner: 'player1',
+                  completed: true
+                },
+                thirdPlace: {
+                  id: 'thirdPlace',
+                  player1: { name: 'Elena Cruz', seed: 'SF1-L' },
+                  player2: { name: 'Sarah Kim', seed: 'SF2-L' },
+                  score: '11-4, 11-6',
+                  winner: 'player1',
+                  completed: true
+                }
+              }
             }
           },
           rules: [
@@ -3206,313 +3982,7 @@ function Tournament() {
             // Rejected applications
             { id: '23', playerName: 'Mark Brown', registeredAt: '2025-01-19T10:00:00Z', status: 'rejected', bracketId: null, rating: '2.5', team: 'Independent', note: 'Rating below minimum requirement' },
             { id: '24', playerName: 'Jenny Davis', registeredAt: '2025-01-19T13:15:00Z', status: 'rejected', bracketId: null, rating: '2.8', team: 'Independent', note: 'Incomplete documentation' }
-          ],
-          // Multiple Tournament Categories with Brackets
-          tournamentCategories: {
-            'mens-singles': {
-              id: 'mens-singles',
-              name: "Men's Singles Advanced 18+",
-              ageGroup: '18+',
-              skillLevel: 'Advanced',
-              icon: '👨',
-              participants: 16,
-              prizePool: 25000,
-            groupStage: {
-              bracketA: [
-                  { id: '1', name: 'John Doe', rating: '4.8', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 12, position: 1, age: 24 },
-                  { id: '5', name: 'Carlos Rodriguez', rating: '4.6', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 18, position: 2, age: 28 },
-                  { id: '9', name: 'Miguel Torres', rating: '4.4', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 3, age: 31 },
-                  { id: '13', name: 'Alex Martinez', rating: '4.2', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 4, age: 26 }
-              ],
-              bracketB: [
-                  { id: '2', name: 'Michael Johnson', rating: '4.7', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 10, position: 1, age: 29 },
-                  { id: '6', name: 'Luis Chen', rating: '4.5', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 15, position: 2, age: 25 },
-                  { id: '10', name: 'Roberto Kim', rating: '4.3', roundWins: 2, roundLosses: 2, winPoints: 26, lossPoints: 28, position: 3, age: 33 },
-                  { id: '14', name: 'David Park', rating: '4.1', roundWins: 1, roundLosses: 3, winPoints: 15, lossPoints: 37, position: 4, age: 27 }
-              ],
-              bracketC: [
-                  { id: '3', name: 'Jason Park', rating: '4.6', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 8, position: 1, age: 30 },
-                  { id: '7', name: 'Anthony Chen', rating: '4.4', roundWins: 3, roundLosses: 1, winPoints: 39, lossPoints: 12, position: 2, age: 24 },
-                  { id: '11', name: 'Marcus Tan', rating: '4.2', roundWins: 2, roundLosses: 2, winPoints: 24, lossPoints: 28, position: 3, age: 32 },
-                  { id: '15', name: 'Steven Wong', rating: '4.0', roundWins: 1, roundLosses: 3, winPoints: 12, lossPoints: 39, position: 4, age: 26 }
-              ],
-              bracketD: [
-                  { id: '4', name: 'Patrick Lim', rating: '4.5', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 6, position: 1, age: 28 },
-                  { id: '8', name: 'Jonathan Wu', rating: '4.3', roundWins: 3, roundLosses: 1, winPoints: 36, lossPoints: 15, position: 2, age: 25 },
-                  { id: '12', name: 'Brandon Choi', rating: '4.1', roundWins: 2, roundLosses: 2, winPoints: 22, lossPoints: 30, position: 3, age: 29 },
-                  { id: '16', name: 'Daniel Ko', rating: '3.9', roundWins: 1, roundLosses: 3, winPoints: 15, lossPoints: 36, position: 4, age: 31 }
-              ]
-            },
-            knockoutStage: {
-              quarterFinals: [
-                { 
-                  id: 'qf1', 
-                  player1: { name: 'John Doe', seed: 'A1' }, 
-                    player2: { name: 'Anthony Chen', seed: 'C2' },
-                  score: '11-8, 11-6',
-                  winner: 'player1',
-                  completed: true
-                },
-                { 
-                  id: 'qf2', 
-                    player1: { name: 'Michael Johnson', seed: 'B1' }, 
-                    player2: { name: 'Jonathan Wu', seed: 'D2' },
-                    score: '11-9, 11-7',
-                  winner: 'player1',
-                  completed: true
-                },
-                { 
-                  id: 'qf3', 
-                    player1: { name: 'Jason Park', seed: 'C1' }, 
-                    player2: { name: 'Luis Chen', seed: 'B2' },
-                    score: '11-5, 11-8',
-                  winner: 'player1',
-                  completed: true
-                },
-                { 
-                  id: 'qf4', 
-                    player1: { name: 'Patrick Lim', seed: 'D1' }, 
-                    player2: { name: 'Carlos Rodriguez', seed: 'A2' },
-                  score: '11-7, 11-9',
-                    winner: 'player2',
-                  completed: true
-                }
-              ],
-              semiFinals: [
-                { 
-                  id: 'sf1', 
-                  player1: { name: 'John Doe', seed: 'QF1' }, 
-                    player2: { name: 'Michael Johnson', seed: 'QF2' },
-                    score: '11-9, 11-8',
-                  winner: 'player1',
-                  completed: true
-                },
-                { 
-                  id: 'sf2', 
-                    player1: { name: 'Jason Park', seed: 'QF3' }, 
-                    player2: { name: 'Carlos Rodriguez', seed: 'QF4' },
-                    score: '11-6, 11-10',
-                  winner: 'player1',
-                  completed: true
-                }
-              ],
-              final: {
-                id: 'final',
-                player1: { name: 'John Doe', seed: 'SF1' },
-                  player2: { name: 'Jason Park', seed: 'SF2' },
-                  score: '11-8, 11-9',
-                winner: 'player1',
-                completed: true
-              },
-              thirdPlace: {
-                id: 'thirdPlace',
-                  player1: { name: 'Michael Johnson', seed: 'SF1-L' },
-                  player2: { name: 'Carlos Rodriguez', seed: 'SF2-L' },
-                  score: '11-5, 11-7',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            },
-            'womens-singles': {
-              id: 'womens-singles',
-              name: "Women's Singles 18+ Intermediate", 
-              ageGroup: '18+',
-              skillLevel: 'Intermediate',
-              icon: '👩',
-              participants: 12,
-              prizePool: 15000,
-              groupStage: {
-                bracketA: [
-                  { id: '1', name: 'Maria Santos', rating: '3.8', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 21, position: 1, age: 24 },
-                  { id: '4', name: 'Ana Reyes', rating: '3.6', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 2, age: 26 },
-                  { id: '7', name: 'Sofia Garcia', rating: '3.4', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 3, age: 28 }
-                ],
-                bracketB: [
-                  { id: '2', name: 'Elena Cruz', rating: '3.7', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 15, position: 1, age: 25 },
-                  { id: '5', name: 'Carmen Lopez', rating: '3.5', roundWins: 2, roundLosses: 2, winPoints: 29, lossPoints: 27, position: 2, age: 30 },
-                  { id: '8', name: 'Patricia Wong', rating: '3.3', roundWins: 0, roundLosses: 4, winPoints: 12, lossPoints: 44, position: 3, age: 27 }
-                ],
-                bracketC: [
-                  { id: '3', name: 'Andrea Martinez', rating: '3.9', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 19, position: 1, age: 23 },
-                  { id: '6', name: 'Rachel Gonzalez', rating: '3.7', roundWins: 2, roundLosses: 2, winPoints: 31, lossPoints: 24, position: 2, age: 29 },
-                  { id: '9', name: 'Lisa Johnson', rating: '3.5', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 35, position: 3, age: 31 }
-                ],
-                bracketD: [
-                  { id: '10', name: 'Sarah Kim', rating: '3.6', roundWins: 3, roundLosses: 1, winPoints: 36, lossPoints: 18, position: 1, age: 26 },
-                  { id: '11', name: 'Michelle Yang', rating: '3.4', roundWins: 2, roundLosses: 2, winPoints: 25, lossPoints: 29, position: 2, age: 28 },
-                  { id: '12', name: 'Victoria Huang', rating: '3.2', roundWins: 1, roundLosses: 3, winPoints: 19, lossPoints: 36, position: 3, age: 24 }
-                ]
-              },
-              knockoutStage: {
-                quarterFinals: [
-                  { 
-                    id: 'qf1', 
-                    player1: { name: 'Maria Santos', seed: 'A1' }, 
-                    player2: { name: 'Michelle Yang', seed: 'D2' },
-                    score: '11-7, 11-9',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf2', 
-                    player1: { name: 'Elena Cruz', seed: 'B1' }, 
-                    player2: { name: 'Rachel Gonzalez', seed: 'C2' },
-                    score: '11-8, 11-6',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf3', 
-                    player1: { name: 'Andrea Martinez', seed: 'C1' }, 
-                    player2: { name: 'Ana Reyes', seed: 'A2' },
-                    score: '11-5, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf4', 
-                    player1: { name: 'Sarah Kim', seed: 'D1' }, 
-                    player2: { name: 'Carmen Lopez', seed: 'B2' },
-                    score: '11-9, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                semiFinals: [
-                  { 
-                    id: 'sf1', 
-                    player1: { name: 'Maria Santos', seed: 'QF1' }, 
-                    player2: { name: 'Elena Cruz', seed: 'QF2' },
-                score: '11-6, 11-8',
-                winner: 'player1',
-                completed: true
-                  },
-                  { 
-                    id: 'sf2', 
-                    player1: { name: 'Andrea Martinez', seed: 'QF3' }, 
-                    player2: { name: 'Sarah Kim', seed: 'QF4' },
-                    score: '11-9, 11-5',
-                winner: 'player1',
-                completed: true
-              }
-                ],
-                final: {
-                  id: 'final',
-                  player1: { name: 'Maria Santos', seed: 'SF1' },
-                  player2: { name: 'Andrea Martinez', seed: 'SF2' },
-                  score: '11-7, 11-9',
-                  winner: 'player1',
-                  completed: true
-                },
-                thirdPlace: {
-                  id: 'thirdPlace',
-                  player1: { name: 'Elena Cruz', seed: 'SF1-L' },
-                  player2: { name: 'Sarah Kim', seed: 'SF2-L' },
-                  score: '11-4, 11-6',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            },
-            'mixed-doubles-open-35': {
-              id: 'mixed-doubles-open-35',
-              name: "Mixed Doubles Open 35+",
-              ageGroup: '35+',
-              skillLevel: 'Open',
-              icon: '👫',
-              participants: 8,
-              prizePool: 10000,
-              groupStage: {
-                bracketA: [
-                  { id: '1', name: 'John Doe & Maria Santos', rating: '4.2', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 21, position: 1, players: ['John Doe', 'Maria Santos'] },
-                  { id: '2', name: 'Carlos Rodriguez & Ana Reyes', rating: '4.0', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 30, position: 2, players: ['Carlos Rodriguez', 'Ana Reyes'] }
-                ],
-                bracketB: [
-                  { id: '3', name: 'Miguel Torres & Sofia Garcia', rating: '4.1', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 18, position: 1, players: ['Miguel Torres', 'Sofia Garcia'] },
-                  { id: '4', name: 'Luis Chen & Elena Cruz', rating: '3.9', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 38, position: 2, players: ['Luis Chen', 'Elena Cruz'] }
-                ],
-                bracketC: [
-                  { id: '5', name: 'Jason Park & Andrea Martinez', rating: '4.3', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 23, position: 1, players: ['Jason Park', 'Andrea Martinez'] },
-                  { id: '6', name: 'Patrick Lim & Rachel Gonzalez', rating: '3.8', roundWins: 2, roundLosses: 2, winPoints: 26, lossPoints: 28, position: 2, players: ['Patrick Lim', 'Rachel Gonzalez'] }
-                ],
-                bracketD: [
-                  { id: '7', name: 'Michael Johnson & Sarah Kim', rating: '4.0', roundWins: 2, roundLosses: 2, winPoints: 31, lossPoints: 25, position: 1, players: ['Michael Johnson', 'Sarah Kim'] },
-                  { id: '8', name: 'Anthony Chen & Carmen Lopez', rating: '3.7', roundWins: 1, roundLosses: 3, winPoints: 19, lossPoints: 35, position: 2, players: ['Anthony Chen', 'Carmen Lopez'] }
-                ]
-              },
-              knockoutStage: {
-                quarterFinals: [
-                  { 
-                    id: 'qf1', 
-                    player1: { name: 'John & Maria', seed: 'A1' }, 
-                    player2: { name: 'Anthony & Carmen', seed: 'D2' },
-                    score: '11-8, 11-6',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf2', 
-                    player1: { name: 'Miguel & Sofia', seed: 'B1' }, 
-                    player2: { name: 'Patrick & Rachel', seed: 'C2' },
-                    score: '11-9, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf3', 
-                    player1: { name: 'Jason & Andrea', seed: 'C1' }, 
-                    player2: { name: 'Luis & Elena', seed: 'B2' },
-                    score: '11-5, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf4', 
-                    player1: { name: 'Michael & Sarah', seed: 'D1' }, 
-                    player2: { name: 'Carlos & Ana', seed: 'A2' },
-                    score: '11-7, 11-9',
-                    winner: 'player2',
-                    completed: true
-                  }
-                ],
-                semiFinals: [
-                  { 
-                    id: 'sf1', 
-                    player1: { name: 'John & Maria', seed: 'QF1' }, 
-                    player2: { name: 'Miguel & Sofia', seed: 'QF2' },
-                    score: '11-9, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'sf2', 
-                    player1: { name: 'Jason & Andrea', seed: 'QF3' }, 
-                    player2: { name: 'Carlos & Ana', seed: 'QF4' },
-                    score: '11-6, 11-10',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                final: {
-                  id: 'final',
-                  player1: { name: 'John & Maria', seed: 'SF1' },
-                  player2: { name: 'Jason & Andrea', seed: 'SF2' },
-                  score: '11-8, 11-9',
-                  winner: 'player1',
-                  completed: true
-                },
-                thirdPlace: {
-                  id: 'thirdPlace',
-                  player1: { name: 'Miguel & Sofia', seed: 'SF1-L' },
-                  player2: { name: 'Carlos & Ana', seed: 'SF2-L' },
-                  score: '11-5, 11-7',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            }
-          }
+          ]
         },
         {
           id: '2',
@@ -3543,6 +4013,7 @@ function Tournament() {
               ageGroup: '18+',
               skillLevel: 'Intermediate',
               participants: 8,
+              maxParticipants: 8,
               prizePool: 8000,
               description: 'Competitive men\'s doubles for intermediate-level players',
               groupStage: {
@@ -3634,13 +4105,14 @@ function Tournament() {
                 }
               }
             },
-            'womens-doubles': {
-              id: 'womens-doubles',
+            't3-womens-doubles': {
+              id: 't3-womens-doubles',
               name: "Women's Doubles Intermediate 18+", 
               ageGroup: '18+',
               skillLevel: 'Intermediate',
               icon: '👭',
               participants: 8,
+              maxParticipants: 8,
               prizePool: 7000,
               description: 'Women\'s doubles competition for developing players',
               groupStage: {
@@ -3739,6 +4211,7 @@ function Tournament() {
               skillLevel: 'Intermediate',
               icon: '👫',
               participants: 8,
+              maxParticipants: 8,
               prizePool: 5000,
               description: 'Fun and competitive mixed doubles for all skill levels'
               // No bracket data for recreational - just show placeholder
@@ -3955,7 +4428,9 @@ function Tournament() {
               name: "Men's Singles Advanced 35+",
               ageGroup: '35+',
               skillLevel: 'Advanced',
-              participants: 8,
+              icon: '🏆',
+              participants: 16,
+              maxParticipants: 16,
               prizePool: 30000,
               description: 'Elite men\'s singles competition for advanced players',
               groupStage: {
@@ -4047,13 +4522,14 @@ function Tournament() {
                 }
               }
             },
-            'womens-singles': {
-              id: 'womens-singles',
+            't4-womens-singles': {
+              id: 't4-womens-singles',
               name: "Women's Singles Advanced 18+", 
               ageGroup: '18+',
               skillLevel: 'Advanced',
               icon: '👩',
               participants: 8,
+              maxParticipants: 12,
               prizePool: 25000,
               description: 'High-level women\'s singles championship',
               groupStage: {
@@ -4393,6 +4869,7 @@ function Tournament() {
               ageGroup: '18+',
               skillLevel: 'Beginner',
               participants: 8,
+              maxParticipants: 8,
               prizePool: 3000,
               description: 'Fun and welcoming mixed doubles for beginners',
               groupStage: {
@@ -4452,6 +4929,7 @@ function Tournament() {
               ageGroup: '18+',
               skillLevel: 'Beginner',
               participants: 8,
+              maxParticipants: 8,
               prizePool: 2000,
               description: 'Entry-level men\'s doubles perfect for new players',
               groupStage: {
@@ -4505,7 +4983,109 @@ function Tournament() {
                 }
               }
             }
-          }
+          },
+          rules: [
+           
+            'Professional referees for all matches'
+          ],
+          amenities: []
+        },
+       
+        {
+          id: "team-championship-2024",
+          name: "Team Championship 2024",
+          date: "2024-06-20T09:00:00Z",
+          endDate: "2024-06-21T18:00:00Z",
+          location: "Metro Sports Arena",
+          address: "789 Team Sports Blvd, Metro City, CA 90210",
+          latitude: 34.0522,
+          longitude: -118.2437,
+          status: "upcoming",
+          entryFee: 3000,
+          prizePool: 75000,
+          maxParticipants: 48,
+          currentParticipants: 18,
+          tournamentType: "open",
+          tier: 2,
+          description: "The ultimate team pickleball championship featuring 4-player teams competing in multiple formats. Teams will compete in singles, doubles, and mixed doubles matches with cumulative scoring to determine the champion team.",
+          bannerUrl: "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0",
+          registrationDeadline: "2024-06-15T23:59:59Z",
+          contactEmail: "teams@metropickleball.com",
+          contactPhone: "+1 (555) 123-4567",
+          organizer: "Metro Pickleball Association",
+          organizerProfile: {
+            name: "Metro Pickleball Association",
+            email: "teams@metropickleball.com",
+            phone: "+1 (555) 123-4567",
+            bio: "Leading organizer of team-based pickleball tournaments in the metro area."
+          },
+          rules: [
+                       "Teams must arrive 60 minutes before first scheduled match"
+          ],
+          amenities: [
+           
+          ],
+          tournamentCategories: {
+            "team-open": {
+              id: "team-open",
+              name: "Team Open Division",
+              skillLevel: "Open",
+              tier: 2,
+              prizePool: 45000,
+              participants: 12,
+              maxParticipants: 16,
+              ageGroup: "18+",
+              registrations: [
+                { id: "team1", name: "Thunder Bolts", members: ["Mike Johnson", "Sarah Davis", "Alex Chen", "Maria Rodriguez"], status: "approved", rating: "4.2", seed: 1 },
+                { id: "team2", name: "Net Ninjas", members: ["David Kim", "Lisa Wong", "Carlos Martinez", "Emma Thompson"], status: "approved", rating: "4.0", seed: 2 },
+                { id: "team3", name: "Court Crushers", members: ["Ryan Lee", "Jessica Park", "Antonio Garcia", "Nicole Brown"], status: "approved", rating: "3.9", seed: 3 }
+              ],
+              brackets: {
+                "round-1": [
+                  { id: "teammatch1", team1: "Thunder Bolts", team2: "Net Ninjas", score: "TBD", winner: null, court: 1, time: "9:00 AM" },
+                  { id: "teammatch2", team1: "Court Crushers", team2: "TBD", score: "TBD", winner: null, court: 2, time: "9:00 AM" }
+                ],
+                "semifinals": [
+                  { id: "teammatch3", team1: "TBD", team2: "TBD", score: "TBD", winner: null, court: 1, time: "2:00 PM" }
+                ],
+                "finals": [
+                  { id: "teammatch4", team1: "TBD", team2: "TBD", score: "TBD", winner: null, court: 1, time: "5:00 PM" }
+                ]
+              }
+            },
+            "team-intermediate": {
+              id: "team-intermediate",
+              name: "Team Intermediate Division",
+              skillLevel: "Intermediate",
+              prizePool: 30000,
+              participants: 6,
+              maxParticipants: 12,
+              ageGroup: "18+",
+              registrations: [
+                { id: "team4", name: "Paddle Power", members: ["John Smith", "Kate Johnson", "Mark Davis", "Nina Patel"], status: "approved", rating: "3.8", seed: 1 },
+                { id: "team5", name: "Spin Masters", members: ["Carlos Ruiz", "Jennifer Lee", "Ryan Clark", "Sophia Wang"], status: "approved", rating: "3.6", seed: 2 }
+              ],
+              brackets: {
+                "round-1": [
+                  { id: "intteammatch1", team1: "Paddle Power", team2: "Spin Masters", score: "TBD", winner: null, court: 3, time: "10:00 AM" }
+                ],
+                "finals": [
+                  { id: "intteammatch2", team1: "TBD", team2: "TBD", score: "TBD", winner: null, court: 3, time: "3:00 PM" }
+                ]
+              }
+            }
+          },
+          events: [
+            {
+              id: "teamevent1",
+              title: "Team Registration & Check-in",
+              description: "All team members must check in together. Bring team roster and payment confirmation.",
+              date: "2024-06-20T08:00:00Z",
+              duration: "60 minutes",
+              location: "Main Lobby"
+            },
+            
+          ]
         }
       ];
 
@@ -4533,6 +5113,60 @@ function Tournament() {
     fetchTournaments();
   }, []);
 
+  // Handle incoming tournament data from navigation (e.g., from Profile page)
+  useEffect(() => {
+    if (location.state?.selectedTournament) {
+      const tournament = location.state.selectedTournament;
+      setSelectedTournament(tournament);
+      setShowDetailedView(true);
+      
+      // Optionally expand first category by default
+      if (tournament.tournamentCategories) {
+        const firstCategory = Object.keys(tournament.tournamentCategories)[0];
+        if (firstCategory) {
+          setExpandedCategories({ [firstCategory]: true });
+        }
+      }
+    }
+  }, [location.state]);
+
+  // Auto-populate primary player information when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Create enhanced user data with pickleball-specific information
+      const enhancedUser = {
+        pplId: 'PPL999', // Dummy PPLID for current user
+        name: user.name || `${user.firstName} ${user.lastName}` || '',
+        gender: 'male', // Default - in real app this would come from user profile
+        age: user.age || 25, // Use user's actual age, fallback to 25
+        duprRatings: {
+          singles: '4.2',
+          doubles: '4.0'
+        }
+      };
+
+      setRegistrationForm(prev => ({
+        ...prev,
+        primaryPlayer: enhancedUser
+      }));
+    } else {
+      // Reset to empty when not authenticated
+      setRegistrationForm(prev => ({
+        ...prev,
+        primaryPlayer: {
+          pplId: '',
+          name: '',
+          gender: 'male',
+          age: '',
+          duprRatings: {
+            singles: '',
+            doubles: ''
+          }
+        }
+      }));
+    }
+  }, [isAuthenticated, user]);
+
   // Handle tournament card click to show detailed view
   const handleTournamentClick = (tournament) => {
     setSelectedTournament(tournament);
@@ -4548,11 +5182,18 @@ function Tournament() {
 
   // Handle closing detailed view
   const handleCloseDetailedView = () => {
-    setShowDetailedView(false);
-    setSelectedTournament(null);
-    setActiveTab('details'); // Reset to details tab
-    setExpandedCategories({}); // Reset expanded categories
-    setPlayersSearchTerm(''); // Reset players search
+    // Check if we came from Profile page
+    if (location.state?.fromProfile) {
+      // Navigate back to Profile page
+      navigate('/profile', { state: { activeTab: 'tournaments' } });
+    } else {
+      // Regular close for tournaments accessed from tournament list
+      setShowDetailedView(false);
+      setSelectedTournament(null);
+      setActiveTab('details'); // Reset to details tab
+      setExpandedCategories({}); // Reset expanded categories
+      setPlayersSearchTerm(''); // Reset players search
+    }
   };
 
   // Toggle category expansion
@@ -4581,46 +5222,296 @@ function Tournament() {
    * @param {string} tournamentId - Tournament identifier
    */
   const handleRegister = async (tournamentId) => {
+    // Wait for auth loading to complete
+    if (authLoading) {
+      return;
+    }
+    
     // Check auth state
     if (!isAuthenticated) {
       setShowAuthModal(true);
       return;
     }
 
-    // Find the tournament
-    const tournament = tournaments.find(t => t.id === tournamentId);
+    // Find the tournament - check both tournaments array and selectedTournament
+    let tournament = tournaments.find(t => t.id === tournamentId);
+    
+    // If not found in tournaments array, check if it's the currently selected tournament
+    if (!tournament && selectedTournament && selectedTournament.id === tournamentId) {
+      tournament = selectedTournament;
+    }
+    
     if (tournament) {
       setRegistrationTournament(tournament);
       setShowRegistrationModal(true);
-      // Reset form
-      setRegistrationForm({
-        category: '',
-        division: '',
-        level: '',
-        name: '',
-        email: '',
-        contactNumber: '',
-        proofOfPayment: null
+      // Reset form but preserve primary player information if user is authenticated
+      setRegistrationForm(prev => {
+        const primaryPlayerInfo = isAuthenticated && user ? {
+          pplId: 'PPL999',
+          name: user.name || `${user.firstName} ${user.lastName}` || '',
+          gender: user.gender || 'male', // Use user's actual gender, fallback to 'male'
+          age: user.age || 25, // Use user's actual age, fallback to 25
+          duprRatings: {
+            singles: '4.2',
+            doubles: '4.0'
+          }
+        } : {
+          pplId: '',
+          name: '',
+          gender: 'male', // Default for non-authenticated users
+          age: '', // Empty for non-authenticated users
+          duprRatings: {
+            singles: '',
+            doubles: ''
+          }
+        };
+
+        // Auto-select the first available category for the user's gender
+        const userGender = primaryPlayerInfo.gender;
+        
+        // Filter categories based on user gender
+        const allCategories = Object.values(tournament?.tournamentCategories || {});
+        const availableCategories = allCategories
+          .filter(category => {
+            return isCategoryAllowedForGender(category.name, userGender);
+          });
+            
+        const autoSelectedCategory = '';
+
+        return {
+          category: autoSelectedCategory,
+          primaryPlayer: primaryPlayerInfo,
+          partner: {
+            pplId: '',
+            name: '',
+            gender: ''
+          },
+          teamMembers: [
+            { pplId: '', name: '', gender: 'male', required: true, label: 'Male Player 2' },
+            { pplId: '', name: '', gender: 'female', required: true, label: 'Female Player 1' },
+            { pplId: '', name: '', gender: 'female', required: true, label: 'Female Player 2' },
+            { pplId: '', name: '', gender: 'male', required: false, label: 'Optional Player 1' },
+            { pplId: '', name: '', gender: 'female', required: false, label: 'Optional Player 2' }
+          ],
+          name: '',
+          email: '',
+          contactNumber: '',
+          proofOfPayment: null
+        };
       });
     }
   };
 
+  /**
+   * Handle viewing tournament registration form (read-only preview for profile)
+   * @param {string} tournamentId - Tournament identifier
+   */
+  const handleViewForm = (tournamentId) => {
+    // Find the tournament - check both tournaments array and selectedTournament
+    let tournament = tournaments.find(t => t.id === tournamentId);
+    
+    // If not found in tournaments array, check if it's the currently selected tournament
+    if (!tournament && selectedTournament && selectedTournament.id === tournamentId) {
+      tournament = selectedTournament;
+    }
+    
+    if (tournament) {
+      setViewFormTournament(tournament);
+      setShowViewFormModal(true);
+    }
+  };
+
+  // Close view form modal
+  const closeViewFormModal = () => {
+    setShowViewFormModal(false);
+    setViewFormTournament(null);
+  };
+
   // Registration form handlers
   const handleRegistrationFormChange = (field, value) => {
-    setRegistrationForm(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setRegistrationForm(prev => {
+      const updated = {
+        ...prev,
+        [field]: value
+      };
+      
+      // Check if the current category is still valid when player ages change
+      const ageRelatedFields = ['primaryPlayer', 'partner', 'teamMembers'];
+      if (ageRelatedFields.some(f => field.startsWith(f)) && prev.category && registrationTournament) {
+        const selectedCategory = Object.values(registrationTournament?.tournamentCategories || {})
+          .find(cat => cat.id === prev.category);
+        
+        if (selectedCategory) {
+          // Create a temporary form state to check age eligibility
+          const tempForm = { ...prev, [field]: value };
+          const tempAges = [];
+          
+          // Get all player ages from the temporary form
+          if (tempForm.primaryPlayer?.age) {
+            tempAges.push(tempForm.primaryPlayer.age);
+          } else if (user?.age) {
+            tempAges.push(user.age);
+          }
+          
+          if (tempForm.partner?.age) {
+            tempAges.push(tempForm.partner.age);
+          }
+          
+          if (Array.isArray(tempForm.teamMembers)) {
+            tempForm.teamMembers.forEach(member => {
+              if (member.age) {
+                tempAges.push(member.age);
+              }
+            });
+          }
+          
+          // Check if all players still meet the age requirement
+          const categoryAgeRequirement = selectedCategory.ageGroup || selectedCategory.ageCategory;
+          if (categoryAgeRequirement && tempAges.length > 0) {
+            const allPlayersEligible = tempAges.every(age => isAgeEligibleForCategory(age, categoryAgeRequirement));
+            if (!allPlayersEligible) {
+              console.log(`🚫 Clearing category "${selectedCategory.name}" - players no longer meet age requirement (${categoryAgeRequirement}). Player ages: [${tempAges.join(', ')}]`);
+              updated.category = ''; // Clear the invalid category
+            }
+          }
+          
+          // Check if all players still meet the DUPR requirement
+          const skillLevel = selectedCategory.skillLevel;
+          if (skillLevel && updated.category) { // Only check if category wasn't already cleared
+            const tempDuprRatings = [];
+            
+            // Get all player DUPR ratings from the temporary form
+            if (tempForm.primaryPlayer?.duprRatings) {
+              const categoryType = getCategoryType(selectedCategory.name);
+              let ratingType = 'singles';
+              if (categoryType === 'doubles') {
+                ratingType = 'doubles'; // DUPR uses one doubles rating for all doubles play
+              }
+              const rating = tempForm.primaryPlayer.duprRatings[ratingType];
+              if (rating) tempDuprRatings.push(parseFloat(rating));
+            } else if (user?.duprRatings) {
+              const categoryType = getCategoryType(selectedCategory.name);
+              let ratingType = 'Singles';
+              if (categoryType === 'doubles') {
+                ratingType = 'Doubles'; // DUPR uses one doubles rating for all doubles play
+              }
+              const userRating = user.duprRatings.find(r => r.type === ratingType);
+              if (userRating?.rating) tempDuprRatings.push(parseFloat(userRating.rating));
+            }
+            
+            if (tempForm.partner?.duprRatings) {
+              const categoryType = getCategoryType(selectedCategory.name);
+              let ratingType = categoryType === 'doubles' ? 'doubles' : 'singles';
+              const rating = tempForm.partner.duprRatings[ratingType];
+              if (rating) tempDuprRatings.push(parseFloat(rating));
+            }
+            
+            if (Array.isArray(tempForm.teamMembers)) {
+              tempForm.teamMembers.forEach(member => {
+                if (member.duprRatings) {
+                  const ratingType = 'singles'; // Team events typically use singles ratings
+                  const rating = member.duprRatings[ratingType];
+                  if (rating) tempDuprRatings.push(parseFloat(rating));
+                }
+              });
+            }
+            
+            // Check if all players meet the DUPR requirement
+            if (tempDuprRatings.length > 0) {
+              const allPlayersDuprEligible = tempDuprRatings.every(rating => isDuprEligibleForSkillLevel(rating, skillLevel));
+              if (!allPlayersDuprEligible) {
+                console.log(`🚫 Clearing category "${selectedCategory.name}" - players no longer meet DUPR requirement for ${skillLevel} level. Player DUPR ratings: [${tempDuprRatings.join(', ')}]`);
+                updated.category = ''; // Clear the invalid category
+              }
+            }
+          }
+        }
+      }
+      
+      // Reset team composition when category changes
+      if (field === 'category' && value && registrationTournament) {
+        try {
+          const selectedCategory = Object.values(registrationTournament?.tournamentCategories || {})
+            .find(cat => cat.id === value);
+          const categoryType = getCategoryType(selectedCategory?.name || '');
+          
+          // Auto-adjust primary player gender for gendered categories
+          if (selectedCategory?.name) {
+            const categoryName = selectedCategory.name.toLowerCase();
+            if (categoryName.includes("women's") || categoryName.includes("female")) {
+              updated.primaryPlayer = {
+                ...prev.primaryPlayer,
+                gender: 'female'
+              };
+            } else if (categoryName.includes("men's") || categoryName.includes("male")) {
+              updated.primaryPlayer = {
+                ...prev.primaryPlayer,
+                gender: 'male'
+              };
+            }
+            // Mixed categories keep current gender
+          }
+          
+          if (categoryType === 'team') {
+            const composition = getTeamComposition(updated.primaryPlayer?.gender || prev.primaryPlayer?.gender || 'male');
+            if (Array.isArray(composition)) {
+              updated.teamMembers = composition.map(comp => ({
+                pplId: '',
+                name: '',
+                gender: comp.gender || 'male',
+                required: comp.required || false,
+                label: comp.label || 'Team Member'
+              }));
+            }
+          }
+          
+          // Reset partner for doubles
+          if (categoryType === 'doubles') {
+            updated.partner = {
+              pplId: '',
+              name: '',
+              gender: ''
+            };
+          }
+        } catch (error) {
+          console.error('Error updating registration form:', error);
+          // Keep the original teamMembers if there's an error
+        }
+      }
+      
+      return updated;
+    });
   };
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      // Validate file type and size
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please upload a valid image (JPG, PNG) or PDF file');
+        return;
+      }
+      
+      if (file.size > maxSize) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+      
       setRegistrationForm(prev => ({
         ...prev,
         proofOfPayment: file
       }));
     }
+  };
+
+  const handleDeleteProofOfPayment = () => {
+    setRegistrationForm(prev => ({
+      ...prev,
+      proofOfPayment: null
+    }));
   };
 
   const handleRegistrationSubmit = async (e) => {
@@ -4661,6 +5552,239 @@ function Tournament() {
     setRegistrationTournament(null);
   };
 
+  // Helper function to check if a player's age meets the category age requirement
+  const isAgeEligibleForCategory = (playerAge, categoryAgeRequirement) => {
+    if (!categoryAgeRequirement || !playerAge) {
+      return true; // No age restriction or age not specified
+    }
+    
+    // Parse age requirement (e.g., "18+", "35+", "50+")
+    const minAge = parseInt(categoryAgeRequirement.replace('+', ''));
+    return playerAge >= minAge;
+  };
+
+  // Helper function to get all player ages for the current registration
+  const getAllPlayerAges = () => {
+    const ages = [];
+    
+    // Add primary player age
+    if (registrationForm.primaryPlayer?.age) {
+      ages.push(registrationForm.primaryPlayer.age);
+    } else if (user?.age) {
+      ages.push(user.age);
+    }
+    
+    // Add partner age for doubles
+    if (registrationForm.partner?.age) {
+      ages.push(registrationForm.partner.age);
+    }
+    
+    // Add team member ages for team categories
+    if (Array.isArray(registrationForm.teamMembers)) {
+      registrationForm.teamMembers.forEach(member => {
+        if (member.age) {
+          ages.push(member.age);
+        }
+      });
+    }
+    
+    return ages;
+  };
+
+  // Helper function to check if a player's DUPR rating meets the skill level requirement
+  const isDuprEligibleForSkillLevel = (duprRating, skillLevel) => {
+    if (!skillLevel) {
+      return true; // No skill level restriction
+    }
+    
+    // Convert DUPR rating to number, handle empty/null values
+    const rating = duprRating ? parseFloat(duprRating) : null;
+    
+    switch (skillLevel.toLowerCase()) {
+      case 'beginner':
+        // Beginner: no DUPR to 3.0
+        return rating === null || rating <= 3.0;
+      case 'intermediate':
+        // Intermediate: 2.0 to 3.9 (no DUPR needed)
+        return rating === null || (rating >= 2.0 && rating <= 3.9);
+      case 'advanced':
+        // Advanced: 3.5 to 4.5 (no DUPR needed)
+        return rating === null || (rating >= 3.5 && rating <= 4.5);
+      case 'open':
+      case 'open-tier-1':
+      case 'open-tier-2':
+      case 'open-tier-3':
+        // Open: 4.0 & above (no DUPR needed)
+        return rating === null || rating >= 4.0;
+      default:
+        return true; // Unknown skill level, allow by default
+    }
+  };
+
+  // Helper function to get all player DUPR ratings for the current registration
+  const getAllPlayerDuprRatings = (categoryType) => {
+    const ratings = [];
+    
+    // Determine which DUPR rating type to check based on category
+    let duprType = 'singles';
+    if (categoryType && categoryType.toLowerCase().includes('doubles')) {
+      duprType = 'doubles'; // DUPR uses one doubles rating for all doubles play
+    }
+    
+    // Add primary player DUPR rating
+    if (registrationForm.primaryPlayer?.duprRatings?.[duprType]) {
+      ratings.push(parseFloat(registrationForm.primaryPlayer.duprRatings[duprType]));
+    } else if (user?.duprRatings) {
+      // Handle user DUPR ratings from Profile structure
+      const ratingTypeMap = {
+        'singles': 'Singles',
+        'doubles': 'Doubles'
+      };
+      const userRating = user.duprRatings.find(r => r.type === ratingTypeMap[duprType]);
+      if (userRating?.rating) {
+        ratings.push(parseFloat(userRating.rating));
+      }
+    }
+    
+    // Add partner DUPR rating for doubles
+    if (registrationForm.partner?.duprRatings?.[duprType]) {
+      ratings.push(parseFloat(registrationForm.partner.duprRatings[duprType]));
+    }
+    
+    // Add team member DUPR ratings for team categories
+    if (Array.isArray(registrationForm.teamMembers)) {
+      registrationForm.teamMembers.forEach(member => {
+        if (member.duprRatings?.[duprType]) {
+          ratings.push(parseFloat(member.duprRatings[duprType]));
+        }
+      });
+    }
+    
+    return ratings;
+  };
+
+  // Helper function to check if a category is allowed for the user's gender
+  const isCategoryAllowedForGender = (categoryName, userGender) => {
+    console.log(`🔍 Gender Filter Debug: categoryName="${categoryName}", userGender="${userGender}" (type: ${typeof userGender})`);
+    
+    if (!categoryName || !userGender) {
+      console.log(`⚠️ Missing data: categoryName=${!!categoryName}, userGender=${!!userGender} - returning true`);
+      return true; // Allow if no restrictions
+    }
+    
+    const categoryLower = categoryName.toLowerCase();
+    const userGenderLower = userGender.toLowerCase().trim();
+    
+    console.log(`🔍 Processing: categoryLower="${categoryLower}", userGenderLower="${userGenderLower}"`);
+    
+    // For male users: only allow men's, mixed, and team categories
+    if (userGenderLower === 'male') {
+      console.log(`👨 Male user detected - checking category: "${categoryLower}"`);
+      
+      // Allow team categories
+      if (categoryLower.includes("team")) {
+        console.log(`✅ Male: Team category allowed`);
+        return true;
+      }
+      
+      // Allow mixed categories
+      if (categoryLower.includes("mixed")) {
+        console.log(`✅ Male: Mixed category allowed`);
+        return true;
+      }
+      
+      // First check if it's a women's category (to avoid false positive with "men" inside "women")
+      if (categoryLower.includes("women's") || categoryLower.includes("women") || categoryLower.includes("female")) {
+        console.log(`❌ Male: Women's category denied - "${categoryLower}"`);
+        return false;
+      }
+      
+      // Allow men's categories (now safe to check after excluding women's)
+      if (categoryLower.includes("men's") || categoryLower.includes("men") || categoryLower.includes("male")) {
+        console.log(`✅ Male: Men's category allowed`);
+        return true;
+      }
+      
+      // Deny all other categories (unmarked categories)
+      console.log(`❌ Male: Category denied - "${categoryLower}"`);
+      return false;
+    }
+    
+    // For female users: only allow women's, mixed, and team categories
+    if (userGenderLower === 'female') {
+      console.log(`👩 Female user detected - checking category: "${categoryLower}"`);
+      
+      // Allow team categories
+      if (categoryLower.includes("team")) {
+        console.log(`✅ Female: Team category allowed`);
+        return true;
+      }
+      
+      // Allow mixed categories
+      if (categoryLower.includes("mixed")) {
+        console.log(`✅ Female: Mixed category allowed`);
+        return true;
+      }
+      
+      // Allow women's categories
+      if (categoryLower.includes("women's") || categoryLower.includes("women") || categoryLower.includes("female")) {
+        console.log(`✅ Female: Women's category allowed`);
+        return true;
+      }
+      
+      // Deny all other categories (including men's and unmarked categories)
+      console.log(`❌ Female: Category denied - "${categoryLower}"`);
+      return false;
+    }
+    
+    // Default: allow if no specific gender provided (for safety)
+    console.log(`⚠️ Unknown gender "${userGenderLower}" - returning true by default`);
+    return true;
+  };
+
+  // Enhanced function to check if a category is allowed based on both gender and age
+  const isCategoryAllowed = (category, userGender) => {
+    // First check gender eligibility
+    const genderAllowed = isCategoryAllowedForGender(category.name, userGender);
+    if (!genderAllowed) {
+      console.log(`❌ Category "${category.name}" denied due to gender restriction`);
+      return false;
+    }
+    
+    // Check age eligibility for all players
+    const playerAges = getAllPlayerAges();
+    const categoryAgeRequirement = category.ageGroup || category.ageCategory;
+    
+    // Check age requirement if specified
+    if (categoryAgeRequirement && playerAges.length > 0) {
+      const allPlayersAgeEligible = playerAges.every(age => isAgeEligibleForCategory(age, categoryAgeRequirement));
+      if (!allPlayersAgeEligible) {
+        console.log(`❌ Category "${category.name}" denied - some players don't meet age requirement (${categoryAgeRequirement}). Player ages: [${playerAges.join(', ')}]`);
+        return false;
+      }
+    }
+    
+    // Check DUPR eligibility for all players based on skill level
+    const skillLevel = category.skillLevel;
+    if (skillLevel) {
+      const playerDuprRatings = getAllPlayerDuprRatings(category.name);
+      
+      // If players have DUPR ratings, check eligibility
+      if (playerDuprRatings.length > 0) {
+        const allPlayersDuprEligible = playerDuprRatings.every(rating => isDuprEligibleForSkillLevel(rating, skillLevel));
+        if (!allPlayersDuprEligible) {
+          console.log(`❌ Category "${category.name}" denied - some players don't meet DUPR requirement for ${skillLevel} level. Player DUPR ratings: [${playerDuprRatings.join(', ')}]`);
+          return false;
+        }
+      }
+    }
+    
+    console.log(`✅ Category "${category.name}" allowed - all eligibility checks passed`);
+    return true;
+  };
+
+
+
   // Helper function to get tournament type icon
   const getTournamentTypeIcon = (type) => {
     switch (type) {
@@ -4698,20 +5822,242 @@ function Tournament() {
     }
   };
 
+  // Helper function to determine category type
+  const getCategoryType = (categoryName) => {
+    if (!categoryName) return 'singles';
+    const name = categoryName.toLowerCase();
+    if (name.includes('doubles')) return 'doubles';
+    if (name.includes('team')) return 'team';
+    return 'singles';
+  };
+
+  // Function to get DUPR rating based on category type
+  const getDuprRatingForCategory = (categoryName, duprRatings) => {
+    if (!categoryName || !duprRatings) return '';
+    
+    const name = categoryName.toLowerCase();
+    if (name.includes('doubles')) {
+      // DUPR uses one doubles rating for all doubles play
+      return duprRatings.doubles || '';
+    } else {
+      // Singles category
+      return duprRatings.singles || '';
+    }
+  };
+
+  // Helper function to get allowed genders for player selection
+  const getAllowedGenders = (categoryName, primaryPlayerGender) => {
+    if (!categoryName) return ['male', 'female'];
+    const name = categoryName.toLowerCase();
+    
+    if (name.includes("men's") && !name.includes('mixed')) return ['male'];
+    if (name.includes("women's") && !name.includes('mixed')) return ['female'];
+    if (name.includes('mixed')) {
+      // For mixed categories, only allow opposite gender partners
+      return primaryPlayerGender === 'male' ? ['female'] : ['male'];
+    }
+    
+    return ['male', 'female'];
+  };
+
+  // Helper function to get required team composition
+  const getTeamComposition = (primaryPlayerGender) => {
+    try {
+      // Check if current tournament has specific team composition rules
+      if (registrationTournament && registrationTournament.id === 'team-championship-2024') {
+        // Team Championship 2024: 1 male primary + 1 male teammate + 2 females + 2 optional = 6 total
+        if (primaryPlayerGender === 'male') {
+          return [
+            { gender: 'male', required: true, label: 'Required Male Player' },
+            { gender: 'female', required: true, label: 'Required Female Player 1' },
+            { gender: 'female', required: true, label: 'Required Female Player 2' },
+            { gender: 'any', required: false, label: 'Optional Player 1' },
+            { gender: 'any', required: false, label: 'Optional Player 2' }
+          ];
+        } else {
+          return [
+            { gender: 'female', required: true, label: 'Required Female Player' },
+            { gender: 'male', required: true, label: 'Required Male Player 1' },
+            { gender: 'male', required: true, label: 'Required Male Player 2' },
+            { gender: 'any', required: false, label: 'Optional Player 1' },
+            { gender: 'any', required: false, label: 'Optional Player 2' }
+          ];
+        }
+      }
+      
+      // Default team composition for other tournaments
+      if (primaryPlayerGender === 'male') {
+        // Male primary (1 male) + 1 male teammate + 2 females + 2 optional = 6 total
+        return [
+          { gender: 'male', required: true, label: 'Required Male Player' },
+          { gender: 'female', required: true, label: 'Required Female Player 1' },
+          { gender: 'female', required: true, label: 'Required Female Player 2' },
+          { gender: 'any', required: false, label: 'Optional Player 1' },
+          { gender: 'any', required: false, label: 'Optional Player 2' }
+        ];
+      } else {
+        // Female primary (1 female) + 1 female teammate + 2 males + 2 optional = 6 total
+        return [
+          { gender: 'female', required: true, label: 'Required Female Player' },
+          { gender: 'male', required: true, label: 'Required Male Player 1' },
+          { gender: 'male', required: true, label: 'Required Male Player 2' },
+          { gender: 'any', required: false, label: 'Optional Player 1' },
+          { gender: 'any', required: false, label: 'Optional Player 2' }
+        ];
+      }
+    } catch (error) {
+      console.error('Error in getTeamComposition:', error);
+      // Return default composition if there's an error
+      return [
+        { gender: 'male', required: true, label: 'Player 2' },
+        { gender: 'female', required: true, label: 'Player 3' },
+        { gender: 'male', required: false, label: 'Optional Player 1' },
+        { gender: 'female', required: false, label: 'Optional Player 2' }
+      ];
+    }
+  };
+
+  // Handle player selection
+  const handlePlayerSelection = (type) => {
+    setPlayerSelectionType(type);
+    setPlayerSearchTerm(''); // Reset search term
+    setShowPlayerSelectionModal(true);
+  };
+
+  // Handle removing a selected player
+  const handleRemovePlayer = (type, index = null) => {
+    if (type === 'partner') {
+      setRegistrationForm(prev => ({
+        ...prev,
+        partner: null
+      }));
+    } else if (type === 'team' && index !== null) {
+      setRegistrationForm(prev => ({
+        ...prev,
+        teamMembers: prev.teamMembers.map((member, i) => 
+          i === index ? {
+            ...member,
+            pplId: null,
+            name: null,
+            gender: member.gender,
+            duprRatings: null,
+            age: null
+          } : member
+        )
+      }));
+    }
+  };
+
+  // Handle player selection from modal
+  const handleSelectPlayer = (player) => {
+    if (playerSelectionType === 'partner') {
+      setRegistrationForm(prev => ({
+        ...prev,
+        partner: {
+          pplId: player.pplId,
+          name: player.name,
+          gender: player.gender,
+          duprRatings: player.duprRatings,
+          age: player.age
+        }
+      }));
+    } else if (playerSelectionType.startsWith('team-')) {
+      const index = parseInt(playerSelectionType.split('-')[1]);
+      setRegistrationForm(prev => ({
+        ...prev,
+        teamMembers: prev.teamMembers.map((member, i) => 
+          i === index ? {
+            ...member,
+            pplId: player.pplId,
+            name: player.name,
+            gender: player.gender,
+            duprRatings: player.duprRatings,
+            age: player.age
+          } : member
+        )
+      }));
+    }
+    setShowPlayerSelectionModal(false);
+  };
+
+  // Filter players based on category and selection type
+  const getFilteredPlayers = () => {
+    if (!registrationForm.category || !registrationTournament) return registeredPlayers;
+    
+    const selectedCategory = Object.values(registrationTournament?.tournamentCategories || {})
+      .find(cat => cat.id === registrationForm.category);
+    
+    if (!selectedCategory) return registeredPlayers;
+    
+    const allowedGenders = getAllowedGenders(selectedCategory.name, registrationForm.primaryPlayer?.gender || 'male');
+    
+    let filteredPlayers = registeredPlayers;
+    
+    // For team selection, filter by specific slot requirements
+    if (playerSelectionType.startsWith('team-')) {
+      const index = parseInt(playerSelectionType.split('-')[1]);
+      const composition = getTeamComposition(registrationForm.primaryPlayer?.gender || 'male');
+      const slotRequirement = composition[index];
+      
+      if (slotRequirement) {
+        // If gender is 'any', don't filter by gender (allow all genders)
+        if (slotRequirement.gender !== 'any') {
+          filteredPlayers = filteredPlayers.filter(player => player.gender === slotRequirement.gender);
+        }
+      }
+    } else {
+      // For partner selection, filter by allowed genders
+      filteredPlayers = filteredPlayers.filter(player => allowedGenders.includes(player.gender));
+    }
+    
+    // Apply search filter
+    if (playerSearchTerm) {
+      const searchLower = playerSearchTerm.toLowerCase();
+      filteredPlayers = filteredPlayers.filter(player => 
+        player.name.toLowerCase().includes(searchLower) ||
+        player.pplId.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Exclude the primary player from selection (only if PPLID is set)
+    if (registrationForm.primaryPlayer?.pplId) {
+      filteredPlayers = filteredPlayers.filter(player => 
+        player.pplId !== registrationForm.primaryPlayer.pplId
+      );
+    }
+    
+    return filteredPlayers;
+  };
+
   if (loading) return <LoadingState>Loading tournaments...</LoadingState>;
   if (error) return <ErrorState>{error}</ErrorState>;
 
   // Show tournament details page if a tournament is selected
   if (showDetailedView && selectedTournament) {
+    const isHostView = location.state?.fromProfile;
+    
     return (
       <PageContainer>
         <TournamentDetailContent>
-          <BackButton onClick={handleCloseDetailedView}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Back to Tournaments
-          </BackButton>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+            <BackButton onClick={handleCloseDetailedView}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {location.state?.fromProfile ? 'Back to Profile' : 'Back to Tournaments'}
+            </BackButton>
+            
+            {/* Show edit button if in host view or if user is authenticated and is the tournament organizer */}
+            {(isHostView || (isAuthenticated && user?.name === selectedTournament.organizer)) && (
+              <EditTournamentButton onClick={() => navigate('/host-tournament', { state: { editTournament: selectedTournament } })}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Edit Tournament
+              </EditTournamentButton>
+            )}
+          </div>
 
           <TournamentDetailHeader>
             <TournamentDetailBanner>
@@ -4719,7 +6065,7 @@ function Tournament() {
                 <img src={selectedTournament.bannerUrl} alt={selectedTournament.name} />
               )}
             </TournamentDetailBanner>
-            <TournamentDetailStatusBadge status={selectedTournament.status}>
+            <TournamentDetailStatusBadge $status={selectedTournament.status}>
               {selectedTournament.status}
             </TournamentDetailStatusBadge>
           </TournamentDetailHeader>
@@ -4751,46 +6097,6 @@ function Tournament() {
                 */}
                 <TournamentDetailTitle>
                   <h1>{selectedTournament.name}</h1>
-                  <div style={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
-                    gap: '8px', 
-                    marginTop: '16px',
-                    marginBottom: '24px' 
-                  }}>
-                    {selectedTournament.tournamentCategories ? (
-                      (() => {
-                        // Get unique categories same as card view
-                        const categories = new Set();
-                        Object.values(selectedTournament.tournamentCategories).forEach(category => {
-                          if (category.skillLevel === 'Open') {
-                            categories.add(`Open - Tier ${category.tier || 1}`);
-                          } else if (['Intermediate', 'Advanced'].includes(category.skillLevel)) {
-                            categories.add(category.skillLevel);
-                          }
-                        });
-                        
-                        return Array.from(categories).map((categoryName, index) => (
-                          <TournamentTypeDisplay 
-                            key={index}
-                            style={{ 
-                              fontSize: '0.9rem', 
-                              padding: '8px 16px',
-                              fontWeight: '600'
-                            }}
-                          >
-                            {categoryName}
-                          </TournamentTypeDisplay>
-                        ));
-                      })()
-                    ) : (
-                      // Fallback for old data structure
-                      <TournamentTypeDisplay>
-                        {selectedTournament.tournamentType.charAt(0).toUpperCase() + selectedTournament.tournamentType.slice(1)}
-                        {selectedTournament.tournamentType === 'open' && ` - Tier ${selectedTournament.tier}`}
-                      </TournamentTypeDisplay>
-                    )}
-                  </div>
                 </TournamentDetailTitle>
 
                 <TournamentDetailDescription>
@@ -4804,16 +6110,16 @@ function Tournament() {
                   Details
                 </TabButton>
                 <TabButton 
+                  $active={activeTab === 'guidelines'} 
+                  onClick={() => setActiveTab('guidelines')}
+                >
+                  Guidelines
+                </TabButton>
+                <TabButton 
                   $active={activeTab === 'events'} 
                   onClick={() => setActiveTab('events')}
                 >
                   Events
-                </TabButton>
-                <TabButton 
-                  $active={activeTab === 'brackets'} 
-                  onClick={() => setActiveTab('brackets')}
-                >
-                  Brackets
                 </TabButton>
                 <TabButton 
                   $active={activeTab === 'players'} 
@@ -4822,10 +6128,10 @@ function Tournament() {
                   Players
                 </TabButton>
                 <TabButton 
-                  $active={activeTab === 'guidelines'} 
-                  onClick={() => setActiveTab('guidelines')}
+                  $active={activeTab === 'brackets'} 
+                  onClick={() => setActiveTab('brackets')}
                 >
-                  Guidelines
+                  Brackets
                 </TabButton>
               </TabNavigation>
 
@@ -4849,11 +6155,12 @@ function Tournament() {
                           <DetailItemContent>
                             <div>
                               <DetailItemLabel>Registration Fee</DetailItemLabel>
-                              <DetailItemSubtext>Prize Pool: ₱{selectedTournament.prizePool.toLocaleString()}</DetailItemSubtext>
                             </div>
                             <DetailItemValue className="price">₱{selectedTournament.entryFee.toLocaleString()}</DetailItemValue>
                           </DetailItemContent>
                         </TournamentDetailsItem>
+
+
 
                         <TournamentDetailsItem>
                           <DetailItemIcon>
@@ -4861,10 +6168,31 @@ function Tournament() {
                           </DetailItemIcon>
                           <DetailItemContent>
                             <div>
-                              <DetailItemLabel>Tournament Duration</DetailItemLabel>
-                              <DetailItemSubtext>Starts at {new Date(selectedTournament.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</DetailItemSubtext>
+                              <DetailItemLabel>Tournament Date</DetailItemLabel>
                             </div>
-                            <DetailItemValue>{formatDateRange(selectedTournament.date, selectedTournament.endDate)}</DetailItemValue>
+                            <DetailItemValue>
+                              {(() => {
+                                const start = new Date(selectedTournament.date);
+                                const end = new Date(selectedTournament.endDate);
+                                
+                                if (start.toDateString() === end.toDateString()) {
+                                  return start.toLocaleDateString('en-US', { 
+                                    year: 'numeric', 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                  });
+                                } else {
+                                  return `${start.toLocaleDateString('en-US', { 
+                                    month: 'long', 
+                                    day: 'numeric' 
+                                  })} - ${end.toLocaleDateString('en-US', { 
+                                    month: 'long', 
+                                    day: 'numeric', 
+                                    year: 'numeric' 
+                                  })}`;
+                                }
+                              })()}
+                            </DetailItemValue>
                           </DetailItemContent>
                         </TournamentDetailsItem>
 
@@ -4877,15 +6205,10 @@ function Tournament() {
                           <DetailItemContent>
                             <div>
                               <DetailItemLabel>Registration Deadline</DetailItemLabel>
-                              <DetailItemSubtext>
-                                {new Date(selectedTournament.registrationDeadline).toLocaleDateString('en-US', { 
-                                  weekday: 'long',
-                                  year: 'numeric' 
-                                })} at {new Date(selectedTournament.registrationDeadline).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                              </DetailItemSubtext>
                             </div>
                             <DetailItemValue className="deadline">
                               {new Date(selectedTournament.registrationDeadline).toLocaleDateString('en-US', { 
+                                year: 'numeric',
                                 month: 'long', 
                                 day: 'numeric' 
                               })}
@@ -4895,19 +6218,255 @@ function Tournament() {
 
                         <TournamentDetailsItem>
                           <DetailItemIcon>
-                            <TrophyIcon />
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                              <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="m22 21-3-3m0 0a5.5 5.5 0 1 0-7.78-7.78 5.5 5.5 0 0 0 7.78 7.78Z" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
                           </DetailItemIcon>
                           <DetailItemContent>
                             <div>
-                              <DetailItemLabel>Tournament Tier & Type</DetailItemLabel>
-                              <DetailItemSubtext>
-                                {selectedTournament.tournamentType.charAt(0).toUpperCase() + selectedTournament.tournamentType.slice(1)} Level Tournament
-                              </DetailItemSubtext>
+                              <DetailItemLabel>Skill Levels</DetailItemLabel>
                             </div>
-                            <DetailItemValue>Tier {selectedTournament.tier}</DetailItemValue>
+                            <DetailItemValue>
+                              {selectedTournament.tournamentCategories ? (
+                                (() => {
+                                  // Get unique skill levels
+                                  const skillLevels = new Set();
+                                  Object.values(selectedTournament.tournamentCategories).forEach(category => {
+                                    if (category.skillLevel === 'Open') {
+                                      skillLevels.add(`Open - Tier ${category.tier || 1}`);
+                                    } else if (['Beginner', 'Intermediate', 'Advanced'].includes(category.skillLevel)) {
+                                      skillLevels.add(category.skillLevel);
+                                    }
+                                  });
+                                  
+                                  return Array.from(skillLevels).sort().join(', ');
+                                })()
+                              ) : (
+                                // Fallback for old data structure
+                                `${selectedTournament.tournamentType.charAt(0).toUpperCase() + selectedTournament.tournamentType.slice(1)}${selectedTournament.tournamentType === 'open' ? ` - Tier ${selectedTournament.tier}` : ''}`
+                              )}
+                            </DetailItemValue>
                           </DetailItemContent>
                         </TournamentDetailsItem>
+
+                        {/* Contact Email - only show if provided */}
+                        {selectedTournament.contactEmail && (
+                          <TournamentDetailsItem>
+                            <DetailItemIcon>
+                              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                <polyline points="22,6 12,13 2,6" />
+                              </svg>
+                            </DetailItemIcon>
+                            <DetailItemContent>
+                              <div>
+                                <DetailItemLabel>Contact Email</DetailItemLabel>
+                              </div>
+                              <DetailItemValue>
+                                <a 
+                                  href={`mailto:${selectedTournament.contactEmail}`}
+                                  style={{ 
+                                    color: '#334155', 
+                                    textDecoration: 'none',
+                                    cursor: 'pointer'
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                                  onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                                >
+                                  {selectedTournament.contactEmail}
+                                </a>
+                              </DetailItemValue>
+                            </DetailItemContent>
+                          </TournamentDetailsItem>
+                        )}
+
+                        {/* Contact Phone - only show if provided */}
+                        {selectedTournament.contactPhone && (
+                          <TournamentDetailsItem>
+                            <DetailItemIcon>
+                              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                              </svg>
+                            </DetailItemIcon>
+                            <DetailItemContent>
+                              <div>
+                                <DetailItemLabel>Contact Phone</DetailItemLabel>
+                              </div>
+                              <DetailItemValue>
+                                <a 
+                                  href={`tel:${selectedTournament.contactPhone}`}
+                                  style={{ 
+                                    color: '#334155', 
+                                    textDecoration: 'none',
+                                    cursor: 'pointer'
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                                  onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+                                >
+                                  {selectedTournament.contactPhone}
+                                </a>
+                              </DetailItemValue>
+                            </DetailItemContent>
+                          </TournamentDetailsItem>
+                        )}
                       </TournamentDetailsList>
+                    </TournamentDetailSection>
+
+                    <TournamentDetailSection>
+                      <TournamentDetailSectionTitle>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Tournament Categories
+                      </TournamentDetailSectionTitle>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {selectedTournament.tournamentCategories ? (
+                          Object.values(selectedTournament.tournamentCategories).map((category) => (
+                            <div 
+                              key={category.id}
+                              style={{
+                                background: 'white',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '12px',
+                                padding: '16px 20px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{
+                                  width: '8px',
+                                  height: '8px',
+                                  borderRadius: '50%',
+                                  backgroundColor: '#29ba9b'
+                                }} />
+                                <div>
+                                  <div style={{
+                                    fontSize: '1rem',
+                                    fontWeight: '600',
+                                    color: '#1e293b',
+                                    marginBottom: '2px'
+                                  }}>
+                                    {(() => {
+                                      // Extract division from name, removing skill level and age
+                                      let division = category.name;
+                                      
+                                      // Remove age categories first (including at the end of strings)
+                                      const ageCategories = ['18+', '35+', '50+'];
+                                      ageCategories.forEach(age => {
+                                        // Remove age category anywhere in the string, including at the end
+                                        division = division.replace(new RegExp(`\\s*${age.replace('+', '\\+')}\\s*`, 'gi'), ' ');
+                                        // Also remove if it's at the very end
+                                        division = division.replace(new RegExp(`\\s*${age.replace('+', '\\+')}$`, 'gi'), '');
+                                      });
+                                      
+                                      // Remove skill level words from the name
+                                      const skillLevels = ['Beginner', 'Intermediate', 'Advanced', 'Open'];
+                                      skillLevels.forEach(skill => {
+                                        division = division.replace(new RegExp(`\\s*${skill}\\s*`, 'gi'), ' ');
+                                      });
+                                      
+                                      // Clean up extra spaces and get the division
+                                      division = division.replace(/\s+/g, ' ').trim();
+                                      
+                                      let skillLevel = category.skillLevel || '';
+                                      
+                                      // For Open categories, include tier information
+                                      if (skillLevel === 'Open' && category.tier) {
+                                        skillLevel = `Open Tier ${category.tier}`;
+                                      }
+                                      
+                                      const age = category.ageGroup || '';
+                                      
+                                      // Format as "division | skill level | age"
+                                      const parts = [division, skillLevel, age].filter(part => part);
+                                      return parts.join(' | ');
+                                    })()}
+                                  </div>
+                                  <div style={{
+                                    fontSize: '0.875rem',
+                                    color: '#64748b'
+                                  }}>
+                                    {category.participants || 0}/{category.maxParticipants} participants
+                                    {category.prizePool && category.prizePool > 0 && (
+                                      <span style={{ marginLeft: '12px', color: '#29ba9b', fontWeight: '500' }}>
+                                        Prize: ₱{category.prizePool.toLocaleString()}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <div style={{
+                                fontSize: '0.875rem',
+                                fontWeight: '500',
+                                color: category.participants >= category.maxParticipants ? '#ef4444' : '#29ba9b',
+                                background: category.participants >= category.maxParticipants ? '#fef2f2' : '#f0fdf4',
+                                padding: '4px 8px',
+                                borderRadius: '6px',
+                                border: `1px solid ${category.participants >= category.maxParticipants ? '#fecaca' : '#bbf7d0'}`
+                              }}>
+                                {category.participants >= category.maxParticipants ? 'Full' : 'Open'}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          // Fallback for old data structure
+                          <div 
+                            style={{
+                              background: 'white',
+                              border: '1px solid #e2e8f0',
+                              borderRadius: '12px',
+                              padding: '16px 20px',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <div style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                backgroundColor: '#29ba9b'
+                              }} />
+                              <div>
+                                <div style={{
+                                  fontSize: '1rem',
+                                  fontWeight: '600',
+                                  color: '#1e293b',
+                                  marginBottom: '2px'
+                                }}>
+                                  {selectedTournament.tournamentType.charAt(0).toUpperCase() + selectedTournament.tournamentType.slice(1)}
+                                  {selectedTournament.tournamentType === 'open' && selectedTournament.tier && ` - Tier ${selectedTournament.tier}`}
+                                </div>
+                                <div style={{
+                                  fontSize: '0.875rem',
+                                  color: '#64748b'
+                                }}>
+                                  {selectedTournament.currentParticipants || 0}/{selectedTournament.maxParticipants} participants
+                                </div>
+                              </div>
+                            </div>
+                            <div style={{
+                              fontSize: '0.875rem',
+                              fontWeight: '500',
+                              color: selectedTournament.currentParticipants >= selectedTournament.maxParticipants ? '#ef4444' : '#29ba9b',
+                              background: selectedTournament.currentParticipants >= selectedTournament.maxParticipants ? '#fef2f2' : '#f0fdf4',
+                              padding: '4px 8px',
+                              borderRadius: '6px',
+                              border: `1px solid ${selectedTournament.currentParticipants >= selectedTournament.maxParticipants ? '#fecaca' : '#bbf7d0'}`
+                            }}>
+                              {selectedTournament.currentParticipants >= selectedTournament.maxParticipants ? 'Full' : 'Open'}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </TournamentDetailSection>
 
                     <TournamentDetailSection>
@@ -4918,10 +6477,7 @@ function Tournament() {
                       
                       <LocationCard>
                         <LocationHeader>
-                          <h4>
-                            <LocationIcon />
-                            Venue Information
-                          </h4>
+
                           <LocationActions>
                             <LocationButton 
                               $primary 
@@ -4965,6 +6521,8 @@ function Tournament() {
                           </div>
                         </MapContainer>
                       </LocationCard>
+                      
+
                     </TournamentDetailSection>
                   </>
                 )}
@@ -4976,47 +6534,26 @@ function Tournament() {
                       Tournament Events Schedule
                     </TournamentDetailSectionTitle>
                     
-                    <EventsGrid>
-                      <EventCard>
-                        <EventTime>Day 1 - 9:00 AM</EventTime>
-                        <EventTitle>Registration & Check-in</EventTitle>
-                        <EventDescription>All participants must check in and complete registration process. Bring valid ID and proof of payment.</EventDescription>
-                      </EventCard>
-                      
-                      <EventCard>
-                        <EventTime>Day 1 - 10:00 AM</EventTime>
-                        <EventTitle>Opening Ceremony</EventTitle>
-                        <EventDescription>Welcome address, tournament rules briefing, and player introductions.</EventDescription>
-                      </EventCard>
-                      
-                      <EventCard>
-                        <EventTime>Day 1 - 11:00 AM</EventTime>
-                        <EventTitle>{selectedTournament.divisions[0]} - Round 1</EventTitle>
-                        <EventDescription>First round matches for {selectedTournament.divisions[0]} division.</EventDescription>
-                      </EventCard>
-                      
-                      <EventCard>
-                        <EventTime>Day 1 - 2:00 PM</EventTime>
-                        <EventTitle>{selectedTournament.divisions[1] || "Mixed Doubles"} - Round 1</EventTitle>
-                        <EventDescription>First round matches for {selectedTournament.divisions[1] || "Mixed Doubles"} division.</EventDescription>
-                      </EventCard>
-                      
-                      {selectedTournament.endDate !== selectedTournament.date && (
-                        <>
-                          <EventCard>
-                            <EventTime>Day 2 - 9:00 AM</EventTime>
-                            <EventTitle>Semi-Finals</EventTitle>
-                            <EventDescription>Semi-final matches across all divisions.</EventDescription>
-                          </EventCard>
-                          
-                          <EventCard>
-                            <EventTime>Day 2 - 3:00 PM</EventTime>
-                            <EventTitle>Finals & Closing Ceremony</EventTitle>
-                            <EventDescription>Championship matches and awards ceremony.</EventDescription>
-                          </EventCard>
-                        </>
-                      )}
-                    </EventsGrid>
+                    <div style={{
+                      background: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '24px'
+                    }}>
+                      <div style={{
+                        fontSize: '1rem',
+                        lineHeight: '1.6',
+                        color: '#334155',
+                        whiteSpace: 'pre-wrap'
+                      }}>
+                        {selectedTournament.eventsText || 
+                         (selectedTournament.events && selectedTournament.events.length > 0 
+                           ? selectedTournament.events.map(event => 
+                               `${event.title}\n${event.description}${event.location ? `\nLocation: ${event.location}` : ''}${event.duration ? `\nDuration: ${event.duration}` : ''}`
+                             ).join('\n\n')
+                           : 'Day 1 - 9:00 AM\nRegistration & Check-in\nAll participants must check in and complete registration process. Bring valid ID and proof of payment.\n\nDay 1 - 10:00 AM\nTournament Briefing\nMandatory rules briefing and player introductions. Tournament format explanation.\n\nDay 1 - 10:30 AM\nOpening Ceremony\nWelcome address, national anthem, and ceremonial first serve.\n\nDay 1 - 11:00 AM\nRound 1 Matches\nFirst round matches for all divisions begin. Players should be ready 15 minutes early.')}
+                      </div>
+                    </div>
                   </TournamentDetailSection>
                 )}
 
@@ -5048,14 +6585,36 @@ function Tournament() {
                                     alignItems: 'center',
                                     gap: '8px'
                                   }}>
-                                    <span>{category.name.split(' ').slice(0, 2).join(' ')}</span>
-                                    <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
-                                    <span>{category.ageGroup}</span>
+                                    <span>{(() => {
+                                      // Extract division from name, removing skill level and age
+                                      let division = category.name;
+                                      
+                                      // Remove age categories first (including at the end of strings)
+                                      const ageCategories = ['18+', '35+', '50+'];
+                                      ageCategories.forEach(age => {
+                                        // Remove age category anywhere in the string, including at the end
+                                        division = division.replace(new RegExp(`\\s*${age.replace('+', '\\+')}\\s*`, 'gi'), ' ');
+                                        // Also remove if it's at the very end
+                                        division = division.replace(new RegExp(`\\s*${age.replace('+', '\\+')}$`, 'gi'), '');
+                                      });
+                                      
+                                      // Remove skill level words from the name
+                                      const skillLevels = ['Beginner', 'Intermediate', 'Advanced', 'Open'];
+                                      skillLevels.forEach(skill => {
+                                        division = division.replace(new RegExp(`\\s*${skill}\\s*`, 'gi'), ' ');
+                                      });
+                                      
+                                      // Clean up extra spaces and get the division
+                                      return division.replace(/\s+/g, ' ').trim();
+                                    })()}</span>
                                     <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
                                     <span style={{ color: '#059669' }}>
-                                      {category.skillLevel}
-                                      {category.skillLevel === 'Open' && ` - Tier ${category.tier || 1}`}
+                                      {category.skillLevel === 'Open' && category.tier 
+                                        ? `Open Tier ${category.tier}` 
+                                        : category.skillLevel}
                                     </span>
+                                    <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
+                                    <span>{category.ageGroup}</span>
                                   </div>
                                 </CategoryHeaderInfo>
                                 <CategoryExpandIcon $expanded={expandedCategories[category.id]}>
@@ -5281,23 +6840,10 @@ function Tournament() {
                                       The knockout bracket will be generated once the group stage is complete.
                                     </p>
                                     <div style={{
-                                      background: '#f8fafc',
-                                      padding: '16px',
-                                      borderRadius: '8px',
-                                      border: '1px solid #e2e8f0',
-                                      display: 'inline-block',
-                                      minWidth: '200px'
+
                                     }}>
-                                      <div style={{ color: '#29ba9b', fontWeight: '600', marginBottom: '8px', fontSize: '0.9rem' }}>
-                                        Category Details
-                                      </div>
-                                      <div style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: '1.4' }}>
-                                        <div style={{ marginBottom: '2px' }}>🎯 Skill Level: {category.skillLevel}</div>
-                                        <div style={{ marginBottom: '2px' }}>👥 Total Players: {category.participants}</div>
-                                        <div style={{ marginBottom: '2px' }}>🏆 Prize Pool: ₱{category.prizePool.toLocaleString()}</div>
-                                        <div style={{ marginBottom: '2px' }}>📅 Age Group: {category.ageGroup}</div>
-                                        <div>📝 {category.description}</div>
-                                      </div>
+
+
                                     </div>
                                   </div>
                                 )}
@@ -5337,12 +6883,66 @@ function Tournament() {
                   <TournamentDetailSection>
                     <TournamentDetailSectionTitle>
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m3 4.197a4 4 0 11-3-6.18" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      Approved Players
+                      Players
                     </TournamentDetailSectionTitle>
                     
-                    {selectedTournament.registrations && selectedTournament.registrations.filter(reg => reg.status === 'approved').length > 0 ? (
+                    {/* Category Selection Dropdown */}
+                    <div style={{ marginBottom: '20px' }}>
+                      <select
+                        value={selectedPlayerCategory}
+                        onChange={(e) => {
+                          setSelectedPlayerCategory(e.target.value);
+                          setPlayersSearchTerm(''); // Reset search when category changes
+                        }}
+                        style={{
+                          width: '100%',
+                          maxWidth: '300px',
+                          padding: '12px 16px',
+                          border: '1.5px solid #e2e8f0',
+                          borderRadius: '8px',
+                          fontSize: '0.95rem',
+                          backgroundColor: 'white',
+                          color: '#334155',
+                          cursor: 'pointer',
+                          outline: 'none',
+                          transition: 'border-color 0.2s ease'
+                        }}
+                        onFocus={(e) => e.target.style.borderColor = '#29ba9b'}
+                        onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                      >
+                        <option value="all">All Categories</option>
+                        {selectedTournament.tournamentCategories && Object.values(selectedTournament.tournamentCategories).map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Player Tabs Navigation */}
+                    <TabNavigation>
+                      <TabButton 
+                        $active={activePlayerTab === 'approved'}
+                        onClick={() => setActivePlayerTab('approved')}
+                      >
+                        Approved Players
+                      </TabButton>
+                      <TabButton 
+                        $active={activePlayerTab === 'pending'}
+                        onClick={() => setActivePlayerTab('pending')}
+                      >
+                        Pending Players
+                      </TabButton>
+                    </TabNavigation>
+                    
+                    {/* Approved Players Tab Content */}
+                    {activePlayerTab === 'approved' && (
+                      selectedTournament.registrations && selectedTournament.registrations.filter(reg => reg.status === 'approved').filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory).length > 0 ? (
                       <div>
                         {/* Search Bar */}
                         <div style={{ marginBottom: '24px' }}>
@@ -5401,7 +7001,9 @@ function Tournament() {
                         }}>
                           <span style={{ color: '#64748b', fontSize: '0.9rem' }}>
                             {(() => {
-                              const approvedPlayers = selectedTournament.registrations.filter(reg => reg.status === 'approved');
+                              const approvedPlayers = selectedTournament.registrations
+                                .filter(reg => reg.status === 'approved')
+                                .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory);
                               const filteredPlayers = approvedPlayers.filter(player => {
                                 const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
                                 return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
@@ -5420,6 +7022,7 @@ function Tournament() {
                         }}>
                           {selectedTournament.registrations
                             .filter(reg => reg.status === 'approved')
+                            .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory)
                             .filter(player => {
                               const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
                               return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
@@ -5466,6 +7069,20 @@ function Tournament() {
                                     }}>
                                       {player.playerName.replace(/["'].*?["']/g, '').trim()}
                                     </div>
+                                    {selectedPlayerCategory === 'all' && (
+                                      <div style={{
+                                        fontSize: '0.8rem',
+                                        color: '#29ba9b',
+                                        fontWeight: '500',
+                                        marginTop: '2px'
+                                      }}>
+                                        {(() => {
+                                          const category = selectedTournament.tournamentCategories && 
+                                            Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
+                                          return category ? category.name : 'Category N/A';
+                                        })()}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -5476,6 +7093,7 @@ function Tournament() {
                         {playersSearchTerm && 
                          selectedTournament.registrations
                            .filter(reg => reg.status === 'approved')
+                           .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory)
                            .filter(player => {
                              const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
                              return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
@@ -5510,6 +7128,205 @@ function Tournament() {
                           Players will appear here once their registration is approved by the tournament organizer.
                         </p>
                       </div>
+                      )
+                    )}
+
+                    {/* Pending Players Tab Content */}
+                    {activePlayerTab === 'pending' && (
+                      selectedTournament.registrations && selectedTournament.registrations.filter(reg => reg.status === 'pending').filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory).length > 0 ? (
+                        <div>
+                          {/* Search Bar */}
+                          <div style={{ marginBottom: '24px' }}>
+                            <div style={{
+                              position: 'relative',
+                              maxWidth: '400px',
+                              margin: '0 auto'
+                            }}>
+                              <input
+                                type="text"
+                                placeholder="Search pending players..."
+                                value={playersSearchTerm}
+                                onChange={(e) => setPlayersSearchTerm(e.target.value)}
+                                style={{
+                                  width: '100%',
+                                  padding: '12px 16px 12px 44px',
+                                  border: '1.5px solid #e2e8f0',
+                                  borderRadius: '8px',
+                                  fontSize: '1rem',
+                                  color: '#1a1a1a',
+                                  background: 'white',
+                                  transition: 'all 0.2s ease',
+                                  outline: 'none'
+                                }}
+                                onFocus={(e) => {
+                                  e.target.style.borderColor = '#29ba9b';
+                                  e.target.style.boxShadow = '0 0 0 3px rgba(41, 186, 155, 0.1)';
+                                }}
+                                onBlur={(e) => {
+                                  e.target.style.borderColor = '#e2e8f0';
+                                  e.target.style.boxShadow = 'none';
+                                }}
+                              />
+                              <div style={{
+                                position: 'absolute',
+                                left: '14px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                color: '#94a3b8'
+                              }}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '18px', height: '18px' }}>
+                                  <circle cx="11" cy="11" r="8" strokeLinecap="round" strokeLinejoin="round" />
+                                  <path d="m21 21-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div style={{ 
+                            background: '#fef3c7', 
+                            padding: '16px', 
+                            borderRadius: '8px', 
+                            border: '1px solid #f59e0b',
+                            marginBottom: '24px',
+                            textAlign: 'center'
+                          }}>
+                            <span style={{ color: '#92400e', fontSize: '0.9rem' }}>
+                              {(() => {
+                                const pendingPlayers = selectedTournament.registrations
+                                  .filter(reg => reg.status === 'pending')
+                                  .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory);
+                                const filteredPlayers = pendingPlayers.filter(player => {
+                                  const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
+                                  return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
+                                });
+                                return playersSearchTerm 
+                                  ? `Showing ${filteredPlayers.length} of ${pendingPlayers.length} pending players`
+                                  : `Total Pending Players: ${pendingPlayers.length}`;
+                              })()} 
+                            </span>
+                          </div>
+                          
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                            gap: '16px'
+                          }}>
+                            {selectedTournament.registrations
+                              .filter(reg => reg.status === 'pending')
+                              .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory)
+                              .filter(player => {
+                                const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
+                                return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
+                              })
+                              .sort((a, b) => {
+                                const cleanNameA = a.playerName.replace(/["'].*?["']/g, '').trim();
+                                const cleanNameB = b.playerName.replace(/["'].*?["']/g, '').trim();
+                                return cleanNameA.localeCompare(cleanNameB);
+                              })
+                              .map((player, index) => (
+                                <div key={player.id} style={{
+                                  background: 'white',
+                                  border: '1px solid #f59e0b',
+                                  borderRadius: '12px',
+                                  padding: '16px',
+                                  transition: 'all 0.2s ease',
+                                  boxShadow: '0 1px 3px rgba(245, 158, 11, 0.2)'
+                                }}>
+                                  <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    marginBottom: '12px'
+                                  }}>
+                                    <div style={{
+                                      width: '40px',
+                                      height: '40px',
+                                      borderRadius: '50%',
+                                      background: '#f59e0b',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: 'white',
+                                      fontWeight: '600',
+                                      fontSize: '14px'
+                                    }}>
+                                      {player.playerName.replace(/["'].*?["']/g, '').trim().split(' ').map(n => n[0]).join('').toUpperCase()}
+                                    </div>
+                                    <div>
+                                      <div style={{
+                                        fontWeight: '600',
+                                        color: '#334155',
+                                        fontSize: '1rem'
+                                      }}>
+                                        {player.playerName.replace(/["'].*?["']/g, '').trim()}
+                                      </div>
+                                      {selectedPlayerCategory === 'all' && (
+                                        <div style={{
+                                          fontSize: '0.8rem',
+                                          color: '#29ba9b',
+                                          fontWeight: '500',
+                                          marginBottom: '2px'
+                                        }}>
+                                          {(() => {
+                                            const category = selectedTournament.tournamentCategories && 
+                                              Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
+                                            return category ? category.name : 'Category N/A';
+                                          })()}
+                                        </div>
+                                      )}
+                                      <div style={{
+                                        fontSize: '0.8rem',
+                                        color: '#f59e0b',
+                                        fontWeight: '500'
+                                      }}>
+                                        Pending Approval
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                          
+                          {/* No results message */}
+                          {playersSearchTerm && 
+                           selectedTournament.registrations
+                             .filter(reg => reg.status === 'pending')
+                             .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory)
+                             .filter(player => {
+                               const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
+                               return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
+                             }).length === 0 && (
+                            <div style={{ 
+                              textAlign: 'center', 
+                              padding: '48px 24px',
+                              background: '#fef3c7',
+                              borderRadius: '16px',
+                              border: '1px dashed #f59e0b',
+                              marginTop: '24px'
+                            }}>
+                              <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🔍</div>
+                              <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Pending Players Found</h3>
+                              <p style={{ color: '#92400e', fontSize: '0.95rem' }}>
+                                No pending players match your search for "{playersSearchTerm}".
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div style={{ 
+                          textAlign: 'center', 
+                          padding: '48px 24px',
+                          background: '#fef3c7',
+                          borderRadius: '16px',
+                          border: '1px dashed #f59e0b'
+                        }}>
+                          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⏳</div>
+                          <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Pending Players</h3>
+                          <p style={{ color: '#92400e', fontSize: '0.95rem' }}>
+                            There are currently no players awaiting approval for this tournament.
+                          </p>
+                        </div>
+                      )
                     )}
                   </TournamentDetailSection>
                 )}
@@ -5523,7 +7340,7 @@ function Tournament() {
                       Tournament Guidelines
                     </TournamentDetailSectionTitle>
                     
-                    {selectedTournament.rules && selectedTournament.rules.length > 0 ? (
+                    {(selectedTournament.rules && selectedTournament.rules.length > 0) || selectedTournament.rulesText ? (
                       <div>
                         <div style={{ 
                           background: '#fef3c7', 
@@ -5553,41 +7370,18 @@ function Tournament() {
                           background: 'white',
                           border: '1px solid #e2e8f0',
                           borderRadius: '12px',
-                          overflow: 'hidden'
+                          padding: '24px'
                         }}>
-                          {selectedTournament.rules.map((rule, index) => (
-                            <div key={index} style={{
-                              padding: '20px',
-                              borderBottom: index < selectedTournament.rules.length - 1 ? '1px solid #e2e8f0' : 'none',
-                              display: 'flex',
-                              alignItems: 'flex-start',
-                              gap: '16px'
-                            }}>
-                              <div style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                background: '#29ba9b',
-                                color: 'white',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: '600',
-                                fontSize: '14px',
-                                flexShrink: 0
-                              }}>
-                                {index + 1}
-                              </div>
-                              <div style={{
-                                flex: 1,
-                                fontSize: '1rem',
-                                lineHeight: '1.6',
-                                color: '#334155'
-                              }}>
-                                {rule}
-                              </div>
-                            </div>
-                          ))}
+                          <div style={{
+                            fontSize: '1rem',
+                            lineHeight: '1.6',
+                            color: '#334155',
+                            whiteSpace: 'pre-wrap'
+                          }}>
+                            {selectedTournament.rulesText || 
+                             (selectedTournament.rules && selectedTournament.rules.join('\n\n')) ||
+                             'All matches follow official IFP rules\n\nPlayers must check in 30 minutes before their scheduled match\n\nProper athletic attire and non-marking shoes required\n\nNo coaching allowed during matches'}
+                          </div>
                         </div>
                       </div>
                     ) : (
@@ -5618,33 +7412,45 @@ function Tournament() {
                 
                 <PriceDisplay>
                   <div className="price">₱{selectedTournament.entryFee.toLocaleString()}</div>
-                  <div className="prize-pool">Prize Pool: ₱{selectedTournament.prizePool.toLocaleString()}</div>
                 </PriceDisplay>
 
-                <ParticipantInfo>
-                  <span className="label">Participants</span>
-                  <span className="count">{selectedTournament.currentParticipants}/{selectedTournament.maxParticipants}</span>
-                </ParticipantInfo>
-
-                <ActionButtonsContainer>
-                  <RegisterButtonMain 
-                    onClick={() => handleRegister(selectedTournament.id)}
+                {/* Action Buttons */}
+                <TournamentActionButtons>
+  
+                  {(user?.name !== selectedTournament.organizer || isHostView) && (
+                    <ActionButton variant="primary" 
+                    onClick={() => {
+                      // Always open registration regardless of source
+                      handleRegister(selectedTournament.id);
+                    }}
                     disabled={selectedTournament.currentParticipants >= selectedTournament.maxParticipants || !isAuthenticated}
                   >
-                    {selectedTournament.currentParticipants >= selectedTournament.maxParticipants 
-                      ? 'Tournament Full'
-                      : !isAuthenticated 
-                      ? 'Sign In to Register'
-                      : 'Register Now'}
-                  </RegisterButtonMain>
-                  <ShareButtonMain onClick={() => navigator.share?.({ 
-                    title: selectedTournament.name,
-                    text: selectedTournament.description,
-                    url: window.location.href 
-                  })}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Register Now
+                  </ActionButton>
+                  )}
+                  <ActionButton variant="secondary" onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({
+                        title: selectedTournament.name,
+                        text: `Check out this tournament: ${selectedTournament.name}`,
+                        url: window.location.href
+                      });
+                    } else {
+                      navigator.clipboard.writeText(window.location.href);
+                      // You could add a notification here
+                    }
+                  }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                     Share
-                  </ShareButtonMain>
-                </ActionButtonsContainer>
+                  </ActionButton>
+                </TournamentActionButtons>
+
+
               </StickyActionBar>
 
               {/* Tournament Sponsors Section */}
@@ -5747,26 +7553,7 @@ function Tournament() {
                       <SponsorName style={{ fontSize: '1rem', margin: '0', color: '#334155' }}>Metro Sports Hub</SponsorName>
                     </div>
 
-                    <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '18px', marginTop: '10px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 0' }}>
-                        <div style={{ 
-                          width: '45px', 
-                          height: '45px', 
-                          background: '#f8fafc', 
-                          border: '2px dashed #cbd5e1', 
-                          borderRadius: '8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '1.2rem',
-                          color: '#64748b',
-                          fontWeight: '500'
-                        }}>
-                          +
-                        </div>
-                        <SponsorName style={{ fontSize: '1rem', margin: '0', color: '#64748b', fontStyle: 'italic' }}>Become a Sponsor</SponsorName>
-                      </div>
-                    </div>
+
                   </div>
                 </TournamentDetailSection>
               </div>
@@ -5799,71 +7586,215 @@ function Tournament() {
                     
                     <RegistrationFormRow>
                       <RegistrationFormGroup>
-                        <RegistrationLabel>Category</RegistrationLabel>
                         <RegistrationSelect
+                          key={categoryFilterKey}
                           value={registrationForm.category}
                           onChange={(e) => handleRegistrationFormChange('category', e.target.value)}
                           required
                         >
-                          <option value="">Select Category</option>
-                          <option value="mens-singles">Men's Singles</option>
-                          <option value="womens-singles">Women's Singles</option>
-                          <option value="mens-doubles">Men's Doubles</option>
-                          <option value="womens-doubles">Women's Doubles</option>
-                          <option value="mixed-doubles">Mixed Doubles</option>
-                        </RegistrationSelect>
-                      </RegistrationFormGroup>
-                      
-                      <RegistrationFormGroup>
-                        <RegistrationLabel>Age Category</RegistrationLabel>
-                        <RegistrationSelect
-                          value={registrationForm.ageCategory}
-                          onChange={(e) => handleRegistrationFormChange('ageCategory', e.target.value)}
-                          required
-                        >
-                          <option value="">Select Age Category</option>
-                          <option value="18+">18+</option>
-                          <option value="35+">35+</option>
-                          <option value="50+">50+</option>
+                          <option value="">Select Tournament Category</option>
+                          {registrationTournament && Object.values(registrationTournament?.tournamentCategories || {}).map((category) => {
+                            // Use the full category name as display name
+                            let displayName = category.name || '';
+                            
+                            // If name is empty or undefined, create display name from parts
+                            if (!displayName) {
+                              const division = category.division || '';
+                              const skillLevel = category.skillLevel === 'Open' && category.tier 
+                                ? `Open Tier ${category.tier}` 
+                                : category.skillLevel || '';
+                              const age = category.ageGroup || '';
+                              
+                              const parts = [division, skillLevel, age].filter(part => part);
+                              displayName = parts.join(' | ') || 'Unknown Category';
+                            }
+                            
+                            // Check if this category is allowed for the user's gender and age
+                            const userGender = user?.gender || registrationForm.primaryPlayer?.gender || 'male';
+                            console.log(`🎯 DROPDOWN DEBUG: user object:`, user);
+                            console.log(`🎯 DROPDOWN DEBUG: registrationForm.primaryPlayer:`, registrationForm.primaryPlayer);
+                            console.log(`🎯 DROPDOWN DEBUG: Final userGender="${userGender}"`);
+                            const isAllowed = isCategoryAllowed(category, userGender);
+                            console.log(`📝 Dropdown: Category "${category.name}" for user "${userGender}": allowed=${isAllowed}`);
+                            
+                            return (
+                              <option 
+                                key={category.id} 
+                                value={category.id}
+                                disabled={!isAllowed}
+                                style={{
+                                  color: isAllowed ? 'inherit' : '#9ca3af',
+                                  fontStyle: isAllowed ? 'normal' : 'italic'
+                                }}
+                              >
+                                {displayName}
+                              </option>
+                            );
+                          })}
                         </RegistrationSelect>
                       </RegistrationFormGroup>
                     </RegistrationFormRow>
                     
-                    <RegistrationFormRow>
-                      <RegistrationFormGroup>
-                        <RegistrationLabel>Skill Level</RegistrationLabel>
-                        <RegistrationSelect
-                          value={registrationForm.level}
-                          onChange={(e) => handleRegistrationFormChange('level', e.target.value)}
-                          required
-                        >
-                          <option value="">Select Skill Level</option>
-                          <option value="intermediate">Intermediate</option>
-                          <option value="advanced">Advanced</option>
-                          <option value="open-tier1">Open - Tier 1</option>
-                          <option value="open-tier2">Open - Tier 2</option>
-                          <option value="open-tier3">Open - Tier 3</option>
-                        </RegistrationSelect>
-                      </RegistrationFormGroup>
-                    </RegistrationFormRow>
+
                   </RegistrationFormSection>
 
                   {/* Personal Information */}
                   <RegistrationFormSection>
                     <RegistrationSectionTitle>Personal Information</RegistrationSectionTitle>
                     
-                    <RegistrationFormRow>
-                      <RegistrationFormGroup>
-                        <RegistrationLabel>Full Name</RegistrationLabel>
-                        <RegistrationInput
-                          type="text"
-                          value={registrationForm.fullName}
-                          onChange={(e) => handleRegistrationFormChange('fullName', e.target.value)}
-                          placeholder="Enter your full name"
-                          required
-                        />
-                      </RegistrationFormGroup>
+                    {/* Player Information based on category type */}
+                    {registrationForm.category && (() => {
+                      const selectedCategory = Object.values(registrationTournament?.tournamentCategories || {})
+                        .find(cat => cat.id === registrationForm.category);
+                      const categoryType = getCategoryType(selectedCategory?.name || '');
                       
+                      return (
+                        <div style={{ marginBottom: '20px' }}>
+                          {/* Primary Player (always shown) */}
+                          <div style={{ marginBottom: '16px' }}>
+                            <RegistrationLabel style={{ marginBottom: '8px', display: 'block' }}>
+                              Primary Player (You)
+                            </RegistrationLabel>
+                            <PlayerSlot>
+                              <PlayerSlotContent>
+                                <PlayerInfo>
+                                  <PlayerName>
+                                    {registrationForm.primaryPlayer?.name || 'Enter your name'}
+                                  </PlayerName>
+                                  <PlayerDetails>
+                                    PPLID: {registrationForm.primaryPlayer?.pplId || 'Not assigned'} | 
+                                    Gender: {registrationForm.primaryPlayer?.gender || 'male'} | 
+                                    Age: {registrationForm.primaryPlayer?.age || 'Not specified'}
+                                    {(() => {
+                                      const selectedCategory = Object.values(registrationTournament?.tournamentCategories || {})
+                                        .find(cat => cat.id === registrationForm.category);
+                                      const duprRating = getDuprRatingForCategory(
+                                        selectedCategory?.name, 
+                                        registrationForm.primaryPlayer?.duprRatings
+                                      );
+                                      return duprRating ? ` | DUPR: ${duprRating}` : '';
+                                    })()}
+                                  </PlayerDetails>
+                                </PlayerInfo>
+                              </PlayerSlotContent>
+                            </PlayerSlot>
+                          </div>
+
+                          {/* Partner for Doubles */}
+                          {categoryType === 'doubles' && (
+                            <div style={{ marginBottom: '16px' }}>
+                              <RegistrationLabel style={{ marginBottom: '8px', display: 'block' }}>
+                                Partner
+                              </RegistrationLabel>
+                              <PlayerSlot 
+                                onClick={() => handlePlayerSelection('partner')}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <PlayerSlotContent>
+                                  {registrationForm.partner?.pplId ? (
+                                    <>
+                                      <PlayerInfo>
+                                        <PlayerName>{registrationForm.partner?.name}</PlayerName>
+                                        <PlayerDetails>
+                                          PPLID: {registrationForm.partner?.pplId} | 
+                                          Gender: {registrationForm.partner?.gender} | 
+                                          Age: {registrationForm.partner?.age || 'Not specified'}
+                                          {(() => {
+                                            const selectedCategory = Object.values(registrationTournament?.tournamentCategories || {})
+                                              .find(cat => cat.id === registrationForm.category);
+                                            const duprRating = getDuprRatingForCategory(
+                                              selectedCategory?.name, 
+                                              registrationForm.partner?.duprRatings
+                                            );
+                                            return duprRating ? ` | DUPR: ${duprRating}` : '';
+                                          })()} 
+                                        </PlayerDetails>
+                                      </PlayerInfo>
+                                      <RemovePlayerButton
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleRemovePlayer('partner');
+                                        }}
+                                        title="Remove partner"
+                                      >
+                                        ×
+                                      </RemovePlayerButton>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <AddPlayerIcon>+</AddPlayerIcon>
+                                      <PlayerSlotLabel>Click to select partner</PlayerSlotLabel>
+                                    </>
+                                  )}
+                                </PlayerSlotContent>
+                              </PlayerSlot>
+                            </div>
+                          )}
+
+                          {/* Team Members for Team categories */}
+                          {categoryType === 'team' && (
+                            <div style={{ marginBottom: '16px' }}>
+                              <RegistrationLabel style={{ marginBottom: '8px', display: 'block' }}>
+                                Team Members
+                              </RegistrationLabel>
+                              {Array.isArray(registrationForm.teamMembers) && registrationForm.teamMembers?.map((member, index) => (
+                                <div key={index} style={{ marginBottom: '8px' }}>
+                                  <PlayerSlot 
+                                    onClick={() => handlePlayerSelection(`team-${index}`)}
+                                    style={{ cursor: 'pointer' }}
+                                  >
+                                    <PlayerSlotContent>
+                                      {member.pplId ? (
+                                        <>
+                                          <PlayerInfo>
+                                            <PlayerName>{member.name}</PlayerName>
+                                            <PlayerDetails>
+                                              PPLID: {member.pplId} | 
+                                              Gender: {member.gender} | 
+                                              Age: {member.age || 'Not specified'}
+                                              {(() => {
+                                                const selectedCategory = Object.values(registrationTournament?.tournamentCategories || {})
+                                                  .find(cat => cat.id === registrationForm.category);
+                                                const duprRating = getDuprRatingForCategory(
+                                                  selectedCategory?.name, 
+                                                  member?.duprRatings
+                                                );
+                                                return duprRating ? ` | DUPR: ${duprRating}` : '';
+                                              })()} 
+                                              {member.required && <RequiredBadge>Required</RequiredBadge>}
+                                            </PlayerDetails>
+                                          </PlayerInfo>
+                                          <RemovePlayerButton
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleRemovePlayer('team', index);
+                                            }}
+                                            title="Remove player"
+                                          >
+                                            ×
+                                          </RemovePlayerButton>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <AddPlayerIcon>+</AddPlayerIcon>
+                                          <PlayerSlotLabel>
+                                            Click to select {member.label}
+                                            {member.required && <RequiredBadge>Required</RequiredBadge>}
+                                          </PlayerSlotLabel>
+                                        </>
+                                      )}
+                                    </PlayerSlotContent>
+                                  </PlayerSlot>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                    
+                    {/* Contact Information */}
+                    <RegistrationFormRow>
                       <RegistrationFormGroup>
                         <RegistrationLabel>Email Address</RegistrationLabel>
                         <RegistrationInput
@@ -5874,9 +7805,7 @@ function Tournament() {
                           required
                         />
                       </RegistrationFormGroup>
-                    </RegistrationFormRow>
-                    
-                    <RegistrationFormRow>
+                      
                       <RegistrationFormGroup>
                         <RegistrationLabel>Contact Number</RegistrationLabel>
                         <RegistrationInput
@@ -5904,50 +7833,77 @@ function Tournament() {
                   <RegistrationFormSection>
                     <RegistrationSectionTitle>Payment Details</RegistrationSectionTitle>
                     
-                    <BankDetailsBox>
-                      <BankDetailsTitle>Bank Transfer Details</BankDetailsTitle>
-                      <BankDetail>
-                        <BankDetailLabel>Bank Name:</BankDetailLabel>
-                        <BankDetailValue>-</BankDetailValue>
-                      </BankDetail>
-                      <BankDetail>
-                        <BankDetailLabel>Account Name:</BankDetailLabel>
-                        <BankDetailValue>-</BankDetailValue>
-                      </BankDetail>
-                      <BankDetail>
-                        <BankDetailLabel>Account Number:</BankDetailLabel>
-                        <BankDetailValue>-</BankDetailValue>
-                      </BankDetail>
-                      <BankDetail>
-                        <BankDetailLabel>Routing Number:</BankDetailLabel>
-                        <BankDetailValue>-</BankDetailValue>
-                      </BankDetail>
-                      <BankDetail>
-                        <BankDetailLabel>Reference:</BankDetailLabel>
-                        <BankDetailValue>-</BankDetailValue>
-                      </BankDetail>
-                    </BankDetailsBox>
+                    <PaymentMethodsContainer>
+                      <BankDetailsBox>
+                        <BankDetailsTitle>Bank Transfer Details</BankDetailsTitle>
+                        <BankDetail>
+                          <BankDetailLabel>Bank Name:</BankDetailLabel>
+                          <BankDetailValue>BDO Unibank</BankDetailValue>
+                        </BankDetail>
+                        <BankDetail>
+                          <BankDetailLabel>Account Name:</BankDetailLabel>
+                          <BankDetailValue>John Doe Tournament</BankDetailValue>
+                        </BankDetail>
+                        <BankDetail>
+                          <BankDetailLabel>Account Number:</BankDetailLabel>
+                          <BankDetailValue>1234-5678-9012</BankDetailValue>
+                        </BankDetail>
+                      </BankDetailsBox>
+                      
+                      <QRCodeSection>
+                        <QRCodeHeader>Quick Payment</QRCodeHeader>
+                        <QRCodeContainer>
+                          <QRCodePlaceholder>
+                            <QRCodeIcon>📱</QRCodeIcon>
+                            <QRCodeText>GCash QR Code</QRCodeText>
+                            <QRCodeSubtext>Scan to pay registration fee</QRCodeSubtext>
+                          </QRCodePlaceholder>
+                        </QRCodeContainer>
+                        <QRCodeSubtext>Scan with GCash or any QR payment app</QRCodeSubtext>
+                      </QRCodeSection>
+                    </PaymentMethodsContainer>
                     
                     <RegistrationFormGroup>
                       <RegistrationLabel>Proof of Payment</RegistrationLabel>
-                      <FileUploadArea>
-                        <input
-                          type="file"
-                          accept="image/*,.pdf"
-                          onChange={handleFileUpload}
-                          style={{ display: 'none' }}
-                          id="proof-upload"
-                          required
-                        />
-                        <label htmlFor="proof-upload" style={{ cursor: 'pointer' }}>
-                          <FileUploadText>
-                            {registrationForm.proofOfPayment 
-                              ? `Selected: ${registrationForm.proofOfPayment.name}`
-                              : 'Click to upload proof of payment (Image or PDF)'
-                            }
-                          </FileUploadText>
-                        </label>
-                      </FileUploadArea>
+                      {!registrationForm.proofOfPayment ? (
+                        <FileUploadArea>
+                          <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={handleFileUpload}
+                            style={{ display: 'none' }}
+                            id="proof-upload"
+                            required
+                          />
+                          <label htmlFor="proof-upload" style={{ cursor: 'pointer' }}>
+                            <FileUploadText>
+                              Click to upload proof of payment (Image or PDF)
+                            </FileUploadText>
+                          </label>
+                        </FileUploadArea>
+                      ) : (
+                        <ImagePreviewContainer>
+                          {registrationForm.proofOfPayment.type.startsWith('image/') ? (
+                            <PreviewImage 
+                              src={URL.createObjectURL(registrationForm.proofOfPayment)} 
+                              alt="Proof of Payment Preview" 
+                            />
+                          ) : (
+                            <div style={{ padding: '40px', textAlign: 'center', background: '#f8fafc' }}>
+                              <div style={{ fontSize: '48px', marginBottom: '12px' }}>📄</div>
+                              <div style={{ color: '#64748b', fontSize: '14px' }}>PDF File</div>
+                            </div>
+                          )}
+                          <DeleteImageButton 
+                            type="button"
+                            onClick={handleDeleteProofOfPayment}
+                            title="Delete file"
+                          >
+                            ×
+                          </DeleteImageButton>
+                          <FileName>{registrationForm.proofOfPayment.name}</FileName>
+                        </ImagePreviewContainer>
+                      )}
                     </RegistrationFormGroup>
                   </RegistrationFormSection>
 
@@ -5958,6 +7914,62 @@ function Tournament() {
               </RegistrationModalBody>
             </RegistrationModalContent>
           </RegistrationModal>
+        )}
+
+        {/* Player Selection Modal */}
+        {showPlayerSelectionModal && (
+          <PlayerSelectionModal onClick={() => setShowPlayerSelectionModal(false)}>
+            <PlayerSelectionContent onClick={e => e.stopPropagation()}>
+              <PlayerSelectionHeader>
+                <PlayerSelectionTitle>Select Player</PlayerSelectionTitle>
+                <CloseButton onClick={() => setShowPlayerSelectionModal(false)}>×</CloseButton>
+              </PlayerSelectionHeader>
+              
+              <PlayerSelectionBody>
+                <PlayerSearchInput
+                  type="text"
+                  placeholder="Search players by name or PPLID..."
+                  value={playerSearchTerm}
+                  onChange={(e) => setPlayerSearchTerm(e.target.value)}
+                />
+                
+                <PlayerListContainer>
+                  {getFilteredPlayers().map((player) => (
+                    <PlayerListItem 
+                      key={player.pplId}
+                      onClick={() => handleSelectPlayer(player)}
+                    >
+                      <PlayerListInfo>
+                        <PlayerListName>{player.name}</PlayerListName>
+                        <PlayerListMeta>
+                          PPLID: {player.pplId} | Gender: {player.gender} | Age: {player.age || 'Not specified'}
+                          {(() => {
+                            const selectedCategory = Object.values(registrationTournament?.tournamentCategories || {})
+                              .find(cat => cat.id === registrationForm.category);
+                            const duprRating = getDuprRatingForCategory(
+                              selectedCategory?.name, 
+                              player?.duprRatings
+                            );
+                            return duprRating ? ` | DUPR: ${duprRating}` : '';
+                          })()}
+                        </PlayerListMeta>
+                      </PlayerListInfo>
+                    </PlayerListItem>
+                  ))}
+                  
+                  {getFilteredPlayers().length === 0 && (
+                    <div style={{ 
+                      textAlign: 'center', 
+                      padding: '40px 20px', 
+                      color: '#64748b' 
+                    }}>
+                      No players found matching your criteria
+                    </div>
+                  )}
+                </PlayerListContainer>
+              </PlayerSelectionBody>
+            </PlayerSelectionContent>
+          </PlayerSelectionModal>
         )}
       </PageContainer>
     );
@@ -6020,55 +8032,12 @@ function Tournament() {
               {tournament.bannerUrl && (
               <img src={tournament.bannerUrl} alt={tournament.name} />
               )}
-              <StatusBadge status={tournament.status}>
+              <StatusBadge $status={tournament.status}>
                 {tournament.status}
               </StatusBadge>
             </TournamentBanner>
                           <TournamentInfo>
                 <TournamentName>{tournament.name}</TournamentName>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
-                  {tournament.tournamentCategories ? (
-                    (() => {
-                      // Get unique categories
-                      const categories = new Set();
-                      console.log('All tournament categories:', tournament.tournamentCategories);
-                      Object.values(tournament.tournamentCategories).forEach(category => {
-                        console.log('Processing category:', {
-                          skillLevel: category.skillLevel,
-                          tier: category.tier,
-                          fullCategory: category
-                        });
-                        if (category.skillLevel?.toLowerCase() === 'open') {
-                          // Ensure tier is a number, default to 1 if not specified
-                          const tier = Number(category.tier) || 1;
-                          categories.add(`Open - Tier ${tier}`);
-                        } else if (['Intermediate', 'Advanced'].includes(category.skillLevel)) {
-                          categories.add(category.skillLevel);
-                        }
-                      });
-                      
-                      return Array.from(categories).map((categoryName, index) => {
-                        const isOpen = categoryName.startsWith('Open');
-                        const type = isOpen ? 'open' : categoryName.toLowerCase();
-                        return (
-                          <TournamentTypeDisplay 
-                            key={index} 
-                            type={type}
-                            style={{ fontSize: '0.8rem', padding: '4px 10px' }}
-                          >
-                            {categoryName}
-                          </TournamentTypeDisplay>
-                        );
-                      });
-                    })()
-                  ) : (
-                    // Fallback for old data structure
-                    <TournamentTypeDisplay type={tournament.tournamentType}>
-                      {tournament.tournamentType.charAt(0).toUpperCase() + tournament.tournamentType.slice(1)}
-                      {tournament.tournamentType === 'open' && ` - Tier ${tournament.tier}`}
-                    </TournamentTypeDisplay>
-                  )}
-                </div>
               <TournamentDate>
                 <CalendarIcon />
                 {new Date(tournament.date).toLocaleDateString()}
@@ -6077,13 +8046,34 @@ function Tournament() {
                 <LocationIcon />
                 {tournament.location}
               </TournamentLocation>
+              <TournamentSkillLevels>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="m22 21-3-3m0 0a5.5 5.5 0 1 0-7.78-7.78 5.5 5.5 0 0 0 7.78 7.78Z" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {tournament.tournamentCategories ? (
+                  (() => {
+                    // Get unique categories
+                    const categories = new Set();
+                    Object.values(tournament.tournamentCategories).forEach(category => {
+                      if (category.skillLevel?.toLowerCase() === 'open') {
+                        // Ensure tier is a number, default to 1 if not specified
+                        const tier = Number(category.tier) || 1;
+                        categories.add(`Open - Tier ${tier}`);
+                      } else if (['Beginner', 'Intermediate', 'Advanced'].includes(category.skillLevel)) {
+                        categories.add(category.skillLevel);
+                      }
+                    });
+                    
+                    return Array.from(categories).join(', ');
+                  })()
+                ) : (
+                  // Fallback for old data structure
+                  `${tournament.tournamentType.charAt(0).toUpperCase() + tournament.tournamentType.slice(1)}${tournament.tournamentType === 'open' ? ` - Tier ${tournament.tier}` : ''}`
+                )}
+              </TournamentSkillLevels>
               <TournamentStats>
-                <ParticipantCount>
-                  <ParticipantIcon />
-                  <div>
-                    {tournament.currentParticipants}/{tournament.maxParticipants}
-                  </div>
-                </ParticipantCount>
                 <RegistrationFee>
                   <MoneyIcon />
                   <div>
@@ -6101,6 +8091,8 @@ function Tournament() {
               >
                 {tournament.currentParticipants >= tournament.maxParticipants 
                   ? 'Full'
+                  : !isAuthenticated 
+                  ? 'Sign In to Register'
                   : 'Register Now'}
               </RegisterButton>
             </TournamentInfo>
@@ -6127,182 +8119,133 @@ function Tournament() {
         />
       )}
 
-      {showRegistrationModal && registrationTournament && (
-        <RegistrationModal onClick={closeRegistrationModal}>
+     
+      
+      {/* View Form Modal (Read-only preview for profile) */}
+      {showViewFormModal && viewFormTournament && (
+        <RegistrationModal onClick={closeViewFormModal}>
           <RegistrationModalContent onClick={e => e.stopPropagation()}>
             <RegistrationModalHeader>
-              <RegistrationModalTitle>Register for {registrationTournament.name}</RegistrationModalTitle>
-              <CloseButton onClick={closeRegistrationModal}>×</CloseButton>
+              <RegistrationModalTitle>Registration Form Preview - {viewFormTournament.name}</RegistrationModalTitle>
+              <CloseButton onClick={closeViewFormModal}>×</CloseButton>
             </RegistrationModalHeader>
-            
+
             <RegistrationModalBody>
-              <form onSubmit={handleRegistrationSubmit}>
-                {/* Category/Division/Level Selection */}
-                <RegistrationFormSection>
-                  <RegistrationSectionTitle>Tournament Category</RegistrationSectionTitle>
-                  
-                  <RegistrationFormRow>
-                    <RegistrationFormGroup>
-                      <RegistrationLabel>Category</RegistrationLabel>
-                      <RegistrationSelect
-                        value={registrationForm.category}
-                        onChange={(e) => handleRegistrationFormChange('category', e.target.value)}
-                        required
-                      >
-                        <option value="">Select Category</option>
-                        <option value="mens-singles">Men's Singles</option>
-                        <option value="womens-singles">Women's Singles</option>
-                        <option value="mens-doubles">Men's Doubles</option>
-                        <option value="womens-doubles">Women's Doubles</option>
-                        <option value="mixed-doubles">Mixed Doubles</option>
-                      </RegistrationSelect>
-                    </RegistrationFormGroup>
-                    
-                    <RegistrationFormGroup>
-                      <RegistrationLabel>Age Category</RegistrationLabel>
-                      <RegistrationSelect
-                        value={registrationForm.ageCategory}
-                        onChange={(e) => handleRegistrationFormChange('ageCategory', e.target.value)}
-                        required
-                      >
-                        <option value="">Select Age Category</option>
-                        <option value="18+">18+</option>
-                        <option value="35+">35+</option>
-                        <option value="50+">50+</option>
-                      </RegistrationSelect>
-                    </RegistrationFormGroup>
-                  </RegistrationFormRow>
-                  
-                  <RegistrationFormRow>
-                    <RegistrationFormGroup>
-                      <RegistrationLabel>Skill Level</RegistrationLabel>
-                      <RegistrationSelect
-                        value={registrationForm.level}
-                        onChange={(e) => handleRegistrationFormChange('level', e.target.value)}
-                        required
-                      >
-                        <option value="">Select Skill Level</option>
-                        <option value="intermediate">Intermediate</option>
-                        <option value="advanced">Advanced</option>
-                        <option value="open-tier1">Open - Tier 1</option>
-                        <option value="open-tier2">Open - Tier 2</option>
-                        <option value="open-tier3">Open - Tier 3</option>
-                      </RegistrationSelect>
-                    </RegistrationFormGroup>
-                  </RegistrationFormRow>
-                </RegistrationFormSection>
+              <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '8px', marginBottom: '24px' }}>
+                <div style={{ color: '#475569', fontSize: '14px', fontWeight: '500' }}>
+                  📋 This is a preview of the registration form for this tournament. To actually register, please visit the tournament from the main tournaments page.
+                </div>
+              </div>
 
-                {/* Personal Information */}
-                <RegistrationFormSection>
-                  <RegistrationSectionTitle>Personal Information</RegistrationSectionTitle>
-                  
-                  <RegistrationFormRow>
-                    <RegistrationFormGroup>
-                      <RegistrationLabel>Full Name</RegistrationLabel>
-                      <RegistrationInput
-                        type="text"
-                        value={registrationForm.fullName}
-                        onChange={(e) => handleRegistrationFormChange('fullName', e.target.value)}
-                        placeholder="Enter your full name"
-                        required
-                      />
-                    </RegistrationFormGroup>
-                    
-                    <RegistrationFormGroup>
-                      <RegistrationLabel>Email Address</RegistrationLabel>
-                      <RegistrationInput
-                        type="email"
-                        value={registrationForm.email}
-                        onChange={(e) => handleRegistrationFormChange('email', e.target.value)}
-                        placeholder="your.email@example.com"
-                        required
-                      />
-                    </RegistrationFormGroup>
-                  </RegistrationFormRow>
-                  
-                  <RegistrationFormRow>
-                    <RegistrationFormGroup>
-                      <RegistrationLabel>Contact Number</RegistrationLabel>
-                      <RegistrationInput
-                        type="tel"
-                        value={registrationForm.contactNumber}
-                        onChange={(e) => handleRegistrationFormChange('contactNumber', e.target.value)}
-                        placeholder="+63 912 345 6789"
-                        required
-                      />
-                    </RegistrationFormGroup>
-                  </RegistrationFormRow>
-                </RegistrationFormSection>
+              {/* Tournament Categories Preview */}
+              <RegistrationFormSection>
+                <RegistrationSectionTitle>Available Tournament Categories</RegistrationSectionTitle>
+                
+                {viewFormTournament.tournamentCategories && Object.values(viewFormTournament.tournamentCategories).map((category) => (
+                  <div key={category.id} style={{ 
+                    border: '1px solid #e2e8f0', 
+                    borderRadius: '8px', 
+                    padding: '16px', 
+                    marginBottom: '12px',
+                    background: '#fafafa'
+                  }}>
+                    <div style={{ fontWeight: '600', color: '#1e293b', marginBottom: '8px' }}>
+                      {category.name}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '8px' }}>
+                      <strong>Skill Level:</strong> {category.skillLevel === 'open' ? `Open - Tier ${category.tier}` : category.skillLevel}
+                    </div>
+                    {category.ageRange && (
+                      <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '8px' }}>
+                        <strong>Age Range:</strong> {category.ageRange}
+                      </div>
+                    )}
+                    <div style={{ fontSize: '14px', color: '#64748b' }}>
+                      <strong>Entry Fee:</strong> ₱{viewFormTournament.entryFee}
+                    </div>
+                  </div>
+                ))}
+              </RegistrationFormSection>
 
-                {/* Fee Information */}
-                <RegistrationFormSection>
-                  <RegistrationSectionTitle>Registration Fee</RegistrationSectionTitle>
+              {/* Required Information Preview */}
+              <RegistrationFormSection>
+                <RegistrationSectionTitle>Required Information from Participants</RegistrationSectionTitle>
+                
+                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px' }}>
+                  <div style={{ marginBottom: '12px' }}>
+                    <strong style={{ color: '#1e293b' }}>Player Information:</strong>
+                    <ul style={{ margin: '8px 0', paddingLeft: '20px', color: '#64748b' }}>
+                      <li>Full Name</li>
+                      <li>Gender</li>
+                      <li>Age</li>
+                      <li>DUPR Ratings (Singles & Doubles)</li>
+                    </ul>
+                  </div>
                   
-                  <FeeInfoBox>
-                    <FeeInfoTitle>Tournament Entry Fee</FeeInfoTitle>
-                    <FeeInfoText>₱{registrationTournament.entryFee} - Registration fee is required to secure your spot in the tournament.</FeeInfoText>
-                  </FeeInfoBox>
-                </RegistrationFormSection>
+                  <div style={{ marginBottom: '12px' }}>
+                    <strong style={{ color: '#1e293b' }}>Contact Information:</strong>
+                    <ul style={{ margin: '8px 0', paddingLeft: '20px', color: '#64748b' }}>
+                      <li>Email Address</li>
+                      <li>Contact Number</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <strong style={{ color: '#1e293b' }}>Payment Information:</strong>
+                    <ul style={{ margin: '8px 0', paddingLeft: '20px', color: '#64748b' }}>
+                      <li>Proof of Payment (Image or PDF)</li>
+                      <li>Registration Fee: ₱{viewFormTournament.entryFee}</li>
+                    </ul>
+                  </div>
+                </div>
+              </RegistrationFormSection>
 
-                {/* Payment Section */}
-                <RegistrationFormSection>
-                  <RegistrationSectionTitle>Payment Details</RegistrationSectionTitle>
+              {/* Payment Details Preview */}
+              <RegistrationFormSection>
+                <RegistrationSectionTitle>Payment Details</RegistrationSectionTitle>
+                
+                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px' }}>
+                  <div style={{ marginBottom: '16px' }}>
+                    <strong style={{ color: '#1e293b' }}>Bank Transfer Details:</strong>
+                    <div style={{ marginTop: '8px', fontSize: '14px', color: '#64748b' }}>
+                      <div><strong>Bank Name:</strong> BDO Unibank</div>
+                      <div><strong>Account Name:</strong> John Doe Tournament</div>
+                      <div><strong>Account Number:</strong> 1234-5678-9012</div>
+                      <div><strong>Reference:</strong> TEAM-REG-2024</div>
+                    </div>
+                  </div>
                   
-                  <BankDetailsBox>
-                    <BankDetailsTitle>Bank Transfer Details</BankDetailsTitle>
-                    <BankDetail>
-                      <BankDetailLabel>Bank Name:</BankDetailLabel>
-                      <BankDetailValue>-</BankDetailValue>
-                    </BankDetail>
-                    <BankDetail>
-                      <BankDetailLabel>Account Name:</BankDetailLabel>
-                      <BankDetailValue>-</BankDetailValue>
-                    </BankDetail>
-                    <BankDetail>
-                      <BankDetailLabel>Account Number:</BankDetailLabel>
-                      <BankDetailValue>-</BankDetailValue>
-                    </BankDetail>
-                    <BankDetail>
-                      <BankDetailLabel>Routing Number:</BankDetailLabel>
-                      <BankDetailValue>-</BankDetailValue>
-                    </BankDetail>
-                    <BankDetail>
-                      <BankDetailLabel>Reference:</BankDetailLabel>
-                      <BankDetailValue>-</BankDetailValue>
-                    </BankDetail>
-                  </BankDetailsBox>
-                  
-                  <RegistrationFormGroup>
-                    <RegistrationLabel>Proof of Payment</RegistrationLabel>
-                    <FileUploadArea>
-                      <input
-                        type="file"
-                        accept="image/*,.pdf"
-                        onChange={handleFileUpload}
-                        style={{ display: 'none' }}
-                        id="proof-upload"
-                        required
-                      />
-                      <label htmlFor="proof-upload" style={{ cursor: 'pointer' }}>
-                        <FileUploadText>
-                          {registrationForm.proofOfPayment 
-                            ? `Selected: ${registrationForm.proofOfPayment.name}`
-                            : 'Click to upload proof of payment (Image or PDF)'
-                          }
-                        </FileUploadText>
-                      </label>
-                    </FileUploadArea>
-                  </RegistrationFormGroup>
-                </RegistrationFormSection>
+                  <div>
+                    <strong style={{ color: '#1e293b' }}>Alternative Payment:</strong>
+                    <div style={{ marginTop: '8px', fontSize: '14px', color: '#64748b' }}>
+                      GCash QR Code available during registration
+                    </div>
+                  </div>
+                </div>
+              </RegistrationFormSection>
 
-                <RegistrationSubmitButton type="submit">
-                  Submit Registration
-                </RegistrationSubmitButton>
-              </form>
+              <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                <button 
+                  onClick={closeViewFormModal}
+                  style={{
+                    background: '#29ba9b',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '12px 24px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Close Preview
+                </button>
+              </div>
             </RegistrationModalBody>
           </RegistrationModalContent>
         </RegistrationModal>
       )}
+
     </PageContainer>
   );
 }

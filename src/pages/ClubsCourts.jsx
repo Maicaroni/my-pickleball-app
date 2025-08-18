@@ -3,27 +3,6 @@ import styled from 'styled-components';
 import AuthModal from '../components/AuthModal';
 import { useAuth } from '../contexts/AuthContext';
 
-/**
- * @typedef {Object} Venue
- * @property {string} id - Unique identifier
- * @property {string} name - Venue name
- * @property {string} description - Venue description
- * @property {string} address - Physical address
- * @property {string} type - Venue type ('club' | 'club_and_courts')
- * @property {number} [courts] - Number of courts (required if type is 'club_and_courts')
- * @property {string} [hours] - Operating hours (required if type is 'club_and_courts')
- * @property {number} [members] - Member count (required if type is 'club')
- * @property {string} createdAt - Creation timestamp
- * @property {string} updatedAt - Last update timestamp
- * @property {string} ownerId - User ID of venue owner
- * @property {string} contactEmail - Contact email
- * @property {string} contactPhone - Contact phone number
- * @property {string} [website] - Optional website URL
- * @property {string[]} [amenities] - List of available amenities
- * @property {string[]} [images] - List of image URLs
- * @property {boolean} isVerified - Whether the venue is verified by admins
- */
-
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
