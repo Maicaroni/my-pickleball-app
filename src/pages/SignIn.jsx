@@ -131,7 +131,7 @@ const Input = styled.input`
   padding: 12px 16px;
   border: 2px solid #e2e8f0;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 13px;
   background: white;
   transition: all 0.2s;
 
@@ -143,7 +143,7 @@ const Input = styled.input`
 
   &::placeholder {
     color: #94a3b8;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   ${props => props.$hasPassword && `
@@ -450,7 +450,7 @@ const SignIn = () => {
     }
   };
 
-  const { login } = useAuth(); // real one!
+  const { login, loginWithCredentials } = useAuth();
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -458,6 +458,7 @@ const SignIn = () => {
 
     setLoading(true);
     try {
+      // First try to connect to the backend
       const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: {
@@ -485,10 +486,19 @@ const SignIn = () => {
 
       navigate("/"); // Redirect to home/dashboard
     } catch (err) {
-      setErrors(prev => ({
-        ...prev,
-        submit: err.message || "Failed to sign in. Please try again."
-      }));
+      // If backend fails, try dummy authentication as fallback
+      console.log("Backend not available, trying dummy authentication...");
+      
+      const dummyResult = loginWithCredentials(formData.email, formData.password);
+      
+      if (dummyResult.success) {
+        navigate("/"); // Redirect to home/dashboard
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          submit: dummyResult.error || "Invalid credentials. Try: john.doe@gmail.com / password123"
+        }));
+      }
     } finally {
       setLoading(false);
     }

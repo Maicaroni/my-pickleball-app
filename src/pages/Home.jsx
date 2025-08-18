@@ -47,7 +47,7 @@ const Hero = styled.div`
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 80px 16px;
+  padding: 140px 16px 80px;
   background: linear-gradient(-45deg, #234255, #29ba9b, #1a2e3b, #a3e635);
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
@@ -56,7 +56,7 @@ const Hero = styled.div`
 
   @media (max-width: 768px) {
     min-height: 74vh;
-    padding: 80px 16px 120px;
+    padding: 120px 16px 120px;
   }
 
   @keyframes gradient {

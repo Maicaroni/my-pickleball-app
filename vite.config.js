@@ -1,15 +1,12 @@
-// vite.config.js
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/my-pickleball-app/', // for local dev. change to '/my-pickleball-app/' when deploying
+  base: '/',
   server: {
-    host: true,
-    port: 5173,
-    proxy: {
-      '/api': 'http://localhost:5000', // ✅ PROXY to backend
-    },
+    host: true, // This enables listening on all network interfaces
+    port: 5173, // Default Vite port
   },
 })

@@ -1,6 +1,28 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
+/**
+ * @typedef {Object} PlayerRank
+ * @property {string} id - Unique identifier
+ * @property {string} name - Player's name
+ * @property {string} avatarUrl - Player's avatar URL
+ * @property {number} rank - Current numerical rank
+ * @property {number} points - Total ranking points
+ * @property {number} gamesPlayed - Total games played
+ * @property {number} wins - Total wins
+ * @property {number} losses - Total losses
+ * @property {string} winRate - Win rate percentage
+ * @property {string} club - Player's affiliated club
+ */
+
+/**
+ * @typedef {Object} RankingCategory
+ * @property {string} id - Category identifier
+ * @property {string} name - Category name (e.g., "Men's Singles")
+ * @property {PlayerRank[]} rankings - List of player rankings
+ * @property {string} lastUpdated - ISO date string
+ */
+
 const PageContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
@@ -25,6 +47,7 @@ const PageContainer = styled.div`
 
 const PageHeader = styled.div`
   margin-bottom: 40px;
+  text-align: center;
 `;
 
 const PageTitle = styled.h1`
@@ -596,6 +619,23 @@ function SearchIcon() {
     </svg>
   );
 }
+
+/**
+ * Ranks Component
+ * 
+ * Displays player rankings by category
+ * 
+ * API Endpoints needed:
+ * - GET /api/rankings - Get rankings for all categories
+ * - GET /api/rankings/:categoryId - Get rankings for specific category
+ * - GET /api/players/:id/history - Get player's ranking history
+ * 
+ * Query Parameters:
+ * - category: Filter by category
+ * - search: Search players
+ * - limit: Items per page
+ * - page: Pagination
+ */
 function Ranks() {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('mens-singles');
@@ -605,70 +645,413 @@ function Ranks() {
   const [currentDate, setCurrentDate] = useState('');
   const [ageGroup, setAgeGroup] = useState('');
 
-  const adultAgeGroups = ['19+', '35+', '50+'];
+  const adultAgeGroups = ['18+', '35+', '50+'];
 
+  // Helper function to check if a player's age matches the selected age group
   const isInAgeGroup = (playerAge, selectedGroup) => {
-    if (!selectedGroup) return true;
-    const minAge = parseInt(selectedGroup.replace('+', ''));
+    if (!selectedGroup) return true; // If no age group selected, include all
+    
+    const minAge = parseInt(selectedGroup.replace('+', '')); // Remove the '+' and parse
     return playerAge >= minAge;
   };
 
   const filterRankings = (rankings) => {
     if (!rankings) return [];
-  
-    // Normalize data to prevent undefined values
-    const normalized = rankings.map(player => ({
-      ...player,
-      points: player.points ?? 0,
-      wins: player.wins ?? 0,
-      losses: player.losses ?? 0,
-      gamesPlayed: player.gamesPlayed ?? 0,
-      age: player.age ?? 0,
-      name: player.name ?? '',
-    }));
-  
-    // Step 1: Filter by adult age (19+)
-    let filtered = normalized.filter(player => player.age >= 19);
-  
-    // Step 2: Filter by search + age group
+    
+    // Filter by age (adults only - 18+)
+    let filtered = rankings.filter(player => player.age >= 18);
+
+    // Then filter by specific age group and search query
     filtered = filtered.filter(player => {
-      const matchesSearch = !searchQuery || player.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesAgeGroup = isInAgeGroup(player.age, ageGroup);
+      const matchesSearch = !searchQuery || 
+        player.name.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesAgeGroup = isInAgeGroup(
+        player.age,
+        ageGroup
+      );
+
       return matchesSearch && matchesAgeGroup;
     });
-  
-    // Step 3: Sort by points (highest first)
+
+    // Sort by points (assuming higher points = better rank)
     const sorted = [...filtered].sort((a, b) => b.points - a.points);
-  
-    // Step 4: Assign rank
+
+    // Update ranks based on filtered and sorted order
     return sorted.map((player, index) => ({
       ...player,
       rank: index + 1
     }));
   };
-  
+
   useEffect(() => {
+    // Set current date in the format "Month DD, YYYY"
     const date = new Date();
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     setCurrentDate(date.toLocaleDateString('en-US', options));
-
+    
     fetchRankings();
   }, []);
 
+  /**
+   * Fetches rankings data
+   * @async
+   */
   const fetchRankings = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/rankings");
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to fetch rankings");
-      }
-
+      setLoading(true);
+      setError(null);
+      
+      const data = [
+        {
+          id: 'mens-singles',
+          name: "MEN'S SINGLES",
+          lastUpdated: '2024-01-20T10:00:00Z',
+          rankings: [
+            {
+              id: '1',
+              name: 'Juan Dela Cruz',
+              age: 28,
+              rank: 1,
+              points: 2500,
+              gamesPlayed: 45,
+              wins: 38,
+              losses: 7,
+              winRate: '84.4'
+            },
+            {
+              id: '2',
+              name: 'Mike Santos',
+              age: 35,
+              rank: 2,
+              points: 2350,
+              gamesPlayed: 42,
+              wins: 34,
+              losses: 8,
+              winRate: '81.0'
+            },
+            {
+              id: '3',
+              name: 'Carlo Garcia',
+              age: 45,
+              rank: 3,
+              points: 2200,
+              gamesPlayed: 38,
+              wins: 30,
+              losses: 8,
+              winRate: '78.9'
+            },
+            {
+              id: '4',
+              name: 'Miguel Lopez',
+              age: 61,
+              rank: 4,
+              points: 2100,
+              gamesPlayed: 35,
+              wins: 27,
+              losses: 8,
+              winRate: '77.1'
+            },
+            {
+              id: 'j1',
+              name: 'Alex Santos',
+              age: 15,
+              rank: 5,
+              points: 1800,
+              gamesPlayed: 30,
+              wins: 25,
+              losses: 5,
+              winRate: '83.3'
+            },
+            {
+              id: 'j2',
+              name: 'Marco Reyes',
+              age: 13,
+              rank: 6,
+              points: 1700,
+              gamesPlayed: 28,
+              wins: 22,
+              losses: 6,
+              winRate: '78.6'
+            }
+          ]
+        },
+        {
+          id: 'womens-singles',
+          name: "WOMEN'S SINGLES",
+          lastUpdated: '2024-01-20T10:00:00Z',
+          rankings: [
+            {
+              id: '1',
+              name: 'Maria Santos',
+              age: 28,
+              rank: 1,
+              points: 2450,
+              gamesPlayed: 43,
+              wins: 36,
+              losses: 7,
+              winRate: '83.7'
+            },
+            {
+              id: '2',
+              name: 'Ana Garcia',
+              age: 45,
+              rank: 2,
+              points: 2300,
+              gamesPlayed: 40,
+              wins: 32,
+              losses: 8,
+              winRate: '80.0'
+            },
+            {
+              id: '3',
+              name: 'Sofia Reyes',
+              age: 52,
+              rank: 3,
+              points: 2150,
+              gamesPlayed: 37,
+              wins: 29,
+              losses: 8,
+              winRate: '78.4'
+            },
+            {
+              id: '4',
+              name: 'Isabella Tan',
+              age: 71,
+              rank: 4,
+              points: 2000,
+              gamesPlayed: 30,
+              wins: 22,
+              losses: 8,
+              winRate: '73.3'
+            },
+            {
+              id: 'j1',
+              name: 'Alexandra Santos',
+              age: 15,
+              rank: 5,
+              points: 1850,
+              gamesPlayed: 32,
+              wins: 26,
+              losses: 6,
+              winRate: '81.3'
+            },
+            {
+              id: 'j2',
+              name: 'Diana Garcia',
+              age: 17,
+              rank: 6,
+              points: 1750,
+              gamesPlayed: 29,
+              wins: 23,
+              losses: 6,
+              winRate: '79.3'
+            }
+          ]
+        },
+        {
+          id: 'mens-doubles',
+          name: "MEN'S DOUBLES",
+          lastUpdated: '2024-01-20T10:00:00Z',
+          rankings: [
+            {
+              id: '1',
+              name: 'Juan Dela Cruz',
+              age: 28,
+              rank: 1,
+              points: 2600,
+              gamesPlayed: 50,
+              wins: 42,
+              losses: 8,
+              winRate: '84.0'
+            },
+            {
+              id: '2',
+              name: 'Mike Santos',
+              age: 35,
+              rank: 2,
+              points: 2400,
+              gamesPlayed: 45,
+              wins: 36,
+              losses: 9,
+              winRate: '80.0'
+            },
+            {
+              id: '3',
+              name: 'Carlo Garcia',
+              age: 45,
+              rank: 3,
+              points: 2250,
+              gamesPlayed: 40,
+              wins: 31,
+              losses: 9,
+              winRate: '77.5'
+            },
+            {
+              id: '4',
+              name: 'Miguel Lopez',
+              age: 61,
+              rank: 4,
+              points: 2150,
+              gamesPlayed: 38,
+              wins: 29,
+              losses: 9,
+              winRate: '76.3'
+            },
+            {
+              id: 'j1',
+              name: 'Alex Santos',
+              age: 15,
+              rank: 5,
+              points: 1900,
+              gamesPlayed: 35,
+              wins: 27,
+              losses: 8,
+              winRate: '77.1'
+            }
+          ]
+        },
+        {
+          id: 'womens-doubles',
+          name: "WOMEN'S DOUBLES",
+          lastUpdated: '2024-01-20T10:00:00Z',
+          rankings: [
+            {
+              id: '1',
+              name: 'Maria Santos',
+              age: 28,
+              rank: 1,
+              points: 2550,
+              gamesPlayed: 48,
+              wins: 40,
+              losses: 8,
+              winRate: '83.3'
+            },
+            {
+              id: '2',
+              name: 'Ana Garcia',
+              age: 45,
+              rank: 2,
+              points: 2350,
+              gamesPlayed: 43,
+              wins: 34,
+              losses: 9,
+              winRate: '79.1'
+            },
+            {
+              id: '3',
+              name: 'Sofia Reyes',
+              age: 52,
+              rank: 3,
+              points: 2200,
+              gamesPlayed: 40,
+              wins: 31,
+              losses: 9,
+              winRate: '77.5'
+            },
+            {
+              id: '4',
+              name: 'Isabella Tan',
+              age: 71,
+              rank: 4,
+              points: 2100,
+              gamesPlayed: 35,
+              wins: 27,
+              losses: 8,
+              winRate: '77.1'
+            },
+            {
+              id: 'j1',
+              name: 'Alexandra Santos',
+              age: 15,
+              rank: 5,
+              points: 1950,
+              gamesPlayed: 32,
+              wins: 25,
+              losses: 7,
+              winRate: '78.1'
+            }
+          ]
+        },
+        {
+          id: 'mixed-doubles',
+          name: "MIXED DOUBLES",
+          lastUpdated: '2024-01-20T10:00:00Z',
+          rankings: [
+            {
+              id: '1',
+              name: 'Juan Dela Cruz',
+              age: 28,
+              rank: 1,
+              points: 2650,
+              gamesPlayed: 52,
+              wins: 44,
+              losses: 8,
+              winRate: '84.6'
+            },
+            {
+              id: '2',
+              name: 'Maria Santos',
+              age: 28,
+              rank: 2,
+              points: 2600,
+              gamesPlayed: 50,
+              wins: 42,
+              losses: 8,
+              winRate: '84.0'
+            },
+            {
+              id: '3',
+              name: 'Mike Santos',
+              age: 35,
+              rank: 3,
+              points: 2450,
+              gamesPlayed: 47,
+              wins: 38,
+              losses: 9,
+              winRate: '80.9'
+            },
+            {
+              id: '4',
+              name: 'Ana Garcia',
+              age: 45,
+              rank: 4,
+              points: 2400,
+              gamesPlayed: 45,
+              wins: 36,
+              losses: 9,
+              winRate: '80.0'
+            },
+            {
+              id: '5',
+              name: 'Carlo Garcia',
+              age: 45,
+              rank: 5,
+              points: 2300,
+              gamesPlayed: 42,
+              wins: 33,
+              losses: 9,
+              winRate: '78.6'
+            },
+            {
+              id: 'j1',
+              name: 'Alexandra Santos',
+              age: 15,
+              rank: 6,
+              points: 2000,
+              gamesPlayed: 35,
+              wins: 27,
+              losses: 8,
+              winRate: '77.1'
+            }
+          ]
+        }
+      ];
+      
       setCategories(data);
-      setSelectedCategory(data[0]?.id || data[0]?._id);
+      setSelectedCategory(data[0]?.id);
     } catch (err) {
-      console.error("Ranking fetch error:", err);
-      setError("Failed to fetch rankings. Please try again later.");
+      setError('Failed to fetch rankings. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -676,16 +1059,19 @@ function Ranks() {
 
   const renderRankingsList = (rankings) => {
     const filteredRankings = filterRankings(rankings);
-    const remainingPlayers = filteredRankings.slice(3); // Skip top 3
-  
-    if (filteredRankings.length === 0) {
+    const topThree = filteredRankings.slice(0, 3);
+    const remainingPlayers = filteredRankings.slice(3);
+    
+    if (remainingPlayers.length === 0 && topThree.length === 0) {
       return (
         <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
           No players found matching your search criteria.
         </div>
       );
     }
-  
+    
+    if (remainingPlayers.length === 0) return null;
+    
     return (
       <RankingsList>
         <ListHeader>
@@ -695,22 +1081,24 @@ function Ranks() {
           <div>Points</div>
           <div>Games (W-L)</div>
         </ListHeader>
-        {remainingPlayers.map((player) => (
-          <ListRow key={player._id || player.id}>
+        {remainingPlayers.slice(0, 47).map((player) => (
+          <ListRow key={player.id}>
             <ListRank>{player.rank}</ListRank>
             <ListPlayerInfo>
-              <ListPlayerAvatar>{getInitials(player.name)}</ListPlayerAvatar>
+              <ListPlayerAvatar>
+                {getInitials(player.name)}
+              </ListPlayerAvatar>
               <ListPlayerName>{player.name}</ListPlayerName>
             </ListPlayerInfo>
-            <ListStat>{player.age ?? '—'}</ListStat>
-            <ListStat>{formatNumber(player.points ?? 0)}</ListStat>
-            <ListStat>{(player.wins ?? 0)}-{(player.losses ?? 0)}</ListStat>
+            <ListStat>{player.age}</ListStat>
+            <ListStat>{formatNumber(player.points)}</ListStat>
+            <ListStat>{player.wins}-{player.losses}</ListStat>
           </ListRow>
         ))}
       </RankingsList>
     );
   };
-  
+
   if (loading) {
     return (
       <PageContainer>
@@ -724,13 +1112,15 @@ function Ranks() {
       <PageContainer>
         <ErrorState>
           <div>{error}</div>
-          <RetryButton onClick={fetchRankings}>Try Again</RetryButton>
+          <RetryButton onClick={fetchRankings}>
+            Try Again
+          </RetryButton>
         </ErrorState>
       </PageContainer>
     );
   }
 
-  const currentCategory = categories.find(c => c.id === selectedCategory || c._id === selectedCategory);
+  const currentCategory = categories.find(c => c.id === selectedCategory);
   const filteredRankings = currentCategory ? filterRankings(currentCategory.rankings) : [];
   const topThreePlayers = filteredRankings.slice(0, 3);
 
@@ -765,13 +1155,13 @@ function Ranks() {
           </AgeFilterContainer>
         </SearchContainer>
       </PageHeader>
-
+      
       <CategoryTabs>
         {categories.map(category => (
           <CategoryTab
-            key={category.id || category._id}
-            $active={category.id === selectedCategory || category._id === selectedCategory}
-            onClick={() => setSelectedCategory(category.id || category._id)}
+            key={category.id}
+            $active={category.id === selectedCategory}
+            onClick={() => setSelectedCategory(category.id)}
           >
             {category.name}
           </CategoryTab>
@@ -784,22 +1174,25 @@ function Ranks() {
             <PlayerCard key={player.id} $rank={player.rank}>
               <RankBadge>{player.rank}</RankBadge>
               <PlayerInfo>
-                <PlayerAvatar>{getInitials(player.name)}</PlayerAvatar>
+                <PlayerAvatar>
+                  {getInitials(player.name)}
+                </PlayerAvatar>
                 <PlayerDetails>
                   <PlayerName>{player.name}</PlayerName>
                 </PlayerDetails>
               </PlayerInfo>
+
               <StatsGrid>
                 <StatBox>
-                  <StatValue>{player.age ?? '—'}</StatValue>
+                  <StatValue>{player.age}</StatValue>
                   <StatLabel>Age</StatLabel>
                 </StatBox>
                 <StatBox>
-                  <StatValue>{formatNumber(player.points ?? 0)}</StatValue>
+                  <StatValue>{formatNumber(player.points)}</StatValue>
                   <StatLabel>Points</StatLabel>
                 </StatBox>
                 <StatBox>
-                  <StatValue>{(player.wins ?? 0)}-{(player.losses ?? 0)}</StatValue>
+                  <StatValue>{player.wins}-{player.losses}</StatValue>
                   <StatLabel>Games (W-L)</StatLabel>
                 </StatBox>
               </StatsGrid>
@@ -813,4 +1206,4 @@ function Ranks() {
   );
 }
 
-export default Ranks;
+export default Ranks; 

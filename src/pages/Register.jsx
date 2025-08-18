@@ -137,13 +137,15 @@ const Input = styled.input`
   padding: 12px 16px;
   border: 2px solid #e2e8f0;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 13px;
   background: white;
+  color: #234255;
   transition: all 0.2s;
+  outline: none;
 
   @media (max-width: 768px) {
     padding: 10px 14px;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   &:focus {
@@ -154,7 +156,7 @@ const Input = styled.input`
 
   &::placeholder {
     color: #94a3b8;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   ${props => props.$hasPassword && `
@@ -171,6 +173,37 @@ const Input = styled.input`
       box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
     }
   `}
+
+  /* Clean styling for date inputs */
+  &[type="date"] {
+    font-size: 13px;
+    color: ${props => props.value ? '#234255' : '#94a3b8'};
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    appearance: none;
+    position: relative;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px;
+    cursor: pointer;
+  }
+
+  /* Remove date input default styling across browsers */
+  &[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    position: absolute;
+    right: 16px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    &[type="date"] {
+      font-size: 13px;
+    }
+  }
 `;
 
 const Select = styled.select`
@@ -178,20 +211,71 @@ const Select = styled.select`
   padding: 12px 16px;
   border: 2px solid #e2e8f0;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 13px;
   background: white;
   color: #234255;
   transition: all 0.2s;
   cursor: pointer;
   appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 16px center;
   background-size: 16px;
+  outline: none;
+  border: 2px solid #e2e8f0;
+
+  @media (max-width: 768px) {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
 
   &:focus {
     outline: none;
     border-color: #29ba9b;
+    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
+  }
+
+  /* Style for default/placeholder option */
+  option[value=""] {
+    color: #94a3b8;
+  }
+
+  option {
+    color: #234255;
+    padding: 8px;
+    background: white;
+  }
+
+  /* When no option is selected, show placeholder color */
+  &:invalid {
+    color: #94a3b8;
+    font-size: 13px;
+  }
+
+  /* When option is selected, show normal text color */
+  &:valid {
+    color: #234255;
+    font-size: 13px;
+  }
+
+  /* Remove default styling in different browsers */
+  &::-ms-expand {
+    display: none;
+  }
+
+  /* Firefox specific fixes */
+  &:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 #234255;
+    outline: none;
+  }
+
+  /* Remove any additional outlines */
+  &:active,
+  &:focus:active {
+    outline: none;
     box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
   }
 
@@ -449,7 +533,8 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    birthDate: ''
+    birthDate: '',
+    gender: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -522,6 +607,10 @@ const Register = () => {
       }
     }
     
+    if (!formData.gender) {
+      newErrors.gender = 'Gender is required';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -559,7 +648,8 @@ const Register = () => {
           lastName: formData.lastName,
           email: formData.email,
           password: formData.password,
-          birthDate: formData.birthDate
+          birthDate: formData.birthDate,
+          gender: formData.gender
         })
       });
   
@@ -694,24 +784,53 @@ const Register = () => {
             )}
           </InputGroup>
 
-          <InputGroup>
-            <Label htmlFor="birthDate">Birth Date</Label>
-            <Input
-              type="date"
-              id="birthDate"
-              name="birthDate"
-              value={formData.birthDate}
-              onChange={handleChange}
-              required
-              $hasError={!!errors.birthDate}
-            />
-            {errors.birthDate && (
-              <ErrorMessage>
-                <WarningIcon />
-                {errors.birthDate}
-              </ErrorMessage>
-            )}
-          </InputGroup>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
+            gap: '16px' 
+          }}>
+            <InputGroup>
+              <Label htmlFor="birthDate">Birth Date</Label>
+              <Input
+                type="date"
+                id="birthDate"
+                name="birthDate"
+                value={formData.birthDate}
+                onChange={handleChange}
+                required
+                $hasError={!!errors.birthDate}
+                placeholder="Select your birth date"
+              />
+              {errors.birthDate && (
+                <ErrorMessage>
+                  <WarningIcon />
+                  {errors.birthDate}
+                </ErrorMessage>
+              )}
+            </InputGroup>
+
+            <InputGroup>
+              <Label htmlFor="gender">Gender</Label>
+              <Select
+                id="gender"
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                required
+                $hasError={!!errors.gender}
+              >
+                <option value="">Select your gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </Select>
+              {errors.gender && (
+                <ErrorMessage>
+                  <WarningIcon />
+                  {errors.gender}
+                </ErrorMessage>
+              )}
+            </InputGroup>
+          </div>
 
           <InputGroup>
             <Label htmlFor="password">Password</Label>
