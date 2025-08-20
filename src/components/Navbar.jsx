@@ -3,6 +3,20 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import styled from 'styled-components';
 import logoImg from '../../ppl-logo.svg';
+import axios from 'axios';
+
+
+const InitialsFallback = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #fff;
+`;
 
 const GlobalReset = styled.div`
   * {
@@ -40,8 +54,8 @@ const NavContainer = styled.div`
   margin: 0 auto;
   padding: 0 24px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 80px;
 
   @media (max-width: 768px) {
     padding: 0 16px;
@@ -1036,13 +1050,17 @@ function BellOffIcon() {
 }
 
 function Navbar() {
+
+const { user, isAuthenticated, logout} = useAuth(); // <-- only these two
+  const [userProfile, setUserProfile] = useState(null);
+
+// fetch it from backend on mount
   const [isNavHidden, setIsNavHidden] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout, isAuthenticated } = useAuth();
 
   // TODO: Replace with actual API call to backend
   // Backend should provide: GET /api/notifications
@@ -1106,6 +1124,25 @@ function Navbar() {
   ]);
 
   const unreadCount = notifications.filter(n => n.unread).length;
+useEffect(() => {
+  const fetchProfile = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:5000/api/profiles/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setUserProfile(res.data); // update state
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  if (isAuthenticated) {
+    fetchProfile();
+  }
+}, [isAuthenticated]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -1296,16 +1333,29 @@ function Navbar() {
                 Clubs & Courts
               </NavLink>
           </MainLinks>
-          {isAuthenticated ? (
+          {user ? (
             <ProfileContainer data-profile-container>
               {/* Profile Button */}
               <ProfileButton onClick={() => setIsProfileOpen(!isProfileOpen)}>
-                <Avatar src={user?.avatar} alt={user?.name} />
-                <UserName>{user?.name}</UserName>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </ProfileButton>
+  {userProfile?.avatar ? (
+    <Avatar
+  src={userProfile?.avatar ? `http://localhost:5000${userProfile.avatar}` : "/default-avatar.png"}
+  alt={`${user.firstName} ${user.lastName}`}
+/>
+
+  ) : user?.firstName ? (
+    <InitialsFallback>
+      {user.firstName.charAt(0).toUpperCase()}
+    </InitialsFallback>
+  ) : (
+    <Avatar src="/default-avatar.png" alt="Default Avatar" />
+  )}
+  <UserName>{user?.firstName ?? 'User'}</UserName>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+</ProfileButton>
+
               <ProfileDropdown $isOpen={isProfileOpen}>
                 <ProfileDropdownItem onClick={() => handleNavigation('/profile')}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

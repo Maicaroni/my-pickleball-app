@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const Profile = require("../models/Profile");
 const Log = require("../models/Log");
 
 // Helper: Create Log Entry
@@ -20,12 +21,11 @@ const createLog = async (user, action) => {
   }
 };
 
-// Register Route
+// ------------------- REGISTER -------------------
 router.post("/register", async (req, res) => {
   try {
     const { firstName, lastName, email, password, birthDate, gender, roles } = req.body;
 
-    // Validate required fields upfront (optional)
     if (!firstName || !lastName || !email || !password || !birthDate || !gender) {
       return res.status(400).json({ message: "Please fill all required fields." });
     }
@@ -49,6 +49,13 @@ router.post("/register", async (req, res) => {
     await newUser.save();
     await createLog(newUser, "register");
 
+    // ✅ Create Profile with auto-generated PPL ID and default DUPR ratings
+    const newProfile = new Profile({ 
+      user: newUser._id,
+      duprRatings: { singles: 0, doubles: 0, mixedDoubles: 0 } // default zeros
+    });
+    await newProfile.save();
+
     const token = jwt.sign(
       { id: newUser._id, email: newUser.email },
       process.env.JWT_SECRET || "pickleballSecret",
@@ -66,6 +73,7 @@ router.post("/register", async (req, res) => {
         gender: newUser.gender,
         roles: newUser.roles,
       },
+      profile: newProfile, // includes pplId and duprRatings
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -73,7 +81,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login Route
+// ------------------- LOGIN -------------------
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -88,6 +96,9 @@ router.post("/login", async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
     await createLog(user, "login");
+
+    // ✅ Fetch profile along with DUPR ratings
+    const profile = await Profile.findOne({ user: user._id });
 
     const token = jwt.sign(
       { id: user._id, email: user.email },
@@ -106,6 +117,7 @@ router.post("/login", async (req, res) => {
         gender: user.gender,
         roles: user.roles,
       },
+      profile, // includes pplId and duprRatings
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -113,7 +125,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Logout Route (expects JWT token in headers)
+// ------------------- LOGOUT -------------------
 router.post("/logout", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;

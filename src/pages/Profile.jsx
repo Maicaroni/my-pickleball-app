@@ -1,8 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import pickleBackground from '../../assets/pickle_bg.png';
+import Cropper from "react-easy-crop";
+import getCroppedImg from "../../backend/utils/cropImage";
+import { Modal, Button } from "@mui/material";
+import axios from 'axios';
 
 
 // Registration Modal Styled Components
@@ -629,7 +633,7 @@ const Avatar = styled.img`
 `;
 
 const AvatarUploadButton = styled.button`
-  position: absolute;
+  position: absolute; // ✅ change from relative to absolute
   bottom: 0;
   right: 0;
   width: 32px;
@@ -655,6 +659,20 @@ const AvatarUploadButton = styled.button`
   }
 `;
 
+
+const InitialsFallback = styled.div`
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background: #29ba9b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 72px;
+  color: white;
+  font-weight: bold;
+`;
+
 const UserInfo = styled.div`
   display: flex;
   flex-direction: column;
@@ -663,7 +681,7 @@ const UserInfo = styled.div`
 `;
 
 const UserName = styled.h1`
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'Poppins', 'Open Sans', sans-serif;
   font-size: 2.2rem;
   font-weight: 700;
   color: #234255;
@@ -817,36 +835,6 @@ const TableCell = styled.div`
   &:nth-child(2) {
     font-weight: 600;
     color: #29ba9b;
-  }
-`;
-
-const EditButton = styled.button`
-  background: white;
-  color: #29ba9b;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  outline: none;
-  
-  &:hover {
-    background: #f0fffe;
-    color: #249e85;
-  }
-  
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
-  }
-  
-  &:before {
-    content: '✏️';
-    margin-right: 6px;
-    font-size: 0.9rem;
   }
 `;
 
@@ -3184,9 +3172,14 @@ const BracketPlaceholder = styled.div`
     }
   }
 `;
+const Profile = ({ userId }) => {
+  const [userProfile, setUserProfile] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
-const Profile = () => {
-  const { user, showNotification } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const fileInputRef = useRef(null);
@@ -3280,6 +3273,25 @@ const Profile = () => {
   });
   
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const res = await axios.get("http://localhost:5000/api/profiles/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setUserProfile(res.data);
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
 
 
   // Simulate loading state
@@ -3312,18 +3324,41 @@ const Profile = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Here you would typically upload the file
-      showNotification('Profile picture updated!', 'success');
-    }
-  };
+const handleFileChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-  const handleEdit = () => {
-    setIsEditMode(!isEditMode);
-    showNotification(isEditMode ? 'Edit mode disabled' : 'Edit mode enabled', 'info');
-  };
+  setSelectedFile(URL.createObjectURL(file));
+  setCropModalOpen(true);
+};
+
+// Crop complete
+const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+  setCroppedAreaPixels(croppedAreaPixels);
+}, []);
+
+// Upload cropped image
+const uploadCroppedImage = async () => {
+  try {
+    const croppedImageBlob = await getCroppedImg(selectedFile, croppedAreaPixels);
+    const formData = new FormData();
+    formData.append("avatar", croppedImageBlob, "avatar.png");
+
+    const token = localStorage.getItem("token");
+    const res = await axios.post("http://localhost:5000/api/profiles/avatar", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setUserProfile((prev) => ({ ...prev, avatar: res.data.avatarUrl }));
+    setCropModalOpen(false);
+    setSelectedFile(null);
+  } catch (err) {
+    console.error("Upload error:", err);
+  }
+};
 
   const handleEditBio = () => {
     setIsEditingBio(true);
@@ -4157,9 +4192,6 @@ const Profile = () => {
     </svg>
   );
 
-  // Dummy user data for demonstration
-  const userAge = 28;
-  const pplId = 'PPL-001234';
 
   const rankData = [
     { category: 'Singles', rank: '4' },
@@ -4167,36 +4199,47 @@ const Profile = () => {
     { category: 'Mixed', rank: '4' }
   ];
 
-  const duprRatings = [
-    { type: 'Singles', rating: '5.502' },
-    { type: 'Doubles', rating: '5.952' }
-  ];
+// Assuming `profile` comes from your API
+const duprRatings = userProfile?.duprRatings
+  ? [
+      { type: "Singles", rating: userProfile.duprRatings.singles ?? 0 },
+      { type: "Doubles", rating: userProfile.duprRatings.doubles ?? 0 },
+    ]
+  : [
+      { type: "Singles", rating: 0 },
+      { type: "Doubles", rating: 0 },
+    ];
 
-  if (!user) {
-    return (
-      <ProfileContainer>
-        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <h2 style={{ color: '#234255', marginBottom: '16px', fontSize: '1.3rem', fontWeight: '500' }}>Sign in to view your profile</h2>
-          <p style={{ color: '#6b7280', marginBottom: '20px', fontSize: '0.9rem' }}>You need to be logged in to access your profile information.</p>
-          <button 
-            style={{ 
-              background: '#29ba9b', 
-              color: 'white', 
-              border: 'none', 
-              padding: '8px 16px', 
-              borderRadius: '4px', 
-              fontSize: '0.9rem', 
-              fontWeight: '500',
-              cursor: 'pointer'
-            }}
-            onClick={() => window.location.href = '/signin'}
-          >
-            Sign In
-          </button>
-        </div>
-      </ProfileContainer>
-    );
-  }
+if (!userProfile) {
+  return (
+    <ProfileContainer>
+      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+        <h2 style={{ color: '#234255', marginBottom: '16px', fontSize: '1.3rem', fontWeight: '500' }}>
+          Sign in to view your profile
+        </h2>
+        <p style={{ color: '#6b7280', marginBottom: '20px', fontSize: '0.9rem' }}>
+          You need to be logged in to access your profile information.
+        </p>
+        <button 
+          style={{ 
+            background: '#29ba9b', 
+            color: 'white', 
+            border: 'none', 
+            padding: '8px 16px', 
+            borderRadius: '4px', 
+            fontSize: '0.9rem', 
+            fontWeight: '500',
+            cursor: 'pointer'
+          }}
+          onClick={() => window.location.href = '/signin'}
+        >
+          Sign In
+        </button>
+      </div>
+    </ProfileContainer>
+  );
+}
+
   
   if (isLoading) {
     return (
@@ -6001,77 +6044,103 @@ const EditBioButton = styled.button`
   }
 `;
 
+ const { user } = userProfile;
   return (
     <ProfileContainer>
-      <ProfileBackgroundContainer>
-        <ProfileHeader>
-          <TopSection>
-            <LeftSection>
-              <AvatarContainer>
-                <Avatar src={user.avatar} alt={user.name} />
-                {isEditMode && (
-                  <AvatarUploadButton onClick={handleAvatarClick}>
-                    📷
-                  </AvatarUploadButton>
-                )}
-                <HiddenFileInput
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
-              </AvatarContainer>
-              
-              <NameAndDetailsSection>
-                <NameAndRanksRow>
-                  <UserName>{user.name}</UserName>
-                  <StatsContainer>
-                    {rankData.map((item, index) => (
-                      <StatBox key={index}>
-                        <StatCategory>{item.category}</StatCategory>
-                        <StatValue>#{item.rank}</StatValue>
-                        <StatLabel>Rank</StatLabel>
-                      </StatBox>
-                    ))}
-                  </StatsContainer>
-                </NameAndRanksRow>
-                
-                <PlayerInfoGrid>
-                  <InfoItem>
-                    <InfoLabel>PPL ID</InfoLabel>
-                    <InfoValue>{pplId.replace('PPL-', '')}</InfoValue>
-                  </InfoItem>
-                  <InfoItem>
-                    <InfoLabel>AGE</InfoLabel>
-                    <InfoValue>{userAge} Years</InfoValue>
-                  </InfoItem>
-                  <InfoItem>
-                    <InfoLabel>GENDER</InfoLabel>
-                    <InfoValue>{user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : 'Not specified'}</InfoValue>
-                  </InfoItem>
-                  {duprRatings.map((rating, index) => (
-                    <InfoItem key={index}>
-                      <InfoLabel>{rating.type} DUPR</InfoLabel>
-                      <InfoValue>{rating.rating}</InfoValue>
-                    </InfoItem>
+    <ProfileBackgroundContainer>
+      <ProfileHeader>
+        <TopSection>
+          <LeftSection>
+            <AvatarContainer>
+  {userProfile?.avatar ? (
+    <Avatar
+      src={`http://localhost:5000${userProfile.avatar}`}
+      alt={`${user.firstName} ${user.lastName}`}
+    />
+  ) : (
+    <>
+      {user.firstName ? (
+        <InitialsFallback>
+          {user.firstName.charAt(0).toUpperCase()}
+        </InitialsFallback>
+      ) : (
+        <Avatar src="/default-avatar.png" alt="Default Avatar" />
+      )}
+    </>
+  )}
+
+  {true && (
+    <AvatarUploadButton onClick={handleAvatarClick}>
+      📷
+    </AvatarUploadButton>
+  )}
+
+  <HiddenFileInput
+    ref={fileInputRef}
+    type="file"
+    accept="image/*"
+    onChange={handleFileChange}
+  />
+</AvatarContainer>
+
+
+            <NameAndDetailsSection>
+              <NameAndRanksRow>
+                <UserName>{`${user.firstName} ${user.lastName}`}</UserName>
+
+                <StatsContainer>
+                  {rankData.map((item, index) => (
+                    <StatBox key={index}>
+                      <StatCategory>{item.category}</StatCategory>
+                      <StatValue>#{item.rank}</StatValue>
+                      <StatLabel>Rank</StatLabel>
+                    </StatBox>
                   ))}
+                </StatsContainer>
+              </NameAndRanksRow>
+
+              <PlayerInfoGrid>
+                <InfoItem>
+                  <InfoLabel>PPL ID</InfoLabel>
+                  <InfoValue>{user._id?.slice(-6).toUpperCase()}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>AGE</InfoLabel>
+                  <InfoValue>
+                    {user.birthDate
+                      ? new Date().getFullYear() - new Date(user.birthDate).getFullYear()
+                      : "N/A"}{" "}
+                    Years
+                  </InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>GENDER</InfoLabel>
+                  <InfoValue>
+                    {user.gender
+                      ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1)
+                      : "Not specified"}
+                  </InfoValue>
+                </InfoItem>
+                {duprRatings.map((rating, index) => (
+                  <InfoItem key={index}>
+                    <InfoLabel>{rating.type} DUPR</InfoLabel>
+                    <InfoValue>{rating.rating}</InfoValue>
+                  </InfoItem>
+                ))}
               </PlayerInfoGrid>
             </NameAndDetailsSection>
           </LeftSection>
-          
-          <div style={{ position: 'absolute', top: '-50px', right: '0', zIndex: 10 }}>
+
+          <div style={{ position: "absolute", top: "-50px", right: "0", zIndex: 10 }}>
             <ButtonContainer>
-              <ApplyCoachButton onClick={handleApplyAsCoach}>
-                Apply as Coach
-              </ApplyCoachButton>
-              <EditButton onClick={handleEdit}>
-                Edit Profile
-              </EditButton>
+              <ApplyCoachButton onClick={handleApplyAsCoach}>Apply as Coach</ApplyCoachButton>
             </ButtonContainer>
           </div>
         </TopSection>
       </ProfileHeader>
-      </ProfileBackgroundContainer>
+    </ProfileBackgroundContainer>
       
       {/* Tabs section below both profile sections */}
       <TabContainer>
@@ -6444,6 +6513,24 @@ const EditBioButton = styled.button`
           </RegistrationModalContent>
         </RegistrationModal>
       )}
+<Modal open={cropModalOpen} onClose={() => setCropModalOpen(false)}>
+  <div style={{ width: 400, height: 400, background: "#333", margin: "auto", marginTop: "10%" }}>
+    {selectedFile && (
+      <Cropper
+        image={selectedFile}
+        crop={crop}
+        zoom={zoom}
+        aspect={1}
+        onCropChange={setCrop}
+        onZoomChange={setZoom}
+        onCropComplete={onCropComplete}
+      />
+    )}
+    <Button onClick={uploadCroppedImage} variant="contained" color="primary">
+      Upload
+    </Button>
+  </div>
+</Modal>
 
       {/* Player Selection Modal */}
       {showPlayerSelectionModal && (

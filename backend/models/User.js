@@ -19,7 +19,7 @@ const UserSchema = new mongoose.Schema({
   initials: { 
     type: String 
   },
-
+  bio: { type: String, default: "Tell us about yourself..." },
   roles: {
     type: [String],
     enum: ['player', 'organizer', 'clubadmin', 'coach'],

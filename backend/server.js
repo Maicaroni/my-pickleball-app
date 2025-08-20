@@ -15,6 +15,7 @@ const logRoutes = require("./routes/logs");
 const userRoutes = require("./routes/users"); // ✅ this must match the filename
 const postRoutes = require('./routes/posts');
 const reportRoutes = require('./routes/reports');
+const profileRoutes = require("./routes/profiles");
 
 const app = express();
 
@@ -50,6 +51,10 @@ app.use("/api/logs", logRoutes);
 app.use("/api/users", userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/reports', reportRoutes);
+app.use("/api/profiles", profileRoutes);
+app.use("/uploads", express.static("uploads"));
+
+
 
 
 
