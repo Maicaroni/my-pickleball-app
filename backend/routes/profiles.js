@@ -48,6 +48,23 @@ router.get("/me", auth, async (req, res) => {
   }
 });
 
+// PUT update current user profile (e.g., bio)
+router.put("/me", auth, async (req, res) => {
+  try {
+    const { bio } = req.body;
+    const profile = await Profile.findOne({ user: req.user._id });
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+
+    if (bio !== undefined) profile.bio = bio;
+
+    await profile.save();
+    res.json({ bio: profile.bio });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to update profile" });
+  }
+});
+
 // POST avatar upload with resizing
 router.post("/avatar", auth, upload.single("avatar"), async (req, res) => {
   try {

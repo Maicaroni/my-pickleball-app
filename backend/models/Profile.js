@@ -9,15 +9,8 @@ const ProfileSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   bio: { type: String, default: "" },
   avatar: { type: String, default: "" },
-
-  // Unique PPL ID
   pplId: { type: String, unique: true, default: generatePplId },
-
-  // DUPR Ratings placeholder
-  duprRatings: {
-    singles: { type: Number, default: 0 },
-    doubles: { type: Number, default: 0 },
-  },
+  // add other fields as needed
 });
 
 module.exports = mongoose.model("Profile", ProfileSchema);

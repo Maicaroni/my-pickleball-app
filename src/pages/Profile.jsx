@@ -3187,12 +3187,15 @@ const Profile = ({ userId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [bioText, setBioText] = useState("I've been playing pickleball for 3 years and love the sport! Looking to improve my game and meet new players.");
+  const [aboutData, setAboutData] = useState({ bio: "" });
+const [bioText, setBioText] = useState("");
+
   const [clubSearchTerm, setClubSearchTerm] = useState('');
   const [tournamentSearchTerm, setTournamentSearchTerm] = useState('');
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [tournamentDetailTab, setTournamentDetailTab] = useState('details');
   const [expandedCategories, setExpandedCategories] = useState({});
+
   
   // Registration modal state
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
@@ -3274,23 +3277,26 @@ const Profile = ({ userId }) => {
   
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+  const fetchUser = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-        const res = await axios.get("http://localhost:5000/api/profiles/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+      const res = await axios.get("http://localhost:5000/api/profiles/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-        setUserProfile(res.data);
-      } catch (err) {
-        console.error("Error fetching profile:", err);
-      }
-    };
+      setUserProfile(res.data);           // update global Navbar state
+      setAboutData({ bio: res.data.bio || "" }); // update local bio state
+      setBioText(res.data.bio || "");     // fill textarea with current bio
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+    }
+  };
 
-    fetchUser();
-  }, []);
+  fetchUser();
+}, []);
+
 
 
 
@@ -3364,13 +3370,30 @@ const uploadCroppedImage = async () => {
     setIsEditingBio(true);
   };
 
-  const handleSaveBio = () => {
+const handleSaveBio = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await axios.put(
+      "http://localhost:5000/api/profiles/me",
+      { bio: bioText },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // Update global userProfile so Navbar reflects it
+    setUserProfile((prev) => ({ ...prev, bio: res.data.bio }));
+     // ✅ Update local display state immediately
+    setAboutData((prev) => ({ ...prev, bio: res.data.bio }));
+
+
     setIsEditingBio(false);
-    showNotification('Bio updated successfully!', 'success');
-  };
+  } catch (err) {
+    console.error("Failed to update bio:", err);
+  }
+};
+
 
   const handleCancelBio = () => {
-    setBioText("I've been playing pickleball for 3 years and love the sport! Looking to improve my game and meet new players.");
+    setBioText('');
     setIsEditingBio(false);
   };
 
@@ -4194,20 +4217,20 @@ const uploadCroppedImage = async () => {
 
 
   const rankData = [
-    { category: 'Singles', rank: '4' },
-    { category: 'Doubles', rank: '5' },
-    { category: 'Mixed', rank: '4' }
+    { category: 'Singles', rank: '0' },
+    { category: 'Doubles', rank: '0' },
+    { category: 'Mixed', rank: '0' }
   ];
 
 // Assuming `profile` comes from your API
 const duprRatings = userProfile?.duprRatings
   ? [
-      { type: "Singles", rating: userProfile.duprRatings.singles ?? 0 },
-      { type: "Doubles", rating: userProfile.duprRatings.doubles ?? 0 },
+      { type: "Singles", rating: userProfile.duprRatings.singles ?? '0' },
+      { type: "Doubles", rating: userProfile.duprRatings.doubles ?? '0' },
     ]
   : [
-      { type: "Singles", rating: 0 },
-      { type: "Doubles", rating: 0 },
+      { type: "Singles", rating: '0' },
+      { type: "Doubles", rating: '0' },
     ];
 
 if (!userProfile) {
@@ -4267,12 +4290,6 @@ if (!userProfile) {
     );
   }
 
-  // Dummy data for tabs
-  const aboutData = {
-    bio: bioText,
-    playingStyle: "Aggressive baseliner with a strong forehand",
-    preferredPaddle: "Selkirk AMPED Invikta"
-  };
 const clubData = [
     {
       id: 1,
