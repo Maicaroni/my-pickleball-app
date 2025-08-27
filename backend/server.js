@@ -18,6 +18,7 @@ const reportRoutes = require('./routes/reports');
 const profileRoutes = require("./routes/profiles");
 const tournamentRoutes = require("./routes/tournaments");
 
+
 const app = express();
 
 // ✅ CSP for dev (unsafe-eval allowed)
@@ -55,6 +56,7 @@ app.use('/api/reports', reportRoutes);
 app.use("/api/profiles", profileRoutes);
 app.use("/api/tournaments", tournamentRoutes);
 app.use("/uploads", express.static("uploads"));
+
 
 // Default route
 app.get("/", (req, res) => res.send("Pickleball backend is running"));

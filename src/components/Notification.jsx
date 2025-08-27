@@ -120,6 +120,17 @@ const Notification = ({ message, type = 'success', isVisible, onClose }) => {
 
   const isLogoutMessage = message.includes('logged out') || type === 'info';
 
+  const isLoginMessage = message.includes('Welcome back') || message.includes('Welcome,');
+
+  const getTitle = () => {
+    if (isLogoutMessage) return null;
+    if (isLoginMessage) return 'Successfully Logged In';
+    if (type === 'success') return 'Success';
+    if (type === 'error') return 'Error';
+    return 'Notification';
+  };
+
+
   return (
     <NotificationContainer $isVisible={isVisible}>
       <NotificationContent>
@@ -131,7 +142,7 @@ const Notification = ({ message, type = 'success', isVisible, onClose }) => {
             <h4>{message}</h4>
           ) : (
             <>
-              <h4>Successfully Logged In</h4>
+              <h4>{getTitle()}</h4>
               <p>{message}</p>
             </>
           )}
@@ -145,3 +156,4 @@ const Notification = ({ message, type = 'success', isVisible, onClose }) => {
 };
 
 export default Notification; 
+

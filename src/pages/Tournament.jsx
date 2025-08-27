@@ -1828,6 +1828,12 @@ const PageContainer = styled.div`
 `;
 
 const PageTitle = styled.h1`
+<<<<<<< HEAD
+=======
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+>>>>>>> origin/frontend
   font-size: 2rem;
   color: #234255;
   margin-bottom: 1rem;
@@ -3185,6 +3191,7 @@ function Tournament() {
       { pplId: '', name: '', gender: 'male', required: false, label: 'Additional Player 2 (Optional)' }
     ],
     // Contact information
+    teamName: '',
     email: '',
     contactNumber: '',
     proofOfPayment: null
@@ -3956,32 +3963,32 @@ function Tournament() {
           ],
           registrations: [
             // Approved players in brackets
-            { id: '1', playerName: 'John "The Ace" Doe', registeredAt: '2025-01-10T10:30:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.5', team: 'Manila Smashers' },
-            { id: '2', playerName: 'Maria Santos', registeredAt: '2025-01-10T11:15:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.3', team: 'QC Warriors' },
-            { id: '3', playerName: 'Carlos "The Wall" Rodriguez', registeredAt: '2025-01-10T14:20:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.4', team: 'BGC Titans' },
-            { id: '4', playerName: 'Ana "Fire" Reyes', registeredAt: '2025-01-11T09:45:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.2', team: 'Makati Sharks' },
-            { id: '5', playerName: 'Miguel Torres', registeredAt: '2025-01-11T13:10:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.6', team: 'Ortigas Eagles' },
-            { id: '6', playerName: 'Sofia "Ice" Garcia', registeredAt: '2025-01-12T08:30:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.1', team: 'Taguig Thunder' },
-            { id: '7', playerName: 'Luis "Rocket" Chen', registeredAt: '2025-01-12T16:45:00Z', status: 'approved', bracketId: 'bracket-2', rating: '4.0', team: 'Pasig Panthers' },
-            { id: '8', playerName: 'Elena Cruz', registeredAt: '2025-01-13T12:00:00Z', status: 'approved', bracketId: 'bracket-2', rating: '3.9', team: 'Alabang Aces' },
-            { id: '9', playerName: 'Roberto "Hammer" Kim', registeredAt: '2025-01-13T15:20:00Z', status: 'approved', bracketId: 'bracket-2', rating: '4.1', team: 'Greenhills Gladiators' },
-            { id: '10', playerName: 'Carmen "Flash" Lopez', registeredAt: '2025-01-14T10:10:00Z', status: 'approved', bracketId: 'bracket-2', rating: '3.8', team: 'Marikina Mavericks' },
-            { id: '11', playerName: 'David "Spike" Park', registeredAt: '2025-01-14T14:30:00Z', status: 'approved', bracketId: 'bracket-2', rating: '4.0', team: 'Cubao Crushers' },
-            { id: '12', playerName: 'Patricia "Viper" Wong', registeredAt: '2025-01-15T09:00:00Z', status: 'approved', bracketId: 'bracket-2', rating: '3.7', team: 'Mandaluyong Meteors' },
-            { id: '13', playerName: 'James "Comet" Taylor', registeredAt: '2025-01-15T11:30:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.6', team: 'Paranaque Phoenix' },
-            { id: '14', playerName: 'Lisa "Arrow" Johnson', registeredAt: '2025-01-15T16:15:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.5', team: 'Las Pinas Lions' },
-            { id: '15', playerName: 'Michael "Bolt" Chang', registeredAt: '2025-01-16T09:20:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.8', team: 'Muntinlupa Mustangs' },
-            { id: '16', playerName: 'Sarah "Whirlwind" Kim', registeredAt: '2025-01-16T14:45:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.4', team: 'Valenzuela Vipers' },
-            { id: '17', playerName: 'Alex Martinez', registeredAt: '2025-01-17T10:30:00Z', status: 'approved', bracketId: 'bracket-4', rating: '3.2', team: 'Caloocan Cobras' },
-            { id: '18', playerName: 'Rachel Gonzalez', registeredAt: '2025-01-17T15:20:00Z', status: 'approved', bracketId: 'bracket-4', rating: '3.3', team: 'Malabon Mako' },
+            { id: '1', playerName: 'John "The Ace" Doe', registeredAt: '2025-01-10T10:30:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.5', team: 'Manila Smashers', age: 24, gender: 'male', categoryId: 't2-mens-singles' },
+            { id: '2', playerName: 'Maria Santos', registeredAt: '2025-01-10T11:15:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.3', team: 'QC Warriors', age: 26, gender: 'female', categoryId: 't2-womens-singles' },
+            { id: '3', playerName: 'Carlos "The Wall" Rodriguez', registeredAt: '2025-01-10T14:20:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.4', team: 'BGC Titans', age: 28, gender: 'male', categoryId: 't2-mens-singles' },
+            { id: '4', playerName: 'Ana "Fire" Reyes', registeredAt: '2025-01-11T09:45:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.2', team: 'Makati Sharks', age: 25, gender: 'female', categoryId: 't2-womens-singles' },
+            { id: '5', playerName: 'Miguel Torres', registeredAt: '2025-01-11T13:10:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.6', team: 'Ortigas Eagles', age: 30, gender: 'male', categoryId: 't2-mens-singles' },
+            { id: '6', playerName: 'Sofia "Ice" Garcia', registeredAt: '2025-01-12T08:30:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.1', team: 'Taguig Thunder', age: 27, gender: 'female', categoryId: 't2-womens-singles' },
+            { id: '7', playerName: 'Luis "Rocket" Chen', registeredAt: '2025-01-12T16:45:00Z', status: 'approved', bracketId: 'bracket-2', rating: '4.0', team: 'Pasig Panthers', age: 29, gender: 'male', categoryId: 't2-mens-singles' },
+            { id: '8', playerName: 'Elena Cruz', registeredAt: '2025-01-13T12:00:00Z', status: 'approved', bracketId: 'bracket-2', rating: '3.9', team: 'Alabang Aces', age: 31, gender: 'female', categoryId: 't2-womens-singles' },
+            { id: '9', playerName: 'Roberto "Hammer" Kim', registeredAt: '2025-01-13T15:20:00Z', status: 'approved', bracketId: 'bracket-2', rating: '4.1', team: 'Greenhills Gladiators', age: 33, gender: 'male', categoryId: 't2-mens-singles' },
+            { id: '10', playerName: 'Carmen "Flash" Lopez', registeredAt: '2025-01-14T10:10:00Z', status: 'approved', bracketId: 'bracket-2', rating: '3.8', team: 'Marikina Mavericks', age: 32, gender: 'female', categoryId: 't2-womens-singles' },
+            { id: '11', playerName: 'David "Spike" Park', registeredAt: '2025-01-14T14:30:00Z', status: 'approved', bracketId: 'bracket-2', rating: '4.0', team: 'Cubao Crushers', age: 26, gender: 'male', categoryId: 't2-mens-singles' },
+            { id: '12', playerName: 'Patricia "Viper" Wong', registeredAt: '2025-01-15T09:00:00Z', status: 'approved', bracketId: 'bracket-2', rating: '3.7', team: 'Mandaluyong Meteors', age: 28, gender: 'female', categoryId: 't2-womens-singles' },
+            { id: '13', playerName: 'James "Comet" Taylor', registeredAt: '2025-01-15T11:30:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.6', team: 'Paranaque Phoenix', age: 22, gender: 'male', categoryId: 't1-mens-singles-intermediate-18' },
+            { id: '14', playerName: 'Lisa "Arrow" Johnson', registeredAt: '2025-01-15T16:15:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.5', team: 'Las Pinas Lions', age: 23, gender: 'female', categoryId: 't1-womens-singles-intermediate-18' },
+            { id: '15', playerName: 'Michael "Bolt" Chang', registeredAt: '2025-01-16T09:20:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.8', team: 'Muntinlupa Mustangs', age: 24, gender: 'male', categoryId: 't1-mens-singles-intermediate-18' },
+            { id: '16', playerName: 'Sarah "Whirlwind" Kim', registeredAt: '2025-01-16T14:45:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.4', team: 'Valenzuela Vipers', age: 21, gender: 'female', categoryId: 't1-womens-singles-intermediate-18' },
+            { id: '17', playerName: 'Alex Martinez', registeredAt: '2025-01-17T10:30:00Z', status: 'approved', bracketId: 'bracket-4', rating: '3.2', team: 'Caloocan Cobras', age: 19, gender: 'male', categoryId: 't1-mens-singles-intermediate-18' },
+            { id: '18', playerName: 'Rachel Gonzalez', registeredAt: '2025-01-17T15:20:00Z', status: 'approved', bracketId: 'bracket-4', rating: '3.3', team: 'Malabon Mako', age: 20, gender: 'female', categoryId: 't1-womens-singles-intermediate-18' },
             // Pending approvals
-            { id: '19', playerName: 'Kevin Lim', registeredAt: '2025-01-18T09:15:00Z', status: 'pending', bracketId: null, rating: '3.1', team: 'Pasay Predators' },
-            { id: '20', playerName: 'Nina Cruz', registeredAt: '2025-01-18T11:30:00Z', status: 'pending', bracketId: null, rating: '3.4', team: 'Quezon Quakes' },
-            { id: '21', playerName: 'Tony Reyes', registeredAt: '2025-01-18T14:45:00Z', status: 'pending', bracketId: null, rating: '3.6', team: 'Masinag Magic' },
-            { id: '22', playerName: 'Grace Tan', registeredAt: '2025-01-18T16:20:00Z', status: 'pending', bracketId: null, rating: '3.2', team: 'Fairview Falcons' },
+            { id: '19', playerName: 'Kevin Lim', registeredAt: '2025-01-18T09:15:00Z', status: 'pending', bracketId: null, rating: '3.1', team: 'Pasay Predators', age: 25, gender: 'male', categoryId: 'mens-doubles-intermediate-18' },
+            { id: '20', playerName: 'Nina Cruz', registeredAt: '2025-01-18T11:30:00Z', status: 'pending', bracketId: null, rating: '3.4', team: 'Quezon Quakes', age: 27, gender: 'female', categoryId: 't3-womens-doubles' },
+            { id: '21', playerName: 'Tony Reyes', registeredAt: '2025-01-18T14:45:00Z', status: 'pending', bracketId: null, rating: '3.6', team: 'Masinag Magic', age: 29, gender: 'male', categoryId: 'mens-doubles-intermediate-18' },
+            { id: '22', playerName: 'Grace Tan', registeredAt: '2025-01-18T16:20:00Z', status: 'pending', bracketId: null, rating: '3.2', team: 'Fairview Falcons', age: 24, gender: 'female', categoryId: 't3-womens-doubles' },
             // Rejected applications
-            { id: '23', playerName: 'Mark Brown', registeredAt: '2025-01-19T10:00:00Z', status: 'rejected', bracketId: null, rating: '2.5', team: 'Independent', note: 'Rating below minimum requirement' },
-            { id: '24', playerName: 'Jenny Davis', registeredAt: '2025-01-19T13:15:00Z', status: 'rejected', bracketId: null, rating: '2.8', team: 'Independent', note: 'Incomplete documentation' }
+            { id: '23', playerName: 'Mark Brown', registeredAt: '2025-01-19T10:00:00Z', status: 'rejected', bracketId: null, rating: '2.5', team: 'Independent', note: 'Rating below minimum requirement', age: 26, gender: 'male', categoryId: 't1-mens-singles-intermediate-18' },
+            { id: '24', playerName: 'Jenny Davis', registeredAt: '2025-01-19T13:15:00Z', status: 'rejected', bracketId: null, rating: '2.8', team: 'Independent', note: 'Incomplete documentation', age: 28, gender: 'female', categoryId: 't1-womens-singles-intermediate-18' }
           ]
         },
         {
@@ -4290,7 +4297,10 @@ function Tournament() {
             ][i],
             registeredAt: new Date(Date.now() - (32 - i) * 24 * 60 * 60 * 1000).toISOString(),
             status: i < 24 ? 'approved' : 'pending',
-            bracketId: i < 24 ? `bracket-${Math.floor(i / 6) + 1}` : null
+            bracketId: i < 24 ? `bracket-${Math.floor(i / 6) + 1}` : null,
+            categoryId: [
+              'mens-doubles-intermediate-18', 't3-womens-doubles', 't4-womens-singles', 'senior-doubles'
+            ][i % 4]
           })),
           // Tournament Bracket Data - Intermediate Level
           tournamentBracket: {
@@ -4739,7 +4749,10 @@ function Tournament() {
             playerName: `Player ${i + 1}`,
             registeredAt: new Date(Date.now() - (85 - i) * 12 * 60 * 60 * 1000).toISOString(),
             status: i < 20 ? 'approved' : i < 65 ? 'pending' : 'rejected',
-            bracketId: i < 20 ? `bracket-${Math.floor(i / 6) + 1}` : null
+            bracketId: i < 20 ? `bracket-${Math.floor(i / 6) + 1}` : null,
+            categoryId: [
+              't1-mens-singles-intermediate-18', 't1-womens-singles-intermediate-18', 'mixed-doubles-open-18', 't2-mens-singles', 't2-womens-singles', 'mens-doubles-intermediate-18', 't3-womens-doubles', 'mixed-doubles'
+            ][i % 8]
           })),
           // Tournament Bracket Data - Advanced Level Championship
           tournamentBracket: {
@@ -6942,7 +6955,14 @@ function Tournament() {
                     
                     {/* Approved Players Tab Content */}
                     {activePlayerTab === 'approved' && (
-                      selectedTournament.registrations && selectedTournament.registrations.filter(reg => reg.status === 'approved').filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory).length > 0 ? (
+                      selectedTournament.registrations && selectedTournament.registrations.filter(reg => {
+                        console.log('Approved player filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Status:', reg.status);
+                        return reg.status === 'approved';
+                      }).filter(reg => {
+                        const shouldShow = selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory;
+                        console.log('Category filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
+                        return shouldShow;
+                      }).length > 0 ? (
                       <div>
                         {/* Search Bar */}
                         <div style={{ marginBottom: '24px' }}>
@@ -7021,8 +7041,15 @@ function Tournament() {
                           gap: '16px'
                         }}>
                           {selectedTournament.registrations
-                            .filter(reg => reg.status === 'approved')
-                            .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory)
+                            .filter(reg => {
+                              console.log('Rendering approved - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Status:', reg.status);
+                              return reg.status === 'approved';
+                            })
+                            .filter(reg => {
+                              const shouldShow = selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory;
+                              console.log('Rendering category filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
+                              return shouldShow;
+                            })
                             .filter(player => {
                               const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
                               return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
@@ -7037,54 +7064,172 @@ function Tournament() {
                                 background: 'white',
                                 border: '1px solid #e2e8f0',
                                 borderRadius: '12px',
-                                padding: '16px',
+                                padding: '20px',
                                 transition: 'all 0.2s ease',
                                 boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
                               }}>
                                 <div style={{
                                   display: 'flex',
-                                  alignItems: 'center',
+                                  alignItems: 'flex-start',
                                   gap: '12px',
-                                  marginBottom: '12px'
+                                  marginBottom: '16px'
                                 }}>
                                   <div style={{
-                                    width: '40px',
-                                    height: '40px',
+                                    width: '50px',
+                                    height: '50px',
                                     borderRadius: '50%',
-                                    background: '#29ba9b',
+                                    background: 'linear-gradient(135deg, #29ba9b, #1e40af)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     color: 'white',
                                     fontWeight: '600',
-                                    fontSize: '14px'
+                                    fontSize: '16px',
+                                    flexShrink: 0
                                   }}>
                                     {player.playerName.replace(/["'].*?["']/g, '').trim().split(' ').map(n => n[0]).join('').toUpperCase()}
                                   </div>
-                                  <div>
+                                  <div style={{ flex: 1 }}>
+                                {/* Player Name - Left Aligned */}
+                                <div style={{
+                                  fontWeight: '700',
+                                  color: '#334155',
+                                  fontSize: '1.1rem',
+                                  marginBottom: '12px',
+                                  textAlign: 'left'
+                                }}>
+                                  {player.playerName.replace(/["'].*?["']/g, '').trim()}
+                                </div>
+                                
+                                {/* Player Details in One Row */}
+                                <div style={{
+                                  display: 'grid',
+                                  gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                  gap: '12px',
+                                  marginBottom: '16px'
+                                }}>
+                                  <div style={{
+                                    background: '#FFFFFF',
+                                    padding: '8px',
+                                    borderRadius: '6px',
+                                    textAlign: 'center'
+                                  }}>
                                     <div style={{
-                                      fontWeight: '600',
-                                      color: '#334155',
-                                      fontSize: '1rem'
+                                      fontSize: '0.7rem',
+                                      color: '#64748b',
+                                      fontWeight: '500',
+                                      marginBottom: '2px'
                                     }}>
-                                      {player.playerName.replace(/["'].*?["']/g, '').trim()}
+                                      PPL ID
                                     </div>
-                                    {selectedPlayerCategory === 'all' && (
-                                      <div style={{
-                                        fontSize: '0.8rem',
-                                        color: '#29ba9b',
-                                        fontWeight: '500',
-                                        marginTop: '2px'
-                                      }}>
-                                        {(() => {
-                                          const category = selectedTournament.tournamentCategories && 
-                                            Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
-                                          return category ? category.name : 'Category N/A';
-                                        })()}
-                                      </div>
-                                    )}
+                                    <div style={{
+                                      fontSize: '0.85rem',
+                                      fontWeight: '600',
+                                      color: '#29ba9b'
+                                    }}>
+                                      {player.pplId || 'PPL' + String(Math.floor(Math.random() * 9000) + 1000)}
+                                    </div>
+                                  </div>
+                                  <div style={{
+                                    background: '#FFFFFF',
+                                    padding: '8px',
+                                    borderRadius: '6px',
+                                    textAlign: 'center'
+                                  }}>
+                                    <div style={{
+                                      fontSize: '0.7rem',
+                                      color: '#64748b',
+                                      fontWeight: '500',
+                                      marginBottom: '2px'
+                                    }}>
+                                      GENDER
+                                    </div>
+                                    <div style={{
+                                      fontSize: '0.85rem',
+                                      fontWeight: '500',
+                                      color: '#334155',
+                                      textTransform: 'capitalize'
+                                    }}>
+                                      {player.gender || 'N/A'}
+                                    </div>
+                                  </div>
+                                  <div style={{
+                                    background: '#FFFFFF',
+                                    padding: '8px',
+                                    borderRadius: '6px',
+                                    textAlign: 'center'
+                                  }}>
+                                    <div style={{
+                                      fontSize: '0.7rem',
+                                      color: '#64748b',
+                                      fontWeight: '500',
+                                      marginBottom: '2px'
+                                    }}>
+                                      AGE
+                                    </div>
+                                    <div style={{
+                                      fontSize: '0.85rem',
+                                      fontWeight: '500',
+                                      color: '#334155'
+                                    }}>
+                                      {player.age || 'N/A'}
+                                    </div>
+                                  </div>
+                                  <div style={{
+                                    background: '#FFFFFF',
+                                    padding: '8px',
+                                    borderRadius: '6px',
+                                    textAlign: 'center'
+                                  }}>
+                                    <div style={{
+                                      fontSize: '0.7rem',
+                                      color: '#64748b',
+                                      fontWeight: '500',
+                                      marginBottom: '2px'
+                                    }}>
+                                      DUPR 
+                                    </div>
+                                    <div style={{
+                                      fontSize: '0.85rem',
+                                      fontWeight: '700',
+                                      color: '#29ba9b'
+                                    }}>
+                                      {(() => {
+                                        const category = selectedTournament.tournamentCategories && 
+                                          Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
+                                        const categoryType = category ? category.name.toLowerCase() : '';
+                                        if (categoryType.includes('singles')) {
+                                          return player.duprRatings?.singles || '4.2';
+                                        } else if (categoryType.includes('doubles') || categoryType.includes('mixed')) {
+                                          return player.duprRatings?.doubles || '4.1';
+                                        }
+                                        return player.duprRatings?.doubles || '4.1';
+                                      })()} 
+                                    </div>
                                   </div>
                                 </div>
+                                </div>
+                                </div>
+                                
+                                {/* Category Display */}
+                                {selectedPlayerCategory === 'all' && (
+                                  <div style={{
+                                    fontSize: '0.75rem',
+                                    color: '#29ba9b',
+                                    fontWeight: '500',
+                                    marginTop: '8px',
+                                    textAlign: 'center',
+                                    background: '#f0fdf4',
+                                    padding: '4px 8px',
+                                    borderRadius: '4px'
+                                  }}>
+                                    {(() => {
+                                      const category = selectedTournament.tournamentCategories && 
+                                        Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
+                                      return category ? category.name : 'Category N/A';
+                                    })()}
+                                  </div>
+                                )}
                               </div>
                             ))}
                         </div>
@@ -7133,7 +7278,14 @@ function Tournament() {
 
                     {/* Pending Players Tab Content */}
                     {activePlayerTab === 'pending' && (
-                      selectedTournament.registrations && selectedTournament.registrations.filter(reg => reg.status === 'pending').filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory).length > 0 ? (
+                      selectedTournament.registrations && selectedTournament.registrations.filter(reg => {
+                        console.log('Pending player filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Status:', reg.status);
+                        return reg.status === 'pending';
+                      }).filter(reg => {
+                        const shouldShow = selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory;
+                        console.log('Pending category filter check - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
+                        return shouldShow;
+                      }).length > 0 ? (
                         <div>
                           {/* Search Bar */}
                           <div style={{ marginBottom: '24px' }}>
@@ -7212,8 +7364,15 @@ function Tournament() {
                             gap: '16px'
                           }}>
                             {selectedTournament.registrations
-                              .filter(reg => reg.status === 'pending')
-                              .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory)
+                              .filter(reg => {
+                                console.log('Rendering pending - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Status:', reg.status);
+                                return reg.status === 'pending';
+                              })
+                              .filter(reg => {
+                                const shouldShow = selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory;
+                                console.log('Pending category filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
+                                return shouldShow;
+                              })
                               .filter(player => {
                                 const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
                                 return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
@@ -7228,19 +7387,19 @@ function Tournament() {
                                   background: 'white',
                                   border: '1px solid #f59e0b',
                                   borderRadius: '12px',
-                                  padding: '16px',
+                                  padding: '20px',
                                   transition: 'all 0.2s ease',
                                   boxShadow: '0 1px 3px rgba(245, 158, 11, 0.2)'
                                 }}>
                                   <div style={{
                                     display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px',
-                                    marginBottom: '12px'
+                                    alignItems: 'flex-start',
+                                    gap: '16px',
+                                    marginBottom: '16px'
                                   }}>
                                     <div style={{
-                                      width: '40px',
-                                      height: '40px',
+                                      width: '50px',
+                                      height: '50px',
                                       borderRadius: '50%',
                                       background: '#f59e0b',
                                       display: 'flex',
@@ -7248,41 +7407,154 @@ function Tournament() {
                                       justifyContent: 'center',
                                       color: 'white',
                                       fontWeight: '600',
-                                      fontSize: '14px'
+                                      fontSize: '16px',
+                                      flexShrink: 0
                                     }}>
                                       {player.playerName.replace(/["'].*?["']/g, '').trim().split(' ').map(n => n[0]).join('').toUpperCase()}
                                     </div>
-                                    <div>
+                                    <div style={{ flex: 1 }}>
+                                  {/* Player Name - Left Aligned */}
+                                  <div style={{
+                                    fontWeight: '700',
+                                    color: '#334155',
+                                    fontSize: '1.1rem',
+                                    marginBottom: '12px',
+                                    textAlign: 'left'
+                                  }}>
+                                    {player.playerName.replace(/["'].*?["']/g, '').trim()}
+                                  </div>
+                                  
+                                  {/* Player Details in One Row */}
+                                  <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                    gap: '12px',
+                                    marginBottom: '16px'
+                                  }}>
+                                    <div style={{
+                                      background: '#FFFFFF',
+                                      padding: '8px',
+                                      borderRadius: '6px',
+                                      textAlign: 'center'
+                                    }}>
                                       <div style={{
-                                        fontWeight: '600',
-                                        color: '#334155',
-                                        fontSize: '1rem'
+                                        fontSize: '0.7rem',
+                                        color: '#64748b',
+                                        fontWeight: '500',
+                                        marginBottom: '2px'
                                       }}>
-                                        {player.playerName.replace(/["'].*?["']/g, '').trim()}
+                                        PPL ID
                                       </div>
-                                      {selectedPlayerCategory === 'all' && (
-                                        <div style={{
-                                          fontSize: '0.8rem',
-                                          color: '#29ba9b',
-                                          fontWeight: '500',
-                                          marginBottom: '2px'
-                                        }}>
-                                          {(() => {
-                                            const category = selectedTournament.tournamentCategories && 
-                                              Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
-                                            return category ? category.name : 'Category N/A';
-                                          })()}
-                                        </div>
-                                      )}
                                       <div style={{
-                                        fontSize: '0.8rem',
-                                        color: '#f59e0b',
-                                        fontWeight: '500'
+                                        fontSize: '0.85rem',
+                                        fontWeight: '600',
+                                        color: '#f59e0b'
                                       }}>
-                                        Pending Approval
+                                        {player.pplId || 'PPL' + String(Math.floor(Math.random() * 9000) + 1000)}
+                                      </div>
+                                    </div>
+                                    <div style={{
+                                      background: '#FFFFFF',
+                                      padding: '8px',
+                                      borderRadius: '6px',
+                                      textAlign: 'center'
+                                    }}>
+                                      <div style={{
+                                        fontSize: '0.7rem',
+                                        color: '#64748b',
+                                        fontWeight: '500',
+                                        marginBottom: '2px'
+                                      }}>
+                                        GENDER
+                                      </div>
+                                      <div style={{
+                                        fontSize: '0.85rem',
+                                        fontWeight: '500',
+                                        color: '#334155',
+                                        textTransform: 'capitalize'
+                                      }}>
+                                        {player.gender || 'Not specified'}
+                                      </div>
+                                    </div>
+                                    <div style={{
+                                      background: '#FFFFFF',
+                                      padding: '8px',
+                                      borderRadius: '6px',
+                                      textAlign: 'center'
+                                    }}>
+                                      <div style={{
+                                        fontSize: '0.7rem',
+                                        color: '#64748b',
+                                        fontWeight: '500',
+                                        marginBottom: '2px'
+                                      }}>
+                                        AGE
+                                      </div>
+                                      <div style={{
+                                        fontSize: '0.85rem',
+                                        fontWeight: '500',
+                                        color: '#334155'
+                                      }}>
+                                        {player.age || 'Not specified'}
+                                      </div>
+                                    </div>
+                                    <div style={{
+                                      background: '#FFFFFF',
+                                      padding: '8px',
+                                      borderRadius: '6px',
+                                      textAlign: 'center'
+                                    }}>
+                                      <div style={{
+                                        fontSize: '0.7rem',
+                                        color: '#64748b',
+                                        fontWeight: '500',
+                                        marginBottom: '2px'
+                                      }}>
+                                        DUPR 
+                                      </div>
+                                      <div style={{
+                                        fontSize: '0.85rem',
+                                        fontWeight: '700',
+                                        color: '#f59e0b'
+                                      }}>
+                                        {(() => {
+                                          const category = selectedTournament.tournamentCategories && 
+                                            Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
+                                          const categoryType = category ? category.name.toLowerCase() : '';
+                                          if (categoryType.includes('singles')) {
+                                            return player.duprRatings?.singles || '4.2';
+                                          } else if (categoryType.includes('doubles') || categoryType.includes('mixed')) {
+                                            return player.duprRatings?.doubles || '4.1';
+                                          }
+                                          return player.duprRatings?.doubles || '4.1';
+                                        })()} 
                                       </div>
                                     </div>
                                   </div>
+                                  </div>
+                                  </div>
+
+                                  {/* Category Display */}
+                                  {selectedPlayerCategory === 'all' && (
+                                    <div style={{
+                                      fontSize: '0.75rem',
+                                      color: '#f59e0b',
+                                      fontWeight: '500',
+                                      marginTop: '8px',
+                                      textAlign: 'center',
+                                      background: '#fef3c7',
+                                      padding: '4px 8px',
+                                      borderRadius: '4px'
+                                    }}>
+                                      {(() => {
+                                        const category = selectedTournament.tournamentCategories && 
+                                          Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
+                                        return category ? category.name : 'Category N/A';
+                                      })()}
+                                    </div>
+                                  )}
+                                  
+                                  {/* Action Buttons */}
                                 </div>
                               ))}
                           </div>
@@ -7794,6 +8066,18 @@ function Tournament() {
                     })()}
                     
                     {/* Contact Information */}
+                    <RegistrationFormRow>
+                      <RegistrationFormGroup>
+                        <RegistrationLabel>Team Name</RegistrationLabel>
+                        <RegistrationInput
+                          type="text"
+                          value={registrationForm.teamName}
+                          onChange={(e) => handleRegistrationFormChange('teamName', e.target.value)}
+                          placeholder="Enter your team name"
+                        />
+                      </RegistrationFormGroup>
+                    </RegistrationFormRow>
+                    
                     <RegistrationFormRow>
                       <RegistrationFormGroup>
                         <RegistrationLabel>Email Address</RegistrationLabel>

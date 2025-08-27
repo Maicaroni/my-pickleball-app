@@ -834,35 +834,34 @@ const CalendarDayHeader = styled.div`
 const CalendarDay = styled.button.withConfig({
   shouldForwardProp: (prop) => !['selected', 'today', 'otherMonth'].includes(prop)
 })`
+
   padding: 8px 4px;
   border: none;
   border-radius: 4px;
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s ease;
-
-  background: ${({ selected, today, otherMonth }) => {
-    if (selected) return '#29ba9b';
-    if (today) return '#f0fffe';
-    if (otherMonth) return 'transparent';
+  background: ${props => {
+    if (props.selected) return '#29ba9b';
+    if (props.today) return '#f0fffe';
+    if (props.otherMonth) return 'transparent';
     return 'white';
   }};
-
-  color: ${({ selected, today, otherMonth }) => {
-    if (selected) return 'white';
-    if (otherMonth) return '#cbd5e0';
-    if (today) return '#29ba9b';
+  color: ${props => {
+    if (props.selected) return 'white';
+    if (props.otherMonth) return '#cbd5e0';
+    if (props.today) return '#29ba9b';
     return '#374151';
   }};
-
+  
   &:hover {
-    background: ${({ selected, otherMonth }) => {
-      if (selected) return '#26a085';
-      if (otherMonth) return 'transparent';
+    background: ${props => {
+      if (props.selected) return '#26a085';
+      if (props.otherMonth) return 'transparent';
       return '#f0fffe';
     }};
   }
-
+  
   &:disabled {
     cursor: not-allowed;
     opacity: 0.4;
@@ -1069,9 +1068,8 @@ const RichTextEditor = styled.div`
 `;
 
 const HostTournament = () => {
-const { login, showNotification } = useAuth(); // use the new login from AuthContext
+  const { login, showNotification } = useAuth(); // use the new login from AuthContext
   const navigate = useNavigate();
-  
   const [formData, setFormData] = useState({
     tournamentName: '',
     description: '',
@@ -1662,6 +1660,7 @@ const handleSubmit = async (e) => {
       return;
     }
 
+
     // Each category must have skillLevel and division
     for (let cat of formData.tournamentCategories) {
       if (!cat.skillLevel || !cat.division) {
@@ -1678,6 +1677,7 @@ const handleSubmit = async (e) => {
     // Limit payment methods to max 2
     if (formData.paymentMethods?.length > 2) {
       alert("You can only add up to 2 payment methods.");
+
       setIsSubmitting(false);
       return;
     }
@@ -1754,7 +1754,6 @@ const handleSubmit = async (e) => {
 const handleCancel = () => {
     navigate('/profile');
   };
-
 
   return (
     <HostTournamentContainer>

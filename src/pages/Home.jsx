@@ -105,6 +105,12 @@ const HeroContent = styled.div`
 `;
 
 const Title = styled.h1`
+<<<<<<< HEAD
+=======
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+>>>>>>> origin/frontend
   font-size: clamp(2rem, 8vw, 4.5rem);
   font-weight: 800;
   color: white;
@@ -859,3 +865,4 @@ function Home() {
 }
 
 export default Home; 
+

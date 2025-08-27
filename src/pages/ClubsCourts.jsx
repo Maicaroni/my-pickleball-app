@@ -26,17 +26,21 @@ const Container = styled.div`
 `;
 
 const PageTitle = styled.h1`
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
   font-size: 2rem;
   color: #234255;
   margin-bottom: 1rem;
   text-align: center;
   font-weight: 800;
   letter-spacing: -0.5px;
-
-    @media (min-width: 768px) {
+  @media (min-width: 768px) {
     font-size: 2.5rem;
     margin-bottom: 1.25rem;
-    }
+  }
+
 `;
   
 const PageDescription = styled.p`
@@ -1575,5 +1579,5 @@ const ClubsCourts = () => {
     </Container>
   );
 };
-
 export default ClubsCourts; 
+

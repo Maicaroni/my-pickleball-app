@@ -25,7 +25,6 @@ const createLog = async (user, action) => {
 router.post("/register", async (req, res) => {
   try {
     const { firstName, lastName, email, password, birthDate, gender, roles } = req.body;
-
     if (!firstName || !lastName || !email || !password || !birthDate || !gender) {
       return res.status(400).json({ message: "Please fill all required fields." });
     }
@@ -48,6 +47,7 @@ router.post("/register", async (req, res) => {
 
     await newUser.save();
     await createLog(newUser, "register");
+
 
     // ✅ Create Profile with auto-generated PPL ID and default DUPR ratings
     const newProfile = new Profile({ 
@@ -73,7 +73,9 @@ router.post("/register", async (req, res) => {
         gender: newUser.gender,
         roles: newUser.roles,
       },
+
       profile: newProfile, // includes pplId and duprRatings
+
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -82,6 +84,7 @@ router.post("/register", async (req, res) => {
 });
 
 // ------------------- LOGIN -------------------
+
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -149,3 +152,4 @@ router.post("/logout", async (req, res) => {
 });
 
 module.exports = router;
+

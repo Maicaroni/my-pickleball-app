@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import logoImg from '../../ppl-logo.svg';
 import axios from 'axios';
@@ -68,6 +67,9 @@ const Logo = styled.div`
   align-items: center;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+  margin-right: auto;
+
 
   &:focus {
     outline: none;
@@ -93,7 +95,7 @@ const NavLinks = styled.div`
   display: flex;
   gap: 40px;
   align-items: center;
-
+  margin-left: auto;
   @media (max-width: 1024px) {
     gap: 24px;
   }
@@ -1053,8 +1055,6 @@ function Navbar() {
 
 const { user, isAuthenticated, logout} = useAuth(); // <-- only these two
   const [userProfile, setUserProfile] = useState(null);
-
-// fetch it from backend on mount
   const [isNavHidden, setIsNavHidden] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -1124,6 +1124,7 @@ const { user, isAuthenticated, logout} = useAuth(); // <-- only these two
   ]);
 
   const unreadCount = notifications.filter(n => n.unread).length;
+
 useEffect(() => {
   const fetchProfile = async () => {
     try {
@@ -1138,6 +1139,7 @@ useEffect(() => {
     fetchProfile();
   }
 }, [isAuthenticated]);
+
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -1228,7 +1230,6 @@ useEffect(() => {
     logout(); // clears user & token globally
     navigate("/"); // redirect to home page
   };
-
 
   // TODO: Replace with actual API calls
   const markNotificationAsRead = (notificationId) => {
@@ -1349,7 +1350,6 @@ useEffect(() => {
     <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 </ProfileButton>
-
               <ProfileDropdown $isOpen={isProfileOpen}>
                 <ProfileDropdownItem onClick={() => handleNavigation('/profile')}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1736,3 +1736,4 @@ useEffect(() => {
 }
 
 export default Navbar; 
+

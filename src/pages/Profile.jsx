@@ -9,6 +9,7 @@ import { Modal, Button } from "@mui/material";
 import axios from 'axios';
 
 
+
 // Registration Modal Styled Components
 const RegistrationModal = styled.div`
   position: fixed;
@@ -552,7 +553,11 @@ const PlayerListContainer = styled.div`
 `;
 
 const PlayerListItem = styled.div`
+<<<<<<< HEAD
   padding: 12px 16px;
+=======
+  padding: 8px 16px;
+>>>>>>> origin/frontend
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   margin-bottom: 8px;
@@ -659,7 +664,6 @@ const AvatarUploadButton = styled.button`
   }
 `;
 
-
 const InitialsFallback = styled.div`
   width: 170px;
   height: 170px;
@@ -672,7 +676,7 @@ const InitialsFallback = styled.div`
   color: white;
   font-weight: bold;
 `;
-
+rigin/frontend
 const UserInfo = styled.div`
   display: flex;
   flex-direction: column;
@@ -681,7 +685,11 @@ const UserInfo = styled.div`
 `;
 
 const UserName = styled.h1`
+<<<<<<< HEAD
   font-family: 'Poppins', 'Open Sans', sans-serif;
+=======
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+>>>>>>> origin/frontend
   font-size: 2.2rem;
   font-weight: 700;
   color: #234255;
@@ -835,6 +843,37 @@ const TableCell = styled.div`
   &:nth-child(2) {
     font-weight: 600;
     color: #29ba9b;
+  }
+`;
+
+
+const EditButton = styled.button`
+  background: white;
+  color: #29ba9b;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  outline: none;
+  
+  &:hover {
+    background: #f0fffe;
+    color: #249e85;
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
+  }
+  
+  &:before {
+    content: '✏️';
+    margin-right: 6px;
+    font-size: 0.9rem;
   }
 `;
 
@@ -2820,13 +2859,21 @@ const GroupHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+<<<<<<< HEAD
+=======
+  margin-top: 0px;
+>>>>>>> origin/frontend
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid #e2e8f0;
 
   h4 {
     font-size: 1.1rem;
+<<<<<<< HEAD
     font-weight: 600;
+=======
+    font-weight: 400;
+>>>>>>> origin/frontend
     color: #334155;
     margin: 0;
     display: flex;
@@ -2844,129 +2891,539 @@ const GroupHeader = styled.div`
     border: 1px solid #bbf7d0;
   }
 
+<<<<<<< HEAD
+=======
+  .bracket-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bracket-btn {
+    padding: 6px 8px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .edit-btn {
+    background: #f0f9ff;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+  }
+
+  .edit-btn:hover {
+    background: #e0f2fe;
+    border-color: #7dd3fc;
+  }
+
+  .delete-btn {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+
+  .delete-btn:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+  }
+
+>>>>>>> origin/frontend
   @media (max-width: 768px) {
     h4 {
       font-size: 1rem;
     }
+<<<<<<< HEAD
+=======
+    
+    .bracket-btn {
+      padding: 4px 6px;
+      font-size: 0.7rem;
+    }
+>>>>>>> origin/frontend
   }
 `;
 
 const StandingsTable = styled.div`
   .standings-header {
     display: grid;
-    grid-template-columns: 1fr 60px 60px 70px 70px;
-    gap: 8px;
-    padding: 12px 16px;
-    background: #f8fafc;
+    grid-template-columns: 60px 1fr 120px 120px;
+    gap: 12px;
+    padding: 18px 16px;
+    background: linear-gradient(135deg, #234255 0%, #29ba9b 100%);
     border-radius: 8px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    color: #64748b;
-    margin-bottom: 12px;
+    color: white;
+    margin-bottom: 16px;
     text-align: center;
-    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     
-    div:first-child {
+    div:nth-child(2) {
       text-align: left;
     }
 
-    @media (min-width: 768px) {
-      grid-template-columns: 1fr 70px 70px 80px 80px;
-      gap: 10px;
-      padding: 14px 18px;
-      font-size: 0.85rem;
+    @media (max-width: 1200px) {
+      grid-template-columns: 50px 1fr 100px 100px;
+      font-size: 0.7rem;
+      gap: 6px;
+      padding: 14px 14px;
+    }
+    
+    @media (max-width: 768px) {
+      grid-template-columns: 40px 1fr 80px 80px;
+      font-size: 0.65rem;
+      gap: 4px;
+      padding: 12px 12px;
     }
   }
 `;
 
 const StandingsRow = styled.div`
   display: grid;
-  grid-template-columns: 1fr 60px 60px 70px 70px;
-  gap: 8px;
-  padding: 12px 16px;
+  grid-template-columns: 60px 1fr 120px 120px;
+  gap: 12px;
+  padding: 20px 16px;
   border-radius: 8px;
-  font-size: 0.85rem;
-  margin-bottom: 6px;
-  background: ${props => props.$qualified ? '#dcfce7' : '#f8fafc'};
+  font-size: 0.8rem;
+  margin-bottom: 16px;
+  background: ${props => props.$qualified ? '#dcfce7' : 'white'};
   border: 1px solid ${props => props.$qualified ? '#bbf7d0' : '#e2e8f0'};
-  transition: all 0.2s ease;
-
+  align-items: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  
   &:hover {
-    background: ${props => props.$qualified ? '#bbf7d0' : '#f1f5f9'};
-    border-color: ${props => props.$qualified ? '#86efac' : '#cbd5e1'};
+    background: ${props => props.$qualified ? '#dcfce7' : '#f8fafc'};
+    border-color: #29ba9b;
   }
 
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 70px 70px 80px 80px;
-    gap: 10px;
-    padding: 14px 18px;
-    font-size: 0.9rem;
-    margin-bottom: 8px;
+  @media (max-width: 1200px) {
+    grid-template-columns: 50px 1fr 100px 100px;
+    gap: 6px;
+    padding: 14px 14px;
+    font-size: 0.75rem;
   }
   
+  @media (max-width: 768px) {
+    grid-template-columns: 40px 1fr 80px 80px;
+    gap: 4px;
+    padding: 12px 12px;
+    font-size: 0.7rem;
+  }
+
+  .rank-number {
+    text-align: center;
+    font-weight: 700;
+    color: #29ba9b;
+    font-size: 1.1em;
+  }
+
   .player-info {
     display: flex;
     align-items: center;
-    gap: 10px;
-
-    @media (min-width: 768px) {
-      gap: 12px;
+    text-align: left;
+    
+    .player-name {
+      font-weight: 500;
+      color: #1e293b;
     }
   }
-  
-  .position {
-    background: ${props => props.$qualified ? '#16a34a' : '#64748b'};
-    color: white;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
+
+  .round-wins,
+  .round-losses,
+  .win-points,
+  .loss-points {
+    text-align: center;
+    font-weight: 600;
+    color: #1e293b;
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+`;
+
+// Delete Modal Styled Components
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  animation: modalSlideIn 0.3s ease-out;
+  
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    padding: 24px;
+    margin: 16px;
+  }
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+`;
+
+const ModalIcon = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fee2e2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  flex-shrink: 0;
+`;
+
+const ModalTitle = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+`;
+
+const ModalMessage = styled.p`
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+  font-size: 0.95rem;
+`;
+
+const ModalActions = styled.div`
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  
+  @media (max-width: 480px) {
+    flex-direction: column-reverse;
+  }
+`;
+
+const ModalButton = styled.button`
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-width: 100px;
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  @media (max-width: 480px) {
+    width: 100%;
+  }
+`;
+
+const CancelButton = styled(ModalButton)`
+  background: #f9fafb;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  
+  &:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+  }
+`;
+
+const DeleteButton = styled(ModalButton)`
+  background: #dc2626;
+  color: white;
+  
+  &:hover {
+    background: #b91c1c;
+  }
+  
+  &:active {
+    background: #991b1b;
+  }
+`;
+
+const PlayerInfoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  @media (min-width: 768px) {
+    gap: 12px;
+  }
+`;
+
+const MatchTable = styled.div`
+  margin-top: 20px;
+  max-width: 100%;
+  
+  
+  .match-schedule-header {
+    display: grid;
+    grid-template-columns: 45px 5fr 55px 60px 75px 85px 85px;
+    gap: 12px;
+    padding: 18px 16px;
+    background: linear-gradient(135deg, #234255 0%, #29ba9b 100%);
+    border-radius: 8px;
     font-size: 0.75rem;
     font-weight: 600;
-    flex-shrink: 0;
+    color: white;
+    margin-bottom: 16px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
+    @media (max-width: 1200px) {
+      grid-template-columns: 40px 4fr 50px 50px 65px 70px 70px;
+      font-size: 0.7rem;
+      gap: 6px;
+      padding: 14px 14px;
+    }
+    
+    @media (max-width: 768px) {
+      grid-template-columns: 35px 3fr 45px 40px 55px 60px 60px;
+      font-size: 0.65rem;
+      gap: 4px;
+      padding: 12px 12px;
+    }
+  }
+`;
 
-    @media (min-width: 768px) {
-      width: 22px;
-      height: 22px;
-      font-size: 0.8rem;
+const MatchRow = styled.div`
+  display: grid;
+  grid-template-columns: 45px 5fr 55px 60px 75px 85px 85px;
+  gap: 12px;
+  padding: 20px 16px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  margin-bottom: 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  
+  &:hover {
+    background: #f8fafc;
+    border-color: #29ba9b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  }
+  
+  @media (max-width: 1200px) {
+    grid-template-columns: 40px 4fr 50px 50px 65px 70px 70px;
+    font-size: 0.75rem;
+    gap: 6px;
+    padding: 16px 14px;
+    margin-bottom: 12px;
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 35px 3fr 45px 40px 55px 60px 60px;
+    font-size: 0.7rem;
+    gap: 4px;
+    padding: 14px 12px;
+    margin-bottom: 10px;
+  }
+  
+  .match-number {
+    background: linear-gradient(135deg, #234255, #29ba9b);
+    color: white;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.7rem;
+    box-shadow: 0 1px 2px rgba(59, 130, 246, 0.3);
+    
+    @media (max-width: 768px) {
+      font-size: 0.6rem;
     }
   }
   
-  .player-name {
-    font-weight: 500;
-    color: ${props => props.$qualified ? '#166534' : '#334155'};
+  .teams-horizontal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: center;
+    padding: 0 4px;
+    
+    .team-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+      min-width: 0;
+      
+      .team-name {
+        font-weight: 500;
+        color: #374151;
+        font-size: 0.8rem;
+        line-height: 1.4;
+        display: block;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        
+        @media (max-width: 768px) {
+          font-size: 0.75rem;
+        }
+      }
+    }
+    
+    .vs-divider {
+      margin: 0 8px;
+      font-weight: 700;
+      color:hsl(0, 78.80%, 52.00%);
+      font-size: 0.9rem;
+      
+      @media (max-width: 768px) {
+        margin: 0 4px;
+        font-size: 0.8rem;
+      }
+    }
+  }
+  
+  .team-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     text-align: left;
-    font-size: 0.85rem;
-    line-height: 1.3;
-
-    @media (min-width: 768px) {
-      font-size: 0.9rem;
+    
+    .team-badge {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      font-size: 0.6rem;
+      font-weight: 600;
+      padding: 2px 4px;
+      border-radius: 3px;
+      text-align: center;
+      box-shadow: 0 1px 2px rgba(16, 185, 129, 0.3);
+      
+      @media (max-width: 768px) {
+        font-size: 0.55rem;
+        padding: 1px 3px;
+      }
+    }
+    
+    .player-names {
+      font-weight: 500;
+      color: #334155;
+      font-size: 0.7rem;
+      line-height: 1.2;
+      
+      @media (max-width: 768px) {
+        font-size: 0.6rem;
+      }
     }
   }
   
-  .round-wins, .round-losses, .win-points, .loss-points {
-    text-align: center;
-    font-weight: 600;
-    color: ${props => props.$qualified ? '#166534' : '#334155'};
-    font-size: 0.85rem;
-
-    @media (min-width: 768px) {
-      font-size: 0.9rem;
+  .vs-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #ef4444;
+    font-size: 0.7rem;
+    
+    @media (max-width: 768px) {
+      font-size: 0.6rem;
     }
   }
   
-  /* Legacy support */
-  .wins, .points {
+  .match-time, .court-number, .match-date {
+    text-align: center;
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .game-score, .final-score {
     text-align: center;
     font-weight: 600;
-    color: ${props => props.$qualified ? '#166534' : '#334155'};
-    font-size: 0.85rem;
-
-    @media (min-width: 768px) {
-      font-size: 0.9rem;
+    color: #1f2937;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    input {
+      width: 60px;
+      padding: 4px 6px;
+      border: 2px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      text-align: center;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      
+      &:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      }
     }
+    
+    .score-display {
+       padding: 4px 8px;
+       border-radius: 6px;
+       font-weight: 600;
+       color: #1f2937;
+       min-width: 50px;
+     }
+    
+    @media (max-width: 768px) {
+      font-size: 0.6rem;
+    }
+  }
+  
+  .final-score {
+    font-weight: 600;
+    color: #059669;
+    background: #dcfce7;
+    border-radius: 3px;
+    padding: 2px 4px;
+>>>>>>> origin/frontend
   }
 `;
 
@@ -3108,6 +3565,7 @@ const CategoryExpandIcon = styled.div`
 `;
 
 const CategoryBracketContent = styled.div`
+<<<<<<< HEAD
   padding: 20px;
   background: white;
   display: ${props => props.$expanded ? 'block' : 'none'};
@@ -3126,6 +3584,18 @@ const CategoryBracketContent = styled.div`
 
   @media (max-width: 768px) {
     padding: 16px;
+=======
+  padding: ${props => props.$expanded ? '20px' : '0 20px'};
+  background: white;
+  overflow: hidden;
+  max-height: ${props => props.$expanded ? 'none' : '0'};
+  opacity: ${props => props.$expanded ? '1' : '0'};
+  transition: all 0.3s ease;
+  transform-origin: top;
+
+  @media (max-width: 768px) {
+    padding: ${props => props.$expanded ? '16px' : '0 16px'};
+>>>>>>> origin/frontend
   }
 `;
 
@@ -3172,7 +3642,7 @@ const BracketPlaceholder = styled.div`
     }
   }
 `;
-const Profile = ({ userId }) => {
+const Profile = ({userId}) => {
   const [userProfile, setUserProfile] = useState(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -3180,7 +3650,6 @@ const Profile = ({ userId }) => {
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 const { user, token } = useAuth();
-
   const navigate = useNavigate();
   const location = useLocation();
   const fileInputRef = useRef(null);
@@ -3188,27 +3657,40 @@ const { user, token } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [aboutData, setAboutData] = useState({ bio: "" });
-const [bioText, setBioText] = useState("");
-
+  const [isEditingBracket, setIsEditingBracket] = useState({});
+  const [editingStandings, setEditingStandings] = useState({});
+  const [editingMatches, setEditingMatches] = useState({});
+  const [bioText, setBioText] = useState("I've been playing pickleball for 3 years and love the sport! Looking to improve my game and meet new players.");
   const [clubSearchTerm, setClubSearchTerm] = useState('');
   const [tournamentSearchTerm, setTournamentSearchTerm] = useState('');
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [tournamentDetailTab, setTournamentDetailTab] = useState('details');
+  const [showAttachmentModal, setShowAttachmentModal] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showUnpublishModal, setShowUnpublishModal] = useState(false);
+  const [selectedPlayerAttachment, setSelectedPlayerAttachment] = useState(null);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedPlayerToReject, setSelectedPlayerToReject] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [activePlayerTab, setActivePlayerTab] = useState('approved');
+  const [selectedPlayerCategory, setSelectedPlayerCategory] = useState('all');
   const [expandedCategories, setExpandedCategories] = useState({});
-  const [tournaments, setTournaments] = useState([]);
-
-
-  
+  const [roundRobinCategories, setRoundRobinCategories] = useState({});
+  const [eliminationCategories, setEliminationCategories] = useState({});
+  const [selectedBrackets, setSelectedBrackets] = useState({}); // Format: { categoryId: 'A' | 'B' | 'C' | 'D' }
+  const [bracketMode, setBracketMode] = useState({}); // Format: { categoryId: 4 | 8 }
+  const [showBracketModal, setShowBracketModal] = useState(false);
+  const [pendingBracketChange, setPendingBracketChange] = useState({ categoryId: null, newMode: null });
+  const [availableBrackets, setAvailableBrackets] = useState({}); // Format: { categoryId: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] }
   // Registration modal state
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [registrationTournament, setRegistrationTournament] = useState(null);
-  
   // Player selection state
   const [showPlayerSelectionModal, setShowPlayerSelectionModal] = useState(false);
   const [playerSelectionType, setPlayerSelectionType] = useState(''); // 'partner', 'team-0', 'team-1', etc.
   const [playerSearchTerm, setPlayerSearchTerm] = useState('');
-  
+  const [playersSearchTerm, setPlayersSearchTerm] = useState('');  
   // Force re-render of category dropdown when player ages or DUPR ratings change
   const [categoryFilterKey, setCategoryFilterKey] = useState(0);
   const [registeredPlayers, setRegisteredPlayers] = useState([
@@ -3278,7 +3760,6 @@ const [bioText, setBioText] = useState("");
     proofOfPayment: null
   });
   
-
 useEffect(() => {
   const fetchUser = async () => {
     try {
@@ -3385,6 +3866,7 @@ const uploadCroppedImage = async () => {
   const handleEditBio = () => {
     setIsEditingBio(true);
   };
+
 
 const handleSaveBio = async () => {
   try {
@@ -4231,7 +4713,6 @@ const handleSaveBio = async () => {
     </svg>
   );
 
-
   const rankData = [
     { category: 'Singles', rank: '0' },
     { category: 'Doubles', rank: '0' },
@@ -4248,9 +4729,6 @@ const duprRatings = userProfile?.duprRatings
       { type: "Singles", rating: '0' },
       { type: "Doubles", rating: '0' },
     ];
-
-
-
   
   if (isLoading) {
     return (
@@ -4276,49 +4754,45 @@ const duprRatings = userProfile?.duprRatings
         </div>
       </ProfileContainer>
     );
-  }
+  };
 
   const renderTabContent = () => {
     switch(activeTab) {
       case 'about':
-  return (
-    <TabContent style={{ direction: "ltr" }}> {/* ✅ Force LTR for all children */}
-      <TabSection>
-        <TabSectionTitle>Bio</TabSectionTitle>
-        <BioContainer style={{ direction: "ltr" }}> {/* ✅ Ensure container LTR */}
-          {!isEditingBio && (
-            <EditBioButton onClick={handleEditBio}>
-              ✏️ Edit
-            </EditBioButton>
-          )}
-          {isEditingBio ? (
-            <>
-              <BioTextArea
-                value={bioText}
-                onChange={(e) => setBioText(e.target.value)}
-                placeholder="Tell us about yourself, your pickleball journey, goals, or anything you'd like other players to know..."
-                autoFocus
-                dir="ltr" /* ✅ HTML input LTR */
-              />
-              <BioEditButtons>
-                <BioButton onClick={handleCancelBio}>
-                  Cancel
-                </BioButton>
-                <BioButton variant="save" onClick={handleSaveBio}>
-                  Save
-                </BioButton>
-              </BioEditButtons>
-            </>
-          ) : (
-            <TabText> {/* ✅ Display text LTR */}
-              {aboutData.bio || "Click 'Edit' to add your bio..."}
-            </TabText>
-          )}
-        </BioContainer>
-      </TabSection>
-    </TabContent>
-  );
-
+        return (
+          <TabContent>
+            <TabSection>
+              <TabSectionTitle>Bio</TabSectionTitle>
+              <BioContainer>
+                {!isEditingBio && (
+                  <EditBioButton onClick={handleEditBio}>
+                    ✏️ Edit
+                  </EditBioButton>
+                )}
+                {isEditingBio ? (
+                  <>
+                    <BioTextArea
+                      value={bioText}
+                      onChange={(e) => setBioText(e.target.value)}
+                      placeholder="Tell us about yourself, your pickleball journey, goals, or anything you'd like other players to know..."
+                      autoFocus
+                    />
+                    <BioEditButtons>
+                      <BioButton onClick={handleCancelBio}>
+                        Cancel
+                      </BioButton>
+                      <BioButton variant="save" onClick={handleSaveBio}>
+                        Save
+                      </BioButton>
+                    </BioEditButtons>
+                  </>
+                ) : (
+                  <TabText>{aboutData.bio || "Click 'Edit' to add your bio..."}</TabText>
+                )}
+              </BioContainer>
+            </TabSection>
+          </TabContent>
+        );
       case 'club':
         return (
           <TabContent>
@@ -4918,35 +5392,914 @@ const duprRatings = userProfile?.duprRatings
                       <TournamentDetailSection>
                         <TournamentDetailSectionTitle>
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
                             <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="m22 21-3-3m0 0a5.5 5.5 0 1 0-7.78-7.78 5.5 5.5 0 0 0 7.78 7.78Z" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
-                          Registered Players
+                          Players
                         </TournamentDetailSectionTitle>
-                        <TournamentDetailDescription>
-                          {selectedTournament.players ? (
-                            selectedTournament.players.map((player, index) => (
-                              <div key={index} style={{ marginBottom: '12px', padding: '12px', border: '1px solid #e0e0e0', borderRadius: '8px' }}>
-                                <p><strong>{player.name}</strong></p>
-                                <p>Skill Level: {player.skillLevel}</p>
-                                <p>Registration Date: {player.registrationDate}</p>
+                        
+                        {/* Category Selection Dropdown */}
+                        <div style={{ marginBottom: '20px' }}>
+                          <select
+                            value={selectedPlayerCategory}
+                            onChange={(e) => {
+                              setSelectedPlayerCategory(e.target.value);
+                              setPlayersSearchTerm(''); // Reset search when category changes
+                            }}
+                            style={{
+                              width: '100%',
+                              maxWidth: '300px',
+                              padding: '12px 16px',
+                              border: '1.5px solid #e2e8f0',
+                              borderRadius: '8px',
+                              fontSize: '0.95rem',
+                              backgroundColor: 'white',
+                              color: '#334155',
+                              cursor: 'pointer',
+                              outline: 'none',
+                              transition: 'border-color 0.2s ease'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#29ba9b'}
+                            onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                          >
+                            <option value="all">All Categories</option>
+                            {selectedTournament.tournamentCategories && Object.values(selectedTournament.tournamentCategories).map((category) => (
+                              <option key={category.id} value={category.id}>
+                                {category.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        {/* Player Tabs Navigation */}
+                        <TabNavigation>
+                          <TabButton 
+                            $active={activePlayerTab === 'approved'}
+                            onClick={() => setActivePlayerTab('approved')}
+                          >
+                            Approved Players
+                          </TabButton>
+                          <TabButton 
+                            $active={activePlayerTab === 'pending'}
+                            onClick={() => setActivePlayerTab('pending')}
+                          >
+                            Pending Players
+                          </TabButton>
+                        </TabNavigation>
+                        
+                        {/* Approved Players Tab Content */}
+                        {activePlayerTab === 'approved' && (
+                          <div style={{ marginTop: '20px' }}>
+                            {selectedTournament && selectedTournament.registrations && selectedTournament.registrations.filter(reg => {
+                              console.log('Approved player filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Status:', reg.status);
+                              return reg.status === 'approved';
+                            }).filter(reg => {
+                              const shouldShow = selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory;
+                              console.log('Category filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
+                              return shouldShow;
+                            }).length > 0 ? (
+                            <div>
+                            {/* Search Bar */}
+                            <div style={{ marginBottom: '24px' }}>
+                              <div style={{
+                                position: 'relative',
+                                maxWidth: '400px',
+                                margin: '0 auto'
+                              }}>
+                                <input
+                                  type="text"
+                                  placeholder="Search players by name..."
+                                  value={playersSearchTerm}
+                                  onChange={(e) => setPlayersSearchTerm(e.target.value)}
+                                  style={{
+                                    width: '100%',
+                                    padding: '12px 16px 12px 44px',
+                                    border: '1.5px solid #e2e8f0',
+                                    borderRadius: '8px',
+                                    fontSize: '1rem',
+                                    color: '#1a1a1a',
+                                    background: 'white',
+                                    transition: 'all 0.2s ease',
+                                    outline: 'none'
+                                  }}
+                                  onFocus={(e) => {
+                                    e.target.style.borderColor = '#29ba9b';
+                                    e.target.style.boxShadow = '0 0 0 3px rgba(41, 186, 155, 0.1)';
+                                  }}
+                                  onBlur={(e) => {
+                                    e.target.style.borderColor = '#e2e8f0';
+                                    e.target.style.boxShadow = 'none';
+                                  }}
+                                />
+                                <div style={{
+                                  position: 'absolute',
+                                  left: '14px',
+                                  top: '50%',
+                                  transform: 'translateY(-50%)',
+                                  color: '#94a3b8'
+                                }}>
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '18px', height: '18px' }}>
+                                    <circle cx="11" cy="11" r="8" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="m21 21-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                </div>
                               </div>
-                            ))
+                            </div>
+
+                            <div style={{ 
+                              background: '#f8fafc', 
+                              padding: '16px', 
+                              borderRadius: '8px', 
+                              border: '1px solid #e2e8f0',
+                              marginBottom: '24px',
+                              textAlign: 'center'
+                            }}>
+                              <span style={{ color: '#64748b', fontSize: '0.9rem' }}>
+                                {(() => {
+                                  const approvedPlayers = selectedTournament.registrations
+                                    .filter(reg => reg.status === 'approved')
+                                    .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory);
+                                  const filteredPlayers = approvedPlayers.filter(player => {
+                                  const cleanName = (player.playerName || "").replace(/["'].*?["']/g, '').trim();
+                                  return cleanName.toLowerCase().includes((playersSearchTerm || "").toLowerCase());
+                                });
+
+                                  return playersSearchTerm 
+                                    ? `Showing ${filteredPlayers.length} of ${approvedPlayers.length} approved players`
+                                    : `Total Approved Players: ${approvedPlayers.length}`;
+                                })()} 
+                              </span>
+                            </div>
+                             
+                             <div style={{
+                               display: 'grid',
+                               gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                               gap: '16px'
+                             }}>
+                               {selectedTournament.registrations
+                                 .filter(reg => {
+                                   console.log('Rendering approved - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Status:', reg.status);
+                                   return reg.status === 'approved';
+                                 })
+                                 .filter(reg => {
+                                   const shouldShow = selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory;
+                                   console.log('Rendering category filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
+                                   return shouldShow;
+                                 })
+                                 .filter(player => {
+  const cleanName = (player.playerName || "").replace(/["'].*?["']/g, '').trim();
+  return cleanName.toLowerCase().includes((playersSearchTerm || "").toLowerCase());
+})
+
+                                 .sort((a, b) => {
+  if (!a.playerName) console.warn("Missing playerName for:", a);
+  if (!b.playerName) console.warn("Missing playerName for:", b);
+
+  const cleanNameA = (a.playerName || "").replace(/["'].*?["']/g, "").trim();
+  const cleanNameB = (b.playerName || "").replace(/["'].*?["']/g, "").trim();
+  return cleanNameA.localeCompare(cleanNameB);
+})
+
+                                 .map((player, index) => (
+                                   <div key={player.id} style={{
+                                     background: 'white',
+                                     border: '1px solid #e2e8f0',
+                                     borderRadius: '12px',
+                                     padding: '20px',
+                                     transition: 'all 0.2s ease',
+                                     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                                   }}>
+                                     <div style={{
+                                       display: 'flex',
+                                       alignItems: 'flex-start',
+                                       gap: '12px',
+                                       marginBottom: '16px'
+                                     }}>
+                                       <div style={{
+                                         width: '50px',
+                                         height: '50px',
+                                         borderRadius: '50%',
+                                         background: 'linear-gradient(135deg, #29ba9b, #1e40af)',
+                                         display: 'flex',
+                                         alignItems: 'center',
+                                         justifyContent: 'center',
+                                         color: 'white',
+                                         fontWeight: '600',
+                                         fontSize: '16px',
+                                         flexShrink: 0
+                                       }}>
+{(player.playerName || "")
+  .replace(/["'].*?["']/g, "")
+  .trim()
+  .split(" ")
+  .filter(n => n) // remove empty strings
+  .map(n => n[0] || "") // get first char safely
+  .join("")
+  .toUpperCase() || "?"} {/* fallback if no initials */}
+                                       </div>
+                                       <div style={{ flex: 1 }}>
+                                     {/* Player Name - Left Aligned */}
+                                     <div style={{
+                                       fontWeight: '700',
+                                       color: '#334155',
+                                       fontSize: '1.1rem',
+                                       marginBottom: '12px',
+                                       textAlign: 'left'
+                                     }}>
+{(player.playerName || "").replace(/["'].*?["']/g, "").trim() || "Unnamed Player"}
+                                     </div>
+                                     
+                                     {/* Player Details in One Row */}
+                                     <div style={{
+                                       display: 'grid',
+                                       gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                       gap: '12px',
+                                       marginBottom: '16px'
+                                     }}>
+                                       <div style={{
+                                         background: '#FFFFFF',
+                                          padding: '0px',
+                                          borderRadius: '6px',
+                                          textAlign: 'center'
+                                       }}>
+                                         <div style={{
+                                           fontSize: '0.7rem',
+                                           color: '#64748b',
+                                           fontWeight: '500',
+                                           marginBottom: '2px'
+                                         }}>
+                                           PPL ID
+                                         </div>
+                                         <div style={{
+                                           fontSize: '0.85rem',
+                                           fontWeight: '600',
+                                           color: '#29ba9b'
+                                         }}>
+                                           {player.pplId || 'PPL' + String(Math.floor(Math.random() * 9000) + 1000)}
+                                         </div>
+                                       </div>
+                                       <div style={{
+                                         background: '#FFFFFF',
+                                          padding: '0px',
+                                          borderRadius: '6px',
+                                          textAlign: 'center'
+                                       }}>
+                                         <div style={{
+                                           fontSize: '0.7rem',
+                                           color: '#64748b',
+                                           fontWeight: '500',
+                                           marginBottom: '2px'
+                                         }}>
+                                           GENDER
+                                         </div>
+                                         <div style={{
+                                           fontSize: '0.85rem',
+                                           fontWeight: '500',
+                                           color: '#334155',
+                                           textTransform: 'capitalize'
+                                         }}>
+                                           {player.gender || 'N/A'}
+                                         </div>
+                                       </div>
+                                       <div style={{
+                                         background: '#FFFFFF',
+                                          padding: '0px',
+                                          borderRadius: '6px',
+                                          textAlign: 'center'
+                                       }}>
+                                         <div style={{
+                                           fontSize: '0.7rem',
+                                           color: '#64748b',
+                                           fontWeight: '500',
+                                           marginBottom: '2px'
+                                         }}>
+                                           Age
+                                         </div>
+                                         <div style={{
+                                           fontSize: '0.85rem',
+                                           fontWeight: '500',
+                                           color: '#334155'
+                                         }}>
+                                           {player.age || 'N/A'}
+                                         </div>
+                                       </div>
+                                       <div style={{
+                                         background: '#FFFFFF',
+                                          padding: '0px',
+                                          borderRadius: '6px',
+                                          textAlign: 'center'
+                                       }}>
+                                         <div style={{
+                                           fontSize: '0.7rem',
+                                           color: '#64748b',
+                                           fontWeight: '500',
+                                           marginBottom: '2px'
+                                         }}>
+                                           DUPR 
+                                         </div>
+                                         <div style={{
+                                           fontSize: '0.85rem',
+                                           fontWeight: '700',
+                                           color: '#29ba9b'
+                                         }}>
+                                           {(() => {
+                                             const category = selectedTournament.tournamentCategories && 
+                                               Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
+                                             const categoryType = category ? category.name.toLowerCase() : '';
+                                             if (categoryType.includes('singles')) {
+                                               return player.duprRatings?.singles || '4.2';
+                                             } else if (categoryType.includes('doubles') || categoryType.includes('mixed')) {
+                                               return player.duprRatings?.doubles || '4.1';
+                                             }
+                                             return player.duprRatings?.doubles || '4.1';
+                                           })()} 
+                                         </div>
+                                       </div>
+                                     </div>
+                                     </div>
+                                     </div>
+                                     
+                                     {/* Category Display */}
+                                     {selectedPlayerCategory === 'all' && (
+                                       <div style={{
+                                         fontSize: '0.75rem',
+                                         color: '#29ba9b',
+                                         fontWeight: '500',
+                                         marginTop: '8px',
+                                         textAlign: 'center',
+                                         background: '#f0fdf4',
+                                         padding: '4px 8px',
+                                         borderRadius: '4px'
+                                       }}>
+                                         {(() => {
+                                           const category = selectedTournament.tournamentCategories && 
+                                             Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
+                                           return category ? category.name : 'Category N/A';
+                                         })()}
+                                       </div>
+                                     )}
+                                   </div>
+                                 ))}
+                             </div>
+                             
+                             {/* No results message */}
+                             {playersSearchTerm && 
+                              selectedTournament.registrations
+                                .filter(reg => reg.status === 'approved')
+                                .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory)
+                                .filter(player => {
+                                  const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
+                                  return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
+                                }).length === 0 && (
+                               <div style={{ 
+                                 textAlign: 'center', 
+                                 padding: '48px 24px',
+                                 background: '#f8fafc',
+                                 borderRadius: '16px',
+                                 border: '1px dashed #e2e8f0',
+                                 marginTop: '24px'
+                               }}>
+                                 <div style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🔍</div>
+                                 <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Players Found</h3>
+                                 <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+                                   No approved players match your search for "{playersSearchTerm}".
+                                 </p>
+                               </div>
+                             )}
+                           </div>
+                         ) : selectedTournament ? (
+                           <div style={{ 
+                             textAlign: 'center', 
+                             padding: '48px 24px',
+                             background: '#f8fafc',
+                             borderRadius: '16px',
+                             border: '1px dashed #e2e8f0'
+                           }}>
+                             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>👥</div>
+                             <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Approved Players Yet</h3>
+                             <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+                               Players will appear here once their registration is approved by the tournament organizer.
+                             </p>
+                           </div>
+                         ) : (
+                           <div style={{
+                             textAlign: 'center',
+                             padding: '60px 20px',
+                             color: '#64748b'
+                           }}>
+                             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🏆</div>
+                             <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Tournament Selected</h3>
+                             <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+                               Please select a tournament to view approved players.
+                             </p>
+                           </div>
+                         )}
+                       </div>
+                     )}
+
+                         {/* Pending Players Tab Content */}
+                         {activePlayerTab === 'pending' && (
+                           <div style={{ marginTop: '20px' }}>
+                             {selectedTournament && selectedTournament.registrations ? (
+                               <>
+                                 {/* Search Bar */}
+                                 <div style={{ marginBottom: '24px' }}>
+                                   <div style={{
+                                     position: 'relative',
+                                     maxWidth: '400px',
+                                     margin: '0 auto'
+                                   }}>
+                                     <input
+                                       type="text"
+                                       placeholder="Search pending players..."
+                                       value={playersSearchTerm}
+                                       onChange={(e) => setPlayersSearchTerm(e.target.value)}
+                                       style={{
+                                         width: '100%',
+                                         padding: '12px 16px 12px 44px',
+                                         border: '1.5px solid #e2e8f0',
+                                         borderRadius: '8px',
+                                         fontSize: '1rem',
+                                         color: '#1a1a1a',
+                                         background: 'white',
+                                         transition: 'all 0.2s ease',
+                                         outline: 'none'
+                                       }}
+                                       onFocus={(e) => {
+                                         e.target.style.borderColor = '#29ba9b';
+                                         e.target.style.boxShadow = '0 0 0 3px rgba(41, 186, 155, 0.1)';
+                                       }}
+                                       onBlur={(e) => {
+                                         e.target.style.borderColor = '#e2e8f0';
+                                         e.target.style.boxShadow = 'none';
+                                       }}
+                                     />
+                                     <div style={{
+                                       position: 'absolute',
+                                       left: '14px',
+                                       top: '50%',
+                                       transform: 'translateY(-50%)',
+                                       color: '#94a3b8'
+                                     }}>
+                                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '18px', height: '18px' }}>
+                                         <circle cx="11" cy="11" r="8" strokeLinecap="round" strokeLinejoin="round" />
+                                         <path d="m21 21-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
+                                       </svg>
+                                     </div>
+                                   </div>
+                                 </div>
+
+                                 <div style={{ 
+                                   background: '#fef3c7', 
+                                   padding: '16px', 
+                                   borderRadius: '8px', 
+                                   border: '1px solid #f59e0b',
+                                   marginBottom: '24px',
+                                   textAlign: 'center'
+                                 }}>
+                                   <span style={{ color: '#92400e', fontSize: '0.9rem' }}>
+                                     {(() => {
+  const pendingPlayers = (selectedTournament.registrations || [])
+    .filter(reg => reg.status === 'pending')
+    .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory);
+
+  const filteredPlayers = pendingPlayers.filter(player => {
+    const cleanName = (player.playerName || "").replace(/["'].*?["']/g, '').trim();
+    return cleanName.toLowerCase().includes((playersSearchTerm || "").toLowerCase());
+  });
+                                       return playersSearchTerm 
+                                         ? `Showing ${filteredPlayers.length} of ${pendingPlayers.length} pending players`
+                                         : `Total Pending Players: ${pendingPlayers.length}`;
+                                     })()} 
+                                   </span>
+                                 </div>
+
+                                  {selectedTournament.registrations
+                               .filter(reg => reg.status === 'pending')
+                               .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory)
+                               .filter(player => {
+const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
+                                 return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
+                               }).length > 0 ? (
+                             <div style={{
+                               display: 'grid',
+                               gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                               gap: '16px'
+                             }}>
+                               {selectedTournament.registrations
+                                 .filter(reg => {
+                                   console.log('Rendering pending - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Status:', reg.status);
+                                   return reg.status === 'pending';
+                                 })
+                                 .filter(reg => {
+                                   const shouldShow = selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory;
+                                   console.log('Rendering category filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
+                                   return shouldShow;
+                                 })
+                                 .filter(player => {
+                                  const cleanName = (player?.playerName || "").replace(/["'].*?["']/g, "").trim();
+                                   return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
+                                 })
+                                 .sort((a, b) => {
+  const cleanNameA = (a?.playerName || "").replace(/["'].*?["']/g, "").trim();
+  const cleanNameB = (b?.playerName || "").replace(/["'].*?["']/g, "").trim();
+  return cleanNameA.localeCompare(cleanNameB);
+})
+                                 .map((player, index) => (
+                                   <div key={player.id} style={{
+                                     background: 'white',
+                                     border: '1px solid #f59e0b',
+                                     borderRadius: '12px',
+                                     padding: '20px',
+                                     transition: 'all 0.2s ease',
+                                     boxShadow: '0 1px 3px rgba(245, 158, 11, 0.2)'
+                                   }}>
+                                     <div style={{
+                                       display: 'flex',
+                                       alignItems: 'flex-start',
+                                       gap: '16px',
+                                       marginBottom: '16px'
+                                     }}>
+                                       <div style={{
+                                         width: '50px',
+                                         height: '50px',
+                                         borderRadius: '50%',
+                                         background: '#f59e0b',
+                                         display: 'flex',
+                                         alignItems: 'center',
+                                         justifyContent: 'center',
+                                         color: 'white',
+                                         fontWeight: '600',
+                                         fontSize: '16px',
+                                         flexShrink: 0
+                                       }}>
+{(player?.playerName || "")
+  .replace(/["'].*?["']/g, "")
+  .trim()
+  .split(" ")
+  .filter(Boolean)            // remove empty pieces
+  .map(n => n[0] || "")       // first letter safely
+  .join("")
+  .toUpperCase() || "?"}      
+                                       </div>
+                                       <div style={{ flex: 1 }}>
+                                     {/* Player Name - Left Aligned */}
+                                      <div style={{
+                                        fontWeight: '700',
+                                        color: '#334155',
+                                        fontSize: '1.1rem',
+                                        marginBottom: '12px',
+                                        textAlign: 'left'
+                                      }}>
+                                        {(player?.playerName || "").replace(/["'].*?["']/g, "").trim()}
+                                      </div>
+                                      
+                                      {/* Player Details in One Row */}
+                                      <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                        gap: '12px',
+                                        marginBottom: '16px'
+                                      }}>
+                                        <div style={{
+                                          background: '#FFFFFF',
+                                          padding: '0px',
+                                          borderRadius: '6px',
+                                          textAlign: 'center'
+                                        }}>
+                                          <div style={{
+                                            fontSize: '0.7rem',
+                                            color: '#64748b',
+                                            fontWeight: '500',
+                                            marginBottom: '2px'
+                                          }}>
+                                            PPL ID
+                                          </div>
+                                          <div style={{
+                                            fontSize: '0.85rem',
+                                            fontWeight: '600',
+                                            color: '#f59e0b'
+                                          }}>
+                                            {player.pplId || 'PPL' + String(Math.floor(Math.random() * 9000) + 1000)}
+                                          </div>
+                                        </div>
+                                        <div style={{
+                                          background: '#FFFFFF',
+                                          padding: '0px',
+                                          borderRadius: '6px',
+                                          textAlign: 'center'
+                                        }}>
+                                          <div style={{
+                                            fontSize: '0.7rem',
+                                            color: '#64748b',
+                                            fontWeight: '500',
+                                            marginBottom: '2px'
+                                          }}>
+                                            GENDER
+                                          </div>
+                                          <div style={{
+                                            fontSize: '0.85rem',
+                                            fontWeight: '500',
+                                            color: '#334155',
+                                            textTransform: 'capitalize'
+                                          }}>
+                                            {player.gender || 'Not specified'}
+                                          </div>
+                                        </div>
+                                        <div style={{
+                                          background: '#FFFFFF',
+                                          padding: '0px',
+                                          borderRadius: '6px',
+                                          textAlign: 'center'
+                                        }}>
+                                          <div style={{
+                                            fontSize: '0.7rem',
+                                            color: '#64748b',
+                                            fontWeight: '500',
+                                            marginBottom: '2px'
+                                          }}>
+                                            AGE
+                                          </div>
+                                          <div style={{
+                                            fontSize: '0.85rem',
+                                            fontWeight: '500',
+                                            color: '#334155'
+                                          }}>
+                                            {player.age || 'Not specified'}
+                                          </div>
+                                        </div>
+                                        <div style={{
+                                          background: '#FFFFFF',
+                                          padding: '0px',
+                                          borderRadius: '6px',
+                                          textAlign: 'center'
+                                        }}>
+                                          <div style={{
+                                            fontSize: '0.7rem',
+                                            color: '#64748b',
+                                            fontWeight: '500',
+                                            marginBottom: '2px'
+                                          }}>
+                                            DUPR 
+                                          </div>
+                                          <div style={{
+                                            fontSize: '0.85rem',
+                                            fontWeight: '700',
+                                            color: '#f59e0b'
+                                          }}>
+                                            {(() => {
+  const category = selectedTournament.tournamentCategories &&
+    Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
+
+  const categoryType = (category?.name || "").toLowerCase();
+
+  if (categoryType.includes("singles")) {
+    return player.duprRatings?.singles || "4.2";
+  } else if (categoryType.includes("doubles") || categoryType.includes("mixed")) {
+    return player.duprRatings?.doubles || "4.1";
+  }
+  return player.duprRatings?.doubles || "4.1";
+})()}
+
+                                          </div>
+                                        </div>
+                                      </div>
+                                      {/* Category Display */}
+                                      {selectedPlayerCategory === 'all' && (
+                                        <div style={{
+                                          background: '#fef3c7',
+                                          padding: '8px 12px',
+                                          borderRadius: '6px',
+                                          marginBottom: '16px',
+                                          textAlign: 'center'
+                                        }}>
+                                          
+                                          <div style={{
+                                            fontSize: '0.7rem',
+                                            color: '#92400e',
+                                            fontWeight: '500',
+                                            marginBottom: '2px'
+                                          }}>
+                                            Category
+                                          </div>
+                                          <div style={{
+                                            fontSize: '0.85rem',
+                                            fontWeight: '600',
+                                            color: '#f59e0b'
+                                          }}>
+                                            {selectedTournament.tournamentCategories && 
+                                              Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId)?.name || 'Unknown Category'}
+                                          </div>
+                                        </div>
+                                      )}
+                                      
+                                      
+                                      {/* Action Buttons */}
+                                      <div style={{
+                                        display: 'flex',
+                                        gap: '4px',
+                                        justifyContent: 'center',
+                                        marginTop: '8px',
+                                        flexWrap: 'wrap'
+                                      }}>
+                                        
+                                        <button
+                                          style={{
+                                            padding: '6px 8px',
+                                            backgroundColor: '#3b82f6',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            fontSize: '0.75rem',
+                                            fontWeight: '600',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            boxShadow: '0 2px 4px rgba(59, 130, 246, 0.2)',
+                                            minWidth: '60px'
+                                          }}
+                                          onMouseEnter={(e) => {
+                                            e.target.style.backgroundColor = '#2563eb';
+                                            e.target.style.transform = 'translateY(-1px)';
+                                            e.target.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.3)';
+                                          }}
+                                          onMouseLeave={(e) => {
+                                            e.target.style.backgroundColor = '#3b82f6';
+                                            e.target.style.transform = 'translateY(0)';
+                                            e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.2)';
+                                          }}
+                                          onClick={() => {
+                                            setSelectedPlayerAttachment({
+                                              playerName: player.playerName,
+                                              playerId: player.playerId,
+                                              // Using a dummy image URL - replace with actual attachment URL from player data
+                                              attachmentUrl: 'https://via.placeholder.com/600x400/3b82f6/ffffff?text=Payment+Proof'
+                                            });
+                                            setShowAttachmentModal(true);
+                                          }}
+                                        >
+                                          View
+                                        </button>
+                                        
+                                        <button
+                                          style={{
+                                            padding: '6px 8px',
+                                            backgroundColor: '#ef4444',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            fontSize: '0.75rem',
+                                            fontWeight: '600',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)',
+                                            minWidth: '60px'
+                                          }}
+                                          onMouseEnter={(e) => {
+                                            e.target.style.backgroundColor = '#dc2626';
+                                            e.target.style.transform = 'translateY(-1px)';
+                                            e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
+                                          }}
+                                          onMouseLeave={(e) => {
+                                            e.target.style.backgroundColor = '#ef4444';
+                                            e.target.style.transform = 'translateY(0)';
+                                            e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.2)';
+                                          }}
+                                          onClick={() => {
+                                            setSelectedPlayerToReject({
+                                              playerName: player.playerName,
+                                              playerId: player.playerId,
+                                              categoryId: player.categoryId
+                                            });
+                                            setRejectionReason('');
+                                            setShowRejectModal(true);
+                                          }}
+                                        >
+                                          Reject
+                                        </button>
+                                        <button
+                                          style={{
+                                            padding: '6px 8px',
+                                            backgroundColor: '#f59e0b',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '6px',
+                                            fontSize: '0.75rem',
+                                            fontWeight: '600',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease',
+                                            boxShadow: '0 2px 4px rgba(245, 158, 11, 0.2)',
+                                            minWidth: '60px'
+                                          }}
+                                          onMouseEnter={(e) => {
+                                            e.target.style.backgroundColor = '#d97706';
+                                            e.target.style.transform = 'translateY(-1px)';
+                                            e.target.style.boxShadow = '0 4px 8px rgba(245, 158, 11, 0.3)';
+                                          }}
+                                          onMouseLeave={(e) => {
+                                            e.target.style.backgroundColor = '#f59e0b';
+                                            e.target.style.transform = 'translateY(0)';
+                                            e.target.style.boxShadow = '0 2px 4px rgba(245, 158, 11, 0.2)';
+                                          }}
+                                          onClick={() => {
+                                            // Handle approve logic here
+                                            console.log('Approve player:', player.playerName);
+                                          }}
+                                        >
+                                          Approve
+                                        </button>
+                                        
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
                           ) : (
-                            'No players registered yet.'
+                            <div style={{
+                              textAlign: 'center',
+                              padding: '40px 20px',
+                              color: '#64748b'
+                            }}>
+                              <div style={{
+                                fontSize: '3rem',
+                                marginBottom: '16px',
+                                opacity: 0.5
+                              }}>
+                                👥
+                              </div>
+                              <p style={{
+                                fontSize: '1.1rem',
+                                fontWeight: '500',
+                                marginBottom: '8px',
+                                color: '#334155'
+                              }}>
+                                No pending players found
+                              </p>
+                              <p style={{
+                                fontSize: '0.9rem',
+                                color: '#64748b'
+                              }}>
+                                {playersSearchTerm ? `No players match "${playersSearchTerm}"` : 'All players have been processed'}
+                              </p>
+                            </div>
                           )}
-                        </TournamentDetailDescription>
+                                </>
+                              ) : (
+                                <div style={{
+                                  textAlign: 'center',
+                                  padding: '60px 20px',
+                                  color: '#6b7280'
+                                }}>
+                                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>🏆</div>
+                                  <h3 style={{ color: '#374151', marginBottom: '8px' }}>No Tournament Selected</h3>
+                                  <p>Please select a tournament to view pending players.</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                       </TournamentDetailSection>
                     )}
 
                     {tournamentDetailTab === 'brackets' && (
                       <TournamentDetailSection>
-                        <TournamentDetailSectionTitle>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                          Tournament Brackets
+                        <TournamentDetailSectionTitle style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            Tournament Brackets
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (isPublished) {
+                                setShowUnpublishModal(true);
+                              } else {
+                                setShowPublishModal(true);
+                              }
+                            }}
+                            style={{
+                              padding: '8px 16px',
+                              backgroundColor: isPublished ? '#ef4444' : '#059669',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.backgroundColor = isPublished ? '#dc2626' : '#047857';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.backgroundColor = isPublished ? '#ef4444' : '#059669';
+                            }}
+                          >
+                            {isPublished ? 'Unpublish' : 'Publish'}
+                          </button>
                         </TournamentDetailSectionTitle>
 
                         {/* Display all categories as expandable cards */}
@@ -5010,223 +6363,1470 @@ const duprRatings = userProfile?.duprRatings
                                 
                                 {expandedCategories[category.id] && (
                                   <CategoryBracketContent $expanded={expandedCategories[category.id]}>
-                                    {/* Group Stage Section - Always show if groupStage exists */}
-                                    {category.groupStage && (
+                                    {/* Tournament Format Selection */}
+                                    <div style={{
+                                      display: 'flex',
+                                      gap: '12px',
+                                      marginBottom: '0px',
+                                      justifyContent: 'center',
+                                      padding: '16px',
+                                      borderRadius: '12px',
+                                    }}>
+                                      <button
+                                        style={{
+                                          padding: '12px 24px',
+                                          backgroundColor: '#3b82f6',
+                                          color: 'white',
+                                          border: 'none',
+                                          borderRadius: '8px',
+                                          fontSize: '0.875rem',
+                                          fontWeight: '600',
+                                          cursor: 'pointer',
+                                          transition: 'all 0.2s ease',
+                                          boxShadow: '0 2px 4px rgba(59, 130, 246, 0.2)',
+                                          minWidth: '140px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          gap: '8px'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.target.style.backgroundColor = '#2563eb';
+                                          e.target.style.transform = 'translateY(-1px)';
+                                          e.target.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.3)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.target.style.backgroundColor = '#3b82f6';
+                                          e.target.style.transform = 'translateY(0)';
+                                          e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.2)';
+                                        }}
+                                        onClick={() => {
+                                          console.log('Generate Round Robin for category:', category.name);
+                                          
+                                          // Always enable Round Robin and reset elimination when clicked
+                                          setRoundRobinCategories(prev => ({
+                                            ...prev,
+                                            [category.id]: true
+                                          }));
+                                          setEliminationCategories(prev => ({
+                                            ...prev,
+                                            [category.id]: false
+                                          }));
+                                          // Initialize available brackets with default A, B, C, D
+                                          setAvailableBrackets(prev => ({
+                                            ...prev,
+                                            [category.id]: ['A', 'B', 'C', 'D']
+                                          }));
+                                        }}
+                                      >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <circle cx="12" cy="12" r="10"/>
+                                          <polygon points="16.24,7.76 14.12,14.12 7.76,16.24 9.88,9.88"/>
+                                        </svg>
+                                        Round Robin
+                                      </button>
+                                      
+                                      <button
+                                        style={{
+                                          padding: '12px 24px',
+                                          backgroundColor: '#f59e0b',
+                                          color: 'white',
+                                          border: 'none',
+                                          borderRadius: '8px',
+                                          fontSize: '0.875rem',
+                                          fontWeight: '600',
+                                          cursor: 'pointer',
+                                          transition: 'all 0.2s ease',
+                                          boxShadow: '0 2px 4px rgba(245, 158, 11, 0.2)',
+                                          minWidth: '140px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          gap: '8px'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.target.style.backgroundColor = '#d97706';
+                                          e.target.style.transform = 'translateY(-1px)';
+                                          e.target.style.boxShadow = '0 4px 8px rgba(245, 158, 11, 0.3)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.target.style.backgroundColor = '#f59e0b';
+                                          e.target.style.transform = 'translateY(0)';
+                                          e.target.style.boxShadow = '0 2px 4px rgba(245, 158, 11, 0.2)';
+                                        }}
+                                        onClick={() => {
+                                          console.log('Generate Elimination Draw for category:', category.name);
+                                          setEliminationCategories(prev => ({
+                                            ...prev,
+                                            [category.id]: true
+                                          }));
+                                        }}
+                                      >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                          <polyline points="7.5,4.21 12,6.81 16.5,4.21"/>
+                                          <polyline points="7.5,19.79 7.5,14.6 3,12"/>
+                                          <polyline points="21,12 16.5,14.6 16.5,19.79"/>
+                                          <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
+                                          <line x1="12" y1="22.08" x2="12" y2="12"/>
+                                        </svg>
+                                        Elimination Draw
+                                      </button>
+                                    </div>
+
+                                    {/* Round Robin Bracket Buttons */}
+                                    {roundRobinCategories[category.id] && !eliminationCategories[category.id] && (
+                                      <div style={{
+                                        display: 'flex',
+                                        gap: '8px',
+                                        marginBottom: '16px',
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                      }}>
+                                        {/* 4/8 Bracket Toggle Switch */}
+                                        <div style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '12px',
+                                          marginRight: '20px'
+                                        }}>
+                                          <span style={{
+                                            fontSize: '0.875rem',
+                                            fontWeight: '600',
+                                            color: '#64748b'
+                                          }}>Brackets:</span>
+                                          <div 
+                                            onClick={() => {
+                                              const currentMode = bracketMode[category.id] || 4;
+                                              const newMode = currentMode === 4 ? 8 : 4;
+                                              setShowBracketModal(true);
+                                              setPendingBracketChange({ categoryId: category.id, newMode });
+                                            }}
+                                            style={{
+                                              position: 'relative',
+                                              width: '60px',
+                                              height: '30px',
+                                              backgroundColor: '#e2e8f0',
+                                              borderRadius: '15px',
+                                              cursor: 'pointer',
+                                              transition: 'all 0.3s ease',
+                                              border: '2px solid #cbd5e1'
+                                            }}
+                                          >
+                                            <div style={{
+                                              position: 'absolute',
+                                              top: '2px',
+                                              left: (bracketMode[category.id] || 4) === 8 ? '32px' : '2px',
+                                              width: '24px',
+                                              height: '24px',
+                                              backgroundColor: '#3b82f6',
+                                              borderRadius: '50%',
+                                              transition: 'all 0.3s ease'
+                                            }}></div>
+                                            <div style={{
+                                              position: 'absolute',
+                                              top: '50%',
+                                              left: '10px',
+                                              transform: 'translateY(-50%)',
+                                              fontSize: '0.75rem',
+                                              fontWeight: '600',
+                                              color: (bracketMode[category.id] || 4) === 4 ? 'white' : '#64748b',
+                                              zIndex: 2
+                                            }}>4</div>
+                                            <div style={{
+                                              position: 'absolute',
+                                              top: '50%',
+                                              right: '10px',
+                                              transform: 'translateY(-50%)',
+                                              fontSize: '0.75rem',
+                                              fontWeight: '600',
+                                              color: (bracketMode[category.id] || 4) === 8 ? 'white' : '#64748b',
+                                              zIndex: 2
+                                            }}>8</div>
+                                          </div>
+                                        </div>
+                                        {/* Bracket Buttons */}
+                                        {(availableBrackets[category.id] || ['A', 'B', 'C', 'D'])
+                                          .map((bracket) => (
+                                          <button
+                                            key={bracket}
+                                            style={{
+                                              padding: '8px 16px',
+                                              backgroundColor: '#3b82f6',
+                                              color: 'white',
+                                              border: 'none',
+                                              borderRadius: '6px',
+                                              fontSize: '0.875rem',
+                                              fontWeight: '600',
+                                              cursor: 'pointer',
+                                              transition: 'all 0.2s ease',
+                                              minWidth: '80px'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                              e.target.style.backgroundColor = '#2563eb';
+                                              e.target.style.transform = 'translateY(-1px)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                              e.target.style.backgroundColor = '#3b82f6';
+                                              e.target.style.transform = 'translateY(0)';
+                                            }}
+                                            onClick={() => {
+                                              console.log(`Generate Bracket ${bracket} for category:`, category.name);
+                                              setSelectedBrackets(prev => ({
+                                                ...prev,
+                                                [category.id]: bracket
+                                              }));
+                                            }}
+                                          >
+                                            Bracket {bracket}
+                                          </button>
+                                        ))}
+                                        
+                                        {/* Auto-set brackets based on bracket mode */}
+                                        {(() => {
+                                          const currentMode = bracketMode[category.id] || 4;
+                                          const targetBrackets = currentMode === 8 
+                                            ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+                                            : ['A', 'B', 'C', 'D'];
+                                          const currentBrackets = availableBrackets[category.id] || ['A', 'B', 'C', 'D'];
+                                          
+                                          // Auto-update brackets if they don't match the required count
+                                          if (JSON.stringify(currentBrackets) !== JSON.stringify(targetBrackets)) {
+                                            setAvailableBrackets(prev => ({
+                                              ...prev,
+                                              [category.id]: targetBrackets
+                                            }));
+                                            console.log(`Auto-set to ${targetBrackets.length} brackets for category ${category.name} (mode: ${currentMode})`);
+                                          }
+                                          
+                                          return null; // No button needed - automatic behavior
+                                        })()}
+                                      </div>
+                                    )}
+
+                                    {/* Group Stage Section - Show selected bracket or placeholder */}
+                                    {category.groupStage && category.groupStage.groups && roundRobinCategories[category.id] && !eliminationCategories[category.id] && (
                                       <GroupStageSection>
-                                        <div className="section-title">Group Stage Results</div>
                                         <div className="groups-grid">
-                                          {Object.entries(category.groupStage).map(([bracketKey, players]) => (
-                                            <GroupCard key={bracketKey}>
-                                              <GroupHeader>Bracket {bracketKey.slice(-1).toUpperCase()}</GroupHeader>
-                                              <StandingsTable>
-                                                <div className="standings-header">
-                                                  <div>Player</div>
-                                                  <div>R.Wins</div>
-                                                  <div>R.Loss</div>
-                                                  <div>W.Pts</div>
-                                                  <div>L.Pts</div>
+                                          {(() => {
+                                            // If no bracket is selected, show instruction message
+                                            if (!selectedBrackets[category.id]) {
+                                              return (
+                                                <div style={{ 
+                                                  textAlign: 'center', 
+                                                  padding: '48px 24px',
+                                                  background: 'white',
+                                                  borderRadius: '12px',
+                                                  border: '1px solid #e2e8f0',
+                                                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                                                }}>
+                                                  <div style={{ fontSize: '3rem', marginBottom: '16px' }}>👆</div>
+                                                  <h3 style={{ color: '#334155', marginBottom: '8px', fontSize: '1.1rem' }}>
+                                                    Select a Bracket
+                                                  </h3>
+                                                  <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                                                    Click on any bracket button above (A, B, C, or D)<br/>
+                                                    to view the standings for that bracket.
+                                                  </p>
                                                 </div>
-                                                {players.map((player) => (
-                                                  <StandingsRow key={player.id} $qualified={player.position <= 2}>
-                                                    <div className="player-info">
-                                                      <div className="position">{player.position}</div>
-                                                      <div className="player-name">{player.name}</div>
-                                                    </div>
-                                                    <div className="round-wins">{player.roundWins || player.wins || 0}</div>
-                                                    <div className="round-losses">{player.roundLosses || 0}</div>
-                                                    <div className="win-points">{player.winPoints || 0}</div>
-                                                    <div className="loss-points">{player.lossPoints || 0}</div>
-                                                  </StandingsRow>
-                                                ))}
-                                              </StandingsTable>
+                                              );
+                                            }
+
+                                            const expectedGroupId = `group-${selectedBrackets[category.id].toLowerCase()}`;
+                                            const selectedGroup = category.groupStage.groups.find(group => group.id === expectedGroupId);
+                                            
+                                            if (selectedGroup) {
+                                              return (
+                                                <>
+                                                  <GroupCard key={selectedGroup.id}>
+                                                    <GroupHeader>
+                                                      <h4>Bracket {selectedBrackets[category.id]}</h4>
+                                                      <div className="bracket-actions">
+                                                        <button 
+                                                          className="bracket-btn edit-btn"
+                                                          onClick={() => handleEditBracket(category.id, selectedBrackets[category.id])}
+                                                          title="Edit Bracket"
+                                                          style={{
+                                                            backgroundColor: isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] ? '#ef4444' : '',
+                                                            color: isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] ? 'white' : ''
+                                                          }}
+                                                        >
+                                                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round"/>
+                                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round"/>
+                                                          </svg>
+                                                          {isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] ? 'Cancel' : (isPublished ? 'Update' : 'Edit')}
+                                                        </button>
+                                                        {isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] && (
+                                                          <button 
+                                                            className="bracket-btn save-btn"
+                                                            onClick={() => saveChanges(category.id, selectedBrackets[category.id])}
+                                                            title="Save Changes"
+                                                            style={{
+                                                              backgroundColor: '#10b981',
+                                                              color: 'white',
+                                                              marginLeft: '8px'
+                                                            }}
+                                                          >
+                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                              <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                            </svg>
+                                                            Save
+                                                          </button>
+                                                        )}
+                                                      </div>
+                                                    </GroupHeader>
+                                                <StandingsTable>
+                                                  <div className="standings-header">
+                                                    <div>Rank</div>
+                                                    <div>Player</div>
+                                                        <div>Matches<br/>(W-L)</div>
+                                                        <div>Points<br/>(W-L)</div>
+                                                  </div>
+                                                      {selectedGroup.standings.map((player, index) => {
+                                                        const editKey = `${category.id}-${selectedBrackets[category.id]}`;
+                                                        const isEditing = isEditingBracket[editKey];
+                                                        const standingKey = `${index}-`;
+                                                        
+                                                        // Get approved players for dropdown
+                                                        const approvedPlayers = selectedTournament?.registrations
+                                                          ?.filter(reg => reg.status === 'approved')
+                                                          ?.filter(reg => reg.categoryId === category.id) || [];
+                                                        
+                                                        return (
+                                                          <StandingsRow key={index} $qualified={player.qualified}>
+                                                            <div className="rank-number">{index + 1}</div>
+                                                            <div className="player-info">
+                                                              <div className="player-name">
+                                                                {isEditing ? (
+                                                                  <select
+                                                                    defaultValue={player.player}
+                                                                    onChange={(e) => handleStandingChange(category.id, selectedBrackets[category.id], index, 'player', e.target.value)}
+                                                                    style={{
+                                                                      width: '100%',
+                                                                      padding: '4px 8px',
+                                                                      border: '1px solid #d1d5db',
+                                                                      borderRadius: '4px',
+                                                                      fontSize: '0.875rem',
+                                                                      backgroundColor: 'white'
+                                                                    }}
+                                                                  >
+                                                                    <option value={player.player}>{player.player}</option>
+                                                                    {approvedPlayers
+                                                                      .filter(reg => reg.playerName !== player.player)
+                                                                      .map((reg, regIndex) => (
+                                                                        <option key={regIndex} value={reg.playerName}>
+                                                                          {reg.playerName}
+                                                                        </option>
+                                                                      ))
+                                                                    }
+                                                                  </select>
+                                                                ) : (
+                                                                  <div>
+                                                                    {player.player.includes('/') ? (
+                                                                      player.player.split('/').map((name, nameIndex) => (
+                                                                        <div key={nameIndex}>
+                                                                          {nameIndex > 0 }{name.trim()}
+                                                                        </div>
+                                                                      ))
+                                                                    ) : (
+                                                                      player.player
+                                                                    )}
+                                                                  </div>
+                                                                )}
+                                                              </div>
+                                                            </div>
+                                                            <div className="matches-record">
+                                                              {player.wins}-{player.losses}
+                                                            </div>
+                                                            <div className="points-record">
+                                                              {player.pointsFor}-{player.pointsAgainst}
+                                                            </div>
+                                                          </StandingsRow>
+                                                        );
+                                                      })}
+                                                </StandingsTable>
+                                              </GroupCard>
+                                              
+                                              {/* Player Match Table - Separate Container */}
+                                              <GroupCard>
+                                              <GroupHeader>
+                                                <h4>Match Schedule</h4>
+                                              </GroupHeader>
+                                              <MatchTable>
+                                              <div className="match-schedule-header">
+                                                <div>Match</div>
+                                                <div>Players</div>
+                                                <div>Time</div>
+                                                <div>Court</div>
+                                                <div>Date</div>
+                                                <div>Score</div>
+                                <div>Standing</div>
+                                              </div>
+                                              {selectedGroup.standings.map((player, playerIndex) => 
+                                                selectedGroup.standings.slice(playerIndex + 1).map((opponent, opponentIndex) => {
+                                                  const matchNumber = `G${playerIndex + 1}`;
+                                                  const teamNumber1 = playerIndex + 1;
+                                                  const teamNumber2 = playerIndex + opponentIndex + 2;
+                                                  const matchIndex = `${playerIndex}-${opponentIndex}`;
+                                                  const editKey = `${category.id}-${selectedBrackets[category.id]}`;
+                                                  const isEditing = isEditingBracket[editKey];
+                                                  
+                                                  return (
+                                                    <MatchRow key={matchIndex}>
+                                                      <div className="match-number">{matchNumber}</div>
+                                                      <div className="teams-horizontal">
+                                                        <>
+                                                            <div className="team-column">
+                                                              {player.player.split(' / ').map((name, index) => (
+                                                                <span key={index} className="team-name">{name}</span>
+                                                              ))}
+                                                            </div>
+                                                            <span className="vs-divider">vs</span>
+                                                            <div className="team-column">
+                                                              {opponent.player.split(' / ').map((name, index) => (
+                                                                <span key={index} className="team-name">{name}</span>
+                                                              ))}
+                                                            </div>
+                                                          </>
+
+                                                      </div>
+                                                      <div className="match-time">
+                                                        {isEditing ? (
+                                                          <input
+                                                            type="time"
+                                                            defaultValue="08:00"
+                                                            onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'time', e.target.value)}
+                                                            style={{
+                                                              width: '70px',
+                                                              padding: '2px',
+                                                              border: '1px solid #d1d5db',
+                                                              borderRadius: '3px',
+                                                              fontSize: '0.75rem'
+                                                            }}
+                                                          />
+                                                        ) : (
+                                                          '08:00'
+                                                        )}
+                                                      </div>
+                                                      <div className="court-number">
+                                                        {isEditing ? (
+                                                          <input
+                                                            type="number"
+                                                            defaultValue="1"
+                                                            onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'court', e.target.value)}
+                                                            style={{
+                                                              width: '40px',
+                                                              padding: '2px',
+                                                              border: '1px solid #d1d5db',
+                                                              borderRadius: '3px',
+                                                              fontSize: '0.75rem',
+                                                              textAlign: 'center'
+                                                            }}
+                                                          />
+                                                        ) : (
+                                                          '1'
+                                                        )}
+                                                      </div>
+                                                      <div className="match-date">
+                                                        {isEditing ? (
+                                                          <input
+                                                            type="date"
+                                                            defaultValue="2024-05-30"
+                                                            onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'date', e.target.value)}
+                                                            style={{
+                                                              width: '90px',
+                                                              padding: '2px',
+                                                              border: '1px solid #d1d5db',
+                                                              borderRadius: '3px',
+                                                              fontSize: '0.75rem'
+                                                            }}
+                                                          />
+                                                        ) : (
+                                                          new Date('2024-05-30').toLocaleDateString('en-US', {
+                                                            month: '2-digit',
+                                                            day: '2-digit',
+                                                            year: 'numeric'
+                                                          })
+                                                        )}
+                                                      </div>
+                                                      <div className="game-score">
+                                                        {isEditing ? (
+                                                          <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                                            <input
+                                                              type="number"
+                                                              defaultValue="5"
+                                                              placeholder="P1"
+                                                              onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'game1Player1', e.target.value)}
+                                                              style={{
+                                                                width: '40px',
+                                                                padding: '4px',
+                                                                border: '1px solid #d1d5db',
+                                                                borderRadius: '3px',
+                                                                fontSize: '0.8rem',
+                                                                textAlign: 'center'
+                                                              }}
+                                                            />
+                                                            <span style={{ fontSize: '0.75rem' }}>-</span>
+                                                            <input
+                                                              type="number"
+                                                              defaultValue="11"
+                                                              placeholder="P2"
+                                                              onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'game1Player2', e.target.value)}
+                                                              style={{
+                                                                width: '40px',
+                                                                padding: '4px',
+                                                                border: '1px solid #d1d5db',
+                                                                borderRadius: '3px',
+                                                                fontSize: '0.8rem',
+                                                                textAlign: 'center'
+                                                              }}
+                                                            />
+                                                          </div>
+                                                        ) : (
+                                                          <span className="score-display">5-11</span>
+                                                        )}
+                                                      </div>
+                                                      <div className="final-score">
+                                                        {isEditing ? (
+                                                          <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                                            <input
+                                                              type="number"
+                                                              defaultValue="0"
+                                                              placeholder="P1"
+                                                              onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'finalScorePlayer1', e.target.value)}
+                                                              style={{
+                                                                width: '40px',
+                                                                padding: '4px',
+                                                                border: '1px solid #d1d5db',
+                                                                borderRadius: '3px',
+                                                                fontSize: '0.8rem',
+                                                                textAlign: 'center'
+                                                              }}
+                                                            />
+                                                            <span style={{ fontSize: '0.75rem' }}>-</span>
+                                                            <input
+                                                              type="number"
+                                                              defaultValue="1"
+                                                              placeholder="P2"
+                                                              onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'finalScorePlayer2', e.target.value)}
+                                                              style={{
+                                                                width: '40px',
+                                                                padding: '4px',
+                                                                border: '1px solid #d1d5db',
+                                                                borderRadius: '3px',
+                                                                fontSize: '0.8rem',
+                                                                textAlign: 'center'
+                                                              }}
+                                                            />
+                                                          </div>
+                                                        ) : (
+                                                          <span className="score-display">0-1</span>
+                                                        )}
+                                                      </div>
+                                                    </MatchRow>
+                                                  );
+                                                })
+                                              ).flat()}
+                                              </MatchTable>
                                             </GroupCard>
-                                          ))}
+                                          </>
+                                            ); 
+                                            } else {
+                                              // Show GroupHeader even when no data for selected bracket
+                                              return (
+                                                <>
+                                                  <GroupCard>
+                                                    <GroupHeader>
+                                                      <h4>Bracket {selectedBrackets[category.id]}</h4>
+                                                      <div className="bracket-actions">
+                                                        <button 
+                                                          className="bracket-btn edit-btn"
+                                                          onClick={() => handleEditBracket(category.id, selectedBrackets[category.id])}
+                                                          title="Edit Bracket"
+                                                          style={{
+                                                            backgroundColor: isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] ? '#ef4444' : '',
+                                                            color: isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] ? 'white' : ''
+                                                          }}
+                                                        >
+                                                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round"/>
+                                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round"/>
+                                                          </svg>
+                                                          {isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] ? 'Cancel' : (isPublished ? 'Update' : 'Edit')}
+                                                        </button>
+                                                        {isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] && (
+                                                          <button 
+                                                            className="bracket-btn save-btn"
+                                                            onClick={() => saveChanges(category.id, selectedBrackets[category.id])}
+                                                            title="Save Changes"
+                                                            style={{
+                                                              backgroundColor: '#10b981',
+                                                              color: 'white',
+                                                              marginLeft: '8px'
+                                                            }}
+                                                          >
+                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                              <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                            </svg>
+                                                            Save
+                                                          </button>
+                                                        )}
+                                                      </div>
+                                                    </GroupHeader>
+                                                    <div style={{ 
+                                                      textAlign: 'center', 
+                                                      padding: '48px 24px'
+                                                    }}>
+                                                      <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📊</div>
+                                                      <h3 style={{ color: '#334155', marginBottom: '8px', fontSize: '1.1rem', }}>
+                                                        No Data Available
+                                                      </h3>
+                                                      <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                                                        This bracket doesn't have any standings data yet.<br/>
+                                                        Players will appear here once matches are completed.
+                                                      </p>
+                                                    </div>
+                                                  </GroupCard>
+                                                  
+                                                  {/* Match Schedule GroupHeader even with no data */}
+                                                  <GroupCard>
+                                                    <GroupHeader>
+                                                      <h4>Match Schedule</h4>
+                                                    </GroupHeader>
+                                                    <div style={{ 
+                                                      textAlign: 'center', 
+                                                      padding: '48px 24px'
+                                                    }}>
+                                                      <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📅</div>
+                                                      <h3 style={{ color: '#334155', marginBottom: '8px', fontSize: '1.1rem' }}>
+                                                        No Matches Scheduled
+                                                      </h3>
+                                                      <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                                                        Match schedule will appear here once matches are created.
+                                                      </p>
+                                                    </div>
+                                                  </GroupCard>
+                                                </>
+                                              );
+                                            }
+                                          })()}
                                         </div>
                                       </GroupStageSection>
                                     )}
-
-                                    {/* Knockout Stage Bracket - Show if exists */}
-                                    {category.knockoutStage ? (
-                                      <TournamentBracket>
-                                        <BracketContainer>
-                                          {/* Quarter Finals */}
-                                          <BracketColumn>
-                                            <BracketRound>
-                                              <h4>Quarter-Finals</h4>
-                                              <div className="round-subtitle">Top 8 Players</div>
-                                            </BracketRound>
-                                            {category.knockoutStage.quarterFinals.map((match, index) => (
-                                              <MatchCard key={match.id} $isWinner={match.completed}>
-                                                <div className="match-info">
-                                                  <div className="player-name">
-                                                    <span className="player-seed">{match.player1.seed}</span>
-                                                    {match.player1.name}
-                                                  </div>
-                                                  {match.completed && <div className="match-score">{match.winner === 'player1' ? '✓' : ''}</div>}
-                                                </div>
-                                                <div className="match-info">
-                                                  <div className="player-name">
-                                                    <span className="player-seed">{match.player2.seed}</span>
-                                                    {match.player2.name}
-                                                  </div>
-                                                  {match.completed && <div className="match-score">{match.winner === 'player2' ? '✓' : ''}</div>}
-                                                </div>
-                                                {match.completed && <div className="match-result">{match.score}</div>}
-                                                {/* Bracket connectors */}
-                                                {index < category.knockoutStage.quarterFinals.length - 1 && (
-                                                  <BracketConnector className="horizontal" />
-                                                )}
-                                              </MatchCard>
-                                            ))}
-                                          </BracketColumn>
-
-                                          {/* Connecting lines between quarters and semis */}
-                                          <BracketConnector className="vertical" />
-
-                                          {/* Semi Finals */}
-                                          <BracketColumn>
-                                            <BracketRound>
-                                              <h4>Semi-Finals</h4>
-                                              <div className="round-subtitle">Final 4</div>
-                                            </BracketRound>
-                                            {category.knockoutStage.semiFinals.map((match, index) => (
-                                              <MatchCard 
-                                                key={match.id} 
-                                                $isWinner={match.completed}
-                                                style={{ marginTop: index === 0 ? '50px' : '30px' }}
-                                              >
-                                                <div className="match-info">
-                                                  <div className="player-name">
-                                                    <span className="player-seed">W{match.player1.seed}</span>
-                                                    {match.player1.name}
-                                                  </div>
-                                                  {match.completed && <div className="match-score">{match.winner === 'player1' ? '✓' : ''}</div>}
-                                                </div>
-                                                <div className="match-info">
-                                                  <div className="player-name">
-                                                    <span className="player-seed">W{match.player2.seed}</span>
-                                                    {match.player2.name}
-                                                  </div>
-                                                  {match.completed && <div className="match-score">{match.winner === 'player2' ? '✓' : ''}</div>}
-                                                </div>
-                                                {match.completed && <div className="match-result">{match.score}</div>}
-                                              </MatchCard>
-                                            ))}
-                                          </BracketColumn>
-
-                                          {/* Connecting lines between semis and finals */}
-                                          <BracketConnector className="corner-right" />
-
-                                          {/* Championship */}
-                                          <ChampionshipSection>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                                              <div className="championship-trophy">🏆</div>
-                                              <BracketRound style={{ margin: 0 }}>
-                                                <h4>Championship</h4>
-                                                <div className="round-subtitle">Final Match</div>
-                                              </BracketRound>
-                                            </div>
-                                            {category.knockoutStage.final && (
-                                              <MatchCard 
-                                                className="championship-match" 
-                                                $isWinner={category.knockoutStage.final.completed}
-                                              >
-                                                <div className="match-info">
-                                                  <div className="player-name">
-                                                    <span className="player-seed">W{category.knockoutStage.final.player1.seed}</span>
-                                                    {category.knockoutStage.final.player1.name}
-                                                  </div>
-                                                  {category.knockoutStage.final.completed && (
-                                                    <div className="match-score">
-                                                      {category.knockoutStage.final.winner === 'player1' ? '🥇' : '🥈'}
-                                                    </div>
-                                                  )}
-                                                </div>
-                                                <div className="match-info">
-                                                  <div className="player-name">
-                                                    <span className="player-seed">W{category.knockoutStage.final.player2.seed}</span>
-                                                    {category.knockoutStage.final.player2.name}
-                                                  </div>
-                                                  {category.knockoutStage.final.completed && (
-                                                    <div className="match-score">
-                                                      {category.knockoutStage.final.winner === 'player2' ? '🥇' : '🥈'}
-                                                    </div>
-                                                  )}
-                                                </div>
-                                                {category.knockoutStage.final.completed && (
-                                                  <div className="match-result" style={{ fontWeight: 'bold', color: '#16a34a' }}>
-                                                    {category.knockoutStage.final.score}
-                                                  </div>
-                                                )}
-                                              </MatchCard>
-                                            )}
-
-                                            {/* Third Place Match */}
-                                            {category.knockoutStage.thirdPlace && (
-                                              <div style={{ 
-                                                marginTop: '100px', 
-                                                marginLeft: 'auto',
-                                                marginRight: '0',
-                                                width: '100%',
-                                                maxWidth: '300px'
-                                              }}>
-                                                <BracketRound>
-                                                  <h4>Third Place</h4>
-                                                  <div className="round-subtitle">Bronze Medal Match</div>
-                                                </BracketRound>
-                                                <MatchCard 
-                                                  className="championship-match" 
-                                                  $isWinner={category.knockoutStage.thirdPlace.completed}
-                                                  style={{ width: '100%' }}
-                                                >
-                                                  <div className="match-info">
-                                                    <div className="player-name">
-                                                      <span className="player-seed">L{category.knockoutStage.thirdPlace.player1.seed}</span>
-                                                      {category.knockoutStage.thirdPlace.player1.name}
-                                                    </div>
-                                                    {category.knockoutStage.thirdPlace.completed && (
-                                                      <div className="match-score">
-                                                        {category.knockoutStage.thirdPlace.winner === 'player1' ? '🥉' : ''}
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                  <div className="match-info">
-                                                    <div className="player-name">
-                                                      <span className="player-seed">L{category.knockoutStage.thirdPlace.player2.seed}</span>
-                                                      {category.knockoutStage.thirdPlace.player2.name}
-                                                    </div>
-                                                    {category.knockoutStage.thirdPlace.completed && (
-                                                      <div className="match-score">
-                                                        {category.knockoutStage.thirdPlace.winner === 'player2' ? '🥉' : ''}
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                  {category.knockoutStage.thirdPlace.completed && (
-                                                    <div className="match-result" style={{ fontWeight: 'bold', color: '#16a34a' }}>
-                                                      {category.knockoutStage.thirdPlace.score}
-                                                    </div>
-                                                  )}
-                                                </MatchCard>
-                                              </div>
-                                            )}
-                                          </ChampionshipSection>
-                                        </BracketContainer>
-                                      </TournamentBracket>
-                                    ) : (
-                                      // Show placeholder if no knockout stage yet
-                                      <div style={{ 
-                                        textAlign: 'center', 
-                                        padding: '32px 24px',
+                                    {/* Elimination Draw Section */}
+                                    {eliminationCategories[category.id] && (
+                                      <div style={{
+                                        marginTop: '24px',
                                         background: 'white',
-                                        borderRadius: '12px',
+                                        borderRadius: '16px',
                                         border: '1px solid #e2e8f0',
-                                        marginTop: '16px'
+                                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                                        overflow: 'hidden'
                                       }}>
-                                        <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🏆</div>
-                                        <h3 style={{ color: '#334155', marginBottom: '8px', fontSize: '1.1rem' }}>Knockout Bracket Coming Soon</h3>
-                                        <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '16px' }}>
-                                          The knockout bracket will be generated once the group stage is complete.
-                                        </p>
+                                        <div style={{
+                                          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                                          color: 'white',
+                                          padding: '18px 24px',
+                                          fontSize: '1.1rem',
+                                          fontWeight: '600',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'space-between'
+                                        }}>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                              <polyline points="7.5,4.21 12,6.81 16.5,4.21"/>
+                                              <polyline points="7.5,19.79 7.5,14.6 3,12"/>
+                                              <polyline points="21,12 16.5,14.6 16.5,19.79"/>
+                                              <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
+                                              <line x1="12" y1="22.08" x2="12" y2="12"/>
+                                            </svg>
+                                            Elimination Draw - Knockout Stage
+                                          </div>
+                                        </div>
+                                        
+                                        <div style={{ padding: '24px' }}>
+                                          {(() => {
+                                            // Get top 2 players from each bracket
+                                            const getTopPlayersFromBrackets = () => {
+                                              const currentMode = bracketMode[category.id] || 4;
+                                              const brackets = currentMode === 8 
+                                                ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+                                                : ['A', 'B', 'C', 'D'];
+                                              const topPlayers = {};
+                                              
+                                              brackets.forEach(bracket => {
+                                                const expectedGroupId = `group-${bracket.toLowerCase()}`;
+                                                const group = category.groupStage?.groups?.find(g => g.id === expectedGroupId);
+                                                
+                                                if (group && group.standings) {
+                                                  // Sort players by points (wins), then by games won
+                                                  const sortedPlayers = [...group.standings].sort((a, b) => {
+                                                    if (b.points !== a.points) return b.points - a.points;
+                                                    return b.gamesWon - a.gamesWon;
+                                                  });
+                                                  
+                                                  topPlayers[bracket] = {
+                                                    first: sortedPlayers[0] || null,
+                                                    second: sortedPlayers[1] || null
+                                                  };
+                                                } else {
+                                                  topPlayers[bracket] = { first: null, second: null };
+                                                }
+                                              });
+                                              
+                                              return topPlayers;
+                                            };
+                                            
+                                            // Temporarily bypass the check to show dummy data
+                                            // const topPlayers = getTopPlayersFromBrackets();
+                                            // const hasEnoughPlayers = Object.values(topPlayers).every(bracket => 
+                                            //   bracket.first && bracket.second
+                                            // );
+                                            // if (!hasEnoughPlayers) {
+                                            //   return waiting message...
+                                            // }
+                                            
+                                            // Create elimination matches based on cross-bracket pairing
+                                            const currentMode = bracketMode[category.id] || 4;
+                                            let eliminationMatches = [];
+                                            
+                                            if (currentMode === 4) {
+                                              // Get top 2 players from each bracket for proper quarterfinals matchups
+                                              const topPlayers = getTopPlayersFromBrackets();
+                                              console.log('Category groupStage:', category.groupStage);
+                                              console.log('Top players:', topPlayers);
+                                              
+                                              // 4 bracket elimination - Quarter Finals matchups: a1 vs b2, d1 vs c2, c1 vs d2, b1 vs a2
+                                              eliminationMatches = [
+                                                {
+                                                  id: 'quarter1',
+                                                  title: 'Quarter-Final 1: A1 vs B2',
+                                                  player1: topPlayers.A?.first ? { 
+                                                    name: topPlayers.A.first.name, 
+                                                    bracket: 'A', 
+                                                    position: '1st', 
+                                                    points: topPlayers.A.first.points || 0 
+                                                  } : { name: 'TBD', bracket: 'A', position: '1st', points: '' },
+                                                  player2: topPlayers.B?.second ? { 
+                                                    name: topPlayers.B.second.name, 
+                                                    bracket: 'B', 
+                                                    position: '2nd', 
+                                                    points: topPlayers.B.second.points || 0 
+                                                  } : { name: 'TBD', bracket: 'B', position: '2nd', points: '' }
+                                                },
+                                                {
+                                                  id: 'quarter2',
+                                                  title: 'Quarter-Final 2: D1 vs C2',
+                                                  player1: topPlayers.D?.first ? { 
+                                                    name: topPlayers.D.first.name, 
+                                                    bracket: 'D', 
+                                                    position: '1st', 
+                                                    points: topPlayers.D.first.points || 0 
+                                                  } : { name: 'TBD', bracket: 'D', position: '1st', points: '' },
+                                                  player2: topPlayers.C?.second ? { 
+                                                    name: topPlayers.C.second.name, 
+                                                    bracket: 'C', 
+                                                    position: '2nd', 
+                                                    points: topPlayers.C.second.points || 0 
+                                                  } : { name: 'TBD', bracket: 'C', position: '2nd', points: '' }
+                                                },
+                                                {
+                                                  id: 'quarter3',
+                                                  title: 'Quarter-Final 3: C1 vs D2',
+                                                  player1: topPlayers.C?.first ? { 
+                                                    name: topPlayers.C.first.name, 
+                                                    bracket: 'C', 
+                                                    position: '1st', 
+                                                    points: topPlayers.C.first.points || 0 
+                                                  } : { name: 'TBD', bracket: 'C', position: '1st', points: '' },
+                                                  player2: topPlayers.D?.second ? { 
+                                                    name: topPlayers.D.second.name, 
+                                                    bracket: 'D', 
+                                                    position: '2nd', 
+                                                    points: topPlayers.D.second.points || 0 
+                                                  } : { name: 'TBD', bracket: 'D', position: '2nd', points: '' }
+                                                },
+                                                {
+                                                  id: 'quarter4',
+                                                  title: 'Quarter-Final 4: B1 vs A2',
+                                                  player1: topPlayers.B?.first ? { 
+                                                    name: topPlayers.B.first.name, 
+                                                    bracket: 'B', 
+                                                    position: '1st', 
+                                                    points: topPlayers.B.first.points || 0 
+                                                  } : { name: 'TBD', bracket: 'B', position: '1st', points: '' },
+                                                  player2: topPlayers.A?.second ? { 
+                                                    name: topPlayers.A.second.name, 
+                                                    bracket: 'A', 
+                                                    position: '2nd', 
+                                                    points: topPlayers.A.second.points || 0 
+                                                  } : { name: 'TBD', bracket: 'A', position: '2nd', points: '' }
+                                                },
+                                                {
+                                                  id: 'semi1',
+                                                  title: 'Semi-Final 1',
+                                                  player1: { name: 'Winner QF1', bracket: 'QF1 Winner', position: 'Winner', points: '' },
+                                                  player2: { name: 'Winner QF2', bracket: 'QF2 Winner', position: 'Winner', points: '' }
+                                                },
+                                                {
+                                                  id: 'semi2',
+                                                  title: 'Semi-Final 2',
+                                                  player1: { name: 'Winner QF3', bracket: 'QF3 Winner', position: 'Winner', points: '' },
+                                                  player2: { name: 'Winner QF4', bracket: 'QF4 Winner', position: 'Winner', points: '' }
+                                                },
+                                                {
+                                                  id: 'final',
+                                                  title: 'Final',
+                                                  player1: { name: 'Winner SF1', bracket: 'SF1 Winner', position: 'Finalist', points: '' },
+                                                  player2: { name: 'Winner SF2', bracket: 'SF2 Winner', position: 'Finalist', points: '' }
+                                                },
+                                                {
+                                                  id: 'bronze',
+                                                  title: 'Bronze Battle',
+                                                  player1: { name: 'Loser SF1', bracket: 'SF1 Loser', position: '3rd Place', points: '' },
+                                                  player2: { name: 'Loser SF2', bracket: 'SF2 Loser', position: '3rd Place', points: '' }
+                                                }
+                                              ];
+                                            } else {
+                                              // 8 bracket elimination - automatically starts at Round of 16
+                                              eliminationMatches = [
+                                                {
+                                                  id: 'round16_1',
+                                                  title: 'Round of 16 - Match 1',
+                                                  player1: { name: 'John Doe', bracket: 'A', position: '1st', points: 44 },
+                                                  player2: { name: 'Carmen Lopez', bracket: 'E', position: '2nd', points: 29 }
+                                                },
+                                                {
+                                                  id: 'round16_2',
+                                                  title: 'Round of 16 - Match 2',
+                                                  player1: { name: 'Carlos Rodriguez', bracket: 'A', position: '2nd', points: 28 },
+                                                  player2: { name: 'Elena Cruz', bracket: 'E', position: '1st', points: 44 }
+                                                },
+                                                {
+                                                  id: 'round16_3',
+                                                  title: 'Round of 16 - Match 3',
+                                                  player1: { name: 'Michael Johnson', bracket: 'B', position: '1st', points: 44 },
+                                                  player2: { name: 'Rachel Gonzalez', bracket: 'F', position: '2nd', points: 31 }
+                                                },
+                                                {
+                                                  id: 'round16_4',
+                                                  title: 'Round of 16 - Match 4',
+                                                  player1: { name: 'Luis Chen', bracket: 'B', position: '2nd', points: 35 },
+                                                  player2: { name: 'Andrea Martinez', bracket: 'F', position: '1st', points: 37 }
+                                                },
+                                                {
+                                                  id: 'round16_5',
+                                                  title: 'Round of 16 - Match 5',
+                                                  player1: { name: 'Jason Park', bracket: 'C', position: '1st', points: 37 },
+                                                  player2: { name: 'Michelle Yang', bracket: 'G', position: '2nd', points: 25 }
+                                                },
+                                                {
+                                                  id: 'round16_6',
+                                                  title: 'Round of 16 - Match 6',
+                                                  player1: { name: 'Anthony Chen', bracket: 'C', position: '2nd', points: 31 },
+                                                  player2: { name: 'Maria Santos', bracket: 'G', position: '1st', points: 35 }
+                                                },
+                                                {
+                                                  id: 'round16_7',
+                                                  title: 'Round of 16 - Match 7',
+                                                  player1: { name: 'Patrick Lim', bracket: 'D', position: '1st', points: 32 },
+                                                  player2: { name: 'Victoria Huang', bracket: 'H', position: '2nd', points: 19 }
+                                                },
+                                                {
+                                                  id: 'round16_8',
+                                                  title: 'Round of 16 - Match 8',
+                                                  player1: { name: 'Jonathan Wu', bracket: 'D', position: '2nd', points: 29 },
+                                                  player2: { name: 'Sarah Kim', bracket: 'H', position: '1st', points: 36 }
+                                                },
+                                                // Quarter Finals
+                                                {
+                                                  id: 'quarter1',
+                                                  title: 'Quarter-Final 1',
+                                                  player1: { name: 'Winner R16-1', bracket: 'R16-1 Winner', position: 'QF', points: '' },
+                                                  player2: { name: 'Winner R16-2', bracket: 'R16-2 Winner', position: 'QF', points: '' }
+                                                },
+                                                {
+                                                  id: 'quarter2',
+                                                  title: 'Quarter-Final 2',
+                                                  player1: { name: 'Winner R16-3', bracket: 'R16-3 Winner', position: 'QF', points: '' },
+                                                  player2: { name: 'Winner R16-4', bracket: 'R16-4 Winner', position: 'QF', points: '' }
+                                                },
+                                                {
+                                                  id: 'quarter3',
+                                                  title: 'Quarter-Final 3',
+                                                  player1: { name: 'Winner R16-5', bracket: 'R16-5 Winner', position: 'QF', points: '' },
+                                                  player2: { name: 'Winner R16-6', bracket: 'R16-6 Winner', position: 'QF', points: '' }
+                                                },
+                                                {
+                                                  id: 'quarter4',
+                                                  title: 'Quarter-Final 4',
+                                                  player1: { name: 'Winner R16-7', bracket: 'R16-7 Winner', position: 'QF', points: '' },
+                                                  player2: { name: 'Winner R16-8', bracket: 'R16-8 Winner', position: 'QF', points: '' }
+                                                },
+                                                // Semi Finals
+                                                {
+                                                  id: 'semi1',
+                                                  title: 'Semi-Final 1',
+                                                  player1: { name: 'Winner QF1', bracket: 'QF1 Winner', position: 'Semifinalist', points: '' },
+                                                  player2: { name: 'Winner QF2', bracket: 'QF2 Winner', position: 'Semifinalist', points: '' }
+                                                },
+                                                {
+                                                  id: 'semi2',
+                                                  title: 'Semi-Final 2',
+                                                  player1: { name: 'Winner QF3', bracket: 'QF3 Winner', position: 'Semifinalist', points: '' },
+                                                  player2: { name: 'Winner QF4', bracket: 'QF4 Winner', position: 'Semifinalist', points: '' }
+                                                },
+                                                // Final
+                                                {
+                                                  id: 'final',
+                                                  title: 'Final',
+                                                  player1: { name: 'Winner SF1', bracket: 'SF1 Winner', position: 'Finalist', points: '' },
+                                                  player2: { name: 'Winner SF2', bracket: 'SF2 Winner', position: 'Finalist', points: '' }
+                                                },
+                                                // Bronze Battle
+                                                {
+                                                  id: 'bronze',
+                                                  title: 'Bronze Battle',
+                                                  player1: { name: 'Loser SF1', bracket: 'SF1 Loser', position: '3rd Place', points: '' },
+                                                  player2: { name: 'Loser SF2', bracket: 'SF2 Loser', position: '3rd Place', points: '' }
+                                                }
+                                              ];
+                                            }
+                                            
+                                            // Reusable Match Card Component
+                                            const MatchCard = ({ match, matchNumber }) => (
+                                              <div style={{
+                                                background: 'white',
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: '8px',
+                                                minWidth: '400px',
+                                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                                                display: 'flex',
+                                                position: 'relative'
+                                              }}>
+                                                {/* Match Number as first cell */}
+                                                <div style={{
+                                                  background: '#f8fafc',
+                                                  borderRight: '1px solid #e2e8f0',
+                                                  width: '40px',
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  justifyContent: 'center',
+                                                  fontSize: '14px',
+                                                  fontWeight: 'bold',
+                                                  color: '#1e293b',
+                                                  borderTopLeftRadius: '8px',
+                                                  borderBottomLeftRadius: '8px'
+                                                }}>{matchNumber}</div>
+                                                
+                                                <div style={{
+                                                  flex: 1,
+                                                  position: 'relative'
+                                                }}>
+                                                  {/* Refresh Icon */}
+                                                  <div style={{
+                                                    position: 'absolute',
+                                                    top: '8px',
+                                                    right: '8px',
+                                                    cursor: 'pointer',
+                                                    padding: '2px'
+                                                  }}>
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
+                                                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                                                      <path d="M21 3v5h-5"/>
+                                                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                                                      <path d="M3 21v-5h5"/>
+                                                    </svg>
+                                                  </div>
+                                                
+                                                {/* Player 1 */}
+                                                <div style={{
+                                                  display: 'flex',
+                                                  justifyContent: 'space-between',
+                                                  alignItems: 'stretch',
+                                                  borderBottom: '1px solid #f1f5f9'
+                                                }}>
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    padding: '12px',
+                                                    flex: 1
+                                                  }}>
+                                                    <span style={{ 
+                                                      fontWeight: '600', 
+                                                      color: '#1e293b',
+                                                      fontSize: '16px'
+                                                    }}>{match.player1.name}</span>
+                                                  </div>
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    borderLeft: '1px solid #e2e8f0'
+                                                  }}>
+                                                    <div style={{
+                                                      background: match.player1.points === 11 ? '#dcfce7' : 'transparent',
+                                                      color: match.player1.points === 11 ? '#166534' : '#64748b',
+                                                      padding: '12px',
+                                                      fontSize: '16px',
+                                                      fontWeight: '600',
+                                                      minWidth: '50px',
+                                                      textAlign: 'center',
+                                                      borderRight: '1px solid #e2e8f0',
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      justifyContent: 'center'
+                                                    }}>{match.player1.points}</div>
+                                                    <div style={{
+                                                      background: match.player1.points === 11 ? '#dcfce7' : 'transparent',
+                                                      color: match.player1.points === 11 ? '#166534' : '#64748b',
+                                                      padding: '12px',
+                                                      fontSize: '16px',
+                                                      fontWeight: '600',
+                                                      minWidth: '50px',
+                                                      textAlign: 'center',
+                                                      borderRight: '1px solid #e2e8f0',
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      justifyContent: 'center'
+                                                    }}>{match.player1.points}</div>
+                                                    <div style={{
+                                                      background: match.player1.points === 11 ? '#dcfce7' : 'transparent',
+                                                      color: match.player1.points === 11 ? '#166534' : '#64748b',
+                                                      padding: '12px',
+                                                      fontSize: '16px',
+                                                      fontWeight: '600',
+                                                      minWidth: '50px',
+                                                      textAlign: 'center',
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      justifyContent: 'center'
+                                                    }}>{match.player1.points}</div>
+                                                  </div>
+                                                </div>
+                                                
+                                                {/* Player 2 */}
+                                                <div style={{
+                                                  display: 'flex',
+                                                  justifyContent: 'space-between',
+                                                  alignItems: 'stretch',
+                                                  borderBottom: '1px solid #f1f5f9'
+                                                }}>
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    padding: '12px',
+                                                    flex: 1
+                                                  }}>
+                                                    <span style={{ 
+                                                      fontWeight: '600', 
+                                                      color: '#1e293b',
+                                                      fontSize: '16px'
+                                                    }}>{match.player2.name}</span>
+                                                  </div>
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    borderLeft: '1px solid #e2e8f0'
+                                                  }}>
+                                                    <div style={{
+                                                      background: match.player2.points === 11 ? '#dcfce7' : 'transparent',
+                                                      color: match.player2.points === 11 ? '#166534' : '#64748b',
+                                                      padding: '12px',
+                                                      fontSize: '16px',
+                                                      fontWeight: '600',
+                                                      minWidth: '50px',
+                                                      textAlign: 'center',
+                                                      borderRight: '1px solid #e2e8f0',
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      justifyContent: 'center'
+                                                    }}>{match.player2.points}</div>
+                                                    <div style={{
+                                                      background: match.player2.points === 11 ? '#dcfce7' : 'transparent',
+                                                      color: match.player2.points === 11 ? '#166534' : '#64748b',
+                                                      padding: '12px',
+                                                      fontSize: '16px',
+                                                      fontWeight: '600',
+                                                      minWidth: '50px',
+                                                      textAlign: 'center',
+                                                      borderRight: '1px solid #e2e8f0',
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      justifyContent: 'center'
+                                                    }}>{match.player2.points}</div>
+                                                    <div style={{
+                                                      background: match.player2.points === 11 ? '#dcfce7' : 'transparent',
+                                                      color: match.player2.points === 11 ? '#166534' : '#64748b',
+                                                      padding: '12px',
+                                                      fontSize: '16px',
+                                                      fontWeight: '600',
+                                                      minWidth: '50px',
+                                                      textAlign: 'center',
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      justifyContent: 'center'
+                                                    }}>{match.player2.points}</div>
+                                                  </div>
+                                                </div>
+                                                
+                                                  {/* Court and Date Info */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    padding: '8px 12px',
+                                                    fontSize: '12px',
+                                                    color: '#64748b'
+                                                  }}>
+                                                    <span>Court: CC</span>
+                                                    <span>Aug 22 - 09:19 AM +08</span>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                            
+                                            return (
+                                              <div>
+                                                {/* Tournament Bracket Tree Layout */}
+                                                <div style={{
+                                                  display: 'flex',
+                                                  flexDirection: 'column',
+                                                  alignItems: 'flex-start',
+                                                  padding: '20px',
+                                                  background: '#f8fafc',
+                                                  borderRadius: '12px',
+                                                  border: '1px solid #e2e8f0',
+                                                  overflow: 'auto',
+                                                  maxHeight: '500px',
+                                                  maxWidth: '700px',
+                                                  width: '100%'
+                                                }}>
+                                                  {currentMode === 4 ? (
+                                                    // 4-bracket tournament tree - Complete elimination draw
+                                                    <div style={{
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      gap: '60px',
+                                                      width: 'max-content'
+                                                    }}>
+                                                      {/* Quarter Finals */}
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: '30px'
+                                                      }}>
+                                                        <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Quarter Finals</div>
+                                                        <MatchCard match={eliminationMatches[0]} matchNumber={1} />
+                                                        <MatchCard match={eliminationMatches[1]} matchNumber={2} />
+                                                        <MatchCard match={eliminationMatches[2]} matchNumber={3} />
+                                                        <MatchCard match={eliminationMatches[3]} matchNumber={4} />
+                                                      </div>
+                                                      
+                                                      {/* Connecting lines to Semi Finals */}
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-around',
+                                                        height: '100%',
+                                                        minHeight: '500px'
+                                                      }}>
+                                                        {/* Connection for QF1 and QF2 to SF1 */}
+                                                        <div style={{
+                                                          display: 'flex',
+                                                          alignItems: 'center',
+                                                          gap: '0',
+                                                          marginTop: '40px'
+                                                        }}>
+                                                          <div style={{
+                                                            width: '20px',
+                                                            height: '2px',
+                                                            background: '#d1d5db'
+                                                          }}></div>
+                                                          <div style={{
+                                                            width: '2px',
+                                                            height: '60px',
+                                                            background: '#d1d5db'
+                                                          }}></div>
+                                                          <div style={{
+                                                            width: '20px',
+                                                            height: '2px',
+                                                            background: '#d1d5db'
+                                                          }}></div>
+                                                        </div>
+                                                        
+                                                        {/* Connection for QF3 and QF4 to SF2 */}
+                                                        <div style={{
+                                                          display: 'flex',
+                                                          alignItems: 'center',
+                                                          gap: '0',
+                                                          marginBottom: '40px'
+                                                        }}>
+                                                          <div style={{
+                                                            width: '20px',
+                                                            height: '2px',
+                                                            background: '#d1d5db'
+                                                          }}></div>
+                                                          <div style={{
+                                                            width: '2px',
+                                                            height: '60px',
+                                                            background: '#d1d5db'
+                                                          }}></div>
+                                                          <div style={{
+                                                            width: '20px',
+                                                            height: '2px',
+                                                            background: '#d1d5db'
+                                                          }}></div>
+                                                        </div>
+                                                      </div>
+                                                      
+                                                      {/* Semi Finals */}
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: '80px',
+                                                        justifyContent: 'center'
+                                                      }}>
+                                                        <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Semi Finals</div>
+                                                        <MatchCard match={eliminationMatches[4]} matchNumber={5} />
+                                                        <MatchCard match={eliminationMatches[5]} matchNumber={6} />
+                                                      </div>
+                                                      
+                                                      {/* Connecting lines to Final */}
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        gap: '20px'
+                                                      }}>
+                                                        <div style={{
+                                                          width: '40px',
+                                                          height: '2px',
+                                                          background: '#d1d5db',
+                                                          marginTop: '60px'
+                                                        }}></div>
+                                                        <div style={{
+                                                          width: '2px',
+                                                          height: '80px',
+                                                          background: '#d1d5db'
+                                                        }}></div>
+                                                        <div style={{
+                                                          width: '40px',
+                                                          height: '2px',
+                                                          background: '#d1d5db',
+                                                          marginBottom: '60px'
+                                                        }}></div>
+                                                      </div>
+                                                      
+                                                      {/* Final and Bronze Battle Column */}
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        justifyContent: 'center',
+                                                        gap: '40px'
+                                                      }}>
+                                                        {/* Final */}
+                                                        <div style={{
+                                                          display: 'flex',
+                                                          flexDirection: 'column',
+                                                          justifyContent: 'center'
+                                                        }}>
+                                                          <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Final</div>
+                                                          <MatchCard match={eliminationMatches[6]} matchNumber={7} />
+                                                        </div>
+                                                        
+                                                        {/* Bronze Battle */}
+                                                        <div style={{
+                                                          display: 'flex',
+                                                          flexDirection: 'column',
+                                                          justifyContent: 'center'
+                                                        }}>
+                                                          <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Bronze Battle</div>
+                                                          <MatchCard match={eliminationMatches[7]} matchNumber={8} />
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  ) : (
+                                                    // 8-bracket tournament tree (Round of 16)
+                                                    <div style={{
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      gap: '60px',
+                                                      width: 'max-content'
+                                                    }}>
+                                                      {/* Round of 16 */}
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: '20px'
+                                                      }}>
+                                                        <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Round of 16</div>
+                                                        {eliminationMatches.slice(0, 8).map((match, index) => (
+                                                          <MatchCard key={match.id} match={match} matchNumber={index + 1} />
+                                                        ))}
+                                                      </div>
+                                                      
+                                                      {/* Connecting lines */}
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        justifyContent: 'space-around',
+                                                        height: '100%',
+                                                        minHeight: '600px'
+                                                      }}>
+                                                        {[...Array(4)].map((_, i) => (
+                                                          <div key={i} style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '0'
+                                                          }}>
+                                                            <div style={{
+                                                              width: '20px',
+                                                              height: '2px',
+                                                              background: '#d1d5db'
+                                                            }}></div>
+                                                            <div style={{
+                                                              width: '2px',
+                                                              height: '40px',
+                                                              background: '#d1d5db'
+                                                            }}></div>
+                                                            <div style={{
+                                                              width: '20px',
+                                                              height: '2px',
+                                                              background: '#d1d5db'
+                                                            }}></div>
+                                                          </div>
+                                                        ))}
+                                                      </div>
+                                                      
+                                                      {/* Quarter Finals */}
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: '40px',
+                                                        justifyContent: 'center'
+                                                      }}>
+                                                        <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Quarter Finals</div>
+                                                        {eliminationMatches.slice(8, 12).map((match, index) => (
+                                                          <MatchCard key={match.id} match={match} matchNumber={index + 9} />
+                                                        ))}
+                                                      </div>
+                                                      
+                                                      {/* Connecting lines to Semi Finals */}
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        justifyContent: 'space-around',
+                                                        height: '100%',
+                                                        minHeight: '300px'
+                                                      }}>
+                                                        {[...Array(2)].map((_, i) => (
+                                                          <div key={i} style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '0'
+                                                          }}>
+                                                            <div style={{
+                                                              width: '20px',
+                                                              height: '2px',
+                                                              background: '#d1d5db'
+                                                            }}></div>
+                                                            <div style={{
+                                                              width: '2px',
+                                                              height: '80px',
+                                                              background: '#d1d5db'
+                                                            }}></div>
+                                                            <div style={{
+                                                              width: '20px',
+                                                              height: '2px',
+                                                              background: '#d1d5db'
+                                                            }}></div>
+                                                          </div>
+                                                        ))}
+                                                      </div>
+                                                      
+                                                      {/* Semi Finals */}
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        gap: '80px',
+                                                        justifyContent: 'center'
+                                                      }}>
+                                                        <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Semi Finals</div>
+                                                        {eliminationMatches.slice(12, 14).map((match, index) => (
+                                                          <MatchCard key={match.id} match={match} matchNumber={index + 13} />
+                                                        ))}
+                                                      </div>
+                                                      
+                                                      {/* Connecting lines to Final */}
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        justifyContent: 'center',
+                                                        height: '100%',
+                                                        minHeight: '200px'
+                                                      }}>
+                                                        <div style={{
+                                                          display: 'flex',
+                                                          alignItems: 'center',
+                                                          gap: '0'
+                                                        }}>
+                                                          <div style={{
+                                                            width: '20px',
+                                                            height: '2px',
+                                                            background: '#d1d5db'
+                                                          }}></div>
+                                                          <div style={{
+                                                            width: '2px',
+                                                            height: '40px',
+                                                            background: '#d1d5db'
+                                                          }}></div>
+                                                          <div style={{
+                                                            width: '20px',
+                                                            height: '2px',
+                                                            background: '#d1d5db'
+                                                          }}></div>
+                                                        </div>
+                                                      </div>
+                                                      
+                                                      {/* Final and Bronze Battle Column */}
+                                                      <div style={{
+                                                        display: 'flex',
+                                                        flexDirection: 'column',
+                                                        justifyContent: 'center',
+                                                        gap: '40px'
+                                                      }}>
+                                                        {/* Final */}
+                                                        <div style={{
+                                                          display: 'flex',
+                                                          flexDirection: 'column',
+                                                          justifyContent: 'center'
+                                                        }}>
+                                                          <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Final</div>
+                                                          <MatchCard match={eliminationMatches[14]} matchNumber={15} />
+                                                        </div>
+                                                        
+                                                        {/* Bronze Battle */}
+                                                        <div style={{
+                                                          display: 'flex',
+                                                          flexDirection: 'column',
+                                                          justifyContent: 'center'
+                                                        }}>
+                                                          <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Bronze Battle</div>
+                                                          <MatchCard match={eliminationMatches[15]} matchNumber={16} />
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                                
+                                                
+                                              </div>
+                                            );
+                                          })()}
+                                        </div>
                                       </div>
                                     )}
                                   </CategoryBracketContent>
@@ -5323,7 +7923,6 @@ const duprRatings = userProfile?.duprRatings
                     Host a Tournament
                   </HostTournamentButton>
                 </TournamentSearchSection>
-                
 <TournamentGrid>
 {tournaments
   .filter(tournament =>
@@ -5384,8 +7983,6 @@ const duprRatings = userProfile?.duprRatings
       );
     })}
 </TournamentGrid>
-
-
               </>
             )}
           </TabContent>
@@ -5634,6 +8231,7 @@ const BioContainer = styled.div`
   position: relative;
 `;
 
+
 const BioTextArea = styled.textarea.attrs({ dir: "ltr" })`
   width: 100%;
   min-height: 120px;
@@ -5646,7 +8244,6 @@ const BioTextArea = styled.textarea.attrs({ dir: "ltr" })`
   color: #374151;
   background-color: #ffffff;
   resize: vertical;
-
   text-align: left;
   unicode-bidi: plaintext; /* ✅ Prevent letter reversing */
 
@@ -5655,7 +8252,6 @@ const BioTextArea = styled.textarea.attrs({ dir: "ltr" })`
     border-color: #29ba9b;
     box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
   }
-
   &::placeholder {
     color: #9ca3af;
   }
@@ -5667,8 +8263,7 @@ const TabText = styled.p`
   text-align: left;
   white-space: pre-wrap;   /* Keep line breaks */
 `;
-
-
+rigin/frontend
 const BioEditButtons = styled.div`
   display: flex;
   gap: 8px;
@@ -5739,100 +8334,76 @@ const EditBioButton = styled.button`
 
   return (
     <ProfileContainer>
-    <ProfileBackgroundContainer>
-      <ProfileHeader>
-        <TopSection>
-          <LeftSection>
-            <AvatarContainer>
-  {userProfile?.avatar ? (
-    <Avatar
-      src={`http://localhost:5000${userProfile.avatar}`}
-      alt={`${user.firstName} ${user.lastName}`}
-    />
-  ) : (
-    <>
-      {user.firstName ? (
-        <InitialsFallback>
-          {user.firstName.charAt(0).toUpperCase()}
-        </InitialsFallback>
-      ) : (
-        <Avatar src="/default-avatar.png" alt="Default Avatar" />
-      )}
-    </>
-  )}
-
-  {true && (
-    <AvatarUploadButton onClick={handleAvatarClick}>
-      📷
-    </AvatarUploadButton>
-  )}
-
-  <HiddenFileInput
-    ref={fileInputRef}
-    type="file"
-    accept="image/*"
-    onChange={handleFileChange}
-  />
-</AvatarContainer>
-
-
-            <NameAndDetailsSection>
-              <NameAndRanksRow>
-                <UserName>{`${user.firstName} ${user.lastName}`}</UserName>
-
-                <StatsContainer>
-                  {rankData.map((item, index) => (
-                    <StatBox key={index}>
-                      <StatCategory>{item.category}</StatCategory>
-                      <StatValue>#{item.rank}</StatValue>
-                      <StatLabel>Rank</StatLabel>
-                    </StatBox>
-                  ))}
-                </StatsContainer>
-              </NameAndRanksRow>
-
-              <PlayerInfoGrid>
-                <InfoItem>
-                  <InfoLabel>PPL ID</InfoLabel>
-                  <InfoValue>{user._id?.slice(-6).toUpperCase()}</InfoValue>
-                </InfoItem>
-
-                <InfoItem>
-                  <InfoLabel>AGE</InfoLabel>
-                  <InfoValue>
-                    {user.birthDate
-                      ? new Date().getFullYear() - new Date(user.birthDate).getFullYear()
-                      : "N/A"}{" "}
-                    Years
-                  </InfoValue>
-                </InfoItem>
-
-                <InfoItem>
-                  <InfoLabel>GENDER</InfoLabel>
-                  <InfoValue>
-                    {user.gender
-                      ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1)
-                      : "Not specified"}
-                  </InfoValue>
-                </InfoItem>
-                {duprRatings.map((rating, index) => (
-                  <InfoItem key={index}>
-                    <InfoLabel>{rating.type} DUPR</InfoLabel>
-                    <InfoValue>{rating.rating}</InfoValue>
+      <ProfileBackgroundContainer>
+        <ProfileHeader>
+          <TopSection>
+            <LeftSection>
+              <AvatarContainer>
+                <Avatar src={user.avatar} alt={user.name} />
+                {isEditMode && (
+                  <AvatarUploadButton onClick={handleAvatarClick}>
+                    📷
+                  </AvatarUploadButton>
+                )}
+                <HiddenFileInput
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </AvatarContainer>
+              
+              <NameAndDetailsSection>
+                <NameAndRanksRow>
+                  <UserName>{user.name}</UserName>
+                  <StatsContainer>
+                    {rankData.map((item, index) => (
+                      <StatBox key={index}>
+                        <StatCategory>{item.category}</StatCategory>
+                        <StatValue>#{item.rank}</StatValue>
+                        <StatLabel>Rank</StatLabel>
+                      </StatBox>
+                    ))}
+                  </StatsContainer>
+                </NameAndRanksRow>
+                
+                <PlayerInfoGrid>
+                  <InfoItem>
+                    <InfoLabel>PPL ID</InfoLabel>
+                    <InfoValue>{pplId.replace('PPL-', '')}</InfoValue>
                   </InfoItem>
-                ))}
+                  <InfoItem>
+                    <InfoLabel>AGE</InfoLabel>
+                    <InfoValue>{userAge} Years</InfoValue>
+                  </InfoItem>
+                  <InfoItem>
+                    <InfoLabel>GENDER</InfoLabel>
+                    <InfoValue>{user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : 'Not specified'}</InfoValue>
+                  </InfoItem>
+                  {duprRatings.map((rating, index) => (
+                    <InfoItem key={index}>
+                      <InfoLabel>{rating.type} DUPR</InfoLabel>
+                      <InfoValue>{rating.rating}</InfoValue>
+                    </InfoItem>
+                  ))}
               </PlayerInfoGrid>
             </NameAndDetailsSection>
           </LeftSection>
-
-          <div style={{ position: "absolute", top: "-50px", right: "0", zIndex: 10 }}>
+          
+          <div style={{ position: 'absolute', top: '-50px', right: '0', zIndex: 10 }}>
             <ButtonContainer>
-              <ApplyCoachButton onClick={handleApplyAsCoach}>Apply as Coach</ApplyCoachButton>
+              <ApplyCoachButton onClick={handleApplyAsCoach}>
+                Apply as Coach
+              </ApplyCoachButton>
+              <EditButton onClick={handleEdit}>
+                Edit Profile
+              </EditButton>
             </ButtonContainer>
           </div>
         </TopSection>
       </ProfileHeader>
     </ProfileBackgroundContainer>
+
       
       {/* Tabs section below both profile sections */}
       <TabContainer>
@@ -5858,7 +8429,107 @@ const EditBioButton = styled.button`
         </TabHeader>
         {renderTabContent()}
       </TabContainer>
-
+      {/* Bracket Mode Confirmation Modal */}
+      {showBracketModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '400px',
+            width: '90%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                fontSize: '3rem',
+                marginBottom: '16px'
+              }}>⚠️</div>
+              <h3 style={{
+                color: '#334155',
+                fontSize: '1.25rem',
+                fontWeight: '600',
+                marginBottom: '8px'
+              }}>
+                Are you sure?
+              </h3>
+              <p style={{
+                color: '#64748b',
+                fontSize: '0.95rem',
+                lineHeight: '1.5'
+              }}>
+                Your tournament will now generate {pendingBracketChange.newMode} brackets. 
+              </p>
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={() => {
+                  setShowBracketModal(false);
+                  setPendingBracketChange({ categoryId: null, newMode: null });
+                }}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0',
+                  background: 'white',
+                  color: '#64748b',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // Update bracket mode
+                  setBracketMode(prev => ({
+                    ...prev,
+                    [pendingBracketChange.categoryId]: pendingBracketChange.newMode
+                  }));
+                  
+                  // Close modal
+                  setShowBracketModal(false);
+                  setPendingBracketChange({ categoryId: null, newMode: null });
+                }}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  color: 'white',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Registration Modal */}
       {showRegistrationModal && registrationTournament && (
         <RegistrationModal onClick={closeRegistrationModal}>
@@ -6194,10 +8865,9 @@ const EditBioButton = styled.button`
                         <FileName>{registrationForm.proofOfPayment.name}</FileName>
                       </ImagePreviewContainer>
                     )}
-                  </RegistrationFormGroup>
+                                      </RegistrationFormGroup>
                 </RegistrationFormSection>
-
-                <RegistrationSubmitButton type="submit" disabled>
+                <RegistrationSubmitButton type="submit">
                   Submit Registration
                 </RegistrationSubmitButton>
               </form>
@@ -6205,6 +8875,7 @@ const EditBioButton = styled.button`
           </RegistrationModalContent>
         </RegistrationModal>
       )}
+
 <Modal open={cropModalOpen} onClose={() => setCropModalOpen(false)}>
   <div style={{ width: 400, height: 400, background: "#333", margin: "auto", marginTop: "10%" }}>
     {selectedFile && (
@@ -6223,6 +8894,7 @@ const EditBioButton = styled.button`
     </Button>
   </div>
 </Modal>
+
 
       {/* Player Selection Modal */}
       {showPlayerSelectionModal && (
@@ -6280,6 +8952,584 @@ const EditBioButton = styled.button`
         </PlayerSelectionModal>
       )}
 
+      {/* Rejection Modal */}
+      {showRejectModal && selectedPlayerToReject && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '0',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: '24px 32px',
+              borderBottom: '1px solid #e2e8f0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: '#dc2626',
+                margin: 0
+              }}>
+                Reject Player
+              </h2>
+              <button
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  padding: '4px',
+                  borderRadius: '4px'
+                }}
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setSelectedPlayerToReject(null);
+                  setRejectionReason('');
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f1f5f9';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div style={{
+              padding: '32px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px'
+            }}>
+              <div style={{
+                textAlign: 'center',
+                marginBottom: '16px'
+              }}>
+                <p style={{
+                  fontSize: '1.1rem',
+                  color: '#374151',
+                  margin: '0 0 8px 0'
+                }}>
+                  You are about to reject:
+                </p>
+                <p style={{
+                  fontSize: '1.25rem',
+                  fontWeight: '600',
+                  color: '#dc2626',
+                  margin: 0
+                }}>
+                  {selectedPlayerToReject.playerName}
+                </p>
+              </div>
+              
+              <div>
+                <label style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: '#374151',
+                  marginBottom: '8px'
+                }}>
+                  Reason for rejection *
+                </label>
+                <textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Please provide a reason for rejecting this player..."
+                  style={{
+                    width: '100%',
+                    minHeight: '120px',
+                    padding: '12px',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem',
+                    resize: 'vertical',
+                    outline: 'none',
+                    transition: 'border-color 0.2s ease',
+                    fontFamily: 'inherit'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#3b82f6';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#e2e8f0';
+                  }}
+                />
+              </div>
+              
+              {/* Action Buttons */}
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                justifyContent: 'flex-end',
+                marginTop: '8px'
+              }}>
+                <button
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#f8fafc',
+                    color: '#64748b',
+                    border: '2px solid #e2e8f0',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = '#f1f5f9';
+                    e.target.style.borderColor = '#cbd5e1';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = '#f8fafc';
+                    e.target.style.borderColor = '#e2e8f0';
+                  }}
+                  onClick={() => {
+                    setShowRejectModal(false);
+                    setSelectedPlayerToReject(null);
+                    setRejectionReason('');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: rejectionReason.trim() ? '#dc2626' : '#9ca3af',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    cursor: rejectionReason.trim() ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.2s ease',
+                    opacity: rejectionReason.trim() ? 1 : 0.6
+                  }}
+                  disabled={!rejectionReason.trim()}
+                  onMouseEnter={(e) => {
+                    if (rejectionReason.trim()) {
+                      e.target.style.backgroundColor = '#b91c1c';
+                      e.target.style.transform = 'translateY(-1px)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (rejectionReason.trim()) {
+                      e.target.style.backgroundColor = '#dc2626';
+                      e.target.style.transform = 'translateY(0)';
+                    }
+                  }}
+                  onClick={() => {
+                    if (rejectionReason.trim()) {
+                      // Handle rejection logic here
+                      console.log('Rejecting player:', selectedPlayerToReject.playerName);
+                      console.log('Reason:', rejectionReason);
+                      
+                      // Close modal
+                      setShowRejectModal(false);
+                      setSelectedPlayerToReject(null);
+                      setRejectionReason('');
+                      
+                      // You can add API call here to reject the player
+                      alert(`Player ${selectedPlayerToReject.playerName} has been rejected.\nReason: ${rejectionReason}`);
+                    }
+                  }}
+                >
+                  Reject Player
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Attachment Modal */}
+      {showAttachmentModal && selectedPlayerAttachment && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '0',
+            maxWidth: '800px',
+            width: '100%',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: '24px 32px',
+              borderBottom: '1px solid #e2e8f0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: '#234255',
+                margin: 0
+              }}>
+                Payment Proof - {selectedPlayerAttachment.playerName}
+              </h2>
+              <button
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  padding: '4px',
+                  borderRadius: '4px'
+                }}
+                onClick={() => {
+                  setShowAttachmentModal(false);
+                  setSelectedPlayerAttachment(null);
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f1f5f9';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div style={{
+              padding: '32px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '20px',
+              maxHeight: 'calc(90vh - 120px)',
+              overflow: 'auto'
+            }}>
+              <img
+                src={selectedPlayerAttachment.attachmentUrl}
+                alt={`Payment proof for ${selectedPlayerAttachment.playerName}`}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '500px',
+                  objectFit: 'contain',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'block';
+                }}
+              />
+              <div style={{
+                display: 'none',
+                textAlign: 'center',
+                padding: '40px',
+                color: '#64748b',
+                backgroundColor: '#f8fafc',
+                borderRadius: '8px',
+                border: '2px dashed #cbd5e1'
+              }}>
+                <div style={{ fontSize: '2rem', marginBottom: '16px' }}>📄</div>
+                <div>Unable to load attachment</div>
+                <div style={{ fontSize: '0.875rem', marginTop: '8px' }}>
+                  The attachment file could not be displayed
+                </div>
+              </div>
+              
+              <div style={{
+                textAlign: 'center',
+                color: '#64748b',
+                fontSize: '0.875rem'
+              }}>
+                Player ID: {selectedPlayerAttachment.playerId}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Publish Modal */}
+      {showPublishModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                backgroundColor: '#dcfce7',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px'
+              }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              </div>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: '#1e293b',
+                margin: '0 0 8px 0'
+              }}>
+                Publish Tournament Bracket
+              </h2>
+              <p style={{
+                color: '#64748b',
+                fontSize: '1rem',
+                margin: 0,
+                lineHeight: '1.5'
+              }}>
+                You are about to make the tournament bracket public. Players and spectators will be able to view the bracket structure and match results.
+              </p>
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#f8fafc',
+                  color: '#64748b',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f1f5f9';
+                  e.target.style.borderColor = '#cbd5e1';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#f8fafc';
+                  e.target.style.borderColor = '#e2e8f0';
+                }}
+                onClick={() => setShowPublishModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#059669',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#047857';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#059669';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+                onClick={() => {
+                  setIsPublished(true);
+                  setShowPublishModal(false);
+                }}
+              >
+                Publish Bracket
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unpublish Modal */}
+      {showUnpublishModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                backgroundColor: '#fef2f2',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px'
+              }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="15 9l-6 6" />
+                  <path d="9 9l6 6" />
+                </svg>
+              </div>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: '#1e293b',
+                margin: '0 0 8px 0'
+              }}>
+                Unpublish Tournament Bracket
+              </h2>
+              <p style={{
+                color: '#64748b',
+                fontSize: '1rem',
+                margin: 0,
+                lineHeight: '1.5'
+              }}>
+                You are about to make the tournament bracket private. Players and spectators will no longer be able to view the bracket structure and match results.
+              </p>
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#f8fafc',
+                  color: '#64748b',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f1f5f9';
+                  e.target.style.borderColor = '#cbd5e1';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#f8fafc';
+                  e.target.style.borderColor = '#e2e8f0';
+                }}
+                onClick={() => setShowUnpublishModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#dc2626';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#ef4444';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+                onClick={() => {
+                  setIsPublished(false);
+                  setShowUnpublishModal(false);
+                }}
+              >
+                Unpublish Bracket
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </ProfileContainer>
   );
 };

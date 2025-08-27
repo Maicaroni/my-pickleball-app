@@ -29,11 +29,28 @@ const PageHeader = styled.div`
 `;
 
 const PageTitle = styled.h1`
+<<<<<<< HEAD
   font-size: 2.5rem;
   color: #234255;
   margin-bottom: 12px;
   font-weight: 800;
   letter-spacing: -0.5px;
+=======
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  font-size: 2rem;
+  color: #234255;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+
+  @media (min-width: 768px) {
+    font-size: 2.5rem;
+    margin-bottom: 1.25rem;
+  }
+>>>>>>> origin/frontend
 `;
 
 const PageDescription = styled.p`

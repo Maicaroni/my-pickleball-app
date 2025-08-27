@@ -1,5 +1,7 @@
+
 import React, { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
+
 
 const AuthContext = createContext();
 
@@ -14,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState({
     isVisible: false,
+
     message: "",
     type: "success",
   });
@@ -44,6 +47,7 @@ useEffect(() => {
   };
 
   const showNotification = (message, type = "success") => {
+
     setNotification({ isVisible: true, message, type });
   };
 
@@ -68,10 +72,10 @@ useEffect(() => {
       return {
         success: false,
         error: err.response?.data?.message || "Login failed. Please try again.",
+
       };
     }
   };
-
   // ✅ Register function
   const register = async (formData) => {
     try {
@@ -111,10 +115,12 @@ useEffect(() => {
         notification,
         showNotification,
         hideNotification,
-        setAuth,
+        setAuth, // <-- expose setAuth here
+
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
+
