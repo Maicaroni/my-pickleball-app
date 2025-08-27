@@ -16,6 +16,7 @@ const userRoutes = require("./routes/users"); // ✅ this must match the filenam
 const postRoutes = require('./routes/posts');
 const reportRoutes = require('./routes/reports');
 const profileRoutes = require("./routes/profiles");
+const tournamentRoutes = require("./routes/tournaments");
 
 const app = express();
 
@@ -52,12 +53,8 @@ app.use("/api/users", userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/reports', reportRoutes);
 app.use("/api/profiles", profileRoutes);
+app.use("/api/tournaments", tournamentRoutes);
 app.use("/uploads", express.static("uploads"));
-
-
-
-
-
 
 // Default route
 app.get("/", (req, res) => res.send("Pickleball backend is running"));

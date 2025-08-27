@@ -3179,6 +3179,7 @@ const Profile = ({ userId }) => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+const { user, token } = useAuth();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -3195,6 +3196,8 @@ const [bioText, setBioText] = useState("");
   const [selectedTournament, setSelectedTournament] = useState(null);
   const [tournamentDetailTab, setTournamentDetailTab] = useState('details');
   const [expandedCategories, setExpandedCategories] = useState({});
+  const [tournaments, setTournaments] = useState([]);
+
 
   
   // Registration modal state
@@ -3276,27 +3279,40 @@ const [bioText, setBioText] = useState("");
   });
   
 
-  useEffect(() => {
+useEffect(() => {
   const fetchUser = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-
-      const res = await axios.get("http://localhost:5000/api/profiles/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setUserProfile(res.data);           // update global Navbar state
-      setAboutData({ bio: res.data.bio || "" }); // update local bio state
-      setBioText(res.data.bio || "");     // fill textarea with current bio
+      const res = await axios.get("http://localhost:5000/api/profiles/me");
+      setUserProfile(res.data);
+      setAboutData({ bio: res.data.bio || "" });
+      setBioText(res.data.bio || "");
     } catch (err) {
-      console.error("Error fetching profile:", err);
+      console.error("Error fetching profile:", err.response?.data || err.message);
     }
   };
 
-  fetchUser();
-}, []);
+  if (user) fetchUser();
+}, [user]);
 
+
+useEffect(() => {
+  const fetchTournaments = async () => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const token = storedUser?.token;
+
+      const response = await axios.get("http://localhost:5000/api/tournaments/my-tournaments", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setTournaments(response.data); // no need to filter here anymore
+    } catch (error) {
+      console.error("Error fetching tournaments:", error);
+    }
+  };
+
+  fetchTournaments();
+}, []);
 
 
 
@@ -4326,300 +4342,49 @@ const clubData = [
     }
   ];
 
-  const tournamentData = [
-    {
-      id: "john-doe-championship",
-      name: "John Doe's Pickleball Championship",
-      date: "2024-05-15T09:00:00Z",
-      endDate: "2024-05-16T18:00:00Z",
-      location: "Elite Sports Complex",
-      address: "456 Championship Blvd, Sports City, CA 92101",
-      latitude: 32.7157,
-      longitude: -117.1611,
-      status: "upcoming",
-      entryFee: 2500,
-      prizePool: 100000,
-      maxParticipants: 32,
-      currentParticipants: 24,
-      tournamentType: "open",
-      tier: 1,
-      description: "The premier pickleball tournament hosted by renowned organizer John Doe. Featuring world-class facilities, professional officiating, and the largest prize pool in Southern California. This championship brings together top players from across the region for an unforgettable competitive experience.",
-      bannerUrl: "https://images.unsplash.com/photo-1659318006095-4d44845f3a1b?q=80&w=1210&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      registrationDeadline: "2024-05-10T23:59:59Z",
-      contactEmail: "john.doe@elitepickleball.com",
-      contactPhone: "+1 (555) 987-6543",
-      organizer: "John Doe",
-      organizerProfile: {
-        name: "John Doe",
-        email: "john.doe@elitepickleball.com",
-        phone: "+1 (555) 987-6543",
-        bio: "Professional tournament organizer with 10+ years experience hosting premier pickleball events."
-      },
-      rules: [
-        "All matches played under official USA Pickleball rules",
-        "Players must arrive 45 minutes before scheduled match time",
-        "Professional athletic attire and non-marking court shoes required",
-        "Double elimination format for all divisions",
-        "Matches are best of 3 games to 11, win by 2"
-      ],
-      amenities: [
-        "12 Professional Grade Courts", 
-        "Live Streaming & Commentary", 
-        "Professional Officiating", 
-        "Player Lounge", 
-        "Food & Beverage Service",
-        "Equipment Shop",
-        "Physical Therapy Station",
-        "Awards Ceremony"
-      ],
-      tournamentCategories: {
-        "mens-open-doubles": {
-          id: "mens-open-doubles",
-          name: "Men's Open Doubles",
-          skillLevel: "Open",
-          tier: 1,
-          prizePool: 40000,
-          participants: 16,
-          maxParticipants: 16,
-          ageGroup: "18+",
-          registrations: [
-            { id: "player1", name: "Alex Rodriguez", partner: "Mike Johnson", status: "approved", rating: "5.2", seed: 1 },
-            { id: "player2", name: "David Chen", partner: "Sam Williams", status: "approved", rating: "5.0", seed: 2 },
-            { id: "player3", name: "Carlos Martinez", partner: "Tony Brown", status: "approved", rating: "4.8", seed: 3 },
-            { id: "player4", name: "Ryan Thompson", partner: "Jake Davis", status: "approved", rating: "4.7", seed: 4 },
-            { id: "player5", name: "Kevin Lee", partner: "Mark Wilson", status: "approved", rating: "4.6", seed: 5 },
-            { id: "player6", name: "Steve Garcia", partner: "Paul Anderson", status: "approved", rating: "4.5", seed: 6 },
-            { id: "player7", name: "Chris Taylor", partner: "Matt Jones", status: "approved", rating: "4.4", seed: 7 },
-            { id: "player8", name: "Juan Morales", partner: "Luis Santos", status: "approved", rating: "4.3", seed: 8 }
-          ],
-          groupStage: {
-            groups: [
-              {
-                id: "group-a",
-                name: "Group A",
-                status: "completed",
-                standings: [
-                  { player: "Alex Rodriguez / Mike Johnson", wins: 3, losses: 0, pointsFor: 66, pointsAgainst: 42, qualified: true },
-                  { player: "David Chen / Sam Williams", wins: 2, losses: 1, pointsFor: 61, pointsAgainst: 55, qualified: true },
-                  { player: "Carlos Martinez / Tony Brown", wins: 1, losses: 2, pointsFor: 54, pointsAgainst: 58, qualified: false },
-                  { player: "Ryan Thompson / Jake Davis", wins: 0, losses: 3, pointsFor: 48, pointsAgainst: 66, qualified: false }
-                ]
-              },
-              {
-                id: "group-b",
-                name: "Group B",
-                status: "completed",
-                standings: [
-                  { player: "Kevin Lee / Mark Wilson", wins: 3, losses: 0, pointsFor: 66, pointsAgainst: 45, qualified: true },
-                  { player: "Steve Garcia / Paul Anderson", wins: 2, losses: 1, pointsFor: 59, pointsAgainst: 52, qualified: true },
-                  { player: "Chris Taylor / Matt Jones", wins: 1, losses: 2, pointsFor: 53, pointsAgainst: 60, qualified: false },
-                  { player: "Juan Morales / Luis Santos", wins: 0, losses: 3, pointsFor: 44, pointsAgainst: 65, qualified: false }
-                ]
-              }
-            ]
-          },
-          knockoutStage: {
-            quarterFinals: [
-              { id: "qf1", player1: "Alex Rodriguez / Mike Johnson", player2: "Steve Garcia / Paul Anderson", winner: "Alex Rodriguez / Mike Johnson", score: "11-7, 11-5", completed: true },
-              { id: "qf2", player1: "Kevin Lee / Mark Wilson", player2: "David Chen / Sam Williams", winner: "Kevin Lee / Mark Wilson", score: "11-9, 9-11, 11-8", completed: true }
-            ],
-            semiFinals: [
-              { id: "sf1", player1: "Alex Rodriguez / Mike Johnson", player2: "Kevin Lee / Mark Wilson", winner: "Alex Rodriguez / Mike Johnson", score: "11-6, 11-9", completed: true }
-            ],
-            final: {
-              id: "final", 
-              player1: "Alex Rodriguez / Mike Johnson", 
-              player2: "TBD", 
-              winner: "Alex Rodriguez / Mike Johnson", 
-              score: "11-8, 11-6", 
-              completed: true
-            },
-            thirdPlace: {
-              id: "third", 
-              player1: "Kevin Lee / Mark Wilson", 
-              player2: "TBD", 
-              winner: "Kevin Lee / Mark Wilson", 
-              score: "11-7, 11-4", 
-              completed: true
-            }
-          }
-        },
-        "mixed-open-doubles": {
-          id: "mixed-open-doubles",
-          name: "Mixed Open Doubles",
-          skillLevel: "Open", 
-          tier: 1,
-          prizePool: 35000,
-          participants: 12,
-          maxParticipants: 16,
-          ageGroup: "18+",
-          registrations: [
-            { id: "mixed1", name: "Sarah Johnson", partner: "Tom Wilson", status: "approved", rating: "4.9", seed: 1 },
-            { id: "mixed2", name: "Maria Garcia", partner: "John Davis", status: "approved", rating: "4.7", seed: 2 },
-            { id: "mixed3", name: "Lisa Chen", partner: "Mike Rodriguez", status: "approved", rating: "4.6", seed: 3 },
-            { id: "mixed4", name: "Emma Thompson", partner: "Alex Brown", status: "approved", rating: "4.5", seed: 4 },
-            { id: "mixed5", name: "Jennifer Lee", partner: "Carlos Martinez", status: "approved", rating: "4.4", seed: 5 },
-            { id: "mixed6", name: "Rachel Taylor", partner: "David Anderson", status: "approved", rating: "4.3", seed: 6 }
-          ],
-          groupStage: {
-            groups: [
-              {
-                id: "group-a",
-                name: "Group A",
-                status: "completed",
-                standings: [
-                  { player: "Sarah Johnson / Tom Wilson", wins: 3, losses: 0, pointsFor: 66, pointsAgainst: 45, qualified: true },
-                  { player: "Maria Garcia / John Davis", wins: 2, losses: 1, pointsFor: 58, pointsAgainst: 52, qualified: true },
-                  { player: "Lisa Chen / Mike Rodriguez", wins: 1, losses: 2, pointsFor: 51, pointsAgainst: 59, qualified: false },
-                  { player: "Jennifer Lee / Carlos Martinez", wins: 0, losses: 3, pointsFor: 42, pointsAgainst: 61, qualified: false }
-                ]
-              },
-              {
-                id: "group-b",
-                name: "Group B",
-                status: "completed",
-                standings: [
-                  { player: "Emma Thompson / Alex Brown", wins: 3, losses: 0, pointsFor: 63, pointsAgainst: 48, qualified: true },
-                  { player: "Rachel Taylor / David Anderson", wins: 2, losses: 1, pointsFor: 56, pointsAgainst: 53, qualified: true },
-                  { player: "Michael Torres / Jessica Kim", wins: 1, losses: 2, pointsFor: 52, pointsAgainst: 58, qualified: false },
-                  { player: "Robert Chen / Emily Wang", wins: 0, losses: 3, pointsFor: 45, pointsAgainst: 62, qualified: false }
-                ]
-              }
-            ]
-          },
-          knockoutStage: {
-            quarterFinals: [
-              { id: "qf1", player1: "Sarah Johnson / Tom Wilson", player2: "Rachel Taylor / David Anderson", winner: "Sarah Johnson / Tom Wilson", score: "11-6, 11-4", completed: true },
-              { id: "qf2", player1: "Emma Thompson / Alex Brown", player2: "Maria Garcia / John Davis", winner: "Emma Thompson / Alex Brown", score: "11-9, 8-11, 11-7", completed: true }
-            ],
-            semiFinals: [
-              { id: "sf1", player1: "Sarah Johnson / Tom Wilson", player2: "Emma Thompson / Alex Brown", winner: "Sarah Johnson / Tom Wilson", score: "11-8, 11-6", completed: true }
-            ],
-            final: {
-              id: "final", 
-              player1: "Sarah Johnson / Tom Wilson", 
-              player2: "TBD", 
-              winner: "Sarah Johnson / Tom Wilson", 
-              score: "11-7, 11-5", 
-              completed: true
-            },
-            thirdPlace: {
-              id: "third", 
-              player1: "Emma Thompson / Alex Brown", 
-              player2: "TBD", 
-              winner: "Emma Thompson / Alex Brown", 
-              score: "11-9, 11-6", 
-              completed: true
-            }
-          }
-        }
-      },
-      events: [
-        {
-          id: "event1",
-          title: "Registration & Check-in",
-          description: "All players must check in and complete registration. Bring valid ID and proof of payment.",
-          date: "2024-05-15T08:00:00Z",
-          duration: "60 minutes",
-          location: "Main Lobby"
-        },
-        {
-          id: "event2", 
-          title: "Tournament Briefing",
-          description: "Mandatory rules briefing and player introductions. Tournament format explanation.",
-          date: "2024-05-15T09:00:00Z",
-          duration: "30 minutes",
-          location: "Center Court"
-        },
-        {
-          id: "event3",
-          title: "Opening Ceremony",
-          description: "Welcome address by John Doe, national anthem, and ceremonial first serve.",
-          date: "2024-05-15T09:30:00Z", 
-          duration: "30 minutes",
-          location: "Center Court"
-        },
-        {
-          id: "event4",
-          title: "Round 1 Matches",
-          description: "First round matches for all divisions begin. Players should be ready 15 minutes early.",
-          date: "2024-05-15T10:00:00Z",
-          duration: "4 hours",
-          location: "Courts 1-8"
-        },
-        {
-          id: "event5",
-          title: "Lunch Break",
-          description: "Catered lunch for all participants and spectators. Sponsored by Elite Sports Nutrition.",
-          date: "2024-05-15T14:00:00Z",
-          duration: "90 minutes", 
-          location: "Player Lounge"
-        },
-        {
-          id: "event6",
-          title: "Semifinals",
-          description: "Semi-final matches for advancing teams. Live streaming begins.",
-          date: "2024-05-15T15:30:00Z",
-          duration: "3 hours",
-          location: "Courts 1-4"
-        },
-        {
-          id: "event7",
-          title: "Day 2: Finals",
-          description: "Championship finals for all divisions. Awards ceremony to follow.",
-          date: "2024-05-16T16:00:00Z",
-          duration: "3 hours",
-          location: "Center Court"
-        },
-        {
-          id: "event8",
-          title: "Awards Ceremony",
-          description: "Trophy presentation, prize distribution, and closing remarks by John Doe.",
-          date: "2024-05-16T19:00:00Z",
-          duration: "60 minutes",
-          location: "Center Court"
-        }
-      ]
-    }
-   ];
+
 
   const renderTabContent = () => {
     switch(activeTab) {
       case 'about':
-        return (
-          <TabContent>
-            <TabSection>
-              <TabSectionTitle>Bio</TabSectionTitle>
-              <BioContainer>
-                {!isEditingBio && (
-                  <EditBioButton onClick={handleEditBio}>
-                    ✏️ Edit
-                  </EditBioButton>
-                )}
-                {isEditingBio ? (
-                  <>
-                    <BioTextArea
-                      value={bioText}
-                      onChange={(e) => setBioText(e.target.value)}
-                      placeholder="Tell us about yourself, your pickleball journey, goals, or anything you'd like other players to know..."
-                      autoFocus
-                    />
-                    <BioEditButtons>
-                      <BioButton onClick={handleCancelBio}>
-                        Cancel
-                      </BioButton>
-                      <BioButton variant="save" onClick={handleSaveBio}>
-                        Save
-                      </BioButton>
-                    </BioEditButtons>
-                  </>
-                ) : (
-                  <TabText>{aboutData.bio || "Click 'Edit' to add your bio..."}</TabText>
-                )}
-              </BioContainer>
-            </TabSection>
-          </TabContent>
-        );
+  return (
+    <TabContent style={{ direction: "ltr" }}> {/* ✅ Force LTR for all children */}
+      <TabSection>
+        <TabSectionTitle>Bio</TabSectionTitle>
+        <BioContainer style={{ direction: "ltr" }}> {/* ✅ Ensure container LTR */}
+          {!isEditingBio && (
+            <EditBioButton onClick={handleEditBio}>
+              ✏️ Edit
+            </EditBioButton>
+          )}
+          {isEditingBio ? (
+            <>
+              <BioTextArea
+                value={bioText}
+                onChange={(e) => setBioText(e.target.value)}
+                placeholder="Tell us about yourself, your pickleball journey, goals, or anything you'd like other players to know..."
+                autoFocus
+                dir="ltr" /* ✅ HTML input LTR */
+              />
+              <BioEditButtons>
+                <BioButton onClick={handleCancelBio}>
+                  Cancel
+                </BioButton>
+                <BioButton variant="save" onClick={handleSaveBio}>
+                  Save
+                </BioButton>
+              </BioEditButtons>
+            </>
+          ) : (
+            <TabText> {/* ✅ Display text LTR */}
+              {aboutData.bio || "Click 'Edit' to add your bio..."}
+            </TabText>
+          )}
+        </BioContainer>
+      </TabSection>
+    </TabContent>
+  );
+
       case 'club':
         return (
           <TabContent>
@@ -5625,101 +5390,68 @@ const clubData = [
                   </HostTournamentButton>
                 </TournamentSearchSection>
                 
-                <TournamentGrid>
-                  {tournamentData
-                    .filter(tournament => 
-                      tournament.name.toLowerCase().includes(tournamentSearchTerm.toLowerCase()) ||
-                      tournament.location.toLowerCase().includes(tournamentSearchTerm.toLowerCase())
-                    )
-                    .map((tournament) => (
-                    <ProfileTournamentCard 
-                      key={tournament.id}
-                      onClick={() => handleTournamentClick(tournament)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <ProfileTournamentBanner>
-                        {tournament.bannerUrl && (
-                          <img src={tournament.bannerUrl} alt={tournament.name} />
-                        )}
-                        <ProfileStatusBadge status={tournament.status}>
-                          {tournament.status.toUpperCase()}
-                        </ProfileStatusBadge>
-                      </ProfileTournamentBanner>
-                      <ProfileTournamentInfo>
-                        <ProfileTournamentName>{tournament.name}</ProfileTournamentName>
-                        
-                        <ProfileTournamentDate>
-                          <CalendarIcon />
-                          {new Date(tournament.date).toLocaleDateString()}
-                        </ProfileTournamentDate>
-                        <ProfileTournamentLocation>
-                            <LocationIcon />
-                            {tournament.location}
-                        </ProfileTournamentLocation>
-                        <ProfileTournamentSkillLevels>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
-                            <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="m22 21-3-3m0 0a5.5 5.5 0 1 0-7.78-7.78 5.5 5.5 0 0 0 7.78 7.78Z" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                          {tournament.tournamentCategories ? (
-                            (() => {
-                              // Get unique categories
-                              const categories = new Set();
-                              Object.values(tournament.tournamentCategories).forEach(category => {
-                                if (category.skillLevel?.toLowerCase() === 'open') {
-                                  // Ensure tier is a number, default to 1 if not specified
-                                  const tier = Number(category.tier) || 1;
-                                  categories.add(`Open - Tier ${tier}`);
-                                } else if (['Beginner', 'Intermediate', 'Advanced'].includes(category.skillLevel)) {
-                                  categories.add(category.skillLevel);
-                                }
-                              });
-                              
-                              return Array.from(categories).join(', ');
-                            })()
-                          ) : (
-                            // Fallback for old data structure
-                            `${tournament.tournamentType.charAt(0).toUpperCase() + tournament.tournamentType.slice(1)}${tournament.tournamentType === 'open' ? ` - Tier ${tournament.tier}` : ''}`
-                          )}
-                        </ProfileTournamentSkillLevels>
-                        <ProfileTournamentStats>
-                          <ProfileParticipantCount>
-                            <ParticipantIcon />
-                            <div>
-                              {tournament.currentParticipants}/{tournament.maxParticipants}
-                          </div>
-                          </ProfileParticipantCount>
-                          <ProfileRegistrationFee>
-                            <MoneyIcon />
-                            <div>
-                              <span>₱{tournament.entryFee}</span>
-                              <span></span> 
-                            </div>
-                          </ProfileRegistrationFee>
-                        </ProfileTournamentStats>
-                        
-                        {tournament.result && (
-                          <TournamentResultInfo>
-                            <TrophyIcon />
-                            {tournament.result}
-                          </TournamentResultInfo>
-                        )}
-                        
-                        {tournament.status === 'upcoming' && (
-                          <ProfileRegisterButton 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              showNotification('Edit tournament functionality coming soon!', 'info');
-                            }}
-                          >
-                            ✏️ Edit Tournament
-                          </ProfileRegisterButton>
-                        )}
-                      </ProfileTournamentInfo>
-                    </ProfileTournamentCard>
-                  ))}
-                </TournamentGrid>
+<TournamentGrid>
+{tournaments
+  .filter(tournament =>
+    (tournament.name?.toLowerCase() || "").includes(tournamentSearchTerm.toLowerCase()) ||
+    (tournament.venueCity?.toLowerCase() || "").includes(tournamentSearchTerm.toLowerCase())
+  )
+    .map(tournament => {
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      const userId = storedUser?._id;
+
+      // Optional: double-check author
+      const isAuthor = tournament.createdBy === userId;
+
+      return (
+        <ProfileTournamentCard 
+          key={tournament._id}
+          onClick={() => handleTournamentClick(tournament)}
+          style={{ cursor: 'pointer' }}
+        >
+          <ProfileTournamentBanner>
+            {tournament.tournamentPicture && (
+              <img src={tournament.tournamentPicture} alt={tournament.tournamentName} />
+            )}
+            <ProfileStatusBadge status={tournament.status}>
+              {tournament.status.toUpperCase()}
+            </ProfileStatusBadge>
+          </ProfileTournamentBanner>
+
+          <ProfileTournamentInfo>
+            <ProfileTournamentName>{tournament.tournamentName}</ProfileTournamentName>
+
+            <ProfileTournamentDate>
+              <CalendarIcon />
+              {new Date(tournament.tournamentDates[0]).toLocaleDateString()}
+            </ProfileTournamentDate>
+
+            <ProfileTournamentLocation>
+              <LocationIcon />
+              {tournament.venueCity}
+            </ProfileTournamentLocation>
+
+            <ProfileTournamentSkillLevels>
+              {tournament.tournamentCategories?.map(cat => cat.skillLevel).join(", ")}
+            </ProfileTournamentSkillLevels>
+
+            {isAuthor && tournament.status === "upcoming" && (
+              <ProfileRegisterButton 
+                onClick={e => {
+                  e.stopPropagation();
+                  showNotification('Edit tournament functionality coming soon!', 'info');
+                }}
+              >
+                ✏️ Edit Tournament
+              </ProfileRegisterButton>
+            )}
+          </ProfileTournamentInfo>
+        </ProfileTournamentCard>
+      );
+    })}
+</TournamentGrid>
+
+
               </>
             )}
           </TabContent>
@@ -5968,7 +5700,7 @@ const BioContainer = styled.div`
   position: relative;
 `;
 
-const BioTextArea = styled.textarea`
+const BioTextArea = styled.textarea.attrs({ dir: "ltr" })`
   width: 100%;
   min-height: 120px;
   padding: 12px;
@@ -5980,18 +5712,28 @@ const BioTextArea = styled.textarea`
   color: #374151;
   background-color: #ffffff;
   resize: vertical;
+
   text-align: left;
-  
+  unicode-bidi: plaintext; /* ✅ Prevent letter reversing */
+
   &:focus {
     outline: none;
     border-color: #29ba9b;
     box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
   }
-  
+
   &::placeholder {
     color: #9ca3af;
   }
 `;
+
+const TabText = styled.p`
+  direction: ltr;          /* ✅ Force left-to-right */
+  unicode-bidi: plaintext; /* ✅ Prevent mirroring/reversing */
+  text-align: left;
+  white-space: pre-wrap;   /* Keep line breaks */
+`;
+
 
 const BioEditButtons = styled.div`
   display: flex;
@@ -6061,7 +5803,6 @@ const EditBioButton = styled.button`
   }
 `;
 
- const { user } = userProfile;
   return (
     <ProfileContainer>
     <ProfileBackgroundContainer>

@@ -1,301 +1,232 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import Sidebar from '../../../components/Superadmin/SuperAdminSidebar';
-import Navbar from '../../../components/Superadmin/SuperAdminNavbar';
-import { Modal, Button, Input, Form, message } from 'antd';
-import { FaCheck, FaTimes, FaEye, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Sidebar from "../../../components/Superadmin/SuperAdminSidebar";
+import Navbar from "../../../components/Superadmin/SuperAdminNavbar";
+import { Button, Modal, message, Input } from "antd";
+import { FaEye, FaTrash, FaEdit } from "react-icons/fa";
 
-const ClubAdmins = () => {
-  const [verifiedAdmins, setVerifiedAdmins] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]);
+const SuperAdminTournaments = () => {
+  const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [attachmentModal, setAttachmentModal] = useState(false);
-  const [selectedAttachment, setSelectedAttachment] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showRevertModal, setShowRevertModal] = useState(false);
-  const [selectedAdmin, setSelectedAdmin] = useState(null);
-  const [editingAdminId, setEditingAdminId] = useState(null);
-  const [addForm] = Form.useForm();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTournament, setSelectedTournament] = useState(null);
+  const [tournamentModalOpen, setTournamentModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [tournamentToDelete, setTournamentToDelete] = useState(null);
 
-  useEffect(() => {
-    fetchClubAdmins();
-  }, []);
+  const token = localStorage.getItem("token");
 
-  const fetchClubAdmins = async () => {
+  const fetchTournaments = async () => {
+    if (!token) return;
     try {
       setLoading(true);
-      const [verifiedRes, pendingRes] = await Promise.all([
-        axios.get('/api/clubAdmins/verified'),
-        axios.get('/api/clubAdmins/requests')
-      ]);
-      setVerifiedAdmins(verifiedRes.data);
-      setPendingRequests(pendingRes.data);
-    } catch (err) {
-      console.error('Error fetching club admins:', err);
+      const res = await axios.get("/api/tournaments", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTournaments(res.data);
+    } catch (error) {
+      console.error("Get tournaments error:", error.response || error);
+      message.error("Failed to fetch tournaments.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (userId) => {
+  useEffect(() => {
+    fetchTournaments();
+  }, []);
+
+  const handleDeleteClick = (tournament) => {
+    setTournamentToDelete(tournament);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!tournamentToDelete) return;
     try {
-      await axios.put(`/api/clubAdmins/status/${userId}`, {
-        roles: ['player', 'clubadmin'],
-        isVerifiedClubAdmin: true,
-        clubAdminRequest: { status: 'approved' }
+      await axios.delete(`/api/tournaments/${tournamentToDelete._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      message.success('Club admin approved!');
-      fetchClubAdmins();
+      message.success("Tournament deleted.");
+      setTournaments((prev) =>
+        prev.filter((t) => t._id !== tournamentToDelete._id)
+      );
     } catch (err) {
-      console.error('Approval error:', err);
-      message.error('Failed to approve.');
+      console.error(err);
+      message.error("Failed to delete tournament.");
+    } finally {
+      setDeleteModalOpen(false);
+      setTournamentToDelete(null);
     }
   };
 
-  const handleReject = async (userId) => {
-    try {
-      await axios.put(`/api/users/${userId}`, {
-        clubAdminRequest: { status: 'rejected' }
-      });
-      message.warning('Club admin request rejected.');
-      fetchClubAdmins();
-    } catch (err) {
-      console.error('Rejection error:', err);
-      message.error('Failed to reject.');
-    }
-  };
-
-  const openAttachmentModal = (attachment) => {
-    setSelectedAttachment(attachment);
-    setAttachmentModal(true);
-  };
-
-  const handleAddSubmit = async () => {
-    try {
-      const values = await addForm.validateFields();
-      if (editingAdminId) {
-        await axios.put(`/api/clubAdmins/${editingAdminId}`, values);
-        message.success('Club admin updated!');
-      } else {
-        await axios.post('/api/clubAdmins', {
-          ...values,
-          roles: ['clubadmin'],
-          isVerifiedClubAdmin: true
-        });
-        message.success('Club admin added!');
-      }
-      setShowAddModal(false);
-      addForm.resetFields();
-      setEditingAdminId(null);
-      fetchClubAdmins();
-    } catch (err) {
-      console.error('Save error:', err);
-      message.error(err?.response?.data?.message || 'Failed to save club admin.');
-    }
-  };
-
-  const handleEdit = (admin) => {
-    addForm.setFieldsValue({
-      firstName: admin.firstName,
-      lastName: admin.lastName,
-      email: admin.email,
-      username: admin.username,
-      birthDate: admin.birthDate?.substring(0, 10)
-    });
-    setEditingAdminId(admin._id);
-    setShowAddModal(true);
-  };
-
-  const openRevertModal = (admin) => {
-    setSelectedAdmin(admin);
-    setShowRevertModal(true);
-  };
-
-  const handleRevertConfirmed = async () => {
-    if (!selectedAdmin) return;
-    try {
-      const res = await axios.put(`/api/clubAdmins/revert/${selectedAdmin._id}`);
-      message.success(res.data.message || 'Reverted to player!');
-      setShowRevertModal(false);
-      fetchClubAdmins();
-    } catch (err) {
-      console.error('Revert error:', err);
-      message.error(err?.response?.data?.message || 'Failed to revert.');
-    }
-  };
-
-  const filteredVerified = verifiedAdmins.filter((a) =>
-    `${a.firstName} ${a.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const filteredPending = pendingRequests.filter((a) =>
-    `${a.firstName} ${a.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTournaments = tournaments.filter((tournament) => {
+    const nameMatch = tournament.tournamentName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const categoryMatch = tournament.tournamentCategories?.some(
+      (cat) => cat.division?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    return nameMatch || categoryMatch;
+  });
 
   return (
     <div className="app">
       <Sidebar />
-      <section id="content">
+      <section id="content" className="players-content">
         <Navbar />
-        <main className="p-6">
-          <h1 className="text-2xl font-bold text-nuBlue mb-4">Club Admins</h1>
+        <main className="p-6 max-w-screen-lg mx-auto">
+          <h1 className="text-3xl font-extrabold text-nuBlue mb-4">Tournaments</h1>
 
-          <div className="flex justify-between items-center mb-4">
-            <Button
-              type="primary"
-              icon={<FaPlus />}
-              className="bg-nuBlue text-white"
-              onClick={() => setShowAddModal(true)}
-            >
-              Add Club Admin
-            </Button>
-            <Input
-              placeholder="Search club admins..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-1/3"
-            />
-          </div>
+          <Input
+            placeholder="Search tournaments..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ minWidth: "250px", padding: "10px 16px", fontSize: "16px", marginBottom: "16px" }}
+            allowClear
+          />
 
           {loading ? (
-            <p>Loading...</p>
+            <div className="text-center py-10 text-lg">Loading...</div>
           ) : (
-            <>
-              <h2 className="text-xl font-semibold mb-2">✅ Verified Club Admins</h2>
-              <table className="min-w-full bg-white mb-6 rounded shadow">
+            <div className="overflow-x-auto rounded-lg shadow-lg border border-gray-300">
+              <table className="min-w-full bg-white rounded-lg table-auto">
                 <thead className="bg-nuBlue text-white">
                   <tr>
-                    <th className="py-2 px-4 text-left">Name</th>
-                    <th className="py-2 px-4 text-left">Email</th>
-                    <th className="py-2 px-4 text-left">Actions</th>
+                    <th className="py-4 px-8 text-left">Name</th>
+                    <th className="py-4 px-8 text-left">Category</th>
+                    <th className="py-4 px-8 text-left">Date</th>
+                    <th className="py-4 px-8 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredVerified.map((admin) => (
-                    <tr key={admin._id} className="border-b">
-                      <td className="py-2 px-4">{admin.firstName} {admin.lastName}</td>
-                      <td className="py-2 px-4">{admin.email}</td>
-                      <td className="py-2 px-4 flex gap-2">
-                        <Button icon={<FaEdit />} onClick={() => handleEdit(admin)}>Edit</Button>
-                        <Button danger icon={<FaTrash />} onClick={() => openRevertModal(admin)}>Revert</Button>
+                  {filteredTournaments.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="text-center py-10 text-gray-500">
+                        No tournaments found.
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              <h2 className="text-xl font-semibold mb-2">🕒 Pending Club Admin Requests</h2>
-              <table className="min-w-full bg-white rounded shadow">
-                <thead className="bg-yellow-500 text-white">
-                  <tr>
-                    <th className="py-2 px-4 text-left">Name</th>
-                    <th className="py-2 px-4 text-left">Email</th>
-                    <th className="py-2 px-4 text-left">Attachment</th>
-                    <th className="py-2 px-4 text-left">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPending.map((req) => (
-                    <tr key={req._id} className="border-b">
-                      <td className="py-2 px-4">{req.firstName} {req.lastName}</td>
-                      <td className="py-2 px-4">{req.email}</td>
-                      <td className="py-2 px-4">
-                        {req.clubAdminRequest?.attachment ? (
-                          <Button icon={<FaEye />} onClick={() => openAttachmentModal(req.clubAdminRequest.attachment)}>
+                  ) : (
+                    filteredTournaments.map((tournament) => (
+                      <tr key={tournament._id} className="border-b hover:bg-gray-50 align-top">
+                        <td className="py-4 px-8">{tournament.tournamentName}</td>
+                        <td className="py-4 px-8">
+                          {tournament.tournamentCategories?.map((cat) => (
+                            <div key={cat._id}>
+                              {cat.division || "N/A"} ({cat.skillLevel})
+                            </div>
+                          ))}
+                        </td>
+                        <td className="py-4 px-8">
+                          {tournament.tournamentDates?.map((d) => new Date(d).toLocaleDateString()).join(", ")}
+                        </td>
+                        <td className="py-4 px-8 flex gap-2 flex-wrap">
+                          <Button
+                            icon={<FaEye />}
+                            onClick={() => {
+                              setSelectedTournament(tournament);
+                              setTournamentModalOpen(true);
+                            }}
+                          >
                             View
                           </Button>
-                        ) : 'No file'}
-                      </td>
-                      <td className="py-2 px-4 flex gap-2">
-                        <Button
-                          type="primary"
-                          icon={<FaCheck />}
-                          className="bg-green-600 text-white"
-                          onClick={() => handleApprove(req._id)}
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          danger
-                          icon={<FaTimes />}
-                          onClick={() => handleReject(req._id)}
-                        >
-                          Reject
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                          <Button
+                            icon={<FaEdit />}
+                            className="bg-blue-600 text-white"
+                            onClick={() => message.info("Edit feature coming soon!")}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            danger
+                            icon={<FaTrash />}
+                            onClick={() => handleDeleteClick(tournament)}
+                          >
+                            Delete
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
-            </>
+            </div>
           )}
 
-          {/* Attachment Modal */}
+          {/* Delete Modal */}
           <Modal
-            title="Attachment"
-            open={attachmentModal}
-            onCancel={() => setAttachmentModal(false)}
-            footer={null}
-          >
-            {selectedAttachment?.endsWith('.pdf') ? (
-              <embed src={selectedAttachment} width="100%" height="500px" type="application/pdf" />
-            ) : (
-              <img src={selectedAttachment} alt="Attachment" className="w-full" />
-            )}
-          </Modal>
-
-          {/* Add/Edit Modal */}
-          <Modal
-            title={editingAdminId ? "Edit Club Admin" : "Add Club Admin"}
-            open={showAddModal}
-            onCancel={() => {
-              setShowAddModal(false);
-              addForm.resetFields();
-              setEditingAdminId(null);
-            }}
-            onOk={() => addForm.submit()}
-            okText={editingAdminId ? "Update" : "Add"}
-          >
-            <Form layout="vertical" form={addForm} onFinish={handleAddSubmit}>
-              <Form.Item label="First Name" name="firstName" rules={[{ required: true }]}>
-                <Input />
-              </Form.Item>
-              <Form.Item label="Last Name" name="lastName" rules={[{ required: true }]}>
-                <Input />
-              </Form.Item>
-              <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email' }]}>
-                <Input />
-              </Form.Item>
-              <Form.Item label="Username" name="username" rules={[{ required: true }]}>
-                <Input />
-              </Form.Item>
-              <Form.Item label="Birthdate" name="birthDate" rules={[{ required: true }]}>
-                <Input type="date" />
-              </Form.Item>
-              {!editingAdminId && (
-                <Form.Item label="Password" name="password" rules={[{ required: true }]}>
-                  <Input.Password />
-                </Form.Item>
-              )}
-            </Form>
-          </Modal>
-
-          {/* Revert Modal */}
-          <Modal
-            title="Revert to Player"
-            open={showRevertModal}
-            onCancel={() => setShowRevertModal(false)}
-            onOk={handleRevertConfirmed}
-            okText="Revert"
+            title="Confirm Deletion"
+            open={deleteModalOpen}
+            onCancel={() => setDeleteModalOpen(false)}
+            onOk={handleDeleteConfirm}
+            okText="Delete"
             cancelText="Cancel"
+            okButtonProps={{ danger: true, style: { borderRadius: "6px" } }}
+            cancelButtonProps={{ style: { borderRadius: "6px" } }}
+            destroyOnClose
           >
-            <p>
-              Are you sure you want to revert <strong>{selectedAdmin?.firstName} {selectedAdmin?.lastName}</strong> to player?
-              <br />This will remove their <strong>clubadmin</strong> role.
-            </p>
+            <p className="text-lg">Are you sure you want to delete this tournament?</p>
+          </Modal>
+
+          {/* Tournament Details Modal */}
+          <Modal
+            title={selectedTournament?.tournamentName || "Tournament Details"}
+            open={tournamentModalOpen}
+            onCancel={() => setTournamentModalOpen(false)}
+            footer={null}
+            width={700}
+          >
+            <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+              <h3 className="font-semibold mb-2">Description:</h3>
+              <p className="mb-4 whitespace-pre-wrap">{selectedTournament?.description}</p>
+
+              <p><strong>Venue:</strong> {selectedTournament?.venueName}, {selectedTournament?.venueCity}</p>
+              <p><strong>Dates:</strong> {selectedTournament?.tournamentDates?.map((d) => new Date(d).toLocaleDateString()).join(", ")}</p>
+              <p><strong>Registration Instructions:</strong> {selectedTournament?.registrationInstructions}</p>
+              <p><strong>Contact:</strong> {selectedTournament?.contactEmail} | {selectedTournament?.contactPhone || "N/A"}</p>
+              <p><strong>Entry Fee:</strong> {selectedTournament?.entryFeeMin || "N/A"} to {selectedTournament?.entryFeeMax || "N/A"}</p>
+              {selectedTournament?.prizePool && <p><strong>Prize Pool:</strong> {selectedTournament.prizePool}</p>}
+              {selectedTournament?.rules && <p><strong>Rules:</strong> {selectedTournament.rules}</p>}
+              {selectedTournament?.events && <p><strong>Events:</strong> {selectedTournament.events}</p>}
+
+              <h3 className="font-semibold mt-4 mb-2">Categories:</h3>
+              {selectedTournament?.tournamentCategories?.length > 0 ? (
+                selectedTournament.tournamentCategories.map((cat) => (
+                  <div key={cat._id}>
+                    <p>
+                      <strong>{cat.division || "N/A"}</strong>
+                      {cat.ageCategory ? ` (${cat.ageCategory})` : ""} - 
+                      Skill Level: {cat.skillLevel || "N/A"} - 
+                      Max Participants: {cat.maxParticipants || "N/A"}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p>No categories added</p>
+              )}
+
+              {selectedTournament?.paymentMethods?.length > 0 && (
+                <>
+                  <h3 className="font-semibold mt-4 mb-2">Payment Methods:</h3>
+                  {selectedTournament.paymentMethods.map((pm, index) => (
+                    <div key={index}>
+                      <p>
+                        {pm.bankName} - {pm.accountName} - {pm.accountNumber}
+                        {pm.qrCodeImage && <img src={`http://localhost:5000${pm.qrCodeImage}`} alt="QR" style={{ maxWidth: "150px", display: "block", marginTop: "4px" }} />}
+                      </p>
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {selectedTournament?.tournamentPicture && (
+                <div className="mt-4">
+                  <img
+                    src={`http://localhost:5000${selectedTournament.tournamentPicture}`}
+                    alt="Tournament"
+                    style={{ width: "100%", borderRadius: "6px", maxHeight: "300px", objectFit: "cover" }}
+                  />
+                </div>
+              )}
+            </div>
           </Modal>
         </main>
       </section>
@@ -303,4 +234,4 @@ const ClubAdmins = () => {
   );
 };
 
-export default ClubAdmins;
+export default SuperAdminTournaments;

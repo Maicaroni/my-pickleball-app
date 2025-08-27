@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import styled from 'styled-components';
 import logoImg from '../../ppl-logo.svg';
 import axios from 'axios';
+import { useAuth } from "../contexts/AuthContext";
 
 
 const InitialsFallback = styled.div`
@@ -1229,12 +1229,12 @@ useEffect(() => {
     window.scrollTo(0, 0);
   };
 
+
   const handleLogout = () => {
-    logout();
-    setIsProfileOpen(false);
-    setIsNotificationOpen(false);
-    navigate('/');
+    logout(); // clears user & token globally
+    navigate("/"); // redirect to home page
   };
+
 
   // TODO: Replace with actual API calls
   const markNotificationAsRead = (notificationId) => {

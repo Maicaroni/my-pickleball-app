@@ -2,7 +2,8 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from "axios";
+
 
 // Styled Components
 const HostTournamentContainer = styled.div`
@@ -20,10 +21,20 @@ const FormHeader = styled.div`
 `;
 
 const FormTitle = styled.h1`
-  font-size: 2.2rem;
-  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  font-size: 2rem;
   color: #234255;
-  margin-bottom: 12px;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+
+  @media (min-width: 768px) {
+    font-size: 2.5rem;
+    margin-bottom: 1.25rem;
+  }
 `;
 
 const FormSubtitle = styled.p`
@@ -820,34 +831,38 @@ const CalendarDayHeader = styled.div`
   padding: 8px 4px;
 `;
 
-const CalendarDay = styled.button`
+const CalendarDay = styled.button.withConfig({
+  shouldForwardProp: (prop) => !['selected', 'today', 'otherMonth'].includes(prop)
+})`
   padding: 8px 4px;
   border: none;
   border-radius: 4px;
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: ${props => {
-    if (props.selected) return '#29ba9b';
-    if (props.today) return '#f0fffe';
-    if (props.otherMonth) return 'transparent';
+
+  background: ${({ selected, today, otherMonth }) => {
+    if (selected) return '#29ba9b';
+    if (today) return '#f0fffe';
+    if (otherMonth) return 'transparent';
     return 'white';
   }};
-  color: ${props => {
-    if (props.selected) return 'white';
-    if (props.otherMonth) return '#cbd5e0';
-    if (props.today) return '#29ba9b';
+
+  color: ${({ selected, today, otherMonth }) => {
+    if (selected) return 'white';
+    if (otherMonth) return '#cbd5e0';
+    if (today) return '#29ba9b';
     return '#374151';
   }};
-  
+
   &:hover {
-    background: ${props => {
-      if (props.selected) return '#26a085';
-      if (props.otherMonth) return 'transparent';
+    background: ${({ selected, otherMonth }) => {
+      if (selected) return '#26a085';
+      if (otherMonth) return 'transparent';
       return '#f0fffe';
     }};
   }
-  
+
   &:disabled {
     cursor: not-allowed;
     opacity: 0.4;
@@ -1054,7 +1069,7 @@ const RichTextEditor = styled.div`
 `;
 
 const HostTournament = () => {
-  const { user, showNotification } = useAuth();
+const { login, showNotification } = useAuth(); // use the new login from AuthContext
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -1066,7 +1081,8 @@ const HostTournament = () => {
     registrationDeadline: '',
     category: '',
     skillLevel: '',
-    entryFee: '',
+    entryFeeMin: '',
+    entryFeeMax: '',
     prizePool: '',
     venueName: '',
     venueAddress: '',
@@ -1100,7 +1116,26 @@ const HostTournament = () => {
   // Rich text editor refs
   const rulesEditorRef = useRef(null);
   const eventsEditorRef = useRef(null);
+   // ✅ Get logged-in user from localStorage
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+const token = storedUser?.token;
+const user = storedUser; // or storedUser.user if login stores nested user object
 
+if (!user || !token) {
+  return (
+    <HostTournamentContainer>
+      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+        <h2 style={{ color: '#234255', marginBottom: '16px' }}>Sign in required</h2>
+        <p style={{ color: '#6b7280', marginBottom: '20px' }}>
+          You need to be logged in to host a tournament.
+        </p>
+        <Button variant="primary" onClick={() => navigate('/signin')}>
+          Sign In
+        </Button>
+      </div>
+    </HostTournamentContainer>
+  );
+}
   // Initialize with one empty category
   useEffect(() => {
     if (formData.tournamentCategories.length === 0) {
@@ -1582,87 +1617,144 @@ const HostTournament = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
 
-    // Validate required fields
+  try {
+    // Get token
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const token = storedUser?.token;
+
+    if (!token) {
+      alert("Please login before hosting a tournament");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate required top-level fields
     const requiredFields = [
-      'tournamentName', 'description', 'registrationInstructions',
-      'registrationDeadline', 'category', 'skillLevel',
-      'entryFee', 'venueName', 'venueAddress', 'venueCity', 'contactEmail'
+      "tournamentName",
+      "description",
+      "registrationInstructions",
+      "registrationDeadline",
+      "tournamentDates",
+      "entryFeeMin",
+      "entryFeeMax",
+      "venueName",
+      "venueAddress",
+      "venueCity",
+      "contactEmail"
     ];
 
-    const missingFields = requiredFields.filter(field => !formData[field]);
-    
-    if (missingFields.length > 0) {
-      showNotification('Please fill in all required fields', 'error');
+    for (let field of requiredFields) {
+      if (!formData[field] || (Array.isArray(formData[field]) && formData[field].length === 0)) {
+        alert(`Please fill in ${field}`);
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    // Validate tournamentCategories
+    if (!formData.tournamentCategories || formData.tournamentCategories.length === 0) {
+      alert("Please add at least one tournament category");
       setIsSubmitting(false);
       return;
     }
 
-    if (formData.tournamentDates.length === 0) {
-      showNotification('Please add at least one tournament date', 'error');
+    // Each category must have skillLevel and division
+    for (let cat of formData.tournamentCategories) {
+      if (!cat.skillLevel || !cat.division) {
+        alert("Each category must have a division and skill level");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    // Set top-level category & skillLevel from first category
+    formData.category = formData.tournamentCategories[0].division;
+    formData.skillLevel = formData.tournamentCategories[0].skillLevel;
+
+    // Limit payment methods to max 2
+    if (formData.paymentMethods?.length > 2) {
+      alert("You can only add up to 2 payment methods.");
       setIsSubmitting(false);
       return;
     }
 
-    if (formData.tournamentCategories.length === 0) {
-      showNotification('Please add at least one tournament category', 'error');
-      setIsSubmitting(false);
-      return;
+    // Ensure each payment method has bank info or QR code
+    for (let pm of formData.paymentMethods || []) {
+      if (!pm.bankName && !pm.qrCodeImage) {
+        alert("Each payment method must have a bank or QR code uploaded.");
+        setIsSubmitting(false);
+        return;
+      }
     }
 
-    // Validate that all tournament categories are complete
-    const incompleteCategories = formData.tournamentCategories.filter(cat => {
-      const selectedSkillLevel = skillLevels.find(skill => skill.value === cat.skillLevel);
-      const isOpenCategory = selectedSkillLevel && selectedSkillLevel.isOpen;
-      
-      // For open categories, age is not required, but maxParticipants is always required
-      if (isOpenCategory) {
-        return !cat.division || !cat.skillLevel || !cat.maxParticipants;
-      } else {
-        return !cat.division || !cat.ageCategory || !cat.skillLevel || !cat.maxParticipants;
+    // Prepare FormData for upload.fields()
+    const formDataToSend = new FormData();
+
+    // Top-level fields
+    Object.keys(formData).forEach((key) => {
+      if (["tournamentCategories", "tournamentDates", "paymentMethods"].includes(key)) {
+        formDataToSend.append(key, JSON.stringify(formData[key]));
+      } else if (key !== "tournamentPicture") {
+        if (key === "entryFeeMin" || key === "entryFeeMax") {
+          formDataToSend.append(key, Number(formData[key]));
+        } else {
+          formDataToSend.append(key, formData[key]);
+        }
       }
     });
-    
-    if (incompleteCategories.length > 0) {
-      showNotification('Please complete all required tournament category fields', 'error');
-      setIsSubmitting(false);
-      return;
+
+    // Append tournament picture if uploaded
+    if (formData.tournamentPicture) {
+      formDataToSend.append("tournamentPicture", formData.tournamentPicture);
     }
 
-    try {
-      // Here you would typically send the data to your backend
-      // For now, we'll simulate the submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      showNotification('Tournament submission successful! Your tournament is pending admin approval.', 'success');
-      navigate('/profile');
-    } catch (error) {
-      showNotification('Failed to submit tournament. Please try again.', 'error');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    // Append payment QR images (upload.fields expects array)
+    formData.paymentMethods?.forEach((pm) => {
+      if (pm.qrCodeImage instanceof File) {
+        formDataToSend.append("paymentMethodsFiles", pm.qrCodeImage);
+      }
+    });
 
-  const handleCancel = () => {
+    // Submit
+    const response = await axios.post(
+      "http://localhost:5000/api/tournaments",
+      formDataToSend,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.status === 201) {
+      alert("Tournament submission successful! Pending approval.");
+      navigate("/tournament");
+    }
+
+  } catch (error) {
+    console.error("Error submitting tournament:", error.response?.data || error.message);
+    if (error.response?.status === 401) {
+      alert("Session expired. Please log in again.");
+      localStorage.removeItem("user");
+      navigate("/signin");
+    } else {
+      alert("Failed to submit tournament. Please try again.");
+    }
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
+const handleCancel = () => {
     navigate('/profile');
   };
 
-  if (!user) {
-    return (
-      <HostTournamentContainer>
-        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <h2 style={{ color: '#234255', marginBottom: '16px' }}>Sign in required</h2>
-          <p style={{ color: '#6b7280', marginBottom: '20px' }}>You need to be logged in to host a tournament.</p>
-          <Button variant="primary" onClick={() => navigate('/signin')}>
-            Sign In
-          </Button>
-        </div>
-      </HostTournamentContainer>
-    );
-  }
 
   return (
     <HostTournamentContainer>
@@ -1924,7 +2016,14 @@ const HostTournament = () => {
                       required
                     >
                       <option value="">Select skill level</option>
-                      {skillLevels.map(level => (
+                      {skillLevels
+                        .filter(level => {
+                          if (category.division === 'Team') {
+                            return level.value === 'intermediate' || level.value === 'advanced';
+                          }
+                          return true;
+                        })
+                        .map(level => (
                         <option key={level.value} value={level.value}>
                           {level.label}
                         </option>
@@ -1950,18 +2049,21 @@ const HostTournament = () => {
                       onChange={(e) => updateTournamentCategory(category.id, 'ageCategory', e.target.value)}
                       disabled={(() => {
                         const selectedSkillLevel = skillLevels.find(skill => skill.value === category.skillLevel);
-                        return selectedSkillLevel && selectedSkillLevel.isOpen;
+                        return (selectedSkillLevel && selectedSkillLevel.isOpen) || category.division === 'Team';
                       })()}
                       required={(() => {
                         const selectedSkillLevel = skillLevels.find(skill => skill.value === category.skillLevel);
-                        return !(selectedSkillLevel && selectedSkillLevel.isOpen);
+                        return !(selectedSkillLevel && selectedSkillLevel.isOpen) && category.division !== 'Team';
                       })()}
                     >
                       <option value="">
                         {(() => {
                           const selectedSkillLevel = skillLevels.find(skill => skill.value === category.skillLevel);
                           const isOpenCategory = selectedSkillLevel && selectedSkillLevel.isOpen;
-                          return isOpenCategory ? 'N/A for Open categories' : 'Select age category';
+                          const isTeamDivision = category.division === 'Team';
+                          if (isOpenCategory) return 'N/A for Open categories';
+                          if (isTeamDivision) return 'N/A for Team division';
+                          return 'Select age category';
                         })()}
                       </option>
                       {ageCategories.map(age => (
@@ -1979,11 +2081,20 @@ const HostTournament = () => {
                       required
                     >
                       <option value="">Select participant limit</option>
-                      <option value="16">16 players</option>
-                      <option value="20">20 players</option>
-                      <option value="24">24 players</option>
-                      <option value="28">28 players</option>
-                      <option value="32">32 players</option>
+                      {category.division === 'Team' ? (
+                         <>
+                           <option value="16">16 teams</option>
+                           <option value="20">20 teams</option>
+                         </>
+                      ) : (
+                        <>
+                          <option value="16">16 players</option>
+                          <option value="20">20 players</option>
+                          <option value="24">24 players</option>
+                          <option value="28">28 players</option>
+                          <option value="32">32 players</option>
+                        </>
+                      )}
                     </Select>
                   </FormGroup>
                   
@@ -2042,16 +2153,28 @@ const HostTournament = () => {
           <SectionTitle>Financial Information</SectionTitle>
           <FormRow>
             <FormGroup>
-              <Label>Entry Fee *</Label>
+              <Label>Entry Fee (Minimum) *</Label>
               <Input
                 type="number"
-                name="entryFee"
-                value={formData.entryFee}
+                name="entryFeeMin"
+                value={formData.entryFeeMin}
                 onChange={handleInputChange}
                 placeholder="0.00"
                 min="0"
                 step="0.01"
                 required
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>Entry Fee (Maximum) - Optional</Label>
+              <Input
+                type="number"
+                name="entryFeeMax"
+                value={formData.entryFeeMax}
+                onChange={handleInputChange}
+                placeholder="0.00 (leave empty for fixed fee)"
+                min="0"
+                step="0.01"
               />
             </FormGroup>
           </FormRow>
