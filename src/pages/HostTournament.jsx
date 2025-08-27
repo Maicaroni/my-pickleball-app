@@ -1676,7 +1676,7 @@ const handleSubmit = async (e) => {
 
     // Limit payment methods to max 2
     if (formData.paymentMethods?.length > 2) {
-      alert("You can only add up to 2 payment methods.");
+      alert("You can only add up to 3 payment methods.");
 
       setIsSubmitting(false);
       return;
@@ -1732,7 +1732,7 @@ const handleSubmit = async (e) => {
     );
 
     if (response.status === 201) {
-      alert("Tournament submission successful! Pending approval.");
+      alert("Tournament successfully made");
       navigate("/tournament");
     }
 

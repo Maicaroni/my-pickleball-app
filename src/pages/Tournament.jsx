@@ -1828,12 +1828,9 @@ const PageContainer = styled.div`
 `;
 
 const PageTitle = styled.h1`
-<<<<<<< HEAD
-=======
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
->>>>>>> origin/frontend
   font-size: 2rem;
   color: #234255;
   margin-bottom: 1rem;

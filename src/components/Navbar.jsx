@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import logoImg from '../../ppl-logo.svg';
 import axios from 'axios';
 import { useAuth } from "../contexts/AuthContext";
+import { useNavigate, useLocation } from "react-router-dom";
+
 
 
 const InitialsFallback = styled.div`

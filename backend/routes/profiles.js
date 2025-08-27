@@ -16,7 +16,14 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// GET current user profile
+/**
+ * ✅ Helper to generate a random PPL ID
+ */
+const generatePplId = () => {
+  return `PPL-${Math.floor(100000 + Math.random() * 900000)}`; // 6-digit random number
+};
+
+// ✅ GET current user profile
 router.get("/me", auth, async (req, res) => {
   try {
     let profile = await Profile.findOne({ user: req.user._id }).populate("user", [
@@ -28,6 +35,7 @@ router.get("/me", auth, async (req, res) => {
       "avatarUrl",
     ]);
 
+    // If profile doesn't exist, create it
     if (!profile) {
       profile = new Profile({ user: req.user._id });
       await profile.save();
@@ -41,6 +49,12 @@ router.get("/me", auth, async (req, res) => {
       ]);
     }
 
+    // ✅ Ensure pplId exists
+    if (!profile.pplId) {
+      profile.pplId = generatePplId();
+      await profile.save();
+    }
+
     res.json(profile);
   } catch (err) {
     console.error(err.message);
@@ -48,7 +62,7 @@ router.get("/me", auth, async (req, res) => {
   }
 });
 
-// PUT update current user profile (e.g., bio)
+// ✅ PUT update current user profile (e.g., bio)
 router.put("/me", auth, async (req, res) => {
   try {
     const { bio } = req.body;
@@ -65,7 +79,7 @@ router.put("/me", auth, async (req, res) => {
   }
 });
 
-// POST avatar upload with resizing
+// ✅ POST avatar upload with resizing
 router.post("/avatar", auth, upload.single("avatar"), async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.user._id });

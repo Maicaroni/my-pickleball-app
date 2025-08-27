@@ -553,11 +553,7 @@ const PlayerListContainer = styled.div`
 `;
 
 const PlayerListItem = styled.div`
-<<<<<<< HEAD
-  padding: 12px 16px;
-=======
   padding: 8px 16px;
->>>>>>> origin/frontend
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   margin-bottom: 8px;
@@ -676,7 +672,6 @@ const InitialsFallback = styled.div`
   color: white;
   font-weight: bold;
 `;
-rigin/frontend
 const UserInfo = styled.div`
   display: flex;
   flex-direction: column;
@@ -685,11 +680,7 @@ const UserInfo = styled.div`
 `;
 
 const UserName = styled.h1`
-<<<<<<< HEAD
-  font-family: 'Poppins', 'Open Sans', sans-serif;
-=======
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
->>>>>>> origin/frontend
   font-size: 2.2rem;
   font-weight: 700;
   color: #234255;
@@ -2859,21 +2850,14 @@ const GroupHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-<<<<<<< HEAD
-=======
   margin-top: 0px;
->>>>>>> origin/frontend
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid #e2e8f0;
 
   h4 {
     font-size: 1.1rem;
-<<<<<<< HEAD
-    font-weight: 600;
-=======
     font-weight: 400;
->>>>>>> origin/frontend
     color: #334155;
     margin: 0;
     display: flex;
@@ -2890,9 +2874,6 @@ const GroupHeader = styled.div`
     color: #166534;
     border: 1px solid #bbf7d0;
   }
-
-<<<<<<< HEAD
-=======
   .bracket-actions {
     display: flex;
     align-items: center;
@@ -2933,20 +2914,15 @@ const GroupHeader = styled.div`
     background: #fee2e2;
     border-color: #fca5a5;
   }
-
->>>>>>> origin/frontend
   @media (max-width: 768px) {
     h4 {
       font-size: 1rem;
     }
-<<<<<<< HEAD
-=======
     
     .bracket-btn {
       padding: 4px 6px;
       font-size: 0.7rem;
     }
->>>>>>> origin/frontend
   }
 `;
 
@@ -3423,7 +3399,7 @@ const MatchRow = styled.div`
     background: #dcfce7;
     border-radius: 3px;
     padding: 2px 4px;
->>>>>>> origin/frontend
+
   }
 `;
 
@@ -3565,26 +3541,6 @@ const CategoryExpandIcon = styled.div`
 `;
 
 const CategoryBracketContent = styled.div`
-<<<<<<< HEAD
-  padding: 20px;
-  background: white;
-  display: ${props => props.$expanded ? 'block' : 'none'};
-  animation: ${props => props.$expanded ? 'slideDown 0.3s ease' : 'none'};
-
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      max-height: 0;
-    }
-    to {
-      opacity: 1;
-      max-height: 1000px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    padding: 16px;
-=======
   padding: ${props => props.$expanded ? '20px' : '0 20px'};
   background: white;
   overflow: hidden;
@@ -3595,7 +3551,6 @@ const CategoryBracketContent = styled.div`
 
   @media (max-width: 768px) {
     padding: ${props => props.$expanded ? '16px' : '0 16px'};
->>>>>>> origin/frontend
   }
 `;
 
@@ -3660,11 +3615,13 @@ const { user, token } = useAuth();
   const [isEditingBracket, setIsEditingBracket] = useState({});
   const [editingStandings, setEditingStandings] = useState({});
   const [editingMatches, setEditingMatches] = useState({});
-  const [bioText, setBioText] = useState("I've been playing pickleball for 3 years and love the sport! Looking to improve my game and meet new players.");
+  const [aboutData, setAboutData] = useState({ bio: "" });
+  const [bioText, setBioText] = useState("");
   const [clubSearchTerm, setClubSearchTerm] = useState('');
   const [tournamentSearchTerm, setTournamentSearchTerm] = useState('');
+  const [tournaments, setTournaments] = useState([]);
   const [selectedTournament, setSelectedTournament] = useState(null);
-  const [tournamentDetailTab, setTournamentDetailTab] = useState('details');
+  const [tournamentDetailTab, setTournamentDetailTab] = useState('list'); 
   const [showAttachmentModal, setShowAttachmentModal] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
@@ -3786,7 +3743,7 @@ useEffect(() => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setTournaments(response.data); // no need to filter here anymore
+      setTournaments(response.data); // stores real tournaments
     } catch (error) {
       console.error("Error fetching tournaments:", error);
     }
@@ -3795,6 +3752,35 @@ useEffect(() => {
   fetchTournaments();
 }, []);
 
+function generateRoundRobin(players) {
+  const standings = players.map(player => ({
+    player,
+    wins: 0,
+    losses: 0,
+    pointsFor: 0,
+    pointsAgainst: 0,
+    qualified: false,
+  }));
+
+  const matches = [];
+  for (let i = 0; i < players.length; i++) {
+    for (let j = i + 1; j < players.length; j++) {
+      matches.push({
+        player1: players[i],
+        player2: players[j],
+        time: '08:00',
+        court: 1,
+        date: new Date().toISOString().split('T')[0],
+        game1Player1: 0,
+        game1Player2: 0,
+        finalScorePlayer1: 0,
+        finalScorePlayer2: 0,
+      });
+    }
+  }
+
+  return { standings, matches };
+}
 
 
   // Simulate loading state
@@ -3870,24 +3856,28 @@ const uploadCroppedImage = async () => {
 
 const handleSaveBio = async () => {
   try {
-    const token = localStorage.getItem("token");
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const token = storedUser?.token;
+
+    if (!token) {
+      console.error("No token found in localStorage");
+      return;
+    }
+
     const res = await axios.put(
       "http://localhost:5000/api/profiles/me",
       { bio: bioText },
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
-    // Update global userProfile so Navbar reflects it
     setUserProfile((prev) => ({ ...prev, bio: res.data.bio }));
-     // ✅ Update local display state immediately
     setAboutData((prev) => ({ ...prev, bio: res.data.bio }));
-
-
     setIsEditingBio(false);
   } catch (err) {
     console.error("Failed to update bio:", err);
   }
 };
+
 
 
   const handleCancelBio = () => {
@@ -3903,10 +3893,11 @@ const handleSaveBio = async () => {
     navigate('/host-tournament');
   };
 
-  const handleTournamentClick = (tournament) => {
-    setSelectedTournament(tournament);
-    setTournamentDetailTab('details');
-  };
+const handleTournamentClick = (tournament) => {
+  setSelectedTournament(tournament);
+  setTournamentDetailTab('details'); // Switch to details view
+};
+
 
   const handleBackToTournamentList = () => {
     setSelectedTournament(null);
@@ -3974,7 +3965,7 @@ const handleSaveBio = async () => {
         const allCategories = Object.values(tournament?.tournamentCategories || {});
         const availableCategories = allCategories
           .filter(category => {
-            return isCategoryAllowedForGender(category.name, userGender);
+            return isCategoryAllowedForGender(category.division, userGender);
           });
             
         const autoSelectedCategory = '';
@@ -4042,11 +4033,11 @@ const handleSaveBio = async () => {
           }
           
           // Check if all players still meet the age requirement
-          const categoryAgeRequirement = selectedCategory.ageGroup || selectedCategory.ageCategory;
+          const categoryAgeRequirement = selectedcategory.ageCategory || selectedCategory.ageCategory;
           if (categoryAgeRequirement && tempAges.length > 0) {
             const allPlayersEligible = tempAges.every(age => isAgeEligibleForCategory(age, categoryAgeRequirement));
             if (!allPlayersEligible) {
-              console.log(`🚫 Clearing category "${selectedCategory.name}" - players no longer meet age requirement (${categoryAgeRequirement}). Player ages: [${tempAges.join(', ')}]`);
+              console.log(`🚫 Clearing category "${selectedcategory.division}" - players no longer meet age requirement (${categoryAgeRequirement}). Player ages: [${tempAges.join(', ')}]`);
               updated.category = ''; // Clear the invalid category
             }
           }
@@ -4058,7 +4049,7 @@ const handleSaveBio = async () => {
             
             // Get all player DUPR ratings from the temporary form
             if (tempForm.primaryPlayer?.duprRatings) {
-              const categoryType = getCategoryType(selectedCategory.name);
+              const categoryType = getCategoryType(selectedcategory.division);
               let ratingType = 'singles';
               if (categoryType === 'doubles') {
                 ratingType = 'doubles'; // DUPR uses one doubles rating for all doubles play
@@ -4066,7 +4057,7 @@ const handleSaveBio = async () => {
               const rating = tempForm.primaryPlayer.duprRatings[ratingType];
               if (rating) tempDuprRatings.push(parseFloat(rating));
             } else if (user?.duprRatings) {
-              const categoryType = getCategoryType(selectedCategory.name);
+              const categoryType = getCategoryType(selectedcategory.division);
               let ratingType = 'Singles';
               if (categoryType === 'doubles') {
                 ratingType = 'Doubles'; // DUPR uses one doubles rating for all doubles play
@@ -4076,7 +4067,7 @@ const handleSaveBio = async () => {
             }
             
             if (tempForm.partner?.duprRatings) {
-              const categoryType = getCategoryType(selectedCategory.name);
+              const categoryType = getCategoryType(selectedcategory.division);
               let ratingType = categoryType === 'doubles' ? 'doubles' : 'singles';
               const rating = tempForm.partner.duprRatings[ratingType];
               if (rating) tempDuprRatings.push(parseFloat(rating));
@@ -4096,7 +4087,7 @@ const handleSaveBio = async () => {
             if (tempDuprRatings.length > 0) {
               const allPlayersDuprEligible = tempDuprRatings.every(rating => isDuprEligibleForSkillLevel(rating, skillLevel));
               if (!allPlayersDuprEligible) {
-                console.log(`🚫 Clearing category "${selectedCategory.name}" - players no longer meet DUPR requirement for ${skillLevel} level. Player DUPR ratings: [${tempDuprRatings.join(', ')}]`);
+                console.log(`🚫 Clearing category "${selectedcategory.division}" - players no longer meet DUPR requirement for ${skillLevel} level. Player DUPR ratings: [${tempDuprRatings.join(', ')}]`);
                 updated.category = ''; // Clear the invalid category
               }
             }
@@ -4113,7 +4104,7 @@ const handleSaveBio = async () => {
           
           // Auto-adjust primary player gender for gendered categories
           if (selectedCategory?.name) {
-            const categoryName = selectedCategory.name.toLowerCase();
+            const categoryName = selectedcategory.division.toLowerCase();
             if (categoryName.includes("women's") || categoryName.includes("female")) {
               updated.primaryPlayer = {
                 ...prev.primaryPlayer,
@@ -4407,21 +4398,21 @@ const handleSaveBio = async () => {
   // Enhanced function to check if a category is allowed based on both gender and age
   const isCategoryAllowed = (category, userGender) => {
     // First check gender eligibility
-    const genderAllowed = isCategoryAllowedForGender(category.name, userGender);
+    const genderAllowed = isCategoryAllowedForGender(category.division, userGender);
     if (!genderAllowed) {
-      console.log(`❌ Category "${category.name}" denied due to gender restriction`);
+      console.log(`❌ Category "${category.division}" denied due to gender restriction`);
       return false;
     }
     
     // Check age eligibility for all players
     const playerAges = getAllPlayerAges();
-    const categoryAgeRequirement = category.ageGroup || category.ageCategory;
+    const categoryAgeRequirement = category.ageCategory || category.ageCategory;
     
     // Check age requirement if specified
     if (categoryAgeRequirement && playerAges.length > 0) {
       const allPlayersAgeEligible = playerAges.every(age => isAgeEligibleForCategory(age, categoryAgeRequirement));
       if (!allPlayersAgeEligible) {
-        console.log(`❌ Category "${category.name}" denied - some players don't meet age requirement (${categoryAgeRequirement}). Player ages: [${playerAges.join(', ')}]`);
+        console.log(`❌ Category "${category.division}" denied - some players don't meet age requirement (${categoryAgeRequirement}). Player ages: [${playerAges.join(', ')}]`);
         return false;
       }
     }
@@ -4429,19 +4420,19 @@ const handleSaveBio = async () => {
     // Check DUPR eligibility for all players based on skill level
     const skillLevel = category.skillLevel;
     if (skillLevel) {
-      const playerDuprRatings = getAllPlayerDuprRatings(category.name);
+      const playerDuprRatings = getAllPlayerDuprRatings(category.division);
       
       // If players have DUPR ratings, check eligibility
       if (playerDuprRatings.length > 0) {
         const allPlayersDuprEligible = playerDuprRatings.every(rating => isDuprEligibleForSkillLevel(rating, skillLevel));
         if (!allPlayersDuprEligible) {
-          console.log(`❌ Category "${category.name}" denied - some players don't meet DUPR requirement for ${skillLevel} level. Player DUPR ratings: [${playerDuprRatings.join(', ')}]`);
+          console.log(`❌ Category "${category.division}" denied - some players don't meet DUPR requirement for ${skillLevel} level. Player DUPR ratings: [${playerDuprRatings.join(', ')}]`);
           return false;
         }
       }
     }
     
-    console.log(`✅ Category "${category.name}" allowed - all eligibility checks passed`);
+    console.log(`✅ Category "${category.division}" allowed - all eligibility checks passed`);
     return true;
   };
 
@@ -4619,7 +4610,7 @@ const handleSaveBio = async () => {
       
       if (selectedCategory) {
         const primaryPlayerGender = registrationForm.primaryPlayer?.gender || user?.gender || 'male';
-        const allowedGenders = getAllowedGenders(selectedCategory.name, primaryPlayerGender);
+        const allowedGenders = getAllowedGenders(selectedcategory.division, primaryPlayerGender);
         
         // For partner selection, filter by allowed genders
         if (playerSelectionType === 'partner') {
@@ -4900,116 +4891,113 @@ const duprRatings = userProfile?.duprRatings
 
                     {/* Tournament Tab Content */}
                     {tournamentDetailTab === 'details' && (
-                    <>
-                      <TournamentDetailSection>
-                        <TournamentDetailSectionTitle>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                          Tournament Information
-                        </TournamentDetailSectionTitle>
-                        
-                        <TournamentDetailsList>
-                          <TournamentDetailsItem>
-                            <DetailItemIcon>
-                              <MoneyIcon />
-                            </DetailItemIcon>
-                            <DetailItemContent>
-                              <div>
-                                <DetailItemLabel>Registration Fee</DetailItemLabel>
-                              </div>
-                              <DetailItemValue className="price">₱{selectedTournament.entryFee.toLocaleString()}</DetailItemValue>
-                            </DetailItemContent>
-                          </TournamentDetailsItem>
+  <>
+    <TournamentDetailSection>
+      <TournamentDetailSectionTitle>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Tournament Information
+      </TournamentDetailSectionTitle>
 
-                          <TournamentDetailsItem>
-                            <DetailItemIcon>
-                              <CalendarIcon />
-                            </DetailItemIcon>
-                            <DetailItemContent>
-                              <div>
-                                <DetailItemLabel>Tournament Date</DetailItemLabel>
-                              </div>
-                              <DetailItemValue>
-                                {(() => {
-                                  const start = new Date(selectedTournament.date);
-                                  const end = new Date(selectedTournament.endDate || selectedTournament.date);
-                                  
-                                  if (start.toDateString() === end.toDateString()) {
-                                    return start.toLocaleDateString('en-US', { 
-                                      year: 'numeric', 
-                                      month: 'long', 
-                                      day: 'numeric' 
-                                    });
-                                  } else {
-                                    return `${start.toLocaleDateString('en-US', { 
-                                      month: 'long', 
-                                      day: 'numeric' 
-                                    })} - ${end.toLocaleDateString('en-US', { 
-                                      month: 'long', 
-                                      day: 'numeric', 
-                                      year: 'numeric' 
-                                    })}`;
-                                  }
-                                })()}
-                              </DetailItemValue>
-                            </DetailItemContent>
-                          </TournamentDetailsItem>
+      <TournamentDetailsList>
+        {/* Registration Fee */}
+        <TournamentDetailsItem>
+          <DetailItemIcon>
+            <MoneyIcon />
+          </DetailItemIcon>
+          <DetailItemContent>
+            <div>
+              <DetailItemLabel>Registration Fee</DetailItemLabel>
+            </div>
+            <DetailItemValue className="price">
+              ₱{Number(selectedTournament?.entryFee || 0).toLocaleString()}
+            </DetailItemValue>
+          </DetailItemContent>
+        </TournamentDetailsItem>
 
-                          <TournamentDetailsItem>
-                            <DetailItemIcon>
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            </DetailItemIcon>
-                            <DetailItemContent>
-                              <div>
-                                <DetailItemLabel>Registration Deadline</DetailItemLabel>
-                              </div>
-                              <DetailItemValue className="deadline">
-                                {new Date(selectedTournament.registrationDeadline || selectedTournament.date).toLocaleDateString('en-US', { 
-                                  year: 'numeric',
-                                  month: 'long', 
-                                  day: 'numeric' 
-                                })}
-                              </DetailItemValue>
-                            </DetailItemContent>
-                          </TournamentDetailsItem>
+        {/* Tournament Date */}
+        <TournamentDetailsItem>
+          <DetailItemIcon>
+            <CalendarIcon />
+          </DetailItemIcon>
+          <DetailItemContent>
+            <div>
+              <DetailItemLabel>Tournament Date</DetailItemLabel>
+            </div>
+            <DetailItemValue>
+              {selectedTournament?.date ? (() => {
+                const start = new Date(selectedTournament.date);
+                const end = new Date(selectedTournament?.endDate || selectedTournament.date);
 
-                          <TournamentDetailsItem>
-                            <DetailItemIcon>
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
-                                <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="m22 21-3-3m0 0a5.5 5.5 0 1 0-7.78-7.78 5.5 5.5 0 0 0 7.78 7.78Z" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            </DetailItemIcon>
-                            <DetailItemContent>
-                              <div>
-                                <DetailItemLabel>Skill Levels</DetailItemLabel>
-                              </div>
-                              <DetailItemValue>
-                                {selectedTournament.tournamentCategories ? (
-                                  (() => {
-                                    // Get unique skill levels
-                                    const skillLevels = new Set();
-                                    Object.values(selectedTournament.tournamentCategories).forEach(category => {
-                                      if (category.skillLevel === 'Open') {
-                                        skillLevels.add(`Open - Tier ${category.tier || 1}`);
-                                      } else if (['Beginner', 'Intermediate', 'Advanced'].includes(category.skillLevel)) {
-                                        skillLevels.add(category.skillLevel);
-                                      }
-                                    });
-                                    
-                                    return Array.from(skillLevels).sort().join(', ');
-                                  })()
-                                ) : (
-                                  // Fallback for old data structure
-                                  `${selectedTournament.tournamentType.charAt(0).toUpperCase() + selectedTournament.tournamentType.slice(1)}${selectedTournament.tournamentType === 'open' ? ` - Tier ${selectedTournament.tier}` : ''}`
-                                )}
-                              </DetailItemValue>
-                            </DetailItemContent>
-                          </TournamentDetailsItem>
+                if (isNaN(start) || isNaN(end)) return 'Date not available';
+
+                if (start.toDateString() === end.toDateString()) {
+                  return start.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                } else {
+                  return `${start.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+                }
+              })() : 'Date not available'}
+            </DetailItemValue>
+          </DetailItemContent>
+        </TournamentDetailsItem>
+
+        {/* Registration Deadline */}
+        <TournamentDetailsItem>
+          <DetailItemIcon>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </DetailItemIcon>
+          <DetailItemContent>
+            <div>
+              <DetailItemLabel>Registration Deadline</DetailItemLabel>
+            </div>
+            <DetailItemValue className="deadline">
+              {selectedTournament?.registrationDeadline || selectedTournament?.date
+                ? (() => {
+                    const deadline = new Date(selectedTournament.registrationDeadline || selectedTournament.date);
+                    return isNaN(deadline)
+                      ? 'No deadline available'
+                      : deadline.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                  })()
+                : 'No deadline available'}
+            </DetailItemValue>
+          </DetailItemContent>
+        </TournamentDetailsItem>
+
+        {/* Skill Levels */}
+        <TournamentDetailsItem>
+          <DetailItemIcon>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="m22 21-3-3m0 0a5.5 5.5 0 1 0-7.78-7.78 5.5 5.5 0 0 0 7.78 7.78Z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </DetailItemIcon>
+          <DetailItemContent>
+            <div>
+              <DetailItemLabel>Skill Levels</DetailItemLabel>
+            </div>
+            <DetailItemValue>
+              {selectedTournament?.tournamentCategories
+                ? (() => {
+                    const skillLevels = new Set();
+                    Object.values(selectedTournament.tournamentCategories).forEach(category => {
+                      if (category.skillLevel === 'Open') {
+                        skillLevels.add(`Open - Tier ${category.tier || 1}`);
+                      } else if (['Beginner', 'Intermediate', 'Advanced'].includes(category.skillLevel)) {
+                        skillLevels.add(category.skillLevel);
+                      }
+                    });
+                    return skillLevels.size > 0 ? Array.from(skillLevels).sort().join(', ') : 'Not specified';
+                  })()
+                : (selectedTournament?.tournamentType
+                    ? `${selectedTournament.tournamentType.charAt(0).toUpperCase() + selectedTournament.tournamentType.slice(1)}${selectedTournament.tournamentType === 'open' ? ` - Tier ${selectedTournament.tier || 1}` : ''}`
+                    : 'Not specified')}
+            </DetailItemValue>
+          </DetailItemContent>
+        </TournamentDetailsItem>
 
                           {/* Contact Email - only show if provided */}
                           {selectedTournament.contactEmail && (
@@ -5086,7 +5074,7 @@ const duprRatings = userProfile?.duprRatings
                           {selectedTournament.tournamentCategories ? (
                             Object.values(selectedTournament.tournamentCategories).map((category) => (
                               <div 
-                                key={category.id}
+                                key={category._id}
                                 style={{
                                   background: 'white',
                                   border: '1px solid #e2e8f0',
@@ -5114,7 +5102,7 @@ const duprRatings = userProfile?.duprRatings
                                     }}>
                                       {(() => {
                                         // Extract division from name, removing skill level and age
-                                        let division = category.name || category.division || 'Mixed Doubles';
+                                        let division = category.division || category.division || 'Mixed Doubles';
                                         
                                         // Remove age categories first (including at the end of strings)
                                         const ageCategories = ['18+', '35+', '50+'];
@@ -5141,7 +5129,7 @@ const duprRatings = userProfile?.duprRatings
                                           skillLevel = `Open Tier ${category.tier}`;
                                         }
                                         
-                                        const age = category.ageGroup || '';
+                                        const age = category.ageCategory || '';
                                         
                                         // Format as "division | skill level | age"
                                         const parts = [division, skillLevel, age].filter(part => part);
@@ -5288,105 +5276,97 @@ const duprRatings = userProfile?.duprRatings
                     )}
 
                     {tournamentDetailTab === 'guidelines' && (
-                      <TournamentDetailSection>
-                        <TournamentDetailSectionTitle>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                          Tournament Guidelines
-                        </TournamentDetailSectionTitle>
-                        
-                        {(selectedTournament.rules && selectedTournament.rules.length > 0) || selectedTournament.rulesText ? (
-                          <div>
-                            <div style={{ 
-                              background: '#fef3c7', 
-                              padding: '16px', 
-                              borderRadius: '8px', 
-                              border: '1px solid #f59e0b',
-                              marginBottom: '24px'
-                            }}>
-                              <div style={{ 
-                                color: '#92400e', 
-                                fontWeight: '600', 
-                                marginBottom: '8px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px'
-                              }}>
-                                <span>⚠️</span>
-                                Important Notice
-                              </div>
-                              <div style={{ color: '#92400e', fontSize: '0.9rem', lineHeight: '1.5' }}>
-                                Please read and understand all tournament guidelines before participating. 
-                                Violations may result in disqualification.
-                              </div>
-                            </div>
-                            
-                            <div style={{
-                              background: 'white',
-                              border: '1px solid #e2e8f0',
-                              borderRadius: '12px',
-                              padding: '24px'
-                            }}>
-                              <div style={{
-                                fontSize: '1rem',
-                                lineHeight: '1.6',
-                                color: '#334155',
-                                whiteSpace: 'pre-wrap'
-                              }}>
-                                {selectedTournament.rulesText || 
-                                 (selectedTournament.rules && selectedTournament.rules.join('\n\n')) ||
-                                 'All matches follow official IFP rules\n\nPlayers must check in 30 minutes before their scheduled match\n\nProper athletic attire and non-marking shoes required\n\nNo coaching allowed during matches'}
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <div style={{ 
-                            textAlign: 'center', 
-                            padding: '48px 24px',
-                            background: '#f8fafc',
-                            borderRadius: '16px',
-                            border: '1px dashed #e2e8f0'
-                          }}>
-                            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📋</div>
-                            <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Guidelines Available</h3>
-                            <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
-                              Tournament guidelines will be posted by the organizer before the event begins.
-                            </p>
-                          </div>
-                        )}
-                      </TournamentDetailSection>
-                    )}
+  <TournamentDetailSection>
+    <TournamentDetailSectionTitle>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      Tournament Guidelines
+    </TournamentDetailSectionTitle>
 
-                    {tournamentDetailTab === 'events' && (
-                      <TournamentDetailSection>
-                        <TournamentDetailSectionTitle>
-                          <CalendarIcon />
-                          Tournament Events Schedule
-                        </TournamentDetailSectionTitle>
-                        
-                        <div style={{
-                          background: 'white',
-                          border: '1px solid #e2e8f0',
-                          borderRadius: '12px',
-                          padding: '24px'
-                        }}>
-                          <div style={{
-                            fontSize: '1rem',
-                            lineHeight: '1.6',
-                            color: '#334155',
-                            whiteSpace: 'pre-wrap'
-                          }}>
-                            {selectedTournament.eventsText || 
-                             (selectedTournament.events && selectedTournament.events.length > 0 
-                               ? selectedTournament.events.map(event => 
-                                   `${event.title}\n${event.description}${event.location ? `\nLocation: ${event.location}` : ''}${event.duration ? `\nDuration: ${event.duration}` : ''}`
-                                 ).join('\n\n')
-                               : 'Day 1 - 9:00 AM\nRegistration & Check-in\nAll participants must check in and complete registration process. Bring valid ID and proof of payment.\n\nDay 1 - 10:00 AM\nTournament Briefing\nMandatory rules briefing and player introductions. Tournament format explanation.\n\nDay 1 - 10:30 AM\nOpening Ceremony\nWelcome address, national anthem, and ceremonial first serve.\n\nDay 1 - 11:00 AM\nRound 1 Matches\nFirst round matches for all divisions begin. Players should be ready 15 minutes early.')}
-                          </div>
-                        </div>
-                      </TournamentDetailSection>
-                    )}
+    {selectedTournament.rules && selectedTournament.rules.trim() ? (
+      <div>
+        <div style={{ 
+          background: '#fef3c7', 
+          padding: '16px', 
+          borderRadius: '8px', 
+          border: '1px solid #f59e0b',
+          marginBottom: '24px'
+        }}>
+          <div style={{ 
+            color: '#92400e', 
+            fontWeight: '600', 
+            marginBottom: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>⚠️</span>
+            Important Notice
+          </div>
+          <div style={{ color: '#92400e', fontSize: '0.9rem', lineHeight: '1.5' }}>
+            Please read and understand all tournament guidelines before participating. 
+            Violations may result in disqualification.
+          </div>
+        </div>
+
+        <div style={{
+          background: 'white',
+          border: '1px solid #e2e8f0',
+          borderRadius: '12px',
+          padding: '24px'
+        }}>
+          <div
+            style={{
+              fontSize: '1rem',
+              lineHeight: '1.6',
+              color: '#334155',
+            }}
+            dangerouslySetInnerHTML={{ __html: selectedTournament.rules }}
+          />
+        </div>
+      </div>
+    ) : (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '48px 24px',
+        background: '#f8fafc',
+        borderRadius: '16px',
+        border: '1px dashed #e2e8f0'
+      }}>
+        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📋</div>
+        <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Guidelines Available</h3>
+        <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+          Tournament guidelines will be posted by the organizer before the event begins.
+        </p>
+      </div>
+    )}
+  </TournamentDetailSection>
+)}
+{tournamentDetailTab === 'events' && (
+  <TournamentDetailSection>
+    <TournamentDetailSectionTitle>
+      <CalendarIcon />
+      Tournament Events Schedule
+    </TournamentDetailSectionTitle>
+
+    <div style={{
+      background: 'white',
+      border: '1px solid #e2e8f0',
+      borderRadius: '12px',
+      padding: '24px'
+    }}>
+      <div style={{
+  fontSize: '1rem',
+  lineHeight: '1.6',
+  color: '#334155',
+}}
+  dangerouslySetInnerHTML={{ __html: selectedTournament.events || 'No events available.' }}
+/>
+    </div>
+  </TournamentDetailSection>
+)}
+
 
                     {tournamentDetailTab === 'players' && (
                       <TournamentDetailSection>
@@ -5424,12 +5404,14 @@ const duprRatings = userProfile?.duprRatings
                             onFocus={(e) => e.target.style.borderColor = '#29ba9b'}
                             onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                           >
-                            <option value="all">All Categories</option>
-                            {selectedTournament.tournamentCategories && Object.values(selectedTournament.tournamentCategories).map((category) => (
-                              <option key={category.id} value={category.id}>
-                                {category.name}
-                              </option>
-                            ))}
+                           <option value="all">All Categories</option>
+{selectedTournament.tournamentCategories &&
+  selectedTournament.tournamentCategories.map((category, index) => (
+    <option key={index} value={category.division}>
+      {category.division} {category.skillLevel ? `- ${category.skillLevel}` : ''}
+    </option>
+  ))}
+
                           </select>
                         </div>
                         
@@ -5707,7 +5689,7 @@ const duprRatings = userProfile?.duprRatings
                                            {(() => {
                                              const category = selectedTournament.tournamentCategories && 
                                                Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
-                                             const categoryType = category ? category.name.toLowerCase() : '';
+                                             const categoryType = category ? category.division.toLowerCase() : '';
                                              if (categoryType.includes('singles')) {
                                                return player.duprRatings?.singles || '4.2';
                                              } else if (categoryType.includes('doubles') || categoryType.includes('mixed')) {
@@ -5736,7 +5718,7 @@ const duprRatings = userProfile?.duprRatings
                                          {(() => {
                                            const category = selectedTournament.tournamentCategories && 
                                              Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
-                                           return category ? category.name : 'Category N/A';
+                                           return category ? category.division : 'Category N/A';
                                          })()}
                                        </div>
                                      )}
@@ -6263,106 +6245,85 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                       </TournamentDetailSection>
                     )}
 
-                    {tournamentDetailTab === 'brackets' && (
-                      <TournamentDetailSection>
-                        <TournamentDetailSectionTitle style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                            Tournament Brackets
-                          </div>
-                          <button
-                            onClick={() => {
-                              if (isPublished) {
-                                setShowUnpublishModal(true);
-                              } else {
-                                setShowPublishModal(true);
-                              }
-                            }}
-                            style={{
-                              padding: '8px 16px',
-                              backgroundColor: isPublished ? '#ef4444' : '#059669',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '6px',
-                              fontSize: '14px',
-                              fontWeight: '500',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.backgroundColor = isPublished ? '#dc2626' : '#047857';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.backgroundColor = isPublished ? '#ef4444' : '#059669';
-                            }}
-                          >
-                            {isPublished ? 'Unpublish' : 'Publish'}
-                          </button>
-                        </TournamentDetailSectionTitle>
+{tournamentDetailTab === 'brackets' && (
+  <TournamentDetailSection>
+    <TournamentDetailSectionTitle style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Tournament Brackets
+      </div>
+      <button
+        onClick={() => {
+          if (isPublished) {
+            setShowUnpublishModal(true);
+          } else {
+            setShowPublishModal(true);
+          }
+        }}
+        style={{
+          padding: '8px 16px',
+          backgroundColor: isPublished ? '#ef4444' : '#059669',
+          color: 'white',
+          border: 'none',
+          borderRadius: '6px',
+          fontSize: '14px',
+          fontWeight: '500',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = isPublished ? '#dc2626' : '#047857';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = isPublished ? '#ef4444' : '#059669';
+        }}
+      >
+        {isPublished ? 'Unpublish' : 'Publish'}
+      </button>
+    </TournamentDetailSectionTitle>
 
-                        {/* Display all categories as expandable cards */}
-                        {selectedTournament.tournamentCategories ? (
-                          <div>
-                            {Object.values(selectedTournament.tournamentCategories).map((category) => (
-                              <CategoryCard key={category.id}>
-                                <CategoryHeader 
-                                  $expanded={expandedCategories[category.id]}
-                                  onClick={() => toggleCategoryExpansion(category.id)}
-                                >
-                                  <CategoryHeaderContent>
-                                    <CategoryHeaderInfo>
-                                      <div className="category-title" style={{
-                                        fontSize: '1.1rem',
-                                        fontWeight: '600',
-                                        color: '#1e293b',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px'
-                                      }}>
-                                        <span>{(() => {
-                                          // Extract division from name, removing skill level and age
-                                          let division = category.name;
-                                          
-                                          // Remove age categories first (including at the end of strings)
-                                          const ageCategories = ['18+', '35+', '50+'];
-                                          ageCategories.forEach(age => {
-                                            // Remove age category anywhere in the string, including at the end
-                                            division = division.replace(new RegExp(`\\s*${age.replace('+', '\\+')}\\s*`, 'gi'), ' ');
-                                            // Also remove if it's at the very end
-                                            division = division.replace(new RegExp(`\\s*${age.replace('+', '\\+')}$`, 'gi'), '');
-                                          });
-                                          
-                                          // Remove skill level words from the name
-                                          const skillLevels = ['Beginner', 'Intermediate', 'Advanced', 'Open'];
-                                          skillLevels.forEach(skill => {
-                                            division = division.replace(new RegExp(`\\s*${skill}\\s*`, 'gi'), ' ');
-                                          });
-                                          
-                                          // Clean up extra spaces and get the division
-                                          return division.replace(/\s+/g, ' ').trim();
-                                        })()}</span>
-                                        <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
-                                        <span style={{ color: '#059669' }}>
-                                          {category.skillLevel === 'Open' && category.tier 
-                                            ? `Open Tier ${category.tier}` 
-                                            : category.skillLevel}
-                                        </span>
-                                        <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
-                                        <span>{category.ageGroup}</span>
-                                      </div>
-                                    </CategoryHeaderInfo>
-                                    <CategoryExpandIcon $expanded={expandedCategories[category.id]}>
-                                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
-                                      </svg>
-                                    </CategoryExpandIcon>
-                                  </CategoryHeaderContent>
-                                </CategoryHeader>
+{/* Display all categories as expandable cards */}
+{selectedTournament.tournamentCategories && selectedTournament.tournamentCategories.length > 0 ? (
+  <div>
+    {selectedTournament.tournamentCategories.map((category) => (
+      <CategoryCard key={category._id}>
+        <CategoryHeader 
+          $expanded={expandedCategories[category._id]}
+          onClick={() => toggleCategoryExpansion(category._id)}
+        >
+          <CategoryHeaderContent>
+            <CategoryHeaderInfo>
+              <div className="category-title" style={{
+                fontSize: '1.1rem',
+                fontWeight: '600',
+                color: '#1e293b',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>{category.division}</span>
+                <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
+                <span style={{ color: '#059669' }}>{category.skillLevel}</span>
+                {category.ageCategory && (
+                  <>
+                    <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
+                    <span>{category.ageCategory}</span>
+                  </>
+                )}
+              </div>
+            </CategoryHeaderInfo>
+            <CategoryExpandIcon $expanded={expandedCategories[category._id]}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </CategoryExpandIcon>
+          </CategoryHeaderContent>
+        </CategoryHeader>
                                 
-                                {expandedCategories[category.id] && (
-                                  <CategoryBracketContent $expanded={expandedCategories[category.id]}>
+                                {expandedCategories[category._id] && (
+                                  <CategoryBracketContent $expanded={expandedCategories[category._id]}>
                                     {/* Tournament Format Selection */}
                                     <div style={{
                                       display: 'flex',
@@ -6401,21 +6362,21 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                           e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.2)';
                                         }}
                                         onClick={() => {
-                                          console.log('Generate Round Robin for category:', category.name);
+                                          console.log('Generate Round Robin for category:', category.division);
                                           
                                           // Always enable Round Robin and reset elimination when clicked
                                           setRoundRobinCategories(prev => ({
                                             ...prev,
-                                            [category.id]: true
+                                            [category._id]: true
                                           }));
                                           setEliminationCategories(prev => ({
                                             ...prev,
-                                            [category.id]: false
+                                            [category._id]: false
                                           }));
                                           // Initialize available brackets with default A, B, C, D
                                           setAvailableBrackets(prev => ({
                                             ...prev,
-                                            [category.id]: ['A', 'B', 'C', 'D']
+                                            [category._id]: ['A', 'B', 'C', 'D']
                                           }));
                                         }}
                                       >
@@ -6455,10 +6416,10 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                           e.target.style.boxShadow = '0 2px 4px rgba(245, 158, 11, 0.2)';
                                         }}
                                         onClick={() => {
-                                          console.log('Generate Elimination Draw for category:', category.name);
+                                          console.log('Generate Elimination Draw for category:', category.division);
                                           setEliminationCategories(prev => ({
                                             ...prev,
-                                            [category.id]: true
+                                            [category._id]: true
                                           }));
                                         }}
                                       >
@@ -6475,7 +6436,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                     </div>
 
                                     {/* Round Robin Bracket Buttons */}
-                                    {roundRobinCategories[category.id] && !eliminationCategories[category.id] && (
+                                    {roundRobinCategories[category._id] && !eliminationCategories[category._id] && (
                                       <div style={{
                                         display: 'flex',
                                         gap: '8px',
@@ -6497,10 +6458,10 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                           }}>Brackets:</span>
                                           <div 
                                             onClick={() => {
-                                              const currentMode = bracketMode[category.id] || 4;
+                                              const currentMode = bracketMode[category._id] || 4;
                                               const newMode = currentMode === 4 ? 8 : 4;
                                               setShowBracketModal(true);
-                                              setPendingBracketChange({ categoryId: category.id, newMode });
+                                              setPendingBracketChange({ categoryId: category._id, newMode });
                                             }}
                                             style={{
                                               position: 'relative',
@@ -6516,7 +6477,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                             <div style={{
                                               position: 'absolute',
                                               top: '2px',
-                                              left: (bracketMode[category.id] || 4) === 8 ? '32px' : '2px',
+                                              left: (bracketMode[category._id] || 4) === 8 ? '32px' : '2px',
                                               width: '24px',
                                               height: '24px',
                                               backgroundColor: '#3b82f6',
@@ -6530,7 +6491,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                               transform: 'translateY(-50%)',
                                               fontSize: '0.75rem',
                                               fontWeight: '600',
-                                              color: (bracketMode[category.id] || 4) === 4 ? 'white' : '#64748b',
+                                              color: (bracketMode[category._id] || 4) === 4 ? 'white' : '#64748b',
                                               zIndex: 2
                                             }}>4</div>
                                             <div style={{
@@ -6540,13 +6501,13 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                               transform: 'translateY(-50%)',
                                               fontSize: '0.75rem',
                                               fontWeight: '600',
-                                              color: (bracketMode[category.id] || 4) === 8 ? 'white' : '#64748b',
+                                              color: (bracketMode[category._id] || 4) === 8 ? 'white' : '#64748b',
                                               zIndex: 2
                                             }}>8</div>
                                           </div>
                                         </div>
                                         {/* Bracket Buttons */}
-                                        {(availableBrackets[category.id] || ['A', 'B', 'C', 'D'])
+                                        {(availableBrackets[category._id] || ['A', 'B', 'C', 'D'])
                                           .map((bracket) => (
                                           <button
                                             key={bracket}
@@ -6571,10 +6532,10 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                               e.target.style.transform = 'translateY(0)';
                                             }}
                                             onClick={() => {
-                                              console.log(`Generate Bracket ${bracket} for category:`, category.name);
+                                              console.log(`Generate Bracket ${bracket} for category:`, category.division);
                                               setSelectedBrackets(prev => ({
                                                 ...prev,
-                                                [category.id]: bracket
+                                                [category._id]: bracket
                                               }));
                                             }}
                                           >
@@ -6584,19 +6545,19 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                         
                                         {/* Auto-set brackets based on bracket mode */}
                                         {(() => {
-                                          const currentMode = bracketMode[category.id] || 4;
+                                          const currentMode = bracketMode[category._id] || 4;
                                           const targetBrackets = currentMode === 8 
                                             ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                                             : ['A', 'B', 'C', 'D'];
-                                          const currentBrackets = availableBrackets[category.id] || ['A', 'B', 'C', 'D'];
+                                          const currentBrackets = availableBrackets[category._id] || ['A', 'B', 'C', 'D'];
                                           
                                           // Auto-update brackets if they don't match the required count
                                           if (JSON.stringify(currentBrackets) !== JSON.stringify(targetBrackets)) {
                                             setAvailableBrackets(prev => ({
                                               ...prev,
-                                              [category.id]: targetBrackets
+                                              [category._id]: targetBrackets
                                             }));
-                                            console.log(`Auto-set to ${targetBrackets.length} brackets for category ${category.name} (mode: ${currentMode})`);
+                                            console.log(`Auto-set to ${targetBrackets.length} brackets for category ${category.division} (mode: ${currentMode})`);
                                           }
                                           
                                           return null; // No button needed - automatic behavior
@@ -6605,12 +6566,12 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                     )}
 
                                     {/* Group Stage Section - Show selected bracket or placeholder */}
-                                    {category.groupStage && category.groupStage.groups && roundRobinCategories[category.id] && !eliminationCategories[category.id] && (
+                                    {category.groupStage && category.groupStage.groups && roundRobinCategories[category._id] && !eliminationCategories[category._id] && (
                                       <GroupStageSection>
                                         <div className="groups-grid">
                                           {(() => {
                                             // If no bracket is selected, show instruction message
-                                            if (!selectedBrackets[category.id]) {
+                                            if (!selectedBrackets[category._id]) {
                                               return (
                                                 <div style={{ 
                                                   textAlign: 'center', 
@@ -6632,7 +6593,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                               );
                                             }
 
-                                            const expectedGroupId = `group-${selectedBrackets[category.id].toLowerCase()}`;
+                                            const expectedGroupId = `group-${selectedBrackets[category._id].toLowerCase()}`;
                                             const selectedGroup = category.groupStage.groups.find(group => group.id === expectedGroupId);
                                             
                                             if (selectedGroup) {
@@ -6640,27 +6601,27 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                 <>
                                                   <GroupCard key={selectedGroup.id}>
                                                     <GroupHeader>
-                                                      <h4>Bracket {selectedBrackets[category.id]}</h4>
+                                                      <h4>Bracket {selectedBrackets[category._id]}</h4>
                                                       <div className="bracket-actions">
                                                         <button 
                                                           className="bracket-btn edit-btn"
-                                                          onClick={() => handleEditBracket(category.id, selectedBrackets[category.id])}
+                                                          onClick={() => handleEditBracket(category._id, selectedBrackets[category._id])}
                                                           title="Edit Bracket"
                                                           style={{
-                                                            backgroundColor: isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] ? '#ef4444' : '',
-                                                            color: isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] ? 'white' : ''
+                                                            backgroundColor: isEditingBracket[`${category._id}-${selectedBrackets[category._id]}`] ? '#ef4444' : '',
+                                                            color: isEditingBracket[`${category._id}-${selectedBrackets[category._id]}`] ? 'white' : ''
                                                           }}
                                                         >
                                                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round"/>
                                                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round"/>
                                                           </svg>
-                                                          {isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] ? 'Cancel' : (isPublished ? 'Update' : 'Edit')}
+                                                          {isEditingBracket[`${category._id}-${selectedBrackets[category._id]}`] ? 'Cancel' : (isPublished ? 'Update' : 'Edit')}
                                                         </button>
-                                                        {isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] && (
+                                                        {isEditingBracket[`${category._id}-${selectedBrackets[category._id]}`] && (
                                                           <button 
                                                             className="bracket-btn save-btn"
-                                                            onClick={() => saveChanges(category.id, selectedBrackets[category.id])}
+                                                            onClick={() => saveChanges(category._id, selectedBrackets[category._id])}
                                                             title="Save Changes"
                                                             style={{
                                                               backgroundColor: '#10b981',
@@ -6675,319 +6636,153 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                           </button>
                                                         )}
                                                       </div>
-                                                    </GroupHeader>
-                                                <StandingsTable>
-                                                  <div className="standings-header">
-                                                    <div>Rank</div>
-                                                    <div>Player</div>
-                                                        <div>Matches<br/>(W-L)</div>
-                                                        <div>Points<br/>(W-L)</div>
-                                                  </div>
-                                                      {selectedGroup.standings.map((player, index) => {
-                                                        const editKey = `${category.id}-${selectedBrackets[category.id]}`;
-                                                        const isEditing = isEditingBracket[editKey];
-                                                        const standingKey = `${index}-`;
-                                                        
-                                                        // Get approved players for dropdown
-                                                        const approvedPlayers = selectedTournament?.registrations
-                                                          ?.filter(reg => reg.status === 'approved')
-                                                          ?.filter(reg => reg.categoryId === category.id) || [];
-                                                        
-                                                        return (
-                                                          <StandingsRow key={index} $qualified={player.qualified}>
-                                                            <div className="rank-number">{index + 1}</div>
-                                                            <div className="player-info">
-                                                              <div className="player-name">
-                                                                {isEditing ? (
-                                                                  <select
-                                                                    defaultValue={player.player}
-                                                                    onChange={(e) => handleStandingChange(category.id, selectedBrackets[category.id], index, 'player', e.target.value)}
-                                                                    style={{
-                                                                      width: '100%',
-                                                                      padding: '4px 8px',
-                                                                      border: '1px solid #d1d5db',
-                                                                      borderRadius: '4px',
-                                                                      fontSize: '0.875rem',
-                                                                      backgroundColor: 'white'
-                                                                    }}
-                                                                  >
-                                                                    <option value={player.player}>{player.player}</option>
-                                                                    {approvedPlayers
-                                                                      .filter(reg => reg.playerName !== player.player)
-                                                                      .map((reg, regIndex) => (
-                                                                        <option key={regIndex} value={reg.playerName}>
-                                                                          {reg.playerName}
-                                                                        </option>
-                                                                      ))
-                                                                    }
-                                                                  </select>
-                                                                ) : (
-                                                                  <div>
-                                                                    {player.player.includes('/') ? (
-                                                                      player.player.split('/').map((name, nameIndex) => (
-                                                                        <div key={nameIndex}>
-                                                                          {nameIndex > 0 }{name.trim()}
-                                                                        </div>
-                                                                      ))
-                                                                    ) : (
-                                                                      player.player
-                                                                    )}
-                                                                  </div>
-                                                                )}
-                                                              </div>
-                                                            </div>
-                                                            <div className="matches-record">
-                                                              {player.wins}-{player.losses}
-                                                            </div>
-                                                            <div className="points-record">
-                                                              {player.pointsFor}-{player.pointsAgainst}
-                                                            </div>
-                                                          </StandingsRow>
-                                                        );
-                                                      })}
-                                                </StandingsTable>
-                                              </GroupCard>
-                                              
-                                              {/* Player Match Table - Separate Container */}
-                                              <GroupCard>
-                                              <GroupHeader>
-                                                <h4>Match Schedule</h4>
-                                              </GroupHeader>
-                                              <MatchTable>
-                                              <div className="match-schedule-header">
-                                                <div>Match</div>
-                                                <div>Players</div>
-                                                <div>Time</div>
-                                                <div>Court</div>
-                                                <div>Date</div>
-                                                <div>Score</div>
-                                <div>Standing</div>
-                                              </div>
-                                              {selectedGroup.standings.map((player, playerIndex) => 
-                                                selectedGroup.standings.slice(playerIndex + 1).map((opponent, opponentIndex) => {
-                                                  const matchNumber = `G${playerIndex + 1}`;
-                                                  const teamNumber1 = playerIndex + 1;
-                                                  const teamNumber2 = playerIndex + opponentIndex + 2;
-                                                  const matchIndex = `${playerIndex}-${opponentIndex}`;
-                                                  const editKey = `${category.id}-${selectedBrackets[category.id]}`;
-                                                  const isEditing = isEditingBracket[editKey];
-                                                  
-                                                  return (
-                                                    <MatchRow key={matchIndex}>
-                                                      <div className="match-number">{matchNumber}</div>
-                                                      <div className="teams-horizontal">
-                                                        <>
-                                                            <div className="team-column">
-                                                              {player.player.split(' / ').map((name, index) => (
-                                                                <span key={index} className="team-name">{name}</span>
-                                                              ))}
-                                                            </div>
-                                                            <span className="vs-divider">vs</span>
-                                                            <div className="team-column">
-                                                              {opponent.player.split(' / ').map((name, index) => (
-                                                                <span key={index} className="team-name">{name}</span>
-                                                              ))}
-                                                            </div>
-                                                          </>
+</GroupHeader>
+<StandingsTable>
+  <div className="standings-header">
+    <div>Rank</div>
+    <div>Player</div>
+    <div>Matches<br/>(W-L)</div>
+    <div>Points<br/>(W-L)</div>
+  </div>
 
-                                                      </div>
-                                                      <div className="match-time">
-                                                        {isEditing ? (
-                                                          <input
-                                                            type="time"
-                                                            defaultValue="08:00"
-                                                            onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'time', e.target.value)}
-                                                            style={{
-                                                              width: '70px',
-                                                              padding: '2px',
-                                                              border: '1px solid #d1d5db',
-                                                              borderRadius: '3px',
-                                                              fontSize: '0.75rem'
-                                                            }}
-                                                          />
-                                                        ) : (
-                                                          '08:00'
-                                                        )}
-                                                      </div>
-                                                      <div className="court-number">
-                                                        {isEditing ? (
-                                                          <input
-                                                            type="number"
-                                                            defaultValue="1"
-                                                            onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'court', e.target.value)}
-                                                            style={{
-                                                              width: '40px',
-                                                              padding: '2px',
-                                                              border: '1px solid #d1d5db',
-                                                              borderRadius: '3px',
-                                                              fontSize: '0.75rem',
-                                                              textAlign: 'center'
-                                                            }}
-                                                          />
-                                                        ) : (
-                                                          '1'
-                                                        )}
-                                                      </div>
-                                                      <div className="match-date">
-                                                        {isEditing ? (
-                                                          <input
-                                                            type="date"
-                                                            defaultValue="2024-05-30"
-                                                            onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'date', e.target.value)}
-                                                            style={{
-                                                              width: '90px',
-                                                              padding: '2px',
-                                                              border: '1px solid #d1d5db',
-                                                              borderRadius: '3px',
-                                                              fontSize: '0.75rem'
-                                                            }}
-                                                          />
-                                                        ) : (
-                                                          new Date('2024-05-30').toLocaleDateString('en-US', {
-                                                            month: '2-digit',
-                                                            day: '2-digit',
-                                                            year: 'numeric'
-                                                          })
-                                                        )}
-                                                      </div>
-                                                      <div className="game-score">
-                                                        {isEditing ? (
-                                                          <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                                            <input
-                                                              type="number"
-                                                              defaultValue="5"
-                                                              placeholder="P1"
-                                                              onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'game1Player1', e.target.value)}
-                                                              style={{
-                                                                width: '40px',
-                                                                padding: '4px',
-                                                                border: '1px solid #d1d5db',
-                                                                borderRadius: '3px',
-                                                                fontSize: '0.8rem',
-                                                                textAlign: 'center'
-                                                              }}
-                                                            />
-                                                            <span style={{ fontSize: '0.75rem' }}>-</span>
-                                                            <input
-                                                              type="number"
-                                                              defaultValue="11"
-                                                              placeholder="P2"
-                                                              onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'game1Player2', e.target.value)}
-                                                              style={{
-                                                                width: '40px',
-                                                                padding: '4px',
-                                                                border: '1px solid #d1d5db',
-                                                                borderRadius: '3px',
-                                                                fontSize: '0.8rem',
-                                                                textAlign: 'center'
-                                                              }}
-                                                            />
-                                                          </div>
-                                                        ) : (
-                                                          <span className="score-display">5-11</span>
-                                                        )}
-                                                      </div>
-                                                      <div className="final-score">
-                                                        {isEditing ? (
-                                                          <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                                            <input
-                                                              type="number"
-                                                              defaultValue="0"
-                                                              placeholder="P1"
-                                                              onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'finalScorePlayer1', e.target.value)}
-                                                              style={{
-                                                                width: '40px',
-                                                                padding: '4px',
-                                                                border: '1px solid #d1d5db',
-                                                                borderRadius: '3px',
-                                                                fontSize: '0.8rem',
-                                                                textAlign: 'center'
-                                                              }}
-                                                            />
-                                                            <span style={{ fontSize: '0.75rem' }}>-</span>
-                                                            <input
-                                                              type="number"
-                                                              defaultValue="1"
-                                                              placeholder="P2"
-                                                              onChange={(e) => handleMatchChange(category.id, selectedBrackets[category.id], matchIndex, 'finalScorePlayer2', e.target.value)}
-                                                              style={{
-                                                                width: '40px',
-                                                                padding: '4px',
-                                                                border: '1px solid #d1d5db',
-                                                                borderRadius: '3px',
-                                                                fontSize: '0.8rem',
-                                                                textAlign: 'center'
-                                                              }}
-                                                            />
-                                                          </div>
-                                                        ) : (
-                                                          <span className="score-display">0-1</span>
-                                                        )}
-                                                      </div>
-                                                    </MatchRow>
-                                                  );
-                                                })
-                                              ).flat()}
-                                              </MatchTable>
-                                            </GroupCard>
-                                          </>
-                                            ); 
-                                            } else {
-                                              // Show GroupHeader even when no data for selected bracket
-                                              return (
-                                                <>
-                                                  <GroupCard>
-                                                    <GroupHeader>
-                                                      <h4>Bracket {selectedBrackets[category.id]}</h4>
-                                                      <div className="bracket-actions">
-                                                        <button 
-                                                          className="bracket-btn edit-btn"
-                                                          onClick={() => handleEditBracket(category.id, selectedBrackets[category.id])}
-                                                          title="Edit Bracket"
-                                                          style={{
-                                                            backgroundColor: isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] ? '#ef4444' : '',
-                                                            color: isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] ? 'white' : ''
-                                                          }}
-                                                        >
-                                                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round"/>
-                                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round"/>
-                                                          </svg>
-                                                          {isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] ? 'Cancel' : (isPublished ? 'Update' : 'Edit')}
-                                                        </button>
-                                                        {isEditingBracket[`${category.id}-${selectedBrackets[category.id]}`] && (
-                                                          <button 
-                                                            className="bracket-btn save-btn"
-                                                            onClick={() => saveChanges(category.id, selectedBrackets[category.id])}
-                                                            title="Save Changes"
-                                                            style={{
-                                                              backgroundColor: '#10b981',
-                                                              color: 'white',
-                                                              marginLeft: '8px'
-                                                            }}
-                                                          >
-                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                              <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                            </svg>
-                                                            Save
-                                                          </button>
-                                                        )}
-                                                      </div>
-                                                    </GroupHeader>
-                                                    <div style={{ 
-                                                      textAlign: 'center', 
-                                                      padding: '48px 24px'
-                                                    }}>
-                                                      <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📊</div>
-                                                      <h3 style={{ color: '#334155', marginBottom: '8px', fontSize: '1.1rem', }}>
-                                                        No Data Available
-                                                      </h3>
-                                                      <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: '1.5' }}>
-                                                        This bracket doesn't have any standings data yet.<br/>
-                                                        Players will appear here once matches are completed.
-                                                      </p>
-                                                    </div>
-                                                  </GroupCard>
+  {selectedGroup.standings.map((player, index) => {
+    const editKey = `${category._id}-${selectedBrackets[category._id]}`;
+    const isEditing = isEditingBracket[editKey];
+
+    // Get approved players for dropdown
+    const approvedPlayers = selectedTournament?.registrations
+      ?.filter(reg => reg.status === 'approved' && reg.categoryId === category._id) || [];
+
+    return (
+      <StandingsRow key={index} $qualified={player.qualified}>
+        <div className="rank-number">{index + 1}</div>
+        <div className="player-info">
+          <div className="player-name">
+            {isEditing ? (
+              <select
+                defaultValue={player.player}
+                onChange={(e) => handleStandingChange(category._id, selectedBrackets[category._id], index, 'player', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '4px 8px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '4px',
+                  fontSize: '0.875rem',
+                  backgroundColor: 'white'
+                }}
+              >
+                <option value={player.player}>{player.player}</option>
+                {approvedPlayers
+                  .filter(reg => reg.playerName !== player.player)
+                  .map((reg, regIndex) => (
+                    <option key={regIndex} value={reg.playerName}>{reg.playerName}</option>
+                  ))}
+              </select>
+            ) : (
+              player.player.split('/').map((name, nameIndex) => (
+                <div key={nameIndex}>{name.trim()}</div>
+              ))
+            )}
+          </div>
+        </div>
+        <div className="matches-record">{player.wins}-{player.losses}</div>
+        <div className="points-record">{player.pointsFor}-{player.pointsAgainst}</div>
+      </StandingsRow>
+    );
+  })}
+</StandingsTable>
+</GroupCard>
+
+{/* Player Match Table */}
+<GroupCard>
+  <GroupHeader>
+    <h4>Match Schedule</h4>
+  </GroupHeader>
+  <MatchTable>
+    <div className="match-schedule-header">
+      <div>Match</div>
+      <div>Players</div>
+      <div>Time</div>
+      <div>Court</div>
+      <div>Date</div>
+      <div>Score</div>
+      <div>Standing</div>
+    </div>
+
+    {selectedGroup.standings.map((player, playerIndex) =>
+      selectedGroup.standings.slice(playerIndex + 1).map((opponent, opponentIndex) => {
+        const matchIndex = `${playerIndex}-${opponentIndex}`;
+        const editKey = `${category._id}-${selectedBrackets[category._id]}`;
+        const isEditing = isEditingBracket[editKey];
+        const matchNumber = `G${playerIndex + 1}`;
+
+        return (
+          <MatchRow key={matchIndex}>
+            <div className="match-number">{matchNumber}</div>
+            <div className="teams-horizontal">
+              <div className="team-column">{player.player.split(' / ').map((name, i) => <span key={i}>{name}</span>)}</div>
+              <span className="vs-divider">vs</span>
+              <div className="team-column">{opponent.player.split(' / ').map((name, i) => <span key={i}>{name}</span>)}</div>
+            </div>
+
+            <div className="match-time">
+              {isEditing ? (
+                <input
+                  type="time"
+                  defaultValue="08:00"
+                  onChange={(e) => handleMatchChange(category._id, selectedBrackets[category._id], matchIndex, 'time', e.target.value)}
+                />
+              ) : '08:00'}
+            </div>
+
+            <div className="court-number">
+              {isEditing ? (
+                <input
+                  type="number"
+                  defaultValue="1"
+                  onChange={(e) => handleMatchChange(category._id, selectedBrackets[category._id], matchIndex, 'court', e.target.value)}
+                />
+              ) : '1'}
+            </div>
+
+            <div className="match-date">
+              {isEditing ? (
+                <input
+                  type="date"
+                  defaultValue="2024-05-30"
+                  onChange={(e) => handleMatchChange(category._id, selectedBrackets[category._id], matchIndex, 'date', e.target.value)}
+                />
+              ) : (
+                new Date('2024-05-30').toLocaleDateString('en-US')
+              )}
+            </div>
+
+            <div className="game-score">
+              {isEditing ? (
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  <input type="number" defaultValue="5" onChange={(e) => handleMatchChange(category._id, selectedBrackets[category._id], matchIndex, 'game1Player1', e.target.value)} />
+                  <span>-</span>
+                  <input type="number" defaultValue="11" onChange={(e) => handleMatchChange(category._id, selectedBrackets[category._id], matchIndex, 'game1Player2', e.target.value)} />
+                </div>
+              ) : '5-11'}
+            </div>
+
+            <div className="final-score">
+              {isEditing ? (
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  <input type="number" defaultValue="0" onChange={(e) => handleMatchChange(category._id, selectedBrackets[category._id], matchIndex, 'finalScorePlayer1', e.target.value)} />
+                  <span>-</span>
+                  <input type="number" defaultValue="1" onChange={(e) => handleMatchChange(category._id, selectedBrackets[category._id], matchIndex, 'finalScorePlayer2', e.target.value)} />
+                </div>
+              ) : '0-1'}
+            </div>
+          </MatchRow>
+        );
+      })
+    ).flat()}
+  </MatchTable>
+</GroupCard>
+
                                                   
                                                   {/* Match Schedule GroupHeader even with no data */}
                                                   <GroupCard>
@@ -7015,7 +6810,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                       </GroupStageSection>
                                     )}
                                     {/* Elimination Draw Section */}
-                                    {eliminationCategories[category.id] && (
+                                    {eliminationCategories[category._id] && (
                                       <div style={{
                                         marginTop: '24px',
                                         background: 'white',
@@ -7051,7 +6846,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                           {(() => {
                                             // Get top 2 players from each bracket
                                             const getTopPlayersFromBrackets = () => {
-                                              const currentMode = bracketMode[category.id] || 4;
+                                              const currentMode = bracketMode[category._id] || 4;
                                               const brackets = currentMode === 8 
                                                 ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                                                 : ['A', 'B', 'C', 'D'];
@@ -7090,7 +6885,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                             // }
                                             
                                             // Create elimination matches based on cross-bracket pairing
-                                            const currentMode = bracketMode[category.id] || 4;
+                                            const currentMode = bracketMode[category._id] || 4;
                                             let eliminationMatches = [];
                                             
                                             if (currentMode === 4) {
@@ -7866,9 +7661,10 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                     <StickyActionBar>
                       <StickyActionTitle>Tournament Registration</StickyActionTitle>
                       
-                      <PriceDisplay>
-                        <div className="price">₱{selectedTournament.entryFee.toLocaleString()}</div>
-                      </PriceDisplay>
+                     <DetailItemValue className="price">
+  ₱{Number(selectedTournament?.entryFee ?? 0).toLocaleString()}
+</DetailItemValue>
+
 
                       {/* Action Buttons */}
                       <TournamentActionButtons>
@@ -7923,66 +7719,71 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                     Host a Tournament
                   </HostTournamentButton>
                 </TournamentSearchSection>
-<TournamentGrid>
-{tournaments
-  .filter(tournament =>
-    (tournament.name?.toLowerCase() || "").includes(tournamentSearchTerm.toLowerCase()) ||
-    (tournament.venueCity?.toLowerCase() || "").includes(tournamentSearchTerm.toLowerCase())
-  )
-    .map(tournament => {
-      const storedUser = JSON.parse(localStorage.getItem("user"));
-      const userId = storedUser?._id;
+{tournamentDetailTab === 'list' && (
+  <TournamentGrid>
+    {tournaments
+      .filter(tournament =>
+        (tournament.tournamentName?.toLowerCase() || "").includes(tournamentSearchTerm.toLowerCase()) ||
+        (tournament.venueCity?.toLowerCase() || "").includes(tournamentSearchTerm.toLowerCase())
+      )
+      .map(tournament => {
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        const userId = storedUser?._id;
+        const isAuthor = tournament.createdBy === userId;
 
-      // Optional: double-check author
-      const isAuthor = tournament.createdBy === userId;
+        return (
+          <ProfileTournamentCard
+            key={tournament._id}
+            onClick={() => {
+              setSelectedTournament(tournament);
+              setTournamentDetailTab('details'); // Switch to details view
+            }}
+            style={{ cursor: 'pointer' }}
+          >
+            <ProfileTournamentBanner>
+              {tournament.tournamentPicture && (
+                <img src={tournament.tournamentPicture} alt={tournament.tournamentName} />
+              )}
+              <ProfileStatusBadge status={tournament.status}>
+                {tournament.status.toUpperCase()}
+              </ProfileStatusBadge>
+            </ProfileTournamentBanner>
 
-      return (
-        <ProfileTournamentCard 
-          key={tournament._id}
-          onClick={() => handleTournamentClick(tournament)}
-          style={{ cursor: 'pointer' }}
-        >
-          <ProfileTournamentBanner>
-            {tournament.tournamentPicture && (
-              <img src={tournament.tournamentPicture} alt={tournament.tournamentName} />
-            )}
-            <ProfileStatusBadge status={tournament.status}>
-              {tournament.status.toUpperCase()}
-            </ProfileStatusBadge>
-          </ProfileTournamentBanner>
+            <ProfileTournamentInfo>
+              <ProfileTournamentName>{tournament.tournamentName}</ProfileTournamentName>
 
-          <ProfileTournamentInfo>
-            <ProfileTournamentName>{tournament.tournamentName}</ProfileTournamentName>
+              <ProfileTournamentDate>
+                <CalendarIcon />
+                {tournament.tournamentDates?.[0]
+                  ? new Date(tournament.tournamentDates[0]).toLocaleDateString()
+                  : 'No date'}
+              </ProfileTournamentDate>
 
-            <ProfileTournamentDate>
-              <CalendarIcon />
-              {new Date(tournament.tournamentDates[0]).toLocaleDateString()}
-            </ProfileTournamentDate>
+              <ProfileTournamentLocation>
+                <LocationIcon />
+                {tournament.venueCity}
+              </ProfileTournamentLocation>
 
-            <ProfileTournamentLocation>
-              <LocationIcon />
-              {tournament.venueCity}
-            </ProfileTournamentLocation>
+              <ProfileTournamentSkillLevels>
+                {tournament.tournamentCategories?.map(cat => cat.skillLevel).join(", ")}
+              </ProfileTournamentSkillLevels>
 
-            <ProfileTournamentSkillLevels>
-              {tournament.tournamentCategories?.map(cat => cat.skillLevel).join(", ")}
-            </ProfileTournamentSkillLevels>
-
-            {isAuthor && tournament.status === "upcoming" && (
-              <ProfileRegisterButton 
-                onClick={e => {
-                  e.stopPropagation();
-                  showNotification('Edit tournament functionality coming soon!', 'info');
-                }}
-              >
-                ✏️ Edit Tournament
-              </ProfileRegisterButton>
-            )}
-          </ProfileTournamentInfo>
-        </ProfileTournamentCard>
-      );
-    })}
-</TournamentGrid>
+              {isAuthor && tournament.status === "upcoming" && (
+                <ProfileRegisterButton
+                  onClick={e => {
+                    e.stopPropagation();
+                    showNotification('Edit tournament functionality coming soon!', 'info');
+                  }}
+                >
+                  ✏️ Edit Tournament
+                </ProfileRegisterButton>
+              )}
+            </ProfileTournamentInfo>
+          </ProfileTournamentCard>
+        );
+      })}
+  </TournamentGrid>
+)}
               </>
             )}
           </TabContent>
@@ -8263,7 +8064,6 @@ const TabText = styled.p`
   text-align: left;
   white-space: pre-wrap;   /* Keep line breaks */
 `;
-rigin/frontend
 const BioEditButtons = styled.div`
   display: flex;
   gap: 8px;
@@ -8334,70 +8134,96 @@ const EditBioButton = styled.button`
 
   return (
     <ProfileContainer>
-      <ProfileBackgroundContainer>
-        <ProfileHeader>
-          <TopSection>
-            <LeftSection>
-              <AvatarContainer>
-                <Avatar src={user.avatar} alt={user.name} />
-                {isEditMode && (
-                  <AvatarUploadButton onClick={handleAvatarClick}>
-                    📷
-                  </AvatarUploadButton>
-                )}
-                <HiddenFileInput
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
-              </AvatarContainer>
-              
-              <NameAndDetailsSection>
-                <NameAndRanksRow>
-                  <UserName>{user.name}</UserName>
-                  <StatsContainer>
-                    {rankData.map((item, index) => (
-                      <StatBox key={index}>
-                        <StatCategory>{item.category}</StatCategory>
-                        <StatValue>#{item.rank}</StatValue>
-                        <StatLabel>Rank</StatLabel>
-                      </StatBox>
-                    ))}
-                  </StatsContainer>
-                </NameAndRanksRow>
-                
-                <PlayerInfoGrid>
-                  <InfoItem>
-                    <InfoLabel>PPL ID</InfoLabel>
-                    <InfoValue>{pplId.replace('PPL-', '')}</InfoValue>
-                  </InfoItem>
-                  <InfoItem>
-                    <InfoLabel>AGE</InfoLabel>
-                    <InfoValue>{userAge} Years</InfoValue>
-                  </InfoItem>
-                  <InfoItem>
-                    <InfoLabel>GENDER</InfoLabel>
-                    <InfoValue>{user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : 'Not specified'}</InfoValue>
-                  </InfoItem>
-                  {duprRatings.map((rating, index) => (
-                    <InfoItem key={index}>
-                      <InfoLabel>{rating.type} DUPR</InfoLabel>
-                      <InfoValue>{rating.rating}</InfoValue>
-                    </InfoItem>
+ <ProfileBackgroundContainer>
+      <ProfileHeader>
+        <TopSection>
+          <LeftSection>
+            <AvatarContainer>
+  {userProfile?.avatar ? (
+    <Avatar
+      src={`http://localhost:5000${userProfile.avatar}`}
+      alt={`${user.firstName} ${user.lastName}`}
+    />
+  ) : (
+    <>
+      {user.firstName ? (
+        <InitialsFallback>
+          {user.firstName.charAt(0).toUpperCase()}
+        </InitialsFallback>
+      ) : (
+        <Avatar src="/default-avatar.png" alt="Default Avatar" />
+      )}
+    </>
+  )}
+
+  {true && (
+    <AvatarUploadButton onClick={handleAvatarClick}>
+      📷
+    </AvatarUploadButton>
+  )}
+
+  <HiddenFileInput
+    ref={fileInputRef}
+    type="file"
+    accept="image/*"
+    onChange={handleFileChange}
+  />
+</AvatarContainer>
+
+
+            <NameAndDetailsSection>
+              <NameAndRanksRow>
+                <UserName>{`${user.firstName} ${user.lastName}`}</UserName>
+
+                <StatsContainer>
+                  {rankData.map((item, index) => (
+                    <StatBox key={index}>
+                      <StatCategory>{item.category}</StatCategory>
+                      <StatValue>#{item.rank}</StatValue>
+                      <StatLabel>Rank</StatLabel>
+                    </StatBox>
                   ))}
+                </StatsContainer>
+              </NameAndRanksRow>
+
+              <PlayerInfoGrid>
+                <InfoItem>
+                  <InfoLabel>PPL ID</InfoLabel>
+                  <InfoValue>{userProfile?.pplId || 'Generating...'}</InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>AGE</InfoLabel>
+                  <InfoValue>
+                    {user.birthDate
+                      ? new Date().getFullYear() - new Date(user.birthDate).getFullYear()
+                      : "N/A"}{" "}
+                    Years
+                  </InfoValue>
+                </InfoItem>
+
+                <InfoItem>
+                  <InfoLabel>GENDER</InfoLabel>
+                  <InfoValue>
+                    {user.gender
+                      ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1)
+                      : "Not specified"}
+                  </InfoValue>
+                </InfoItem>
+                {duprRatings.map((rating, index) => (
+                  <InfoItem key={index}>
+                    <InfoLabel>{rating.type} DUPR</InfoLabel>
+                    <InfoValue>{rating.rating}</InfoValue>
+                  </InfoItem>
+                ))}
               </PlayerInfoGrid>
             </NameAndDetailsSection>
           </LeftSection>
-          
-          <div style={{ position: 'absolute', top: '-50px', right: '0', zIndex: 10 }}>
+
+          <div style={{ position: "absolute", top: "-50px", right: "0", zIndex: 10 }}>
             <ButtonContainer>
-              <ApplyCoachButton onClick={handleApplyAsCoach}>
-                Apply as Coach
-              </ApplyCoachButton>
-              <EditButton onClick={handleEdit}>
-                Edit Profile
-              </EditButton>
+              <ApplyCoachButton onClick={handleApplyAsCoach}>Apply as Coach</ApplyCoachButton>
+
             </ButtonContainer>
           </div>
         </TopSection>
@@ -8556,7 +8382,7 @@ const EditBioButton = styled.button`
                         <option value="">Select Tournament Category</option>
                         {registrationTournament && Object.values(registrationTournament?.tournamentCategories || {}).map((category) => {
                           // Use the full category name as display name
-                          let displayName = category.name || '';
+                          let displayName = category.division || '';
                           
                           // If name is empty or undefined, create display name from parts
                           if (!displayName) {
@@ -8564,7 +8390,7 @@ const EditBioButton = styled.button`
                             const skillLevel = category.skillLevel === 'Open' && category.tier 
                               ? `Open Tier ${category.tier}` 
                               : category.skillLevel || '';
-                            const age = category.ageGroup || '';
+                            const age = category.ageCategory || '';
                             
                             const parts = [division, skillLevel, age].filter(part => part);
                             displayName = parts.join(' | ') || 'Unknown Category';
@@ -8576,12 +8402,12 @@ const EditBioButton = styled.button`
                           console.log(`🎯 DROPDOWN DEBUG: registrationForm.primaryPlayer:`, registrationForm.primaryPlayer);
                           console.log(`🎯 DROPDOWN DEBUG: Final userGender="${userGender}"`);
                           const isAllowed = isCategoryAllowed(category, userGender);
-                          console.log(`📝 Dropdown: Category "${category.name}" for user "${userGender}": allowed=${isAllowed}`);
+                          console.log(`📝 Dropdown: Category "${category.division}" for user "${userGender}": allowed=${isAllowed}`);
                           
                           return (
                             <option 
-                              key={category.id} 
-                              value={category.id}
+                              key={category._id} 
+                              value={category._id}
                               disabled={!isAllowed}
                               style={{
                                 color: isAllowed ? 'inherit' : '#9ca3af',
