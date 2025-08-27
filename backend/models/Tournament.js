@@ -42,7 +42,7 @@ const tournamentSchema = new mongoose.Schema({
   additionalInfo: { type: String },
   tournamentCategories: [tournamentCategorySchema],
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  status: { type: String, enum: ["pending", "approved", "rejected"], default: "approved" },
+  status: { type: String, enum: ["Upcoming", "Ongoing", "Completed"], default: "Upcoming" },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Tournament", tournamentSchema);

@@ -2233,7 +2233,6 @@ function DefaultProfileIcon() {
 function Forum() {
   // Auth context
   const { user, isAuthenticated } = useAuth();
-
   // State management
   const [posts, setPosts] = useState([]); // Post[]
   const [loading, setLoading] = useState(true);
@@ -2257,7 +2256,6 @@ function Forum() {
   
   // Expanded posts state for "see more" functionality
   const [expandedPosts, setExpandedPosts] = useState({});
-  
   // Comments state - TODO: Backend should provide this data
   const [showComments, setShowComments] = useState({}); // { postId: boolean }
   const [commentInputs, setCommentInputs] = useState({}); // { postId: string }
@@ -2266,39 +2264,31 @@ function Forum() {
   const [showReplies, setShowReplies] = useState({}); // { commentId: boolean }
   const [replyInputs, setReplyInputs] = useState({}); // { commentId: string }
   const [showReplyInput, setShowReplyInput] = useState({}); // { commentId: boolean }
-  const [submittingReply, setSubmittingReply] = useState({}); // { commentId: boolean }
-  
+  const [submittingReply, setSubmittingReply] = useState({}); // { commentId: boolean } 
   // Pagination state
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-
   const [carouselOpen, setCarouselOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentImages, setCurrentImages] = useState([]);
-  
   // Elipsis State
   const [openMenu, setOpenMenu] = useState({});
-
   //Delete Modal State
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-const [postToDelete, setPostToDelete] = useState(null);
-    
+  const [postToDelete, setPostToDelete] = useState(null);
   // Report modal state
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportingPostId, setReportingPostId] = useState(null);
   const [selectedReportReason, setSelectedReportReason] = useState('');
   const [customReportReason, setCustomReportReason] = useState('');
-
   // Add touch handling state
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const [offset, setOffset] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const containerRef = useRef(null);
-
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
-
   // Show notification function
   const showNotification = (title, message) => {
     setNotification({
@@ -2349,38 +2339,33 @@ useEffect(() => {
 
       const response = await axios.get(
         `http://localhost:5000/api/posts?status=approved&page=${page}&limit=10`,
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token}`, // ✅ Use token from context
+          },
+        }
       );
 
       const { posts: newPosts, totalCount } = response.data;
 
-      if (page === 1) {
-        setPosts(newPosts);
-      } else {
-        setPosts(prev => [...prev, ...newPosts]);
-      }
-
+      setPosts(page === 1 ? newPosts : prev => [...prev, ...newPosts]);
       setHasMore(page * 10 < totalCount);
 
-      // Fetch comments for all posts on first load
+      // Fetch comments for each post
       for (const post of newPosts) {
         try {
-          const token = localStorage.getItem('token'); 
-          const headers = token ? { Authorization: `Bearer ${token}` } : {};
           const commentsResponse = await axios.get(
             `http://localhost:5000/api/posts/${post._id}/comments`,
-            { headers }
+            {
+              headers: {
+                Authorization: `Bearer ${user?.token}`,
+              },
+            }
           );
 
           const comments = commentsResponse.data.comments || [];
+          setPostComments(prev => ({ ...prev, [post._id]: comments }));
 
-          // Store comments in state
-          setPostComments(prev => ({
-            ...prev,
-            [post._id]: comments,
-          }));
-
-          // Auto-show replies for comments that already have them
           const repliesToShow = {};
           comments.forEach(comment => {
             if (comment.replies?.length > 0) {
@@ -2388,22 +2373,20 @@ useEffect(() => {
             }
           });
           setShowReplies(prev => ({ ...prev, ...repliesToShow }));
-
         } catch (err) {
           console.error(`Failed to fetch comments for post ${post._id}:`, err);
-          setPostComments(prev => ({ ...prev, [post._id]: [] }));
         }
       }
-
     } catch (err) {
+      console.error(err.response?.data || err.message);
       setError('Failed to load posts. Please try again later.');
     } finally {
       setLoading(false);
     }
   };
 
-  fetchPosts();
-}, [page]);
+  if (user) fetchPosts(); // ✅ Wait until user is loaded
+}, [page, user]);
 
 const handleInteraction = async (e, action, postId) => {
   e.preventDefault();

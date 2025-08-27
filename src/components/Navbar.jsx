@@ -1127,15 +1127,10 @@ const { user, isAuthenticated, logout} = useAuth(); // <-- only these two
 useEffect(() => {
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/profiles/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setUserProfile(res.data); // update state
+      const res = await axios.get("http://localhost:5000/api/profiles/me");
+      setUserProfile(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch profile error:", err.response?.data || err.message);
     }
   };
 
@@ -1143,7 +1138,6 @@ useEffect(() => {
     fetchProfile();
   }
 }, [isAuthenticated]);
-
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;

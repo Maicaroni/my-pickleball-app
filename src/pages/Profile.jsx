@@ -4249,6 +4249,34 @@ const duprRatings = userProfile?.duprRatings
       { type: "Doubles", rating: '0' },
     ];
 
+
+
+  
+  if (isLoading) {
+    return (
+      <ProfileContainer>
+        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <div style={{ 
+            display: 'inline-block',
+            width: '30px',
+            height: '30px',
+            border: '2px solid #f3f3f3',
+            borderTop: '2px solid #29ba9b',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            marginBottom: '16px'
+          }} />
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>Loading profile...</p>
+        </div>
+      </ProfileContainer>
+    );
+  }
 if (!userProfile) {
   return (
     <ProfileContainer>
@@ -4278,72 +4306,6 @@ if (!userProfile) {
     </ProfileContainer>
   );
 }
-
-  
-  if (isLoading) {
-    return (
-      <ProfileContainer>
-        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div style={{ 
-            display: 'inline-block',
-            width: '30px',
-            height: '30px',
-            border: '2px solid #f3f3f3',
-            borderTop: '2px solid #29ba9b',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            marginBottom: '16px'
-          }} />
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
-          <p style={{ color: '#6b7280', fontSize: '0.9rem' }}>Loading profile...</p>
-        </div>
-      </ProfileContainer>
-    );
-  }
-
-const clubData = [
-    {
-      id: 1,
-      name: "Riverside Pickleball Club",
-      location: "123 Main St, Riverside, CA",
-      memberSince: "January 2022",
-      userPlacement: "Active Member",
-      categories: ["Singles", "Doubles", "Mixed"],
-      type: "club",
-      imageIndex: 0,
-      description: "Premier pickleball club with professional coaching and competitive leagues."
-    },
-    {
-      id: 2,
-      name: "Downtown Recreation Center",
-      location: "456 Oak Ave, Riverside, CA", 
-      memberSince: "March 2023",
-      userPlacement: "Casual Player",
-      categories: ["Recreational", "Doubles"],
-      type: "club_and_courts",
-      imageIndex: 1,
-      description: "Community recreation center offering casual play and beginner-friendly programs."
-    },
-    {
-      id: 3,
-      name: "Elite Pickleball Academy",
-      location: "789 Sports Blvd, Riverside, CA",
-      memberSince: "June 2023", 
-      userPlacement: "Tournament Player",
-      categories: ["Singles", "Doubles", "Mixed", "Tournament"],
-      type: "club",
-      imageIndex: 2,
-      description: "High-performance training facility for competitive players and tournaments."
-    }
-  ];
-
-
-
   const renderTabContent = () => {
     switch(activeTab) {
       case 'about':
