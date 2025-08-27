@@ -37,7 +37,7 @@ const tournamentSchema = new mongoose.Schema({
   events: { type: String },
   paymentMethods: {
     type: [paymentMethodSchema],
-    validate: [val => val.length <= 2, 'Only up to 2 payment methods allowed']
+    validate: [val => val.length <= 3, 'Only up to 3 payment methods allowed']
   },
   additionalInfo: { type: String },
   tournamentCategories: [tournamentCategorySchema],

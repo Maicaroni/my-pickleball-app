@@ -4277,35 +4277,7 @@ const duprRatings = userProfile?.duprRatings
       </ProfileContainer>
     );
   }
-if (!userProfile) {
-  return (
-    <ProfileContainer>
-      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-        <h2 style={{ color: '#234255', marginBottom: '16px', fontSize: '1.3rem', fontWeight: '500' }}>
-          Sign in to view your profile
-        </h2>
-        <p style={{ color: '#6b7280', marginBottom: '20px', fontSize: '0.9rem' }}>
-          You need to be logged in to access your profile information.
-        </p>
-        <button 
-          style={{ 
-            background: '#29ba9b', 
-            color: 'white', 
-            border: 'none', 
-            padding: '8px 16px', 
-            borderRadius: '4px', 
-            fontSize: '0.9rem', 
-            fontWeight: '500',
-            cursor: 'pointer'
-          }}
-          onClick={() => window.location.href = '/signin'}
-        >
-          Sign In
-        </button>
-      </div>
-    </ProfileContainer>
-  );
-}
+
   const renderTabContent = () => {
     switch(activeTab) {
       case 'about':

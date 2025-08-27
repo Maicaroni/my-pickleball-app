@@ -28,7 +28,7 @@ router.post("/",
   authMiddleware, 
   upload.fields([
     { name: "tournamentPicture", maxCount: 1 },
-    { name: "paymentMethodsFiles", maxCount: 2 }
+    { name: "paymentMethodsFiles", maxCount: 3 }
   ]), 
   createTournament
 );
