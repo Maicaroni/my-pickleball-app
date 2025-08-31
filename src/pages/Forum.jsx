@@ -2289,7 +2289,6 @@ function Forum() {
   const containerRef = useRef(null);
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
-
   // Show notification function
   const showNotification = (title, message) => {
     setNotification({
@@ -2345,36 +2344,27 @@ useEffect(() => {
             Authorization: `Bearer ${user?.token}`, // ✅ Use token from context
           },
         }
-
       );
 
       const { posts: newPosts, totalCount } = response.data;
 
-      if (page === 1) {
-        setPosts(newPosts);
-      } else {
-        setPosts(prev => [...prev, ...newPosts]);
-      }
-
+      setPosts(page === 1 ? newPosts : prev => [...prev, ...newPosts]);
       setHasMore(page * 10 < totalCount);
 
-      // Fetch comments for all posts on first load
+      // Fetch comments for each post
       for (const post of newPosts) {
         try {
-          const token = localStorage.getItem('token'); 
-          const headers = token ? { Authorization: `Bearer ${token}` } : {};
           const commentsResponse = await axios.get(
             `http://localhost:5000/api/posts/${post._id}/comments`,
-            { headers }
+            {
+              headers: {
+                Authorization: `Bearer ${user?.token}`,
+              },
+            }
           );
 
           const comments = commentsResponse.data.comments || [];
-
-          // Store comments in state
-          setPostComments(prev => ({
-            ...prev,
-            [post._id]: comments,
-          }));
+          setPostComments(prev => ({ ...prev, [post._id]: comments }));
 
           const repliesToShow = {};
           comments.forEach(comment => {
@@ -2383,22 +2373,20 @@ useEffect(() => {
             }
           });
           setShowReplies(prev => ({ ...prev, ...repliesToShow }));
-
         } catch (err) {
           console.error(`Failed to fetch comments for post ${post._id}:`, err);
-          setPostComments(prev => ({ ...prev, [post._id]: [] }));
         }
       }
-
     } catch (err) {
+      console.error(err.response?.data || err.message);
       setError('Failed to load posts. Please try again later.');
     } finally {
       setLoading(false);
     }
   };
+
   if (user) fetchPosts(); // ✅ Wait until user is loaded
 }, [page, user]);
-
 
 const handleInteraction = async (e, action, postId) => {
   e.preventDefault();

@@ -26,7 +26,6 @@ const Container = styled.div`
 `;
 
 const PageTitle = styled.h1`
-
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -36,11 +35,11 @@ const PageTitle = styled.h1`
   text-align: center;
   font-weight: 800;
   letter-spacing: -0.5px;
+
   @media (min-width: 768px) {
     font-size: 2.5rem;
     margin-bottom: 1.25rem;
   }
-
 `;
   
 const PageDescription = styled.p`
@@ -194,13 +193,9 @@ const VenueImage = styled.div`
   background-image: ${props => {
     switch(props.$imageIndex) {
       case 0:
-        return 'url("https://images.unsplash.com/photo-1686721135030-e2ab79e27b16?q=80&w=1170&auto=format&fit=crop")';
-      case 1:
-        return 'url("https://images.unsplash.com/photo-1515017804404-92b19fdfe6ac?q=80&w=1440&auto=format&fit=crop")';
-      case 2:
-        return 'url("https://plus.unsplash.com/premium_photo-1709932754899-5c36599fface?q=80&w=1209&auto=format&fit=crop")';
-      default:
-        return 'url("https://images.unsplash.com/photo-1686721135030-e2ab79e27b16?q=80&w=1170&auto=format&fit=crop")';
+        return 'url("/assets/brittany_cover.jpg")';
+
+        return 'url("/assets/brittany_cover.jpg")';
     }
   }};
 
@@ -281,32 +276,45 @@ const VenueType = styled.span`
 const JoinButton = styled.button`
   width: calc(100% - 48px);
   padding: 12px 20px;
-  background: ${props => props.$isPending ? '#f59e0b' : '#29ba9b'};
-  color: white;
+  background: #e2e8f0;
+  color: #94a3b8;
   border: none;
   border-radius: 10px;
   font-weight: 500;
-  cursor: pointer;
+  cursor: not-allowed;
   transition: all 0.2s ease;
   font-size: 0.95rem;
   position: absolute;
   bottom: 24px;
   left: 24px;
+  opacity: 0.6;
 
-  &:hover:not(:disabled) {
-    background: ${props => props.$isPending ? '#d97706' : '#26a085'};
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    background: ${props => props.$isPending ? '#f59e0b' : '#e2e8f0'};
-    cursor: ${props => props.$isPending ? 'default' : 'not-allowed'};
-    transform: none;
-    opacity: 0.6;
+  &:hover {
+    &::after {
+      content: 'Will be available in future implementation';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      z-index: 1000;
+      margin-bottom: 8px;
+    }
     
-    &:hover {
-      background: ${props => props.$isPending ? '#f59e0b' : '#e2e8f0'};
-      transform: none;
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: rgba(0, 0, 0, 0.8);
+      margin-bottom: 4px;
     }
   }
 `;
@@ -403,18 +411,10 @@ const VenueDetailImageContainer = styled.div`
 const VenueDetailMainImage = styled.div`
   width: 100%;
   height: 280px;
-  background: ${props => {
-    switch (props.$imageIndex) {
-      case 0:
-        return '#29ba9b';
-      case 1:
-        return '#3b82f6';
-      case 2:
-        return '#f59e0b';
-      default:
-        return '#29ba9b';
-    }
-  }};
+  background-image: url('/assets/brittany_cover.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -422,6 +422,7 @@ const VenueDetailMainImage = styled.div`
   color: white;
   font-size: 3.5rem;
   font-weight: 600;
+  position: relative;
 
   @media (min-width: 768px) {
     height: 360px;
@@ -429,8 +430,14 @@ const VenueDetailMainImage = styled.div`
   }
   
   &::before {
-    content: '🏓';
-    opacity: 0.9;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
   }
 `;
 
@@ -451,14 +458,14 @@ const VenueDetailTitle = styled.div`
   margin-bottom: 32px;
 
   h1 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: #0f172a;
+    color: #234255;
     margin: 0;
     line-height: 1.2;
 
     @media (min-width: 768px) {
-      font-size: 3rem;
+      font-size: 2.25rem;
     }
   }
 `;
@@ -505,6 +512,7 @@ const VenueDetailDescription = styled.p`
   line-height: 1.6;
   margin-bottom: 32px;
   max-width: 640px;
+  text-align: justify;
 
   @media (min-width: 768px) {
     font-size: 1.1rem;
@@ -931,20 +939,45 @@ const VenueDetailJoinCard = styled.div`
 const VenueDetailJoinButton = styled.button`
   width: 100%;
   padding: 16px 24px;
-  background: ${props => props.$isPending ? '#f59e0b' : '#29ba9b'};
-  color: white;
+  background: #e2e8f0;
+  color: #94a3b8;
   border: none;
   border-radius: 10px;
   font-size: 1rem;
   font-weight: 500;
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  cursor: not-allowed;
   transition: all 0.2s ease;
-  opacity: ${props => props.disabled ? 0.6 : 1};
+  opacity: 0.6;
   margin-bottom: 16px;
+  position: relative;
 
-  &:hover:not(:disabled) {
-    background: ${props => props.$isPending ? '#d97706' : '#26a085'};
-    transform: translateY(-1px);
+  &:hover {
+    &::after {
+      content: 'Will be available in future implementation';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      z-index: 1000;
+      margin-bottom: 8px;
+    }
+    
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: rgba(0, 0, 0, 0.8);
+      margin-bottom: 4px;
+    }
   }
 `;
 
@@ -1000,100 +1033,37 @@ const ClubsCourts = () => {
       // if (!response.ok) throw new Error(data.message || 'Failed to fetch venues');
       // setVenues(data.venues);
 
-      // Example data for development
+      // Real venue data
       const data = [
         {
           id: '1',
-          name: 'Manila Pickleball Club',
-          description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.',
-          address: 'BGC, Taguig City',
-          hours: '6:00 AM - 10:00 PM',
+          name: 'Neopolitan Brittany Pickleball Club',
+          description: 'Neopolitan Brittany Pickleball is a place to play pickleball in Quezon City, NCR. There are 10 indoor acrylic courts. The lines are permanent, and portable nets are available. The courts can be reserved. Players have access to lights and restrooms. A one-time fee is required to play. Cushion base layer, silica-infused top layer Nets are provided.',
+          address: 'P3G4+72J, Neopolitan Ave., Quezon City, Metro Manila',
+          hours: '8:00 AM - 10:00 PM',
           type: 'club_and_courts',
-          members: 120,
-          createdAt: '2025-06-16T08:00:00Z',
-          updatedAt: '2025-06-16T08:00:00Z',
-          ownerId: 'user123',
-          contactEmail: 'info@manilapickleball.com',
-          contactPhone: '+63 912 345 6789',
-          website: 'https://manilapickleball.com',
-          amenities: ['Pro Shop', 'Locker Rooms', 'Parking'],
+          members: 3000,
+          createdAt: '2025-01-15T08:00:00Z',
+          updatedAt: '2025-01-15T08:00:00Z',
+          ownerId: 'neopolitan_admin',
+          contactEmail: 'neopolitanbrittanypickleball@gmail.com',
+          contactPhone: '284211419',
+          website: 'https://www.facebook.com/p/Neopolitan-Brittany-Pickleball-Club-61568194952233/',
+          amenities: ['Lighted Courts', 'Restrooms'],
           images: [],
           photos: [
+
             {
-              url: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=800&h=600&fit=crop',
-              caption: 'Main court area'
+              url: '/assets/brittany_desc1.jpg',
+              caption: 'Indoor acrylic courts'
             },
             {
-              url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop',
-              caption: 'Professional courts'
-            },
-            {
-              url: 'https://images.unsplash.com/photo-1526676037777-05a232c2b57c?w=800&h=600&fit=crop',
-              caption: 'Club facilities'
-            },
-            {
-              url: 'https://images.unsplash.com/photo-1577924111230-7f5ed91b08b8?w=800&h=600&fit=crop',
-              caption: 'Equipment storage'
-            },
-            {
-              url: 'https://images.unsplash.com/photo-1552196563-55cd4e45efb3?w=800&h=600&fit=crop',
-              caption: 'Locker rooms'
-            },
-            {
-              url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
-              caption: 'Outdoor courts'
-            }
-          ],
-          isVerified: true
-        },
-        {
-          id: '2',
-          name: 'BGC Pickleball Center',
-          description: 'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat.',
-          address: 'Bonifacio Global City, Taguig',
-          hours: '7:00 AM - 11:00 PM',
-          type: 'club_and_courts',
-          members: 85,
-          createdAt: '2025-06-15T10:00:00Z',
-          updatedAt: '2025-06-15T10:00:00Z',
-          ownerId: 'user456',
-          contactEmail: 'info@bgcpickleball.com',
-          contactPhone: '+63 917 123 4567',
-          amenities: ['Air Conditioning', 'Equipment Rental'],
-          images: [],
-          photos: [
-            {
-              url: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=600&fit=crop',
-              caption: 'Indoor courts'
-            },
-            {
-              url: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?w=800&h=600&fit=crop',
+              url: '/assets/brittany_desc2.jpg',
               caption: 'Court facilities'
             },
             {
-              url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop',
-              caption: 'Tournament setup'
-            }
-          ],
-          isVerified: true
-        },
-        {
-          id: '3',
-          name: 'QC Pickleball Community',
-          description: 'Consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Quis ipsum suspendisse ultrices gravida.',
-          address: 'Katipunan Avenue, Quezon City',
-          type: 'club',
-          members: 45,
-          createdAt: '2025-06-14T09:00:00Z',
-          updatedAt: '2025-06-14T09:00:00Z',
-          ownerId: 'user789',
-          contactEmail: 'qcpickleball@gmail.com',
-          contactPhone: '+63 918 765 4321',
-          images: [],
-          photos: [
-            {
-              url: 'https://images.unsplash.com/photo-1577924111230-7f5ed91b08b8?w=800&h=600&fit=crop',
-              caption: 'Community courts'
+              url: '/assets/brittany_desc3.jpg',
+              caption: 'Playing area'
             }
           ],
           isVerified: true
@@ -1221,15 +1191,7 @@ const ClubsCourts = () => {
               <VenueDetailTitle>
                 <VenueNameContainer>
                   <h1>{selectedVenue.name}</h1>
-                  {selectedVenue.isVerified && (
-                    <VenueVerifiedBadge>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.745 3.745 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.745 3.745 0 0 1 3.296-1.043A3.745 3.745 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.745 3.745 0 0 1 3.296 1.043 3.745 3.745 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12z" />
-                      </svg>
-                      Verified
-                    </VenueVerifiedBadge>
-                  )}
+
                 </VenueNameContainer>
                 <VenueDetailBadges>
                   <VenueType type={selectedVenue.type === 'club' ? 'club' : 'courts'}>
@@ -1431,25 +1393,11 @@ const ClubsCourts = () => {
 
             <VenueDetailSidebar>
               <VenueDetailJoinCard>
-                <VenueDetailJoinButton
-                  onClick={(e) => handleJoinVenue(e, selectedVenue.id)}
-                  disabled={joinedVenues.has(selectedVenue.id) || pendingVenues.has(selectedVenue.id)}
-                  $isPending={pendingVenues.has(selectedVenue.id)}
-                >
-                  {joinedVenues.has(selectedVenue.id) 
-                    ? 'Joined' 
-                    : pendingVenues.has(selectedVenue.id) 
-                    ? 'Pending Approval' 
-                    : 'Join Now'
-                  }
+                <VenueDetailJoinButton disabled>
+                  Join Now
                 </VenueDetailJoinButton>
                 <VenueDetailJoinNote>
-                  {joinedVenues.has(selectedVenue.id) 
-                    ? 'You are a member of this venue'
-                    : pendingVenues.has(selectedVenue.id) 
-                    ? 'Your join request is pending approval from the venue administrators'
-                    : 'Join this venue to access exclusive features and connect with the community'
-                  }
+                  Join this venue to access exclusive features and connect with the community
                 </VenueDetailJoinNote>
               </VenueDetailJoinCard>
             </VenueDetailSidebar>
@@ -1550,17 +1498,8 @@ const ClubsCourts = () => {
                     {venue.members} Members
                   </div>
                 </VenueDetails>
-                <JoinButton
-                  onClick={(e) => handleJoinVenue(e, venue.id)}
-                  disabled={joinedVenues.has(venue.id) || pendingVenues.has(venue.id)}
-                  $isPending={pendingVenues.has(venue.id)}
-                >
-                  {joinedVenues.has(venue.id) 
-                    ? 'Joined' 
-                    : pendingVenues.has(venue.id) 
-                    ? 'Pending Approval' 
-                    : 'Join Now'
-                  }
+                <JoinButton disabled>
+                  Join Now
                 </JoinButton>
               </VenueInfo>
             </VenueCard>
@@ -1579,5 +1518,5 @@ const ClubsCourts = () => {
     </Container>
   );
 };
-export default ClubsCourts; 
 
+export default ClubsCourts;

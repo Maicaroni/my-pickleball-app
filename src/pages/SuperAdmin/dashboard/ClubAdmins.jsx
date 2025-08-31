@@ -1,112 +1,182 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import Sidebar from '../../../components/Superadmin/SuperAdminSidebar';
-import Navbar from '../../../components/Superadmin/SuperAdminNavbar';
-import { Input, Button, Modal, Form, message, Pagination } from 'antd';
-import { FaCheck, FaTimes, FaEye, FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import Sidebar from "../../../components/Superadmin/SuperAdminSidebar";
+import Navbar from "../../../components/Superadmin/SuperAdminNavbar";
+import { Button, Modal, message, Input } from "antd";
+import { FaTrash, FaUserPlus} from "react-icons/fa";
 
-const ClubAdmins = () => {
-  const [activeTab, setActiveTab] = useState('verified');
-  const [verifiedAdmins, setVerifiedAdmins] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]);
+const SuperAdminClubAdmins = () => {
+  const token = localStorage.getItem("superadminToken");
+
+  const [activeTab, setActiveTab] = useState("pending");
+  const [clubAdmins, setClubAdmins] = useState({ pending: [], approved: [] });
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [attachmentModal, setAttachmentModal] = useState(false);
-  const [selectedAttachment, setSelectedAttachment] = useState(null);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [editingAdminId, setEditingAdminId] = useState(null);
-  const [selectedAdmin, setSelectedAdmin] = useState(null);
-  const [showRevertModal, setShowRevertModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [addForm] = Form.useForm();
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [allPlayers, setAllPlayers] = useState([]);
+  const [searchPlayerTerm, setSearchPlayerTerm] = useState("");
+  const [selectedAddPlayer, setSelectedAddPlayer] = useState(null);
+
+  const [promoteModalOpen, setPromoteModalOpen] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState(null);
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [playerToDelete, setPlayerToDelete] = useState(null);
+
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [playerToReject, setPlayerToReject] = useState(null);
+
+  const [revertModalOpen, setRevertModalOpen] = useState(false);
+  const [playerToRevert, setPlayerToRevert] = useState(null);
+
+  if (!token) message.error("Token missing. Please login again.");
 
   useEffect(() => {
-    fetchClubAdmins();
-  }, []);
+    fetchClubAdmins(activeTab);
+  }, [activeTab]);
 
-  const fetchClubAdmins = async () => {
+  const fetchClubAdmins = async (status) => {
+    if (!token) return;
     try {
       setLoading(true);
-      const [verifiedRes, pendingRes] = await Promise.all([
-        axios.get('/api/clubAdmins/verified'),
-        axios.get('/api/clubAdmins/requests')
-      ]);
-      setVerifiedAdmins(verifiedRes.data);
-      setPendingRequests(pendingRes.data);
+      const res = await axios.get(`/api/clubadmins?status=${status}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setClubAdmins(prev => ({ ...prev, [status]: res.data.users || [] }));
     } catch (err) {
       console.error(err);
+      message.error(err.response?.status === 401
+        ? "Unauthorized. Please login again."
+        : err.response?.status === 403
+        ? "Forbidden: insufficient role"
+        : "Failed to fetch users");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleApprove = async (userId) => {
+  const fetchAllPlayers = async () => {
+    if (!token) return;
     try {
-      await axios.put(`/api/clubAdmins/status/${userId}`, {
-        roles: ['player', 'clubadmin'],
-        isVerifiedClubAdmin: true,
-        clubAdminRequest: { status: 'approved' }
+      const res = await axios.get("/api/users?role=player", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      message.success('Club admin approved!');
-      fetchClubAdmins();
-    } catch {
-      message.error('Failed to approve.');
+      setAllPlayers(res.data);
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to fetch players");
     }
   };
 
-  const handleReject = async (userId) => {
+  const handlePromote = async (player) => {
+    if (!player || !token) return;
     try {
-      await axios.put(`/api/users/${userId}`, { clubAdminRequest: { status: 'rejected' } });
-      message.warning('Club admin request rejected.');
-      fetchClubAdmins();
-    } catch {
-      message.error('Failed to reject.');
+      await axios.patch(`/api/clubadmins/${player._id}/promote`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      message.success(`${player.firstName} promoted!`);
+      movePlayer(player._id, "approved");
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to promote player");
+    } finally {
+      setPromoteModalOpen(false);
+      setSelectedPlayer(null);
+      setAddModalOpen(false);
+      setSelectedAddPlayer(null);
     }
   };
 
-  const handleEdit = (admin) => {
-    addForm.setFieldsValue({
-      firstName: admin.firstName,
-      lastName: admin.lastName,
-      email: admin.email,
-      username: admin.username,
-      birthDate: admin.birthDate?.substring(0, 10)
+  const handleRejectConfirm = async () => {
+    if (!playerToReject || !token) return;
+    try {
+      await axios.patch(`/api/clubadmins/${playerToReject._id}/reject`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      message.success("Request rejected");
+      removePlayer(playerToReject._id);
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to reject request");
+    } finally {
+      setRejectModalOpen(false);
+      setPlayerToReject(null);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!playerToDelete || !token) return;
+    try {
+      await axios.delete(`/api/clubadmins/${playerToDelete._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      message.success("User deleted");
+      removePlayer(playerToDelete._id);
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to delete user");
+    } finally {
+      setDeleteModalOpen(false);
+      setPlayerToDelete(null);
+    }
+  };
+
+  const handleRevertConfirm = async () => {
+    if (!playerToRevert || !token) return;
+    try {
+      await axios.patch(`/api/clubadmins/${playerToRevert._id}/revert`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      message.success(`${playerToRevert.firstName} reverted to player`);
+      removePlayer(playerToRevert._id);
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to revert user");
+    } finally {
+      setRevertModalOpen(false);
+      setPlayerToRevert(null);
+    }
+  };
+
+  const movePlayer = (id, targetTab) => {
+    let player;
+    const newData = { ...clubAdmins };
+    ["pending", "approved"].forEach(tab => {
+      if (!player) {
+        const idx = newData[tab].findIndex(p => p._id === id);
+        if (idx !== -1) {
+          player = newData[tab][idx];
+          newData[tab].splice(idx, 1);
+        }
+      }
     });
-    setEditingAdminId(admin._id);
-    setShowAddModal(true);
-  };
-
-  const handleRevertConfirmed = async () => {
-    if (!selectedAdmin) return;
-    try {
-      await axios.put(`/api/clubAdmins/revert/${selectedAdmin._id}`);
-      message.success('Reverted to player successfully!');
-      setShowRevertModal(false);
-      fetchClubAdmins();
-    } catch {
-      message.error('Failed to revert.');
+    if (player) {
+      newData[targetTab] = [player, ...newData[targetTab]];
+      setClubAdmins(newData);
     }
   };
 
-  const openAttachmentModal = (attachment) => {
-    setSelectedAttachment(attachment);
-    setAttachmentModal(true);
+  const removePlayer = (id) => {
+    setClubAdmins(prev => ({
+      pending: prev.pending.filter(p => p._id !== id),
+      approved: prev.approved.filter(p => p._id !== id),
+    }));
   };
 
-  const filteredVerified = verifiedAdmins.filter(a =>
-    `${a.firstName} ${a.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const players = clubAdmins[activeTab];
+  const filteredPlayers = players.filter(
+    p => p.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+         p.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+         p.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredPending = pendingRequests.filter(a =>
-    `${a.firstName} ${a.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredAllPlayers = allPlayers.filter(
+    p => !p.roles.includes("clubadmin") &&
+         (p.firstName.toLowerCase().includes(searchPlayerTerm.toLowerCase()) ||
+          p.lastName.toLowerCase().includes(searchPlayerTerm.toLowerCase()) ||
+          p.email.toLowerCase().includes(searchPlayerTerm.toLowerCase()))
   );
-
-  const data = activeTab === 'verified' ? filteredVerified : filteredPending;
-  const paginatedData = data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="app">
@@ -114,164 +184,180 @@ const ClubAdmins = () => {
       <section id="content" className="players-content">
         <Navbar />
         <main className="p-6 max-w-screen-lg mx-auto">
-          {/* Header + Search */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-            <h1 className="text-3xl font-extrabold text-nuBlue">Club Admins</h1>
-            <div className="flex items-center gap-4">
-              <Input
-                placeholder="Search club admins..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input rounded-lg shadow-sm"
-                style={{ minWidth: '250px', padding: '10px 16px', fontSize: '16px' }}
-                allowClear
-              />
-              {activeTab === 'verified' && (
-                <Button
-                  type="primary"
-                  icon={<FaPlus />}
-                  className="bg-nuBlue text-white"
-                  onClick={() => setShowAddModal(true)}
-                >
-                  Add Club Admin
-                </Button>
-              )}
-            </div>
-          </div>
+          <h1 className="text-3xl font-extrabold mb-4">Club Admins</h1>
 
-          {/* Tabs */}
+          <Button
+            type="primary"
+            style={{ marginBottom: 16 }}
+            onClick={() => {
+              fetchAllPlayers();
+              setAddModalOpen(true);
+            }}
+          >
+            Add Club Admin
+          </Button>
+
+          <Input
+            placeholder="Search player..."
+            value={searchPlayerTerm}
+            onChange={e => setSearchPlayerTerm(e.target.value)}
+            style={{ marginBottom: 12 }}
+          />
+
           <div className="flex gap-4 mb-6">
-            <button
-              className={`px-4 py-2 rounded ${activeTab === 'verified' ? 'bg-nuBlue text-green' : 'bg-gray-200'}`}
-              onClick={() => { setActiveTab('verified'); setCurrentPage(1); }}
-            >
-              Verified
-            </button>
-            <button
-              className={`px-4 py-2 rounded ${activeTab === 'pending' ? 'bg-nuBlue text-green' : 'bg-gray-200'}`}
-              onClick={() => { setActiveTab('pending'); setCurrentPage(1); }}
-            >
-              Pending
-            </button>
+            {["pending", "approved"].map(tab => (
+              <button
+                key={tab}
+                className={`px-4 py-2 rounded ${activeTab === tab ? "bg-blue-600 text-white" : "bg-gray-200"}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
           </div>
 
-          {/* Table */}
           {loading ? (
-            <div className="text-center py-10 text-lg">Loading...</div>
+            <div className="text-center py-10">Loading...</div>
           ) : (
-            <div className="overflow-x-auto rounded-lg shadow-lg border border-gray-300">
-              <table className="min-w-full bg-white rounded-lg table-auto">
-                <thead className={activeTab === 'verified' ? 'bg-nuBlue text-white' : 'bg-yellow-500 text-white'}>
+            <div className="overflow-x-auto border rounded-lg">
+              <table className="min-w-full bg-white">
+                <thead className="bg-blue-600 text-white">
                   <tr>
-                    <th className="py-4 px-8 text-left">Name</th>
-                    <th className="py-4 px-8 text-left">Email</th>
-                    {activeTab === 'pending' && <th className="py-4 px-8 text-left">Attachment</th>}
-                    <th className="py-4 px-8 text-left">Actions</th>
+                    <th className="py-4 px-6 text-left">Name</th>
+                    <th className="py-4 px-6 text-left">Email</th>
+                    <th className="py-4 px-6 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedData.length === 0 ? (
+                  {filteredPlayers.length === 0 ? (
                     <tr>
-                      <td colSpan={activeTab === 'pending' ? 4 : 3} className="text-center py-10 text-gray-500">
-                        No {activeTab} club admins.
+                      <td colSpan={3} className="text-center py-10 text-gray-500">
+                        No players found.
                       </td>
                     </tr>
-                  ) : (
-                    paginatedData.map(a => (
-                      <tr key={a._id} className="border-b hover:bg-gray-50">
-                        <td className="py-4 px-8">{a.firstName} {a.lastName}</td>
-                        <td className="py-4 px-8">{a.email}</td>
-                        {activeTab === 'pending' && (
-                          <td className="py-4 px-8">
-                            {a.clubAdminRequest?.attachment ? (
-                              <Button icon={<FaEye />} onClick={() => openAttachmentModal(a.clubAdminRequest.attachment)}>
-                                View
-                              </Button>
-                            ) : 'No file'}
-                          </td>
+                  ) : filteredPlayers.map(player => (
+                    <tr key={player._id} className="border-b hover:bg-gray-50">
+                      <td className="py-4 px-6">{player.firstName} {player.lastName}</td>
+                      <td className="py-4 px-6">{player.email}</td>
+                      <td className="py-4 px-6 flex gap-2">
+                        {activeTab === "pending" && (
+                          <>
+                            <Button
+                              type="primary"
+                              icon={<FaUserPlus />}
+                              onClick={() => { setSelectedPlayer(player); setPromoteModalOpen(true); }}
+                            >
+                              Promote
+                            </Button>
+                            <Button
+                              danger
+                              onClick={() => { setPlayerToReject(player); setRejectModalOpen(true); }}
+                            >
+                              Reject
+                            </Button>
+                          </>
                         )}
-                        <td className="py-4 px-8 flex gap-2">
-                          {activeTab === 'verified' ? (
-                            <>
-                              <Button icon={<FaEdit />} onClick={() => handleEdit(a)}>Edit</Button>
-                              <Button danger icon={<FaTrash />} onClick={() => { setSelectedAdmin(a); setShowRevertModal(true); }}>
-                                Revert
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <Button type="primary" icon={<FaCheck />} className="bg-green-600 text-white" onClick={() => handleApprove(a._id)}>Approve</Button>
-                              <Button danger icon={<FaTimes />} onClick={() => handleReject(a._id)}>Reject</Button>
-                            </>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  )}
+                        {activeTab === "approved" && (
+                          <>
+                            <Button
+                              type="default"
+                              onClick={() => { setPlayerToRevert(player); setRevertModalOpen(true); }}
+                            >
+                              Revert
+                            </Button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
-
-              {/* Pagination */}
-              {data.length > pageSize && (
-                <div className="flex justify-end mt-4">
-                  <Pagination
-                    current={currentPage}
-                    pageSize={pageSize}
-                    total={data.length}
-                    onChange={setCurrentPage}
-                    showSizeChanger={false}
-                  />
-                </div>
-              )}
             </div>
           )}
 
-          {/* Modals */}
-          <Modal title="Attachment" open={attachmentModal} onCancel={() => setAttachmentModal(false)} footer={null}>
-            {selectedAttachment?.endsWith('.pdf') ? (
-              <embed src={selectedAttachment} width="100%" height="500px" type="application/pdf" />
-            ) : <img src={selectedAttachment} alt="Attachment" className="w-full" />}
-          </Modal>
-
+          {/* Add Club Admin Modal */}
           <Modal
-            title={editingAdminId ? "Edit Club Admin" : "Add Club Admin"}
-            open={showAddModal}
-            onCancel={() => { setShowAddModal(false); addForm.resetFields(); setEditingAdminId(null); }}
-            onOk={() => addForm.submit()}
-            okText={editingAdminId ? "Update" : "Add"}
-          >
-            <Form layout="vertical" form={addForm} onFinish={async (values) => {
-              try {
-                if (editingAdminId) {
-                  await axios.put(`/api/clubAdmins/${editingAdminId}`, values);
-                  message.success('Club admin updated!');
-                } else {
-                  await axios.post('/api/clubAdmins', { ...values, roles: ['clubadmin'], isVerifiedClubAdmin: true });
-                  message.success('Club admin added!');
-                }
-                setShowAddModal(false); addForm.resetFields(); setEditingAdminId(null); fetchClubAdmins();
-              } catch {
-                message.error('Failed to save club admin.');
-              }
-            }}>
-              <Form.Item label="First Name" name="firstName" rules={[{ required: true }]}><Input /></Form.Item>
-              <Form.Item label="Last Name" name="lastName" rules={[{ required: true }]}><Input /></Form.Item>
-              <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email' }]}><Input /></Form.Item>
-              <Form.Item label="Username" name="username" rules={[{ required: true }]}><Input /></Form.Item>
-              <Form.Item label="Birthdate" name="birthDate" rules={[{ required: true }]}><Input type="date" /></Form.Item>
-              {!editingAdminId && <Form.Item label="Password" name="password" rules={[{ required: true }]}><Input.Password /></Form.Item>}
-            </Form>
-          </Modal>
-
-          <Modal
-            title="Revert to Player"
-            open={showRevertModal}
-            onCancel={() => setShowRevertModal(false)}
-            onOk={handleRevertConfirmed}
-            okText="Revert"
+            title="Add Club Admin"
+            open={addModalOpen}
+            onCancel={() => setAddModalOpen(false)}
+            onOk={() => handlePromote(selectedAddPlayer)}
+            okText="Promote"
             cancelText="Cancel"
           >
-            <p>Are you sure you want to revert <strong>{selectedAdmin?.firstName} {selectedAdmin?.lastName}</strong> to player?</p>
+            <Input
+              placeholder="Search player..."
+              value={searchPlayerTerm}
+              onChange={e => setSearchPlayerTerm(e.target.value)}
+              style={{ marginBottom: 12 }}
+            />
+            <div style={{ maxHeight: 300, overflowY: "auto" }}>
+              {filteredAllPlayers.map(p => (
+                <div
+                  key={p._id}
+                  onClick={() => setSelectedAddPlayer(p)}
+                  style={{
+                    padding: 6,
+                    borderBottom: "1px solid #eee",
+                    cursor: "pointer",
+                    backgroundColor: selectedAddPlayer?._id === p._id ? "#e6f7ff" : "transparent",
+                  }}
+                >
+                  {p.firstName} {p.lastName} - {p.email}
+                </div>
+              ))}
+              {filteredAllPlayers.length === 0 && <p>No players found.</p>}
+            </div>
+          </Modal>
+
+          {/* Promote Modal */}
+          <Modal
+            title={`Promote ${selectedPlayer?.firstName} to Club Admin?`}
+            open={promoteModalOpen}
+            onCancel={() => setPromoteModalOpen(false)}
+            onOk={() => handlePromote(selectedPlayer)}
+            okText="Promote"
+            cancelText="Cancel"
+          >
+            <p>This will retain the player role and also assign them the Club Admin role.</p>
+          </Modal>
+
+          {/* Reject Modal */}
+          <Modal
+            title="Reject Club Admin Request"
+            open={rejectModalOpen}
+            onCancel={() => setRejectModalOpen(false)}
+            onOk={handleRejectConfirm}
+            okText="Reject"
+            cancelText="Cancel"
+            okButtonProps={{ danger: true }}
+          >
+            <p>Are you sure you want to reject this club admin request?</p>
+          </Modal>
+
+          {/* Delete Modal */}
+          <Modal
+            title="Confirm Deletion"
+            open={deleteModalOpen}
+            onCancel={() => setDeleteModalOpen(false)}
+            onOk={handleDeleteConfirm}
+            okText="Delete"
+            cancelText="Cancel"
+            okButtonProps={{ danger: true }}
+          >
+            <p>Are you sure you want to delete this user?</p>
+          </Modal>
+
+          {/* Revert Modal */}
+          <Modal
+            title="Revert Club Admin"
+            open={revertModalOpen}
+            onCancel={() => setRevertModalOpen(false)}
+            onOk={handleRevertConfirm}
+            okText="Revert"
+            cancelText="Cancel"
+            okButtonProps={{ danger: true }}
+          >
+            <p>Are you sure you want to revert this user back to a player?</p>
           </Modal>
         </main>
       </section>
@@ -279,4 +365,4 @@ const ClubAdmins = () => {
   );
 };
 
-export default ClubAdmins;
+export default SuperAdminClubAdmins;

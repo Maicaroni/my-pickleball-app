@@ -1,43 +1,25 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import DashboardRoleCards from "./analytics/DashboardRoleCards"; // adjust path if needed
+import React from "react";
+import Sidebar from "../../../components/Superadmin/SuperAdminSidebar";
+import Navbar from "../../../components/Superadmin/SuperAdminNavbar";
 
 const SuperAdminDashboard = () => {
-  const [roleCounts, setRoleCounts] = useState({
-    players: 0,
-    coaches: 0,
-    organizers: 0,
-    clubAdmins: 0,
-  });
-
-  useEffect(() => {
-    async function fetchRoleCounts() {
-      try {
-        const { data } = await axios.get("/api/analytics");
-        setRoleCounts({
-          players: data.totalPlayers ?? 0,
-          coaches: data.totalCoaches ?? 0,
-          organizers: data.totalOrganizers ?? 0,
-          clubAdmins: data.totalClubAdmins ?? 0,
-        });
-      } catch (error) {
-        console.error("Failed to fetch role counts", error);
-      }
-    }
-    fetchRoleCounts();
-  }, []);
-
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Welcome, Super Admin 👋</h1>
-
-      {/* Role cards */}
-      <DashboardRoleCards
-        players={roleCounts.players}
-        coaches={roleCounts.coaches}
-        organizers={roleCounts.organizers}
-        clubAdmins={roleCounts.clubAdmins}
-      />
+return (
+    <div className="app">
+      <Sidebar />
+      <section id="content">
+        <Navbar />
+        <main className="p-6 flex justify-center items-center min-h-[80vh]">
+          <div className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-12 shadow-inner text-center max-w-lg">
+            <h2 className="text-3xl font-bold text-gray-700 animate-pulse">
+              🚧 Dashboard Coming Soon 🚧
+            </h2>
+            <p className="text-gray-500 mt-4">
+              We’re preparing detailed charts and insights for you.  
+              Stay tuned for more updates!
+            </p>
+          </div>
+        </main>
+      </section>
     </div>
   );
 };

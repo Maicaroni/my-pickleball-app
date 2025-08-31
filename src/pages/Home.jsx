@@ -105,12 +105,9 @@ const HeroContent = styled.div`
 `;
 
 const Title = styled.h1`
-<<<<<<< HEAD
-=======
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
->>>>>>> origin/frontend
   font-size: clamp(2rem, 8vw, 4.5rem);
   font-weight: 800;
   color: white;
@@ -834,11 +831,10 @@ function Home() {
                   About <span>Philippine Pickleball League</span>
                 </AboutHeading>
                 <AboutText>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+                  The Philippine Pickleball League unites Filipino players from Luzon, Visayas, and Mindanao to celebrate and grow the sport of pickleball. Guided by the Filipino spirit of bayanihan, we aim to make pickleball an inclusive and accessible sport for all.
                 </AboutText>
               </AboutTextContent>
-              <AboutStats>
+              {/* <AboutStats>
                 <div>
                   <h3>{stats.activePlayers > 0 ? `${stats.activePlayers}+` : '0'}</h3>
                   <p>Active Players</p>
@@ -855,7 +851,7 @@ function Home() {
                   <h3>{stats.clubPartners > 0 ? `${stats.clubPartners}+` : '0'}</h3>
                   <p>Club Partners</p>
                 </div>
-              </AboutStats>
+              </AboutStats> */}
             </AboutContent>
           </SectionContent>
         </AboutSection>
@@ -864,5 +860,4 @@ function Home() {
   );
 }
 
-export default Home; 
-
+export default Home;

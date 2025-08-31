@@ -1,118 +1,129 @@
 const User = require("../models/User");
-const bcrypt = require("bcryptjs");
 
-// Get all verified club admins
-exports.getVerifiedClubAdmins = async (req, res) => {
-  const admins = await User.find({ roles: { $in: ['clubadmin'] }, isVerifiedClubAdmin: true });
-  res.json(admins);
-};
-
-// Get club admin requests (from players who applied)
-exports.getClubAdminRequests = async (req, res) => {
+// ✅ Get all club admin requests (pending/approved)
+// Get all club admin requests (pending/approved)
+exports.getClubAdmins = async (req, res) => {
   try {
-    const pending = await User.find({
-      roles: { $in: ['player'] },
-      "clubAdminRequest.status": "pending",
-      clubAdminRequest: { $exists: true, $ne: null }
-    });
-    res.json(pending);
+    const status = req.query.status || "pending"; // "pending" | "approved"
+
+    let users;
+    if (status === "pending") {
+      users = await User.find({
+        "clubAdminRequest.requested": true,   // Only users who actually requested
+        "clubAdminRequest.status": "pending"  // And status is pending
+      }).select("-password");
+    } else if (status === "approved") {
+      users = await User.find({
+        roles: { $in: ["clubadmin"] },
+        "clubAdminRequest.status": "approved"
+      }).select("-password");
+    }
+
+    res.json({ users });
   } catch (err) {
-    console.error("Error fetching club admin requests:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// Create new club admin
-exports.createClubAdmin = async (req, res) => {
-  try {
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      username,
-      birthDate,
-      roles,
-      isVerifiedClubAdmin
-    } = req.body;
 
-    if (!birthDate) {
-      return res.status(400).json({ message: "Birthdate is required." });
-    }
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "Email already in use" });
-    }
-
-    const existingUsername = await User.findOne({ username });
-    if (existingUsername) {
-      return res.status(400).json({ message: "Username already in use" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({
-      firstName,
-      lastName,
-      email,
-      username,
-      password: hashedPassword,
-      birthDate,
-      roles: roles || ['clubadmin'],
-      isVerifiedClubAdmin: typeof isVerifiedClubAdmin === 'boolean' ? isVerifiedClubAdmin : true
-    });
-
-    await newUser.save();
-    res.status(201).json(newUser);
-  } catch (err) {
-    console.error("Error creating club admin:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-// Revert club admin to player
-exports.revertClubAdminToPlayer = async (req, res) => {
+// ✅ Promote any player to clubadmin (even if they didn’t request)
+exports.promoteToClubAdmin = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id);
+
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    user.roles = user.roles.filter(role => role !== "clubadmin");
-    if (!user.roles.includes("player")) {
-      user.roles.push("player");
+    // Add clubadmin role if not already present
+    if (!user.roles.includes("clubadmin")) {
+      user.roles.push("clubadmin");
     }
-    user.isVerifiedClubAdmin = false;
+
+    // Mark request as approved even if they never requested
+    user.clubAdminRequest.status = "approved";
+    user.clubAdminRequest.requested = true; // set requested = true for consistency
 
     await user.save();
-    res.json({ message: "Club admin reverted to player successfully" });
+
+    res.json({ message: "User promoted to Club Admin", user });
   } catch (err) {
-    console.error("Error reverting club admin:", err);
+    console.error("Error promoting user:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// Update club admin profile
-exports.editClubAdmin = async (req, res) => {
-  const { id } = req.params;
-  const updates = req.body;
 
+
+// ✅ Delete clubadmin / user
+exports.deleteClubAdmin = async (req, res) => {
   try {
-    const updatedAdmin = await User.findByIdAndUpdate(id, updates, { new: true });
-    if (!updatedAdmin) {
-      return res.status(404).json({ message: "Club admin not found" });
-    }
-    res.json(updatedAdmin);
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    await user.remove();
+
+    res.json({ message: "User deleted successfully" });
   } catch (err) {
-    console.error("Error editing club admin:", err);
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// Approve club admin requests
-exports.updateClubAdminStatus = async (req, res) => {
-  const { id } = req.params;
-  const updates = req.body;
-  const updatedUser = await User.findByIdAndUpdate(id, updates, { new: true });
-  res.json(updatedUser);
+// ✅ Optional: Edit clubadmin info
+exports.editClubAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body; // { firstName, lastName, email, etc }
+
+    const user = await User.findByIdAndUpdate(id, updates, { new: true }).select("-password");
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ message: "User updated", user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+// Reject a club admin request
+exports.rejectClubAdminRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Mark request as rejected and reset requested flag
+    user.clubAdminRequest.status = "rejected";
+    user.clubAdminRequest.requested = false;
+
+    await user.save();
+
+    res.json({ message: "Club admin request rejected", user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Revert approved club admin back to player
+exports.revertClubAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Remove "clubadmin" role if it exists
+    user.roles = user.roles.filter(role => role !== "clubadmin");
+    await user.save();
+
+    res.json({ message: `${user.firstName} reverted to player`, user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
 };

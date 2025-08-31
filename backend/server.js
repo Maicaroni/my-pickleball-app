@@ -47,7 +47,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use("/api/superadmin", superAdminRoutes);
 app.use("/api/coaches", coachRoutes);
 app.use("/api/organizers", organizerRoutes);
-app.use("/api/clubAdmins", clubAdminRoutes);
+app.use("/api/clubadmins", clubAdminRoutes);
 app.use("/api/feedbacks", feedbackRoutes);
 app.use("/api/logs", logRoutes);
 app.use("/api/users", userRoutes);

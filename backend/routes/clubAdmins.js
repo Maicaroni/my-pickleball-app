@@ -1,19 +1,24 @@
 const express = require("express");
 const router = express.Router();
 const {
-  getVerifiedClubAdmins,
-  getClubAdminRequests,
-  createClubAdmin,
+  getClubAdmins,
+  promoteToClubAdmin,
+  deleteClubAdmin,
   editClubAdmin,
-  updateClubAdminStatus,
-  revertClubAdminToPlayer
+  rejectClubAdminRequest,
+  revertClubAdmin,
 } = require("../controllers/clubAdminController");
 
-router.put('/revert/:id', revertClubAdminToPlayer);
-router.get("/verified", getVerifiedClubAdmins);
-router.get("/requests", getClubAdminRequests);
-router.post("/", createClubAdmin);
-router.put("/:id", editClubAdmin);
-router.put("/status/:id", updateClubAdminStatus);
+// ✅ Superadmin only
+router.get("/", getClubAdmins);
+// ✅ Promote pending player to clubadmin
+router.patch("/:id/promote", promoteToClubAdmin);
+// ✅ Delete clubadmin
+router.delete("/:id",  deleteClubAdmin);
+// ✅ Edit clubadmin info
+router.patch("/:id",  editClubAdmin);
+router.patch("/:id/reject", rejectClubAdminRequest);
+// Revert club admin back to player
+router.patch("/:id/revert", revertClubAdmin);
 
 module.exports = router;

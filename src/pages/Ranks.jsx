@@ -416,15 +416,15 @@ const PlayerCard = styled.div`
   }
 
   ${props => props.$rank === 1 && `
-    background: linear-gradient(135deg, #234255 0%, #29ba9b 100%);
+    background: linear-gradient(135deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1)), linear-gradient(135deg, #CC8400 0%, #DAB000 50%, #CC8400 100%);
   `}
 
   ${props => props.$rank === 2 && `
-    background: linear-gradient(135deg, #234255 0%, #64748b 100%);
+    background: linear-gradient(135deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1)), linear-gradient(135deg, #5A6B73 0%, #9A9A9A 50%, #5A6B73 100%);
   `}
 
   ${props => props.$rank === 3 && `
-    background: linear-gradient(135deg, #234255 0%, #cd7f32 100%);
+    background: linear-gradient(135deg, rgba(0,0,0,0.1), rgba(0,0,0,0.1)), linear-gradient(135deg, #6B3410 0%, #A66529 50%, #6B3410 100%);
   `}
 `;
 
@@ -588,11 +588,12 @@ const RetryButton = styled.button`
 `;
 
 function getInitials(name) {
-  return name
-    .split(' ')
-    .map(part => part[0])
-    .join('')
-    .toUpperCase();
+  const nameParts = name.split(' ');
+  let initials = nameParts[0][0]; // First letter of first name
+  if (nameParts.length > 1) {
+    initials += nameParts[1][0]; // First letter of second name if exists
+  }
+  return initials.toUpperCase();
 }
 
 function formatNumber(num) {
@@ -668,15 +669,129 @@ function Ranks() {
 
   const fetchRankings = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/rankings");
-      const data = await res.json();
+      // Dummy data for all categories
+      const dummyData = [
+        {
+          id: 'mens-singles',
+          _id: 'mens-singles',
+          name: "Men's Singles",
+          rankings: [
+            {
+              _id: '1',
+              id: '1',
+              name: 'Christian Joshua Luna',
+              age: 25,
+              points: 0,
+              wins: 0,
+              losses: 0,
+              gamesPlayed: 0
+            },
+            {
+              _id: '2',
+              id: '2',
+              name: 'Juan Paulo Fermin',
+              age: 33,
+              points: 0,
+              wins: 0,
+              losses: 0,
+              gamesPlayed: 0
+            },
+            {
+              _id: '3',
+              id: '3',
+              name: 'Ken Unique Dela Cruz',
+              age: 25,
+              points: 0,
+              wins: 0,
+              losses: 0,
+              gamesPlayed: 0
+            },
+            {
+              _id: '4',
+              id: '4',
+              name: 'Aldus Dela Cruz',
+              age: 27,
+              points: 0,
+              wins: 0,
+              losses: 0,
+              gamesPlayed: 0
+            },
+            {
+              _id: '5',
+              id: '5',
+              name: 'Bernard Kyle Valenzuela',
+              age: 25,
+              points: 0,
+              wins: 0,
+              losses: 0,
+              gamesPlayed: 0
+            },
+            {
+              _id: '6',
+              id: '6',
+              name: 'Ian Paulo Cortez',
+              age: 26,
+              points: 0,
+              wins: 0,
+              losses: 0,
+              gamesPlayed: 0
+            },
+            {
+              _id: '7',
+              id: '7',
+              name: 'Dino Jimenez',
+              age: 48,
+              points: 0,
+              wins: 0,
+              losses: 0,
+              gamesPlayed: 0
+            },
+            {
+              _id: '8',
+              id: '8',
+              name: 'Elijah Arevalo',
+              age: 27,
+              points: 0,
+              wins: 0,
+              losses: 0,
+              gamesPlayed: 0
+            }
+          ]
+        },
+        {
+          id: 'womens-singles',
+          _id: 'womens-singles',
+          name: "Women's Singles",
+          rankings: []
+        },
+        {
+          id: 'mens-doubles',
+          _id: 'mens-doubles',
+          name: "Men's Doubles",
+          rankings: []
+        },
+        {
+          id: 'womens-doubles',
+          _id: 'womens-doubles',
+          name: "Women's Doubles",
+          rankings: []
+        },
+        {
+          id: 'mens-mixed-doubles',
+          _id: 'mens-mixed-doubles',
+          name: "Men's Mixed Doubles",
+          rankings: []
+        },
+        {
+          id: 'womens-mixed-doubles',
+          _id: 'womens-mixed-doubles',
+          name: "Women's Mixed Doubles",
+          rankings: []
+        }
+      ];
 
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to fetch rankings");
-      }
-
-      setCategories(data);
-      setSelectedCategory(data[0]?.id || data[0]?._id);
+      setCategories(dummyData);
+      setSelectedCategory(dummyData[0]?.id || dummyData[0]?._id);
     } catch (err) {
       console.error("Ranking fetch error:", err);
       setError("Failed to fetch rankings. Please try again later.");
@@ -714,8 +829,8 @@ function Ranks() {
               <ListPlayerName>{player.name}</ListPlayerName>
             </ListPlayerInfo>
             <ListStat>{player.age ?? '—'}</ListStat>
-            <ListStat>{formatNumber(player.points ?? 0)}</ListStat>
-            <ListStat>{(player.wins ?? 0)}-{(player.losses ?? 0)}</ListStat>
+            <ListStat>{player.points === 0 ? '—' : formatNumber(player.points ?? 0)}</ListStat>
+            <ListStat>{player.wins === 0 && player.losses === 0 ? '—' : `${(player.wins ?? 0)}-${(player.losses ?? 0)}`}</ListStat>
           </ListRow>
         ))}
       </RankingsList>
@@ -806,11 +921,11 @@ function Ranks() {
                   <StatLabel>Age</StatLabel>
                 </StatBox>
                 <StatBox>
-                  <StatValue>{formatNumber(player.points ?? 0)}</StatValue>
+                  <StatValue>{player.points === 0 ? '—' : formatNumber(player.points ?? 0)}</StatValue>
                   <StatLabel>Points</StatLabel>
                 </StatBox>
                 <StatBox>
-                  <StatValue>{(player.wins ?? 0)}-{(player.losses ?? 0)}</StatValue>
+                  <StatValue>{player.wins === 0 && player.losses === 0 ? '—' : `${(player.wins ?? 0)}-${(player.losses ?? 0)}`}</StatValue>
                   <StatLabel>Games (W-L)</StatLabel>
                 </StatBox>
               </StatsGrid>

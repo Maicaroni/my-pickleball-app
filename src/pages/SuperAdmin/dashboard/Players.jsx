@@ -26,15 +26,17 @@ const Players = () => {
   }, []);
 
   const fetchPlayers = async () => {
-    try {
-      const res = await axios.get('/api/users?role=player');
-      setPlayers(res.data);
-    } catch (err) {
-      console.error('Error fetching players:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const res = await axios.get('/api/users?role=player');
+    setPlayers(Array.isArray(res.data) ? res.data : []);
+  } catch (err) {
+    console.error('Error fetching players:', err);
+    setPlayers([]); // fallback
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Delete player handler remains the same
   const handleDeleteConfirmed = async () => {
@@ -220,8 +222,8 @@ const Players = () => {
             onOk={handleEditSubmit}
             okText="Save"
             cancelText="Cancel"
-            destroyOnClose
-            bodyStyle={{ padding: '24px 32px' }}
+            destroyOnHidden
+            styles={{ body: { padding: '24px 32px' } }}
             okButtonProps={{ style: { borderRadius: '6px' } }}
             cancelButtonProps={{ style: { borderRadius: '6px' } }}
           >
@@ -263,7 +265,7 @@ const Players = () => {
             cancelText="Cancel"
             okButtonProps={{ danger: true, style: { borderRadius: '6px' } }}
             cancelButtonProps={{ style: { borderRadius: '6px' } }}
-            destroyOnClose
+            destroyOnHidden
           >
             <p className="text-lg">
               Are you sure you want to delete <strong>{selectedPlayer?.firstName} {selectedPlayer?.lastName}</strong>?
@@ -278,8 +280,8 @@ const Players = () => {
             onOk={() => addForm.submit()}
             okText="Add"
             cancelText="Cancel"
-            destroyOnClose
-            bodyStyle={{ padding: '24px 32px' }}
+            destroyOnHidden
+            styles={{ body: { padding: '24px 32px' } }}
             okButtonProps={{ style: { borderRadius: '6px' } }}
             cancelButtonProps={{ style: { borderRadius: '6px' } }}
           >
