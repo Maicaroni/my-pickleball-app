@@ -15,6 +15,8 @@ import SignIn from './pages/SignIn';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import HostTournament from './pages/HostTournament';
+import Feedback from './pages/Feedback';
+import Settings from './pages/Settings';
 
 import SuperAdminLogin from "./pages/SuperAdmin/SuperAdminLogin";
 import SuperAdminRegister from "./pages/SuperAdmin/SuperAdminRegister";
@@ -55,6 +57,8 @@ function AppContent() {
         <Route path="/register" element={<><Navbar /><Register /><Footer /></>} />
         <Route path="/profile" element={<><Navbar /><Profile /><Footer /></>} />
         <Route path="/host-tournament" element={<><Navbar /><HostTournament /><Footer /></>} />
+        <Route path="/feedback" element={<><Navbar /><Feedback /><Footer /></>} />
+        <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
 
         {/* SuperAdmin Auth Pages */}
         <Route path="/superadmin/register" element={<SuperAdminRegister />} />

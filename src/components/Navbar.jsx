@@ -1360,7 +1360,7 @@ useEffect(() => {
                   </svg>
                   My Profile
                 </ProfileDropdownItem>
-                <ProfileDropdownItem onClick={() => handleNavigation('/coaches')}>
+                {/*<ProfileDropdownItem onClick={() => handleNavigation('/coaches')}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
                     <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
@@ -1368,7 +1368,7 @@ useEffect(() => {
                     <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   Coaches
-                </ProfileDropdownItem>
+                  </ProfileDropdownItem>*/}
                 <ProfileDropdownItem onClick={() => handleNavigation('/settings')}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round" />

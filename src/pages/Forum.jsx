@@ -2333,50 +2333,52 @@ function Forum() {
 // Fetch posts on mount and page change
 useEffect(() => {
   const fetchPosts = async () => {
+    if (!user) return;
+
     try {
       setLoading(true);
       setError(null);
 
       const response = await axios.get(
         `http://localhost:5000/api/posts?status=approved&page=${page}&limit=10`,
-        {
-          headers: {
-            Authorization: `Bearer ${user?.token}`, // ✅ Use token from context
-          },
-        }
+        { headers: { Authorization: `Bearer ${user.token}` } }
       );
 
       const { posts: newPosts, totalCount } = response.data;
-
       setPosts(page === 1 ? newPosts : prev => [...prev, ...newPosts]);
       setHasMore(page * 10 < totalCount);
 
-      // Fetch comments for each post
-      for (const post of newPosts) {
-        try {
-          const commentsResponse = await axios.get(
-            `http://localhost:5000/api/posts/${post._id}/comments`,
-            {
-              headers: {
-                Authorization: `Bearer ${user?.token}`,
-              },
-            }
-          );
+      // Fetch all comments in parallel
+      const commentPromises = newPosts.map(post =>
+        axios.get(`http://localhost:5000/api/posts/${post._id}/comments`, {
+          headers: { Authorization: `Bearer ${user.token}` }
+        })
+      );
 
-          const comments = commentsResponse.data.comments || [];
-          setPostComments(prev => ({ ...prev, [post._id]: comments }));
+      const commentResults = await Promise.allSettled(commentPromises);
 
-          const repliesToShow = {};
+      const commentsMap = {};
+      const repliesMap = {};
+
+      commentResults.forEach((result, i) => {
+        const postId = newPosts[i]._id;
+        if (result.status === 'fulfilled') {
+          const comments = result.value.data.comments || [];
+          commentsMap[postId] = comments;
+
           comments.forEach(comment => {
             if (comment.replies?.length > 0) {
-              repliesToShow[comment._id] = true;
+              repliesMap[comment._id] = true;
             }
           });
-          setShowReplies(prev => ({ ...prev, ...repliesToShow }));
-        } catch (err) {
-          console.error(`Failed to fetch comments for post ${post._id}:`, err);
+        } else {
+          console.error(`Failed to fetch comments for post ${postId}:`, result.reason);
         }
-      }
+      });
+
+      setPostComments(prev => ({ ...prev, ...commentsMap }));
+      setShowReplies(prev => ({ ...prev, ...repliesMap }));
+
     } catch (err) {
       console.error(err.response?.data || err.message);
       setError('Failed to load posts. Please try again later.');
@@ -2385,7 +2387,7 @@ useEffect(() => {
     }
   };
 
-  if (user) fetchPosts(); // ✅ Wait until user is loaded
+  fetchPosts();
 }, [page, user]);
 
 const handleInteraction = async (e, action, postId) => {

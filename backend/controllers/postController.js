@@ -12,9 +12,9 @@ exports.getPosts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const status = req.query.status; // pending | approved | rejected
-    const query = {};
-    if (status) query.status = status.toLowerCase(); // ensure lowercase
+    // Force approved posts by default
+    const status = req.query.status || 'approved';
+    const query = { status };
 
     const posts = await Post.find(query)
       .populate('author', 'firstName lastName avatarUrl initials username')
@@ -25,7 +25,6 @@ exports.getPosts = async (req, res) => {
 
     const userId = req.user?.id;
 
-    // Format posts safely
     const formattedPosts = posts.map(post => ({
       ...post,
       author: post.author || { firstName: 'Unknown', lastName: '' },
@@ -35,8 +34,8 @@ exports.getPosts = async (req, res) => {
       isLiked: Array.isArray(post.likedBy) && userId
         ? post.likedBy.some(uid => uid.toString() === userId)
         : false,
-      likeCount: (post.likedBy?.length) || 0,
-      commentCount: (post.comments?.length) || 0,
+      likeCount: post.likedBy?.length || 0,
+      commentCount: post.comments?.length || 0,
     }));
 
     const totalCount = await Post.countDocuments(query);
@@ -47,6 +46,7 @@ exports.getPosts = async (req, res) => {
     res.status(500).json({ message: 'Server error fetching posts' });
   }
 };
+
 
 
 // =========================
