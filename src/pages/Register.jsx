@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import viteLogo from '/vite.svg';
+import { useGoogleLogin } from '@react-oauth/google';
+
 
 
 const PageContainer = styled.div`
@@ -280,6 +282,36 @@ const Select = styled.select`
   `}
 `;
 
+// === Simple Modal ===
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 350px;
+  text-align: center;
+`;
+
+const CloseButton = styled.button`
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+`;
 const PasswordToggle = styled.button`
   position: absolute;
   right: 16px;
@@ -519,14 +551,20 @@ const GoogleIcon = () => (
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    firstName: '',
+     firstName: '',
     lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
     birthDate: '',
-    gender: ''
+    gender: '',
+    duprId: '',
+    otp: ''
   });
+
+   const [otpSent, setOtpSent] = useState(false);
+
+  const [otpVerified, setOtpVerified] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
@@ -540,71 +578,82 @@ const Register = () => {
     special: /[!@#$%^&*]/.test(formData.password)
   };
 
-  const validateEmailDomain = (email) => {
-    const allowedDomains = [
-      'gmail.com',
-      'yahoo.com',
-      'hotmail.com',
-      'outlook.com',
-      'icloud.com',
-      'protonmail.com',
-      'zoho.com',
-      'aol.com',
-      'live.com',
-      'msn.com'
-    ];
-    
-    const domain = email.split('@')[1]?.toLowerCase();
-    return allowedDomains.includes(domain);
-  };
 
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
+const validateForm = () => {
+  const newErrors = {};
+
+  if (!formData.firstName.trim()) {
+    newErrors.firstName = 'First name is required';
+  }
+
+  if (!formData.lastName.trim()) {
+    newErrors.lastName = 'Last name is required';
+  }
+
+  if (!formData.email) {
+    newErrors.email = 'Email is required';
+  } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    newErrors.email = 'Please enter a valid email';
+  }
+
+  if (!formData.password) {
+    newErrors.password = 'Password is required';
+  } else if (!Object.values(passwordRequirements).every(Boolean)) {
+    newErrors.password = 'Password does not meet requirements';
+  }
+
+  if (!formData.confirmPassword) {
+    newErrors.confirmPassword = 'Please confirm your password';
+  } else if (formData.password !== formData.confirmPassword) {
+    newErrors.confirmPassword = 'Passwords do not match';
+  }
+
+  if (!formData.birthDate) {
+    newErrors.birthDate = 'Birth date is required';
+  } else {
+    const age = new Date().getFullYear() - new Date(formData.birthDate).getFullYear();
+    if (age < 13) {
+      newErrors.birthDate = 'You must be at least 13 years old';
     }
-    
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
-    }
-    
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-    } else if (!validateEmailDomain(formData.email)) {
-      newErrors.email = 'Please use a valid email provider (Gmail, Yahoo, Outlook, etc.)';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (!Object.values(passwordRequirements).every(Boolean)) {
-      newErrors.password = 'Password does not meet requirements';
-    }
-    
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-    
-    if (!formData.birthDate) {
-      newErrors.birthDate = 'Birth date is required';
-    } else {
-      const age = new Date().getFullYear() - new Date(formData.birthDate).getFullYear();
-      if (age < 13) {
-        newErrors.birthDate = 'You must be at least 13 years old';
-      }
-    }
-    
-    if (!formData.gender) {
-      newErrors.gender = 'Gender is required';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  }
+
+  if (!formData.gender) {
+    newErrors.gender = 'Gender is required';
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
+const handleRequestOtp = async () => {
+  if (!formData.email) {
+    showNotification("Please enter your email first.", "warning");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const res = await fetch("/api/verifications/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: formData.email }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message || "Failed to send OTP.");
+
+    setOtpSent(true);
+    showNotification(data.message || "OTP sent to your email!", "success");
+  } catch (err) {
+    console.error(err);
+    showNotification(err.message || "Error sending OTP.", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -621,80 +670,130 @@ const Register = () => {
     }
   };
 
-  const { setAuth } = useAuth();
+const { setAuth, showNotification } = useAuth();
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
-  
+  e.preventDefault();
+  if (!validateForm()) return;
+  if (!otpVerified) {
+    setErrors(prev => ({ ...prev, submit: "Please verify your email first." }));
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const response = await fetch("http://localhost:5000/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData)
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Registration failed");
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    setAuth(data.user, data.token);
+    navigate("/");
+  } catch (err) {
+    setErrors(prev => ({ ...prev, submit: err.message }));
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleVerifyOtpAndRegister = async () => {
+  if (!formData.otp) {
+    showNotification("Please enter the OTP.", "warning");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    // 1️⃣ Verify OTP
+    const res = await fetch("/api/verifications/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: formData.email, otp: formData.otp }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      showNotification(data.message || "Invalid or expired OTP.", "error");
+      return;
+    }
+
+    setOtpVerified(true);
+    showNotification("Email verified successfully!", "success");
+    setOtpSent(false);
+
+    // 2️⃣ Register user
     if (!validateForm()) return;
-  
+
+    const registerRes = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    const registerData = await registerRes.json();
+    if (!registerRes.ok) throw new Error(registerData.message || "Registration failed");
+
+    localStorage.setItem("token", registerData.token);
+    localStorage.setItem("user", JSON.stringify(registerData.user));
+    setAuth(registerData.user, registerData.token);
+
+    navigate("/"); // redirect
+  } catch (err) {
+    console.error(err);
+    showNotification(err.message || "Registration failed.", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+const handleGoogleSignup = useGoogleLogin({
+  flow: "implicit",          // use implicit flow to get credential
+  response_type: "id_token", // ensures tokenResponse.credential exists
+  onSuccess: async (tokenResponse) => {
+    console.log("Google response:", tokenResponse);
+
+    if (!tokenResponse.credential) {
+      return showNotification("Google token missing. Try again.", "error");
+    }
+
+    // send the ID token to backend
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
+      const res = await fetch("/api/auth/google/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          password: formData.password,
-          birthDate: formData.birthDate,
-          gender: formData.gender
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: tokenResponse.credential }) // <-- ID token
       });
-  
-      const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
-      }
-  
-      // ✅ Save token + user
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Google signup failed");
+
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-  
-      // ✅ Set it in global context
       setAuth(data.user, data.token);
-  
-      // ✅ Navigate to home/dashboard
-      navigate("/");
+
+      navigate("/"); // redirect
     } catch (err) {
-      setErrors(prev => ({
-        ...prev,
-        submit: err.message
-      }));
+      console.error("Google signup error:", err);
+      showNotification(err.message || "Google signup failed", "error");
     } finally {
       setLoading(false);
     }
-  };
+  },
+  onError: () => {
+    showNotification("Google login failed. Try again.", "error");
+  },
+});
 
-    // BACKEND INTEGRATION REQUIRED:
-  const handleSocialSignup = async (provider) => {
-    try {
-      // BACKEND INTEGRATION REQUIRED:
-      // 1. For Google:
-      //    - Endpoint: /api/auth/google/register
-      //    - Use Google OAuth2 flow
-      //    - Additional user data might be required after OAuth
-      //
-      // 2. For Facebook:
-      //    - Endpoint: /api/auth/facebook/register
-      //    - Use Facebook OAuth flow
-      //    - Additional user data might be required after OAuth
-      //
-      // Expected response format same as regular registration
-      // Handle token storage and redirection same way
-      
-      console.log(`Signing up with ${provider}`); // Remove after backend integration
-    // eslint-disable-next-line no-unused-vars
-    } catch (err) {
-      setErrors(prev => ({
-        ...prev,
-        submit: `Failed to sign up with ${provider}. Please try again.`
-      }));
-    }
-  };
+
 
   return (
     <PageContainer>
@@ -732,6 +831,7 @@ const Register = () => {
                 </ErrorMessage>
               )}
             </InputGroup>
+            
 
             <InputGroup>
               <Label htmlFor="lastName">Last Name</Label>
@@ -753,7 +853,18 @@ const Register = () => {
               )}
             </InputGroup>
           </div>
-
+{/* DUPR ID Field */}
+<InputGroup>
+  <Label htmlFor="duprId">DUPR ID</Label>
+  <Input
+    type="text"
+    id="duprId"
+    name="duprId"
+    placeholder="Enter your DUPR ID"
+    value={formData.duprId}
+    onChange={handleChange}
+  />
+</InputGroup>
           <InputGroup>
             <Label htmlFor="email">Email</Label>
             <Input
@@ -870,6 +981,7 @@ const Register = () => {
             )}
           </InputGroup>
 
+
           <InputGroup>
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <InputWrapper>
@@ -900,9 +1012,15 @@ const Register = () => {
             )}
           </InputGroup>
 
-          <SubmitButton type="submit" disabled={loading} $loading={loading}>
-            {loading ? 'Creating account...' : 'Create account'}
-          </SubmitButton>
+           {errors.submit && <p style={{ color: "red" }}>{errors.submit}</p>}
+
+          <SubmitButton
+  type="button"
+  onClick={handleRequestOtp}
+  disabled={loading || !formData.email}
+>
+  {loading ? "Sending OTP..." : "Send OTP"}
+</SubmitButton>
 
           {errors.submit && (
             <ErrorMessage>
@@ -911,13 +1029,12 @@ const Register = () => {
             </ErrorMessage>
           )}
         </Form>
-
         <Divider>
           <span>or sign up with</span>
         </Divider>
 
         <SocialButtons>
-          <SocialButton onClick={() => handleSocialSignup('Google')}>
+          <SocialButton onClick={() => handleGoogleSignup()}>
             <GoogleIcon />
             Google
           </SocialButton>
@@ -927,6 +1044,27 @@ const Register = () => {
           Already have an account?<a href="/signin">Sign in</a>
         </LinkText>
       </AuthCard>
+
+      {/* OTP Modal */}
+{otpSent && (
+  <ModalOverlay onClick={() => setOtpSent(false)}>
+    <ModalContent onClick={(e) => e.stopPropagation()}>
+      <h3>Enter OTP</h3>
+      <Input
+        type="text"
+        id="otp"
+        name="otp"
+        placeholder="Enter OTP"
+        value={formData.otp}
+        onChange={handleChange}
+      />
+      <SubmitButton onClick={handleVerifyOtpAndRegister} disabled={loading}>
+        {loading ? "Verifying..." : "Verify & Register"}
+      </SubmitButton>
+      <CloseButton onClick={() => setOtpSent(false)}>Cancel</CloseButton>
+    </ModalContent>
+  </ModalOverlay>
+)}
     </PageContainer>
   );
 };

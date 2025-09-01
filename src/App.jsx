@@ -16,7 +16,8 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import HostTournament from './pages/HostTournament';
 import Feedback from './pages/Feedback';
-import Settings from './pages/Settings';
+import ForgotPassword from './pages/ForgotPassword';
+//import Settings from './pages/ForgotPassword';
 
 import SuperAdminLogin from "./pages/SuperAdmin/SuperAdminLogin";
 import SuperAdminRegister from "./pages/SuperAdmin/SuperAdminRegister";
@@ -41,6 +42,7 @@ import './index.css';
 import 'antd/dist/reset.css'; // Ant Design v5 and up
 
 
+
 function AppContent() {
   const { notification, hideNotification } = useAuth();
 
@@ -58,7 +60,8 @@ function AppContent() {
         <Route path="/profile" element={<><Navbar /><Profile /><Footer /></>} />
         <Route path="/host-tournament" element={<><Navbar /><HostTournament /><Footer /></>} />
         <Route path="/feedback" element={<><Navbar /><Feedback /><Footer /></>} />
-        <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />
+        <Route path="/forgot-password" element={<><Navbar /><ForgotPassword /><Footer /></>} />
+       {/*  <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />*/}
 
         {/* SuperAdmin Auth Pages */}
         <Route path="/superadmin/register" element={<SuperAdminRegister />} />

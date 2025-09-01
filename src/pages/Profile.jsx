@@ -5366,18 +5366,46 @@ const duprRatings = userProfile?.duprRatings
     </div>
   </TournamentDetailSection>
 )}
-
-
                     {tournamentDetailTab === 'players' && (
                       <TournamentDetailSection>
-                        <TournamentDetailSectionTitle>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
-                            <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                          Players
+                        <TournamentDetailSectionTitle style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                              <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            Players
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (isPublished) {
+                                setShowUnpublishModal(true);
+                              } else {
+                                setShowPublishModal(true);
+                              } {/*DASTIN PART NEW*/}
+                            }}
+                            style={{
+                              padding: '8px 16px',
+                              backgroundColor: isPublished ? '#ef4444' : '#059669',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.backgroundColor = isPublished ? '#dc2626' : '#047857';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.backgroundColor = isPublished ? '#ef4444' : '#059669';
+                            }}
+                          >
+                            {isPublished ? 'Unpublish' : 'Publish'}
+                          </button>
                         </TournamentDetailSectionTitle>
                         
                         {/* Category Selection Dropdown */}
@@ -8137,7 +8165,6 @@ const EditBioButton = styled.button`
  <ProfileBackgroundContainer>
       <ProfileHeader>
         <TopSection>
-          <LeftSection>
             <AvatarContainer>
   {userProfile?.avatar ? (
     <Avatar
@@ -8186,11 +8213,16 @@ const EditBioButton = styled.button`
                 </StatsContainer>
               </NameAndRanksRow>
 
-              <PlayerInfoGrid>
-                <InfoItem>
-                  <InfoLabel>PPL ID</InfoLabel>
-                  <InfoValue>{userProfile?.pplId || 'Generating...'}</InfoValue>
-                </InfoItem>
+             <PlayerInfoGrid>
+
+  <InfoItem>
+    <InfoLabel>PPL ID</InfoLabel>
+    <InfoValue>{userProfile?.user?.pplId || 'Generating...'}</InfoValue>
+  </InfoItem>
+  <InfoItem>
+    <InfoLabel>DUPR ID</InfoLabel>
+    <InfoValue>{userProfile?.user?.duprId || 'Generating...'}</InfoValue>
+  </InfoItem>
 
                 <InfoItem>
                   <InfoLabel>AGE</InfoLabel>
@@ -8209,15 +8241,19 @@ const EditBioButton = styled.button`
                       ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1)
                       : "Not specified"}
                   </InfoValue>
-                </InfoItem>
-                {duprRatings.map((rating, index) => (
+               </InfoItem>
+               </PlayerInfoGrid>
+            </NameAndDetailsSection>
+                    </TopSection>
+      </ProfileHeader>
+    </ProfileBackgroundContainer>
+               {/* {duprRatings.map((rating, index) => (
                   <InfoItem key={index}>
                     <InfoLabel>{rating.type} DUPR</InfoLabel>
                     <InfoValue>{rating.rating}</InfoValue>
                   </InfoItem>
                 ))}
-              </PlayerInfoGrid>
-            </NameAndDetailsSection>
+              
           </LeftSection>
 
           <div style={{ position: "absolute", top: "-50px", right: "0", zIndex: 10 }}>
@@ -8225,10 +8261,9 @@ const EditBioButton = styled.button`
               <ApplyCoachButton onClick={handleApplyAsCoach}>Apply as Coach</ApplyCoachButton>
 
             </ButtonContainer>
+            
           </div>
-        </TopSection>
-      </ProfileHeader>
-    </ProfileBackgroundContainer>
+
 
       
       {/* Tabs section below both profile sections */}

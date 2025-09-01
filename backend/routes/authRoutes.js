@@ -5,6 +5,9 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Profile = require("../models/Profile");
 const Log = require("../models/Log");
+const Counter = require("../models/Counter");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Helper: Create Log Entry
 const createLog = async (user, action) => {
@@ -21,21 +24,82 @@ const createLog = async (user, action) => {
   }
 };
 
+// ------------------- GOOGLE REGISTER -------------------
+router.post("/google/register", async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ message: "Token missing" });
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, given_name, family_name } = payload;
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      const counter = await Counter.findOneAndUpdate(
+        { name: "pplId" },
+        { $inc: { value: 1 } },
+        { new: true, upsert: true }
+      );
+      const pplId = counter.value.toString().padStart(6, "0");
+
+      user = await User.create({
+        firstName: given_name,
+        lastName: family_name,
+        email,
+        password: null,
+        roles: ["player"],
+        pplId,
+      });
+
+      await Profile.create({
+        user: user._id,
+        pplId,
+        duprRatings: { singles: 0, doubles: 0, mixedDoubles: 0 },
+      });
+
+      await createLog(user, "register-google");
+    }
+
+    const jwtToken = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET || "pickleballSecret",
+      { expiresIn: "7d" }
+    );
+
+    res.json({ user: user.toObject(), token: jwtToken });
+  } catch (err) {
+    console.error("Google signup error:", err);
+    res.status(500).json({ message: "Google signup failed" });
+  }
+});
+
 // ------------------- REGISTER -------------------
 router.post("/register", async (req, res) => {
   try {
-    const { firstName, lastName, email, password, birthDate, gender, roles } = req.body;
-    if (!firstName || !lastName || !email || !password || !birthDate || !gender) {
+    const { firstName, lastName, email, password, birthDate, gender, roles, duprId } = req.body;
+    if (!firstName || !lastName || !email || !password || !birthDate || !gender || !duprId) {
       return res.status(400).json({ message: "Please fill all required fields." });
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: "Email already registered" });
 
+    const counter = await Counter.findOneAndUpdate(
+      { name: "pplId" },
+      { $inc: { value: 1 } },
+      { new: true, upsert: true }
+    );
+    const pplId = counter.value.toString().padStart(6, "0");
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = new User({
+    const newUser = await User.create({
       firstName,
       lastName,
       email,
@@ -43,18 +107,17 @@ router.post("/register", async (req, res) => {
       birthDate,
       gender,
       roles: roles?.length ? roles : ["player"],
+      pplId,
+      duprId,
     });
 
-    await newUser.save();
-    await createLog(newUser, "register");
-
-
-    // ✅ Create Profile with auto-generated PPL ID and default DUPR ratings
-    const newProfile = new Profile({ 
+    const newProfile = await Profile.create({
       user: newUser._id,
-      duprRatings: { singles: 0, doubles: 0, mixedDoubles: 0 } // default zeros
+      pplId,
+      duprRatings: { singles: 0, doubles: 0, mixedDoubles: 0 },
     });
-    await newProfile.save();
+
+    await createLog(newUser, "register");
 
     const token = jwt.sign(
       { id: newUser._id, email: newUser.email },
@@ -64,18 +127,8 @@ router.post("/register", async (req, res) => {
 
     res.status(201).json({
       token,
-      user: {
-        id: newUser._id,
-        email: newUser.email,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        birthDate: newUser.birthDate,
-        gender: newUser.gender,
-        roles: newUser.roles,
-      },
-
-      profile: newProfile, // includes pplId and duprRatings
-
+      user: newUser.toObject(),
+      profile: newProfile.toObject(),
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -84,11 +137,9 @@ router.post("/register", async (req, res) => {
 });
 
 // ------------------- LOGIN -------------------
-
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password)
       return res.status(400).json({ message: "Email and password are required." });
 
@@ -98,10 +149,9 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
 
-    await createLog(user, "login");
-
-    // ✅ Fetch profile along with DUPR ratings
     const profile = await Profile.findOne({ user: user._id });
+
+    await createLog(user, "login");
 
     const token = jwt.sign(
       { id: user._id, email: user.email },
@@ -109,18 +159,10 @@ router.post("/login", async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.status(200).json({
+    res.json({
       token,
-      user: {
-        id: user._id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        birthDate: user.birthDate,
-        gender: user.gender,
-        roles: user.roles,
-      },
-      profile, // includes pplId and duprRatings
+      user: user.toObject(),
+      profile: profile ? profile.toObject() : null,
     });
   } catch (err) {
     console.error("Login error:", err);
@@ -144,7 +186,7 @@ router.post("/logout", async (req, res) => {
 
     await createLog(user, "logout");
 
-    res.status(200).json({ message: "Logged out successfully" });
+    res.json({ message: "Logged out successfully" });
   } catch (err) {
     console.error("Logout error:", err);
     res.status(500).json({ message: "Server error during logout" });
@@ -152,4 +194,3 @@ router.post("/logout", async (req, res) => {
 });
 
 module.exports = router;
-

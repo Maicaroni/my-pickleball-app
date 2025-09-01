@@ -148,6 +148,7 @@ const Players = () => {
                   <thead className="bg-nuBlue text-white rounded-t-lg">
                     <tr>
                       <th className="py-4 px-8 text-left text-lg font-semibold">PPLID</th>
+                      <th className="py-4 px-8 text-left text-lg font-semibold">DUPRID</th>
                       <th className="py-4 px-8 text-left text-lg font-semibold">User</th>
                       <th className="py-4 px-8 text-left text-lg font-semibold">Username</th>
                       <th className="py-4 px-8 text-left text-lg font-semibold">Gender</th>
@@ -168,7 +169,8 @@ const Players = () => {
                           key={player._id}
                           className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
                         >
-                          <td className="py-4 px-8 text-base">{player._id.slice(-6)}</td> {/* last 6 chars */}
+                          <td className="py-4 px-8 text-base">{player.pplId || '-'}</td>
+                          <td className="py-4 px-8 text-base">{player.duprId || '-'}</td>
                           <td className="py-4 px-8 font-medium text-gray-900">{player.firstName} {player.lastName}</td>
                           <td className="py-4 px-8 lowercase text-gray-700">{player.email.split('@')[0]}</td>
                           <td className="py-4 px-8">{player.gender || '-'}</td>

@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require("multer");
 const auth = require("../middleware/authMiddleware");
 const Profile = require("../models/Profile");
+const User = require("../models/User");
 const sharp = require("sharp");
 
 // Configure multer (store uploads in /uploads folder)
@@ -16,51 +17,50 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-/**
- * ✅ Helper to generate a random PPL ID
- */
-const generatePplId = () => {
-  return `PPL-${Math.floor(100000 + Math.random() * 900000)}`; // 6-digit random number
-};
-
 // ✅ GET current user profile
 router.get("/me", auth, async (req, res) => {
   try {
-    let profile = await Profile.findOne({ user: req.user._id }).populate("user", [
+    // Fetch profile and populate user info including pplId and duprId
+    let profile = await User.findOne({ user: req.user._id }).populate("user", [
       "firstName",
       "lastName",
       "email",
       "birthDate",
       "gender",
       "avatarUrl",
+      "pplId",   // ✅ include PPL ID
+      "duprId",  // ✅ include DUPR ID
     ]);
 
     // If profile doesn't exist, create it
     if (!profile) {
-      profile = new Profile({ user: req.user._id });
+      profile = new Profile({
+        user: req.user._id,
+        duprRatings: { singles: 0, doubles: 0, mixedDoubles: 0 },
+      });
       await profile.save();
-      profile = await Profile.findOne({ user: req.user._id }).populate("user", [
+
+      // Fetch again with populated user
+      profile = await User.findOne({ user: req.user._id }).populate("user", [
         "firstName",
         "lastName",
         "email",
         "birthDate",
         "gender",
         "avatarUrl",
+        "pplId",
+        "duprId",
       ]);
-    }
-
-    // ✅ Ensure pplId exists
-    if (!profile.pplId) {
-      profile.pplId = generatePplId();
-      await profile.save();
     }
 
     res.json(profile);
   } catch (err) {
-    console.error(err.message);
+    console.error("Fetch profile error:", err.message);
     res.status(500).send("Server error");
   }
 });
+
+
 
 // ✅ PUT update current user profile (e.g., bio)
 router.put("/me", auth, async (req, res) => {

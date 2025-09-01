@@ -2,12 +2,17 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 
+// Get all users (with optional role filter)
 exports.getAllUsers = async (req, res) => {
   try {
     const role = req.query.role;
+
     const users = role
       ? await User.find({ roles: { $in: [role] } })
-      : await User.find();
+          .select('firstName lastName email gender birthDate pplId duprId username roles')
+      : await User.find()
+          .select('firstName lastName email gender birthDate pplId duprId username roles');
+
     res.json(users);
   } catch (err) {
     console.error("Error fetching users:", err);
@@ -15,9 +20,10 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
+// Create a new user
 exports.createUser = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, username, birthDate } = req.body;
+    const { firstName, lastName, email, password, username, birthDate, gender, pplId, duprId, roles } = req.body;
 
     if (!birthDate) {
       return res.status(400).json({ message: "Birthdate is required." });
@@ -35,8 +41,11 @@ exports.createUser = async (req, res) => {
       email,
       username,
       password: hashedPassword,
-      birthDate, // ✅ Include birthDate here!
-      roles: ["player"],
+      birthDate,
+      gender,
+      pplId,
+      duprId,
+      roles: roles || ["player"], // default to player
     });
 
     await newUser.save();
@@ -47,13 +56,20 @@ exports.createUser = async (req, res) => {
   }
 };
 
-
+// Update an existing user
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
 
-    const updatedUser = await User.findByIdAndUpdate(id, updates, {
+    // Only allow these fields to be updated
+    const allowedUpdates = ['firstName', 'lastName', 'email', 'birthDate', 'gender', 'pplId', 'duprId', 'username', 'roles'];
+    const filteredUpdates = {};
+    allowedUpdates.forEach(field => {
+      if (updates[field] !== undefined) filteredUpdates[field] = updates[field];
+    });
+
+    const updatedUser = await User.findByIdAndUpdate(id, filteredUpdates, {
       new: true,
     });
 
@@ -65,6 +81,7 @@ exports.updateUser = async (req, res) => {
   }
 };
 
+// Delete a user
 exports.deleteUser = async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);

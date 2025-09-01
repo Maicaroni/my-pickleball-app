@@ -14,8 +14,8 @@ return (
               🚧 Ranking Coming Soon 🚧
             </h2>
             <p className="text-gray-500 mt-4">
-              We’re setting up the best pickleball clubs and courts near you.  
-              Stay tuned for updates and locations!
+              We’re preparing detailed charts and insights for you.  
+              Stay tuned for more updates!
             </p>
           </div>
         </main>

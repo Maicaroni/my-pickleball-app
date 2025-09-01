@@ -16,7 +16,9 @@ const userRoutes = require("./routes/users"); // ✅ this must match the filenam
 const postRoutes = require('./routes/posts');
 const reportRoutes = require('./routes/reports');
 const profileRoutes = require("./routes/profiles");
-const tournamentRoutes = require("./routes/tournaments");
+const tournamentRoutes = require('./routes/tournaments');
+const verificationRoutes = require('./routes/verifications');
+const forgotPasswordRoutes = require('./routes/forgotPassword');
 
 
 const app = express();
@@ -55,6 +57,8 @@ app.use('/api/posts', postRoutes);
 app.use('/api/reports', reportRoutes);
 app.use("/api/profiles", profileRoutes);
 app.use("/api/tournaments", tournamentRoutes);
+app.use("/api/verifications", verificationRoutes);
+app.use("/api/forgotPassword", forgotPasswordRoutes);
 app.use("/uploads", express.static("uploads"));
 
 
