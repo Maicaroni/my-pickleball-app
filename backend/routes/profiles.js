@@ -80,6 +80,7 @@ router.put("/me", auth, async (req, res) => {
 });
 
 // ✅ POST avatar upload with resizing
+// ✅ POST avatar upload with resizing
 router.post("/avatar", auth, upload.single("avatar"), async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.user._id });
@@ -91,7 +92,8 @@ router.post("/avatar", auth, upload.single("avatar"), async (req, res) => {
       .resize(170, 170) // size for avatar
       .toFile(resizedFilename);
 
-    profile.avatar = `/${resizedFilename}`;
+    // ✅ Save full URL to DB
+    profile.avatar = `${req.protocol}://${req.get("host")}/${resizedFilename}`;
     await profile.save();
 
     res.json({ avatarUrl: profile.avatar });
@@ -100,5 +102,6 @@ router.post("/avatar", auth, upload.single("avatar"), async (req, res) => {
     res.status(500).json({ message: "Failed to upload avatar" });
   }
 });
+
 
 module.exports = router;

@@ -2333,55 +2333,61 @@ function Forum() {
 // Fetch posts on mount and page change
 useEffect(() => {
   const fetchPosts = async () => {
-    if (!user) return;
-
     try {
       setLoading(true);
       setError(null);
 
+      const config = user?.token
+        ? { headers: { Authorization: `Bearer ${user.token}` } }
+        : {};
+
       const response = await axios.get(
         `http://localhost:5000/api/posts?status=approved&page=${page}&limit=10`,
-        { headers: { Authorization: `Bearer ${user.token}` } }
+        config
       );
 
       const { posts: newPosts, totalCount } = response.data;
       setPosts(page === 1 ? newPosts : prev => [...prev, ...newPosts]);
       setHasMore(page * 10 < totalCount);
 
-      // Fetch all comments in parallel
-      const commentPromises = newPosts.map(post =>
-        axios.get(`http://localhost:5000/api/posts/${post._id}/comments`, {
-          headers: { Authorization: `Bearer ${user.token}` }
-        })
-      );
+      // Fetch comments only if logged in
+      if (user) {
+        const commentPromises = newPosts.map(post =>
+          axios.get(`http://localhost:5000/api/posts/${post._id}/comments`, {
+            headers: { Authorization: `Bearer ${user.token}` },
+          })
+        );
 
-      const commentResults = await Promise.allSettled(commentPromises);
+        const commentResults = await Promise.allSettled(commentPromises);
 
-      const commentsMap = {};
-      const repliesMap = {};
+        const commentsMap = {};
+        const repliesMap = {};
 
-      commentResults.forEach((result, i) => {
-        const postId = newPosts[i]._id;
-        if (result.status === 'fulfilled') {
-          const comments = result.value.data.comments || [];
-          commentsMap[postId] = comments;
+        commentResults.forEach((result, i) => {
+          const postId = newPosts[i]._id;
+          if (result.status === "fulfilled") {
+            const comments = result.value.data.comments || [];
+            commentsMap[postId] = comments;
 
-          comments.forEach(comment => {
-            if (comment.replies?.length > 0) {
-              repliesMap[comment._id] = true;
-            }
-          });
-        } else {
-          console.error(`Failed to fetch comments for post ${postId}:`, result.reason);
-        }
-      });
+            comments.forEach(comment => {
+              if (comment.replies?.length > 0) {
+                repliesMap[comment._id] = true;
+              }
+            });
+          } else {
+            console.error(
+              `Failed to fetch comments for post ${postId}:`,
+              result.reason
+            );
+          }
+        });
 
-      setPostComments(prev => ({ ...prev, ...commentsMap }));
-      setShowReplies(prev => ({ ...prev, ...repliesMap }));
-
+        setPostComments(prev => ({ ...prev, ...commentsMap }));
+        setShowReplies(prev => ({ ...prev, ...repliesMap }));
+      }
     } catch (err) {
       console.error(err.response?.data || err.message);
-      setError('Failed to load posts. Please try again later.');
+      setError("Failed to load posts. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -2679,6 +2685,11 @@ const createPost = async (postData) => {
     // Directly open file picker
     document.getElementById('imageInput').click();
   };
+
+  // Fetch author IDs safely
+const authorIds = posts
+  .map(p => (p.author && p.author._id ? p.author._id.toString() : null))
+  .filter(Boolean);
 
 const handleSubmitPost = async (e) => {
   e.preventDefault();
@@ -3215,29 +3226,31 @@ const handleReportCancel = () => {
         )}
 
 {!loading && !error && posts
-  .filter(post => post.status === 'approved' || user) // show approved posts even if not logged in
+  .filter(post =>
+    post.status === 'approved' || post.author?._id === user?.id
+  )
+ // show approved posts even if not logged in
   .map(post => (
     <PostContainer key={post._id}>
       <Post>
         <PostHeader>
-          <Avatar
-            style={{
-              background: post.author?.avatarUrl
-                ? `url(${post.author.avatarUrl}) center/cover`
-                : '#4df3c9ff'
-            }}
-          >
-            {!post.author?.avatarUrl ? (post.author?.initials || '') : ''}
-          </Avatar>
+<Avatar
+  src={post.author?.avatar || undefined}
+  style={{
+    backgroundColor: post.author?.avatar ? "transparent" : "#4df3c9ff",
+    fontWeight: "bold"
+  }}
+>
+  {!post.author?.avatar ? (post.author?.initials || "") : ""}
+</Avatar>
 
-          <PostAuthor>
-            <h3>
-              {post.author
-                ? [post.author.firstName, post.author.lastName].filter(Boolean).join(' ')
-                : 'Unknown User'}
-            </h3>
-          </PostAuthor>
-
+<PostAuthor>
+  <h3>
+    {post.author
+      ? [post.author.firstName, post.author.lastName].filter(Boolean).join(' ')
+      : 'Unknown User'}
+  </h3>
+</PostAuthor>
           {/* Top-right menu */}
           <MenuContainer>
             <MenuToggle
