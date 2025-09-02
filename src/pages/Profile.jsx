@@ -3619,8 +3619,57 @@ const { user, token } = useAuth();
   const [bioText, setBioText] = useState("");
   const [clubSearchTerm, setClubSearchTerm] = useState('');
   const [tournamentSearchTerm, setTournamentSearchTerm] = useState('');
-  const [tournaments, setTournaments] = useState([]);
-  const [selectedTournament, setSelectedTournament] = useState(null);
+  const [tournaments, setTournaments] = useState([
+    {
+      _id: 'john-singles-tournament',
+      tournamentName: 'Metro Manila Singles Championship',
+      tournamentPicture: '/api/placeholder/400/200',
+      status: 'upcoming',
+      createdBy: 'john-doe-user-id',
+      tournamentDates: ['2024-02-15T08:00:00.000Z'],
+      venueCity: 'Makati City',
+      tournamentCategories: [
+        { skillLevel: 'Intermediate', category: 'Men\'s Singles' },
+        { skillLevel: 'Advanced', category: 'Men\'s Singles' }
+      ],
+      entryFee: 1500,
+      maxParticipants: 16,
+      currentParticipants: 8
+    },
+    {
+      _id: 'john-doubles-tournament',
+      tournamentName: 'BGC Doubles Open',
+      tournamentPicture: '/api/placeholder/400/200',
+      status: 'ongoing',
+      createdBy: 'john-doe-user-id',
+      tournamentDates: ['2024-02-20T09:00:00.000Z'],
+      venueCity: 'Taguig City',
+      tournamentCategories: [
+        { skillLevel: 'Intermediate', category: 'Mixed Doubles' },
+        { skillLevel: 'Advanced', category: 'Men\'s Doubles' }
+      ],
+      entryFee: 2000,
+      maxParticipants: 24,
+      currentParticipants: 18
+    },
+    {
+      _id: 'john-teams-tournament',
+      tournamentName: 'Corporate Teams Challenge',
+      tournamentPicture: '/api/placeholder/400/200',
+      status: 'completed',
+      createdBy: 'john-doe-user-id',
+      tournamentDates: ['2024-01-25T10:00:00.000Z'],
+      venueCity: 'Quezon City',
+      tournamentCategories: [
+        { skillLevel: 'Open', category: 'Mixed Teams' },
+        { skillLevel: 'Intermediate', category: 'Corporate Teams' }
+      ],
+      entryFee: 3000,
+      maxParticipants: 12,
+      currentParticipants: 12
+    }
+  ]);
+
   const [tournamentDetailTab, setTournamentDetailTab] = useState('list'); 
   const [showAttachmentModal, setShowAttachmentModal] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
@@ -3650,43 +3699,40 @@ const { user, token } = useAuth();
   const [playersSearchTerm, setPlayersSearchTerm] = useState('');  
   // Force re-render of category dropdown when player ages or DUPR ratings change
   const [categoryFilterKey, setCategoryFilterKey] = useState(0);
-  const [registeredPlayers, setRegisteredPlayers] = useState([
-    { 
-      pplId: 'PPL001', 
-      name: 'John Doe', 
-      gender: 'male',
-      age: 28,
-      duprRatings: { singles: '3.5', doubles: '3.7' }
-    },
-    { 
-      pplId: 'PPL002', 
-      name: 'Jane Smith', 
-      gender: 'female',
-      age: 25,
-      duprRatings: { singles: '4.0', doubles: '4.2' }
-    },
-    { 
-      pplId: 'PPL003', 
-      name: 'Mike Johnson', 
-      gender: 'male',
-      age: 32,
-      duprRatings: { singles: '3.8', doubles: '3.9' }
-    },
-    { 
-      pplId: 'PPL004', 
-      name: 'Sarah Wilson', 
-      gender: 'female',
-      age: 29,
-      duprRatings: { singles: '3.2', doubles: '3.4' }
-    },
-    { 
-      pplId: 'PPL005', 
-      name: 'David Brown', 
-      gender: 'male',
-      age: 35,
-      duprRatings: { singles: '4.5', doubles: '4.3' }
-    }
-  ]);
+ const [selectedTournament, setSelectedTournament] = useState(null);
+
+
+  
+  /**
+   * BACKEND NOTE: Registered Players State Management
+   * 
+   * This state holds all players registered for tournaments.
+   * Expected data structure from backend API:
+   * {
+   *   pplId: string,        // Unique Pickleball Player League ID
+   *   name: string,         // Full player name
+   *   gender: 'male'|'female'|'other', // Player gender for category eligibility
+   *   age: number,          // Player age for age group categories
+   *   duprRatings: {        // Dynamic Universal Pickleball Rating
+   *     singles: string,    // DUPR rating for singles play (e.g., '3.5')
+   *     doubles: string     // DUPR rating for doubles play (e.g., '3.7')
+   *   }
+   * }
+   * 
+   * API Endpoints needed:
+   * - GET /api/tournaments/{tournamentId}/players - Fetch registered players
+   * - POST /api/tournaments/{tournamentId}/register - Register new player
+   * - DELETE /api/tournaments/{tournamentId}/players/{playerId} - Remove player
+   */
+  const [registeredPlayers, setRegisteredPlayers] = useState([]);
+  // Sponsor state
+  const [sponsors, setSponsors] = useState([]);
+  const [showSponsorModal, setShowSponsorModal] = useState(false);
+  const [sponsorForm, setSponsorForm] = useState({
+    name: '',
+    image: ''
+  });
+
   const [registrationForm, setRegistrationForm] = useState({
     category: '',
     // Player information
@@ -3919,80 +3965,60 @@ const handleTournamentClick = (tournament) => {
 
   // Registration handling functions
   const handleRegister = async (tournamentId) => {
-    // Check auth state
-    if (!user) {
-      showNotification('Please sign in to register for tournaments', 'error');
-      return;
-    }
+  if (!user) {
+    showNotification('Please sign in to register for tournaments', 'error');
+    return;
+  }
 
-    // Find the tournament - check both tournaments array and selectedTournament
-    let tournament = tournamentData.find(t => t.id === tournamentId);
-    
-    // If not found in tournaments array, check if it's the currently selected tournament
-    if (!tournament && selectedTournament && selectedTournament.id === tournamentId) {
-      tournament = selectedTournament;
-    }
-    
-    if (tournament) {
-      setRegistrationTournament(tournament);
-      setShowRegistrationModal(true);
-      // Reset form but preserve primary player information if user is authenticated
-      setRegistrationForm(prev => {
-        const primaryPlayerInfo = user ? {
-          pplId: 'PPL999',
-          name: user.name || `${user.firstName} ${user.lastName}` || '',
-          gender: user.gender || 'male', // Use user's actual gender, fallback to 'male'
-          age: user.age || 25, // Use user's actual age, fallback to 25
-          duprRatings: {
-            singles: '4.2',
-            doubles: '4.0'
-          }
-        } : {
-          pplId: '',
-          name: '',
-          gender: 'male', // Default for non-authenticated users
-          age: '', // Empty for non-authenticated users
-          duprRatings: {
-            singles: '',
-            doubles: ''
-          }
-        };
+  const tournament = tournamentData.find(t => t.id === tournamentId) || selectedTournament;
 
-        // Auto-select the first available category for the user's gender
-        const userGender = primaryPlayerInfo.gender;
-        
-        // Filter categories based on user gender
-        const allCategories = Object.values(tournament?.tournamentCategories || {});
-        const availableCategories = allCategories
-          .filter(category => {
-            return isCategoryAllowedForGender(category.division, userGender);
-          });
-            
-        const autoSelectedCategory = '';
+  if (!tournament) return;
 
-        return {
-          category: autoSelectedCategory,
-          primaryPlayer: primaryPlayerInfo,
-          partner: {
-            pplId: '',
-            name: '',
-            gender: ''
-          },
-          teamMembers: [
-            { pplId: '', name: '', gender: 'male', required: true, label: 'Male Player 2' },
-            { pplId: '', name: '', gender: 'female', required: true, label: 'Female Player 1' },
-            { pplId: '', name: '', gender: 'female', required: true, label: 'Female Player 2' },
-            { pplId: '', name: '', gender: 'male', required: false, label: 'Optional Player 1' },
-            { pplId: '', name: '', gender: 'female', required: false, label: 'Optional Player 2' }
-          ],
-          name: '',
-          email: '',
-          contactNumber: '',
-          proofOfPayment: null
-        };
-      });
-    }
-  };
+  setRegistrationTournament(tournament);
+  setShowRegistrationModal(true);
+
+setRegistrationForm({
+  category: '',
+
+  // Primary player info
+  primaryPlayer: {
+    pplId: user.pplId || `PPL${Math.floor(Math.random() * 10000)}`, // fallback ID
+    name: `${user.firstName} ${user.lastName}`,
+    gender: user.gender || 'male',
+    age: user.birthDate
+      ? Math.floor((new Date() - new Date(user.birthDate)) / (1000 * 60 * 60 * 24 * 365))
+      : 25, // fallback if no birthDate
+    duprId: user.duprId || '' // just the ID, no ratings
+  },
+
+  // Partner info for doubles/team events
+  partner: {
+    pplId: '',
+    name: '',
+    gender: ''
+  },
+
+  // Team members (optional)
+  teamMembers: [
+    { pplId: '', name: '', gender: 'male', required: true, label: 'Male Player 2' },
+    { pplId: '', name: '', gender: 'female', required: true, label: 'Female Player 1' },
+    { pplId: '', name: '', gender: 'female', required: true, label: 'Female Player 2' },
+    { pplId: '', name: '', gender: 'male', required: false, label: 'Optional Player 1' },
+    { pplId: '', name: '', gender: 'female', required: false, label: 'Optional Player 2' }
+  ],
+
+  // Registration info
+  name: `${user.firstName} ${user.lastName}`,
+  email: user.email || '',
+  contactNumber: '', // if you collect phone separately
+  proofOfPayment: null,
+  status: 'pending' // pending approval by clubadmin
+});
+
+
+  showNotification('Your registration is pending approval by the club admin', 'info');
+};
+
 
   // Registration form handlers
   const handleRegistrationFormChange = (field, value) => {
@@ -4242,6 +4268,27 @@ const handleTournamentClick = (tournament) => {
     }
     
     return ages;
+  };
+
+  // Sponsor management functions
+  const addSponsor = () => {
+    if (sponsorForm.name.trim() && sponsorForm.image.trim()) {
+      setSponsors(prev => [...prev, { ...sponsorForm }]);
+      setSponsorForm({ name: '', image: '' });
+      setShowSponsorModal(false);
+      showNotification('Sponsor added successfully!', 'success');
+    } else {
+      showNotification('Please fill in both name and image URL', 'error');
+    }
+  };
+
+  const removeSponsor = (index) => {
+    setSponsors(prev => prev.filter((_, i) => i !== index));
+    showNotification('Sponsor removed successfully!', 'success');
+  };
+
+  const handleSponsorFormChange = (field, value) => {
+    setSponsorForm(prev => ({ ...prev, [field]: value }));
   };
 
   // Helper function to check if a player's DUPR rating meets the skill level requirement
@@ -4837,14 +4884,21 @@ const duprRatings = userProfile?.duprRatings
                   </EditTournamentButton>
                 </TournamentDetailHeader>
 
-                <TournamentDetailBanner>
-                  {selectedTournament.bannerUrl && (
-                    <img src={selectedTournament.bannerUrl} alt={selectedTournament.name} />
-                  )}
-                  <TournamentDetailStatusBadge status={selectedTournament.status}>
-                    {selectedTournament.status.toUpperCase()}
-                  </TournamentDetailStatusBadge>
-                </TournamentDetailBanner>
+<TournamentDetailBanner>
+{selectedTournament.tournamentPicture ? (
+    <img 
+      src={`http://localhost:5000${selectedTournament.tournamentPicture}`} 
+      alt={selectedTournament.tournamentName} 
+      style={{ width: "100%", objectFit: "cover" }}
+    />
+  ) : (
+    <div style={{ textAlign: "center", color: "#888"}}>No Image</div>
+  )}
+  <TournamentDetailStatusBadge $status={selectedTournament.status}>
+    {selectedTournament.status?.toUpperCase() || 'UNKNOWN'}
+  </TournamentDetailStatusBadge>
+</TournamentDetailBanner>
+
 
                 <TournamentDetailTitle>{selectedTournament.name}</TournamentDetailTitle>
 
@@ -4911,7 +4965,23 @@ const duprRatings = userProfile?.duprRatings
               <DetailItemLabel>Registration Fee</DetailItemLabel>
             </div>
             <DetailItemValue className="price">
-              ₱{Number(selectedTournament?.entryFee || 0).toLocaleString()}
+      <span>
+  {selectedTournament
+    ? (() => {
+        const min = selectedTournament.entryFeeMin ?? 0;
+        const max = selectedTournament.entryFeeMax;
+
+        if (min === 0 && (!max || max === 0)) return "FREE";
+
+        if (max != null && max !== min) {
+          return `₱${min.toLocaleString()} – ₱${max.toLocaleString()}`;
+        }
+
+        return `₱${min.toLocaleString()}`;
+      })()
+    : "Loading..."}
+</span>
+
             </DetailItemValue>
           </DetailItemContent>
         </TournamentDetailsItem>
@@ -4925,20 +4995,49 @@ const duprRatings = userProfile?.duprRatings
             <div>
               <DetailItemLabel>Tournament Date</DetailItemLabel>
             </div>
-            <DetailItemValue>
-              {selectedTournament?.date ? (() => {
-                const start = new Date(selectedTournament.date);
-                const end = new Date(selectedTournament?.endDate || selectedTournament.date);
+<DetailItemValue>
+  {(() => {
+    const dates = selectedTournament?.tournamentDates || [];
+    if (!dates.length) return "TBA";
 
-                if (isNaN(start) || isNaN(end)) return 'Date not available';
+    const sortedDates = dates.map(d => new Date(d)).sort((a, b) => a - b);
+    const ranges = [];
+    let start = sortedDates[0];
+    let end = sortedDates[0];
 
-                if (start.toDateString() === end.toDateString()) {
-                  return start.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                } else {
-                  return `${start.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
-                }
-              })() : 'Date not available'}
-            </DetailItemValue>
+    for (let i = 1; i <= sortedDates.length; i++) {
+      const current = sortedDates[i];
+      const prev = sortedDates[i - 1];
+
+      if (current && (current - prev) / (1000 * 60 * 60 * 24) === 1) {
+        end = current; // consecutive day
+      } else {
+        ranges.push([start, end]);
+        start = current;
+        end = current;
+      }
+    }
+
+    const formatted = ranges
+      .map(([s, e]) => {
+        const sameMonth = s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear();
+        const sameDay = s.getTime() === e.getTime();
+        const monthFormat = { month: "short" };
+
+        if (sameDay) return s.toLocaleDateString("en-US", { ...monthFormat, day: "numeric" });
+
+        if (sameMonth) return `${s.toLocaleDateString("en-US", monthFormat)} ${s.getDate()}–${e.getDate()}`;
+
+        return `${s.toLocaleDateString("en-US", { month: "short", day: "numeric" })}–${e.toLocaleDateString(
+          "en-US",
+          { month: "short", day: "numeric" }
+        )}`;
+      })
+      .join(" & ");
+
+    return sortedDates.length ? `${formatted}, ${sortedDates[0].getFullYear()}` : "TBA";
+  })()}
+</DetailItemValue>
           </DetailItemContent>
         </TournamentDetailsItem>
 
@@ -4979,23 +5078,29 @@ const duprRatings = userProfile?.duprRatings
             <div>
               <DetailItemLabel>Skill Levels</DetailItemLabel>
             </div>
-            <DetailItemValue>
-              {selectedTournament?.tournamentCategories
-                ? (() => {
-                    const skillLevels = new Set();
-                    Object.values(selectedTournament.tournamentCategories).forEach(category => {
-                      if (category.skillLevel === 'Open') {
-                        skillLevels.add(`Open - Tier ${category.tier || 1}`);
-                      } else if (['Beginner', 'Intermediate', 'Advanced'].includes(category.skillLevel)) {
-                        skillLevels.add(category.skillLevel);
-                      }
-                    });
-                    return skillLevels.size > 0 ? Array.from(skillLevels).sort().join(', ') : 'Not specified';
-                  })()
-                : (selectedTournament?.tournamentType
-                    ? `${selectedTournament.tournamentType.charAt(0).toUpperCase() + selectedTournament.tournamentType.slice(1)}${selectedTournament.tournamentType === 'open' ? ` - Tier ${selectedTournament.tier || 1}` : ''}`
-                    : 'Not specified')}
-            </DetailItemValue>
+           <DetailItemValue>
+  {selectedTournament?.tournamentCategories?.length > 0
+    ? (() => {
+        const skillLevels = new Set();
+        selectedTournament.tournamentCategories.forEach(category => {
+          const level = category.skillLevel?.toLowerCase();
+          if (!level) return;
+
+          if (level === 'open') {
+            skillLevels.add(`Open - Tier ${category.tier || 1}`);
+          } else if (['beginner', 'intermediate', 'advanced'].includes(level)) {
+            // capitalize first letter
+            skillLevels.add(category.skillLevel.charAt(0).toUpperCase() + category.skillLevel.slice(1));
+          }
+        });
+        return skillLevels.size > 0 ? Array.from(skillLevels).sort().join(', ') : 'Not specified';
+      })()
+    : selectedTournament?.tournamentType
+    ? `${selectedTournament.tournamentType.charAt(0).toUpperCase() + selectedTournament.tournamentType.slice(1)}${
+        selectedTournament.tournamentType.toLowerCase() === 'open' ? ` - Tier ${selectedTournament.tier || 1}` : ''
+      }`
+    : 'Not specified'}
+</DetailItemValue>
           </DetailItemContent>
         </TournamentDetailsItem>
 
@@ -5225,7 +5330,7 @@ const duprRatings = userProfile?.duprRatings
                         </TournamentDetailSectionTitle>
                         
                         <LocationCard>
-                          <LocationHeader>
+                        {/*  <LocationHeader>
                             <LocationActions>
                               <LocationButton 
                                 $primary 
@@ -5260,16 +5365,42 @@ const duprRatings = userProfile?.duprRatings
                                 Coordinates: {selectedTournament.latitude}, {selectedTournament.longitude}
                               </div>
                             )}
-                          </LocationInfo>
+                          </LocationInfo>*/}
                           
-                          <MapContainer 
-                            onClick={() => window.open(`https://maps.google.com/?q=${selectedTournament.latitude || ''},${selectedTournament.longitude || ''}`, '_blank')}
-                          >
-                            <div className="map-text">
-                              <div className="main-text">Interactive Map View</div>
-                              <div className="sub-text">Click to open in Google Maps</div>
-                            </div>
-                          </MapContainer>
+    {/* Embedded map */}
+<MapContainer
+  onClick={() =>
+    window.open(
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        `${selectedTournament.venueName}, ${selectedTournament.venueAddress}, ${selectedTournament.venueCity}, ${selectedTournament.venueState} ${selectedTournament.venueZip}`
+      )}`,
+      "_blank"
+    )
+  }
+>
+  <iframe
+    width="100%"
+    height="400"
+    style={{ border: 0 }}
+    loading="lazy"
+    allowFullScreen
+    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyDTLYs6fgEmKxspHDNzTrKNwQiv5EI4AU8&q=${encodeURIComponent(
+      `${selectedTournament.venueName}, ${selectedTournament.venueAddress}, ${selectedTournament.venueCity}, ${selectedTournament.venueState} ${selectedTournament.venueZip}`
+    )}`}
+  ></iframe>
+
+  <div className="map-text">
+    <div className="main-text">Interactive Map View</div>
+    <div className="sub-text">Click to open in Google Maps</div>
+    <div className="venue-details">
+      <p>{selectedTournament.venueName}</p>
+      <p>{selectedTournament.venueAddress}</p>
+      <p>
+        {selectedTournament.venueCity}, {selectedTournament.venueState} {selectedTournament.venueZip}
+      </p>
+    </div>
+  </div>
+</MapContainer>
                         </LocationCard>
                       </TournamentDetailSection>
                     </>
@@ -7014,14 +7145,39 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                 }
                                               ];
                                             } else {
-                                              // 8 bracket elimination - automatically starts at Round of 16
+                                              /**
+                                               * BACKEND NOTE: Elimination Matches Structure
+                                               * 
+                                               * 8 bracket elimination - automatically starts at Round of 16
+                                               * Expected match data structure from backend:
+                                               * {
+                                               *   id: string,           // Unique match identifier
+                                               *   title: string,        // Match description (e.g., 'Round of 16 - Match 1')
+                                               *   player1: {
+                                               *     name: string,       // Player full name
+                                               *     bracket: string,    // Source bracket (A, B, C, etc.)
+                                               *     position: string,   // Position in bracket ('1st', '2nd', etc.)
+                                               *     points: number      // Points scored in group stage
+                                               *   },
+                                               *   player2: { ... },     // Same structure as player1
+                                               *   winner?: string,      // 'player1' or 'player2' (set after match completion)
+                                               *   score?: string,       // Match score (e.g., '11-8, 11-6')
+                                               *   completed?: boolean   // Match completion status
+                                               * }
+                                               * 
+                                               * API Endpoints needed:
+                                               * - GET /api/tournaments/{tournamentId}/elimination-matches
+                                               * - PUT /api/tournaments/{tournamentId}/matches/{matchId}/result
+                                               */
                                               eliminationMatches = [
-                                                {
-                                                  id: 'round16_1',
-                                                  title: 'Round of 16 - Match 1',
-                                                  player1: { name: 'John Doe', bracket: 'A', position: '1st', points: 44 },
-                                                  player2: { name: 'Carmen Lopez', bracket: 'E', position: '2nd', points: 29 }
-                                                },
+                                                // TODO: Replace with actual data from backend API
+                                                // Example structure (remove when implementing):
+                                                // {
+                                                //   id: 'round16_1',
+                                                //   title: 'Round of 16 - Match 1',
+                                                //   player1: { name: 'Player Name', bracket: 'A', position: '1st', points: 44 },
+                                                //   player2: { name: 'Player Name', bracket: 'E', position: '2nd', points: 29 }
+                                                // },
                                                 {
                                                   id: 'round16_2',
                                                   title: 'Round of 16 - Match 2',
@@ -7120,7 +7276,38 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                             }
                                             
                                             // Reusable Match Card Component
-                                            const MatchCard = ({ match, matchNumber }) => (
+                                            const MatchCard = ({ match, matchNumber }) => {
+                                              const [isEditing, setIsEditing] = useState(false);
+                                              const [editData, setEditData] = useState({
+                                                player1Score1: match.player1.points || '',
+                                                player1Score2: match.player1.points || '',
+                                                player1Score3: match.player1.points || '',
+                                                player2Score1: match.player2.points || '',
+                                                player2Score2: match.player2.points || '',
+                                                player2Score3: match.player2.points || '',
+                                                court: 'CC',
+                                                date: '2024-08-22',
+                                                time: '09:19'
+                                              });
+
+                                              const handleEditToggle = () => {
+                                                setIsEditing(!isEditing);
+                                              };
+
+                                              const handleSave = () => {
+                                                // Here you would typically save the data to your backend
+                                                console.log('Saving match data:', editData);
+                                                setIsEditing(false);
+                                              };
+
+                                              const handleInputChange = (field, value) => {
+                                                setEditData(prev => ({
+                                                  ...prev,
+                                                  [field]: value
+                                                }));
+                                              };
+
+                                              return (
                                               <div style={{
                                                 background: 'white',
                                                 border: '1px solid #e2e8f0',
@@ -7149,20 +7336,64 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                   flex: 1,
                                                   position: 'relative'
                                                 }}>
-                                                  {/* Refresh Icon */}
+                                                  {/* Edit Button */}
                                                   <div style={{
                                                     position: 'absolute',
                                                     top: '8px',
                                                     right: '8px',
-                                                    cursor: 'pointer',
-                                                    padding: '2px'
+                                                    display: 'flex',
+                                                    gap: '4px'
                                                   }}>
-                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
-                                                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                                                      <path d="M21 3v5h-5"/>
-                                                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                                                      <path d="M3 21v-5h5"/>
-                                                    </svg>
+                                                    {isEditing ? (
+                                                      <>
+                                                        <button
+                                                          onClick={handleSave}
+                                                          style={{
+                                                            cursor: 'pointer',
+                                                            padding: '4px 8px',
+                                                            background: '#10b981',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '4px',
+                                                            fontSize: '12px',
+                                                            fontWeight: '500'
+                                                          }}
+                                                        >
+                                                          Save
+                                                        </button>
+                                                        <button
+                                                          onClick={handleEditToggle}
+                                                          style={{
+                                                            cursor: 'pointer',
+                                                            padding: '4px 8px',
+                                                            background: '#6b7280',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '4px',
+                                                            fontSize: '12px',
+                                                            fontWeight: '500'
+                                                          }}
+                                                        >
+                                                          Cancel
+                                                        </button>
+                                                      </>
+                                                    ) : (
+                                                      <button
+                                                        onClick={handleEditToggle}
+                                                        style={{
+                                                          cursor: 'pointer',
+                                                          padding: '2px',
+                                                          background: 'transparent',
+                                                          border: 'none',
+                                                          borderRadius: '4px'
+                                                        }}
+                                                      >
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
+                                                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                          <path d="m18.5 2.5 a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                                        </svg>
+                                                      </button>
+                                                    )}
                                                   </div>
                                                 
                                                 {/* Player 1 */}
@@ -7189,8 +7420,8 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                     borderLeft: '1px solid #e2e8f0'
                                                   }}>
                                                     <div style={{
-                                                      background: match.player1.points === 11 ? '#dcfce7' : 'transparent',
-                                                      color: match.player1.points === 11 ? '#166534' : '#64748b',
+                                                      background: (isEditing ? editData.player1Score1 : match.player1.points) === 11 ? '#dcfce7' : 'transparent',
+                                                      color: (isEditing ? editData.player1Score1 : match.player1.points) === 11 ? '#166534' : '#64748b',
                                                       padding: '12px',
                                                       fontSize: '16px',
                                                       fontWeight: '600',
@@ -7200,10 +7431,28 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                       display: 'flex',
                                                       alignItems: 'center',
                                                       justifyContent: 'center'
-                                                    }}>{match.player1.points}</div>
+                                                    }}>
+                                                      {isEditing ? (
+                                                        <input
+                                                          type="number"
+                                                          value={editData.player1Score1}
+                                                          onChange={(e) => handleInputChange('player1Score1', e.target.value)}
+                                                          style={{
+                                                            width: '40px',
+                                                            textAlign: 'center',
+                                                            border: '1px solid #d1d5db',
+                                                            borderRadius: '4px',
+                                                            padding: '2px',
+                                                            fontSize: '14px'
+                                                          }}
+                                                        />
+                                                      ) : (
+                                                        match.player1.points
+                                                      )}
+                                                    </div>
                                                     <div style={{
-                                                      background: match.player1.points === 11 ? '#dcfce7' : 'transparent',
-                                                      color: match.player1.points === 11 ? '#166534' : '#64748b',
+                                                      background: (isEditing ? editData.player1Score2 : match.player1.points) === 11 ? '#dcfce7' : 'transparent',
+                                                      color: (isEditing ? editData.player1Score2 : match.player1.points) === 11 ? '#166534' : '#64748b',
                                                       padding: '12px',
                                                       fontSize: '16px',
                                                       fontWeight: '600',
@@ -7213,10 +7462,28 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                       display: 'flex',
                                                       alignItems: 'center',
                                                       justifyContent: 'center'
-                                                    }}>{match.player1.points}</div>
+                                                    }}>
+                                                      {isEditing ? (
+                                                        <input
+                                                          type="number"
+                                                          value={editData.player1Score2}
+                                                          onChange={(e) => handleInputChange('player1Score2', e.target.value)}
+                                                          style={{
+                                                            width: '40px',
+                                                            textAlign: 'center',
+                                                            border: '1px solid #d1d5db',
+                                                            borderRadius: '4px',
+                                                            padding: '2px',
+                                                            fontSize: '14px'
+                                                          }}
+                                                        />
+                                                      ) : (
+                                                        match.player1.points
+                                                      )}
+                                                    </div>
                                                     <div style={{
-                                                      background: match.player1.points === 11 ? '#dcfce7' : 'transparent',
-                                                      color: match.player1.points === 11 ? '#166534' : '#64748b',
+                                                      background: (isEditing ? editData.player1Score3 : match.player1.points) === 11 ? '#dcfce7' : 'transparent',
+                                                      color: (isEditing ? editData.player1Score3 : match.player1.points) === 11 ? '#166534' : '#64748b',
                                                       padding: '12px',
                                                       fontSize: '16px',
                                                       fontWeight: '600',
@@ -7225,7 +7492,25 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                       display: 'flex',
                                                       alignItems: 'center',
                                                       justifyContent: 'center'
-                                                    }}>{match.player1.points}</div>
+                                                    }}>
+                                                      {isEditing ? (
+                                                        <input
+                                                          type="number"
+                                                          value={editData.player1Score3}
+                                                          onChange={(e) => handleInputChange('player1Score3', e.target.value)}
+                                                          style={{
+                                                            width: '40px',
+                                                            textAlign: 'center',
+                                                            border: '1px solid #d1d5db',
+                                                            borderRadius: '4px',
+                                                            padding: '2px',
+                                                            fontSize: '14px'
+                                                          }}
+                                                        />
+                                                      ) : (
+                                                        match.player1.points
+                                                      )}
+                                                    </div>
                                                   </div>
                                                 </div>
                                                 
@@ -7253,8 +7538,8 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                     borderLeft: '1px solid #e2e8f0'
                                                   }}>
                                                     <div style={{
-                                                      background: match.player2.points === 11 ? '#dcfce7' : 'transparent',
-                                                      color: match.player2.points === 11 ? '#166534' : '#64748b',
+                                                      background: (isEditing ? editData.player2Score1 : match.player2.points) === 11 ? '#dcfce7' : 'transparent',
+                                                      color: (isEditing ? editData.player2Score1 : match.player2.points) === 11 ? '#166534' : '#64748b',
                                                       padding: '12px',
                                                       fontSize: '16px',
                                                       fontWeight: '600',
@@ -7264,10 +7549,28 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                       display: 'flex',
                                                       alignItems: 'center',
                                                       justifyContent: 'center'
-                                                    }}>{match.player2.points}</div>
+                                                    }}>
+                                                      {isEditing ? (
+                                                        <input
+                                                          type="number"
+                                                          value={editData.player2Score1}
+                                                          onChange={(e) => handleInputChange('player2Score1', e.target.value)}
+                                                          style={{
+                                                            width: '40px',
+                                                            textAlign: 'center',
+                                                            border: '1px solid #d1d5db',
+                                                            borderRadius: '4px',
+                                                            padding: '2px',
+                                                            fontSize: '14px'
+                                                          }}
+                                                        />
+                                                      ) : (
+                                                        match.player2.points
+                                                      )}
+                                                    </div>
                                                     <div style={{
-                                                      background: match.player2.points === 11 ? '#dcfce7' : 'transparent',
-                                                      color: match.player2.points === 11 ? '#166534' : '#64748b',
+                                                      background: (isEditing ? editData.player2Score2 : match.player2.points) === 11 ? '#dcfce7' : 'transparent',
+                                                      color: (isEditing ? editData.player2Score2 : match.player2.points) === 11 ? '#166534' : '#64748b',
                                                       padding: '12px',
                                                       fontSize: '16px',
                                                       fontWeight: '600',
@@ -7277,10 +7580,28 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                       display: 'flex',
                                                       alignItems: 'center',
                                                       justifyContent: 'center'
-                                                    }}>{match.player2.points}</div>
+                                                    }}>
+                                                      {isEditing ? (
+                                                        <input
+                                                          type="number"
+                                                          value={editData.player2Score2}
+                                                          onChange={(e) => handleInputChange('player2Score2', e.target.value)}
+                                                          style={{
+                                                            width: '40px',
+                                                            textAlign: 'center',
+                                                            border: '1px solid #d1d5db',
+                                                            borderRadius: '4px',
+                                                            padding: '2px',
+                                                            fontSize: '14px'
+                                                          }}
+                                                        />
+                                                      ) : (
+                                                        match.player2.points
+                                                      )}
+                                                    </div>
                                                     <div style={{
-                                                      background: match.player2.points === 11 ? '#dcfce7' : 'transparent',
-                                                      color: match.player2.points === 11 ? '#166534' : '#64748b',
+                                                      background: (isEditing ? editData.player2Score3 : match.player2.points) === 11 ? '#dcfce7' : 'transparent',
+                                                      color: (isEditing ? editData.player2Score3 : match.player2.points) === 11 ? '#166534' : '#64748b',
                                                       padding: '12px',
                                                       fontSize: '16px',
                                                       fontWeight: '600',
@@ -7289,7 +7610,25 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                       display: 'flex',
                                                       alignItems: 'center',
                                                       justifyContent: 'center'
-                                                    }}>{match.player2.points}</div>
+                                                    }}>
+                                                      {isEditing ? (
+                                                        <input
+                                                          type="number"
+                                                          value={editData.player2Score3}
+                                                          onChange={(e) => handleInputChange('player2Score3', e.target.value)}
+                                                          style={{
+                                                            width: '40px',
+                                                            textAlign: 'center',
+                                                            border: '1px solid #d1d5db',
+                                                            borderRadius: '4px',
+                                                            padding: '2px',
+                                                            fontSize: '14px'
+                                                          }}
+                                                        />
+                                                      ) : (
+                                                        match.player2.points
+                                                      )}
+                                                    </div>
                                                   </div>
                                                 </div>
                                                 
@@ -7300,14 +7639,63 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                     alignItems: 'center',
                                                     padding: '8px 12px',
                                                     fontSize: '12px',
-                                                    color: '#64748b'
+                                                    color: '#64748b',
+                                                    gap: '10px'
                                                   }}>
-                                                    <span>Court: CC</span>
-                                                    <span>Aug 22 - 09:19 AM +08</span>
+                                                    {isEditing ? (
+                                                      <>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                          <span>Court:</span>
+                                                          <input
+                                                            type="text"
+                                                            value={editData.court}
+                                                            onChange={(e) => handleInputChange('court', e.target.value)}
+                                                            style={{
+                                                              width: '40px',
+                                                              textAlign: 'center',
+                                                              border: '1px solid #d1d5db',
+                                                              borderRadius: '4px',
+                                                              padding: '2px',
+                                                              fontSize: '12px'
+                                                            }}
+                                                          />
+                                                        </div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                          <input
+                                                            type="date"
+                                                            value={editData.date}
+                                                            onChange={(e) => handleInputChange('date', e.target.value)}
+                                                            style={{
+                                                              border: '1px solid #d1d5db',
+                                                              borderRadius: '4px',
+                                                              padding: '2px',
+                                                              fontSize: '12px'
+                                                            }}
+                                                          />
+                                                          <input
+                                                            type="time"
+                                                            value={editData.time}
+                                                            onChange={(e) => handleInputChange('time', e.target.value)}
+                                                            style={{
+                                                              border: '1px solid #d1d5db',
+                                                              borderRadius: '4px',
+                                                              padding: '2px',
+                                                              fontSize: '12px'
+                                                            }}
+                                                          />
+                                                        </div>
+                                                      </>
+                                                    ) : (
+                                                      <>
+                                                        <span>Court: {editData.court}</span>
+                                                        <span>{new Date(editData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {editData.time} AM +08</span>
+                                                      </>
+                                                    )}
                                                   </div>
                                                 </div>
                                               </div>
                                             );
+                                            };
                                             
                                             return (
                                               <div>
@@ -7688,9 +8076,23 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                   <TournamentDetailRight>
                     <StickyActionBar>
                       <StickyActionTitle>Tournament Registration</StickyActionTitle>
-                      
                      <DetailItemValue className="price">
-  ₱{Number(selectedTournament?.entryFee ?? 0).toLocaleString()}
+ <span>
+  {selectedTournament
+    ? (() => {
+        const min = selectedTournament.entryFeeMin ?? 0;
+        const max = selectedTournament.entryFeeMax;
+
+        if (min === 0 && (!max || max === 0)) return "FREE";
+
+        if (max != null && max !== min) {
+          return `₱${min.toLocaleString()} – ₱${max.toLocaleString()}`;
+        }
+
+        return `₱${min.toLocaleString()}`;
+      })()
+    : "Loading..."}
+</span>
 </DetailItemValue>
 
 
@@ -7708,7 +8110,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                           View Form
                         </ActionButton>
                         
-                        <ActionButton variant="secondary" onClick={() => {
+                        {/*<ActionButton variant="secondary" onClick={() => {
                           if (navigator.share) {
                             navigator.share({
                               title: selectedTournament.name,
@@ -7724,8 +8126,74 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                             <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                           Share
+                        </ActionButton>*/}
+                      </TournamentActionButtons>
+                    </StickyActionBar>
+
+                    {/* Tournament Sponsors Section */}
+                    <StickyActionBar style={{ marginTop: '16px' }}>
+                      <StickyActionTitle>Tournament Sponsors</StickyActionTitle>
+                      
+                      {/* Add Sponsor Button */}
+                      <TournamentActionButtons>
+                        <ActionButton variant="primary" 
+                          onClick={() => setShowSponsorModal(true)}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M12 5v14m-7-7h14" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          Add Sponsor
                         </ActionButton>
                       </TournamentActionButtons>
+
+                      {/* Sponsors List */}
+                      {sponsors.length > 0 && (
+                        <div style={{ marginTop: '16px' }}>
+                          {sponsors.map((sponsor, index) => (
+                            <div key={index} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              padding: '12px',
+                              background: 'white',
+                              borderRadius: '8px',
+                              border: '1px solid #e2e8f0',
+                              marginBottom: '8px'
+                            }}>
+                              <img 
+                                src={sponsor.image} 
+                                alt={sponsor.name}
+                                style={{
+                                  width: '40px',
+                                  height: '40px',
+                                  borderRadius: '4px',
+                                  objectFit: 'cover'
+                                }}
+                              />
+                              <span style={{
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                color: '#334155'
+                              }}>
+                                {sponsor.name}
+                              </span>
+                              <button
+                                onClick={() => removeSponsor(index)}
+                                style={{
+                                  marginLeft: 'auto',
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#ef4444',
+                                  cursor: 'pointer',
+                                  fontSize: '16px'
+                                }}
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </StickyActionBar>
                   </TournamentDetailRight>
                 </TournamentDetailBody>
@@ -7769,9 +8237,15 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
             style={{ cursor: 'pointer' }}
           >
             <ProfileTournamentBanner>
-              {tournament.tournamentPicture && (
-                <img src={tournament.tournamentPicture} alt={tournament.tournamentName} />
-              )}
+              {tournament.tournamentPicture ? (
+    <img 
+      src={`http://localhost:5000${tournament.tournamentPicture}`} 
+      alt={tournament.tournamentName} 
+      style={{ width: "100%", height: "150px", objectFit: "cover" }}
+    />
+  ) : (
+    <div style={{padding: "40px", textAlign: "center", color: "#888"}}>No Image</div>
+  )}
               <ProfileStatusBadge status={tournament.status}>
                 {tournament.status.toUpperCase()}
               </ProfileStatusBadge>
@@ -7782,18 +8256,69 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
 
               <ProfileTournamentDate>
                 <CalendarIcon />
-                {tournament.tournamentDates?.[0]
-                  ? new Date(tournament.tournamentDates[0]).toLocaleDateString()
-                  : 'No date'}
+                {(() => {
+    const dates = tournament.tournamentDates || [];
+    if (!dates.length) return "TBA";
+
+    const sortedDates = dates.map(d => new Date(d)).sort((a, b) => a - b);
+    const ranges = [];
+    let start = sortedDates[0];
+    let end = sortedDates[0];
+
+    for (let i = 1; i <= sortedDates.length; i++) {
+      const current = sortedDates[i];
+      const prev = sortedDates[i - 1];
+
+      if (current && (current - prev) / (1000 * 60 * 60 * 24) === 1) {
+        end = current; // consecutive day
+      } else {
+        ranges.push([start, end]);
+        start = current;
+        end = current;
+      }
+    }
+
+    const formatted = ranges
+      .map(([s, e]) => {
+        const sameMonth = s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear();
+        const sameDay = s.getTime() === e.getTime();
+        const monthFormat = { month: "short" };
+
+        if (sameDay) return s.toLocaleDateString("en-US", { ...monthFormat, day: "numeric" });
+
+        if (sameMonth) return `${s.toLocaleDateString("en-US", monthFormat)} ${s.getDate()}–${e.getDate()}`;
+
+        return `${s.toLocaleDateString("en-US", { month: "short", day: "numeric" })}–${e.toLocaleDateString(
+          "en-US",
+          { month: "short", day: "numeric" }
+        )}`;
+      })
+      .join(" & ");
+
+    return `${formatted}, ${sortedDates[0].getFullYear()}`;
+  })()}
               </ProfileTournamentDate>
 
               <ProfileTournamentLocation>
                 <LocationIcon />
-                {tournament.venueCity}
+                {tournament.venueCity}, {tournament.venueState}
               </ProfileTournamentLocation>
 
               <ProfileTournamentSkillLevels>
-                {tournament.tournamentCategories?.map(cat => cat.skillLevel).join(", ")}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="m22 21-3-3m0 0a5.5 5.5 0 1 0-7.78-7.78 5.5 5.5 0 0 0 7.78 7.78Z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+           {tournament.tournamentCategories
+  ?.map(cat => {
+    if (cat.skillLevel.toLowerCase() === 'open') {
+      return `Open - Tier ${cat.tier || 1}`;
+    }
+    return cat.skillLevel;
+  })
+  .join(', ')
+  .toUpperCase()}
               </ProfileTournamentSkillLevels>
 
               {isAuthor && tournament.status === "upcoming" && (
@@ -8281,12 +8806,14 @@ const EditBioButton = styled.button`
           >
             My Club
           </TabButton>
-          <TabButton 
-            active={activeTab === 'tournaments'} 
-            onClick={() => setActiveTab('tournaments')}
-          >
-            Tournaments
-          </TabButton>
+{user?.roles?.includes("clubadmin") && (
+      <TabButton 
+        active={activeTab === 'tournaments'} 
+        onClick={() => setActiveTab('tournaments')}
+      >
+        Tournaments
+      </TabButton>
+    )}
         </TabHeader>
         {renderTabContent()}
       </TabContainer>
@@ -8662,13 +9189,30 @@ const EditBioButton = styled.button`
                         <BankDetailLabel>Bank Name:</BankDetailLabel>
                         <BankDetailValue>BDO Unibank</BankDetailValue>
                       </BankDetail>
+                      {/* 
+                        BACKEND NOTE: Bank Details Section
+                        
+                        This section displays tournament organizer's bank details for payment processing.
+                        Expected data structure from backend:
+                        {
+                          accountName: string,    // Bank account holder name
+                          accountNumber: string,  // Bank account number
+                          bankName?: string,      // Bank institution name (optional)
+                          routingNumber?: string, // Bank routing number (optional)
+                          swiftCode?: string      // International transfer code (optional)
+                        }
+                        
+                        API Endpoints needed:
+                        - GET /api/tournaments/{tournamentId}/bank-details
+                        - PUT /api/tournaments/{tournamentId}/bank-details (for organizers)
+                      */}
                       <BankDetail>
                         <BankDetailLabel>Account Name:</BankDetailLabel>
-                        <BankDetailValue>John Doe Tournament</BankDetailValue>
+                        <BankDetailValue>{selectedTournament?.bankDetails?.accountName || 'Not provided'}</BankDetailValue>
                       </BankDetail>
                       <BankDetail>
                         <BankDetailLabel>Account Number:</BankDetailLabel>
-                        <BankDetailValue>1234-5678-9012</BankDetailValue>
+                        <BankDetailValue>{selectedTournament?.bankDetails?.accountNumber || 'Not provided'}</BankDetailValue>
                       </BankDetail>
                     </BankDetailsBox>
                     
@@ -9386,6 +9930,201 @@ const EditBioButton = styled.button`
                 }}
               >
                 Unpublish Bracket
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sponsor Modal */}
+      {showSponsorModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                backgroundColor: '#f0fdf4',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px'
+              }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2">
+                  <path d="M12 5v14m-7-7h14" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: '700',
+                color: '#1e293b',
+                margin: '0 0 8px 0'
+              }}>
+                Add Tournament Sponsor
+              </h2>
+              <p style={{
+                color: '#64748b',
+                fontSize: '0.95rem',
+                margin: 0
+              }}>
+                Add a sponsor with their logo and name
+              </p>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                color: '#374151',
+                marginBottom: '8px'
+              }}>
+                Sponsor Name
+              </label>
+              <input
+                type="text"
+                value={sponsorForm.name}
+                onChange={(e) => handleSponsorFormChange('name', e.target.value)}
+                placeholder="Enter sponsor name"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s ease'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#059669'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+              />
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                color: '#374151',
+                marginBottom: '8px'
+              }}>
+                Logo Image URL
+              </label>
+              <input
+                type="url"
+                value={sponsorForm.image}
+                onChange={(e) => handleSponsorFormChange('image', e.target.value)}
+                placeholder="https://example.com/logo.png"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s ease'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#059669'}
+                onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+              />
+              {sponsorForm.image && (
+                <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                  <img 
+                    src={sponsorForm.image} 
+                    alt="Preview"
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '8px',
+                      objectFit: 'cover',
+                      border: '1px solid #e2e8f0'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#f8fafc',
+                  color: '#64748b',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f1f5f9';
+                  e.target.style.borderColor = '#cbd5e1';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#f8fafc';
+                  e.target.style.borderColor = '#e2e8f0';
+                }}
+                onClick={() => {
+                  setShowSponsorModal(false);
+                  setSponsorForm({ name: '', image: '' });
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#059669',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#047857';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#059669';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+                onClick={addSponsor}
+              >
+                Add Sponsor
               </button>
             </div>
           </div>

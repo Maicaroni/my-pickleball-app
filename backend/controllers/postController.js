@@ -7,7 +7,6 @@ const Profile = require('../models/Profile');
 const attachAvatars = async (docs) => {
   if (!Array.isArray(docs)) docs = [docs];
 
-  // collect all author ids
   const authorIds = [];
   docs.forEach(doc => {
     if (doc.author?._id) authorIds.push(doc.author._id);
@@ -36,7 +35,6 @@ const attachAvatars = async (docs) => {
       ? { ...author, avatarUrl: profileMap[author._id?.toString()] || null }
       : { firstName: "Unknown", lastName: "" };
 
-  // assign avatarUrl
   docs.forEach(doc => {
     doc.author = mapAuthor(doc.author);
     if (doc.comments) {
@@ -55,7 +53,7 @@ const attachAvatars = async (docs) => {
 };
 
 // =========================
-// Get posts with pagination
+// Get posts
 // =========================
 exports.getPosts = async (req, res) => {
   try {
@@ -74,8 +72,8 @@ exports.getPosts = async (req, res) => {
       .lean();
 
     const withAvatars = await attachAvatars(posts);
+    const userId = req.user?._id?.toString();
 
-    const userId = req.user?.id;
     const formattedPosts = withAvatars.map(post => ({
       ...post,
       images: post.images || [],
@@ -89,7 +87,6 @@ exports.getPosts = async (req, res) => {
     }));
 
     const totalCount = await Post.countDocuments(query);
-
     res.json({ success: true, posts: formattedPosts, totalCount, page, limit });
   } catch (error) {
     console.error("Get posts error:", error);
@@ -98,14 +95,13 @@ exports.getPosts = async (req, res) => {
 };
 
 // =========================
-// Create new post
+// Create post
 // =========================
 exports.createPost = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
+    const userId = req.user._id;
     const { content, images } = req.body;
+
     if (!content?.trim())
       return res.status(400).json({ message: "Content is required" });
 
@@ -117,7 +113,6 @@ exports.createPost = async (req, res) => {
     });
 
     const savedPost = await newPost.save();
-
     let populatedPost = await Post.findById(savedPost._id)
       .populate("author", "firstName lastName initials username email")
       .lean();
@@ -136,13 +131,11 @@ exports.createPost = async (req, res) => {
 };
 
 // =========================
-// Toggle like/unlike
+// Like/unlike post
 // =========================
 exports.toggleLikePost = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
+    const userId = req.user._id.toString();
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
@@ -155,8 +148,8 @@ exports.toggleLikePost = async (req, res) => {
     } else {
       post.likedBy.splice(likedIndex, 1);
     }
-    post.likeCount = post.likedBy.length;
 
+    post.likeCount = post.likedBy.length;
     await post.save();
     res.json({ success: true, likeCount: post.likeCount, isLiked });
   } catch (error) {
@@ -187,12 +180,9 @@ exports.getComments = async (req, res) => {
 
 exports.addComment = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
+    const userId = req.user._id.toString();
     const { content } = req.body;
-    if (!content?.trim())
-      return res.status(400).json({ message: "Comment content is required" });
+    if (!content?.trim()) return res.status(400).json({ message: "Comment content is required" });
 
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
@@ -207,8 +197,8 @@ exports.addComment = async (req, res) => {
       .lean();
 
     [populatedPost] = await attachAvatars(populatedPost);
-
     const latestComment = populatedPost.comments[populatedPost.comments.length - 1];
+
     res.status(201).json({ success: true, comment: latestComment });
   } catch (error) {
     console.error("Add comment error:", error);
@@ -218,12 +208,9 @@ exports.addComment = async (req, res) => {
 
 exports.addReply = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
+    const userId = req.user._id.toString();
     const { content } = req.body;
-    if (!content?.trim())
-      return res.status(400).json({ message: "Reply content is required" });
+    if (!content?.trim()) return res.status(400).json({ message: "Reply content is required" });
 
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
@@ -241,7 +228,6 @@ exports.addReply = async (req, res) => {
       .lean();
 
     [populatedPost] = await attachAvatars(populatedPost);
-
     const latestReply = populatedPost.comments
       .find(c => c._id.toString() === req.params.commentId)
       .replies.slice(-1)[0];
@@ -254,15 +240,14 @@ exports.addReply = async (req, res) => {
 };
 
 // =========================
-// Delete post, comment, reply
+// Delete post/comment/reply (own content only)
 // =========================
 exports.deletePost = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
+    const userId = req.user._id.toString();
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ message: "Post not found" });
+
     if (post.author.toString() !== userId)
       return res.status(403).json({ message: "Not authorized" });
 
@@ -276,9 +261,7 @@ exports.deletePost = async (req, res) => {
 
 exports.deleteComment = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
+    const userId = req.user._id.toString();
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
@@ -301,9 +284,7 @@ exports.deleteComment = async (req, res) => {
 
 exports.deleteReply = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
+    const userId = req.user._id.toString();
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
@@ -332,7 +313,7 @@ exports.deleteReply = async (req, res) => {
 };
 
 // =========================
-// SuperAdmin delete post
+// Superadmin actions
 // =========================
 exports.deletePostSuperAdmin = async (req, res) => {
   try {
@@ -346,35 +327,34 @@ exports.deletePostSuperAdmin = async (req, res) => {
   }
 };
 
-// =========================
-// Approve / Reject posts
-// =========================
 exports.approvePost = async (req, res) => {
   try {
+    console.log('🔹 Approve route hit, Post ID:', req.params.id);
     const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    if (!post) return res.status(404).json({ message: 'Post not found' });
 
-    post.status = "approved";
+    post.status = 'approved';
     await post.save();
 
-    res.json({ success: true, message: "Post approved" });
+    res.json({ success: true, message: 'Post approved', post });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error approving post" });
+    console.error('❌ Approve post error:', err);
+    res.status(500).json({ message: 'Server error approving post' });
   }
 };
 
 exports.rejectPost = async (req, res) => {
   try {
+    console.log('🔹 Reject route hit, Post ID:', req.params.id);
     const post = await Post.findById(req.params.id);
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    if (!post) return res.status(404).json({ message: 'Post not found' });
 
-    post.status = "rejected";
+    post.status = 'rejected';
     await post.save();
 
-    res.json({ success: true, message: "Post rejected" });
+    res.json({ success: true, message: 'Post rejected', post });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error rejecting post" });
+    console.error('❌ Reject post error:', err);
+    res.status(500).json({ message: 'Server error rejecting post' });
   }
 };

@@ -3,9 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import viteLogo from '/vite.svg';
-import { useGoogleLogin } from '@react-oauth/google';
-
-
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -541,13 +538,13 @@ const WarningIcon = () => (
     <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
   </svg>
 );
-
+{/*
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor">
     <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
   </svg>
 );
-
+*/}
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -753,7 +750,7 @@ const handleVerifyOtpAndRegister = async () => {
   }
 };
 
-
+{/*
 const handleGoogleSignup = useGoogleLogin({
   flow: "implicit",          // use implicit flow to get credential
   response_type: "id_token", // ensures tokenResponse.credential exists
@@ -793,7 +790,7 @@ const handleGoogleSignup = useGoogleLogin({
   },
 });
 
-
+*/}
 
   return (
     <PageContainer>
@@ -1029,6 +1026,7 @@ const handleGoogleSignup = useGoogleLogin({
             </ErrorMessage>
           )}
         </Form>
+{/*
         <Divider>
           <span>or sign up with</span>
         </Divider>
@@ -1039,7 +1037,7 @@ const handleGoogleSignup = useGoogleLogin({
             Google
           </SocialButton>
         </SocialButtons>
-
+*/}
         <LinkText>
           Already have an account?<a href="/signin">Sign in</a>
         </LinkText>

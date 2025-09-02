@@ -4,37 +4,6 @@ import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from '../components/AuthModal';
 
-/**
- * @typedef {Object} Tournament
- * @property {string} id - Unique identifier
- * @property {string} name - Tournament name
- * @property {string} date - Tournament date (ISO string)
- * @property {string} endDate - Tournament end date (ISO string) - for multi-day tournaments
- * @property {string} location - Venue location
- * @property {string} address - Full venue address
- * @property {number} latitude - Location latitude for map pin
- * @property {number} longitude - Location longitude for map pin
- * @property {string} status - Tournament status (UPCOMING, ONGOING, COMPLETED)
- * @property {number} entryFee - Entry fee amount
- * @property {number} prizePool - Total prize pool
- * @property {string} description - Tournament description
- * @property {number} maxParticipants - Maximum allowed participants (organizer-selected: 8, 12, 16, 20, 24)
- * @property {number} currentParticipants - Current participant count
- * @property {string} registrationDeadline - Registration deadline (ISO string)
- * @property {string} bannerUrl - Tournament banner image URL
- * @property {string[]} divisions - Available divisions (e.g., ["Men's Singles", "Mixed Doubles"])
- * @property {string} tournamentType - Tournament type ("beginner", "intermediate", "advanced", "open")
- * @property {number} tier - Tournament tier (1, 2, 3)
- * @property {string} contactEmail - Contact email for inquiries
- * @property {string} contactPhone - Contact phone number
- * @property {string[]} rules - Tournament rules and regulations
- * @property {string[]} amenities - Available amenities at venue
- * @property {string} createdAt - Creation timestamp
- * @property {string} updatedAt - Last update timestamp
- * @property {Object[]} brackets - Tournament brackets with approved players
- * @property {Object[]} registrations - Player registrations with status
- * @property {Object} tournamentCategories - Multiple tournament categories with brackets
- */
 
 // Detailed View Styled Components - Convert from Modal to Full Page
 const BackButton = styled.button`
@@ -1483,6 +1452,111 @@ const StandingsRow = styled.div`
   }
 `;
 
+const MatchTable = styled.div`
+  .match-schedule-header {
+    display: grid;
+    grid-template-columns: 40px 5fr 30px 5fr 35px 35px 35px 40px 40px 40px 45px;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #f8fafc;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 12px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    
+    div:first-child {
+      text-align: left;
+    }
+    
+    div:nth-child(2) {
+      text-align: left;
+    }
+    
+    div:nth-child(4) {
+      text-align: left;
+    }
+
+    @media (min-width: 768px) {
+      grid-template-columns: 50px 5fr 35px 5fr 45px 45px 45px 50px 50px 50px 55px;
+      gap: 20px;
+      padding: 18px 24px;
+      font-size: 0.85rem;
+    }
+  }
+`;
+
+const MatchRow = styled.div`
+  display: grid;
+  grid-template-columns: 40px 5fr 30px 5fr 35px 35px 35px 40px 40px 40px 45px;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+  align-items: center;
+  font-size: 0.75rem;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
+  @media (min-width: 768px) {
+    grid-template-columns: 50px 5fr 35px 5fr 45px 45px 45px 50px 50px 50px 55px;
+    gap: 20px;
+    padding: 18px 24px;
+    font-size: 0.8rem;
+  }
+
+  .match-number {
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .player-name {
+    font-weight: 500;
+    color: #334155;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .vs-text {
+    font-weight: 600;
+    color: #29ba9b;
+    text-align: center;
+    font-size: 0.8rem;
+  }
+
+  .match-players {
+    font-weight: 500;
+    color: #334155;
+    text-align: left;
+  }
+
+  .match-time, .match-court, .match-date, .match-score, .match-standing {
+    text-align: center;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .match-standing {
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .match-score {
+    font-weight: 600;
+    color: #334155;
+  }
+`;
+
 const StickyActionBar = styled.div`
   background: white;
   border-radius: 16px;
@@ -2077,11 +2151,13 @@ const RegistrationFee = styled(ParticipantCount)`
       font-weight: 600;
     }
 
-    span:last-child {
+    /* remove this block */
+    /* span:last-child {
       display: none;
-    }
+    } */
   }
 `;
+
 
 const RegisterButton = styled.button`
   width: 100%;
@@ -3049,15 +3125,23 @@ function Tournament() {
   const [selectedTier, setSelectedTier] = useState('');
   const [selectedFeeRange, setSelectedFeeRange] = useState('');
   const [showAuthModal, setShowAuthModal] = useState(false);
-  
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+const [selectedTournament, setSelectedTournament] = useState(null);
+
   // Add state for detailed view
   const [showDetailedView, setShowDetailedView] = useState(false);
-  const [selectedTournament, setSelectedTournament] = useState(null);
   const [activeTab, setActiveTab] = useState('details');
   
   // Add state for expanded categories (multiple can be open)
   const [expandedCategories, setExpandedCategories] = useState({});
   
+  // Add state for round robin and elimination categories
+  const [roundRobinCategories, setRoundRobinCategories] = useState({});
+  const [eliminationCategories, setEliminationCategories] = useState({});
+  const [availableBrackets, setAvailableBrackets] = useState({});
+  const [bracketMode, setBracketMode] = useState({}); // 4 or 8 brackets per category
+  const [selectedBrackets, setSelectedBrackets] = useState({}); // Selected bracket per category
+
   // Add state for players search
   const [playersSearchTerm, setPlayersSearchTerm] = useState('');
   
@@ -3074,13 +3158,48 @@ function Tournament() {
   // View form modal state (for profile view)
   const [showViewFormModal, setShowViewFormModal] = useState(false);
   const [viewFormTournament, setViewFormTournament] = useState(null);
-  
+// OR, if it's derived from tournament data
+const topPlayers = selectedTournament?.topPlayers || {};
+
 
   
   // Player selection state
   const [showPlayerSelectionModal, setShowPlayerSelectionModal] = useState(false);
   const [playerSelectionType, setPlayerSelectionType] = useState(''); // 'partner', 'team-0', 'team-1', etc.
   const [playerSearchTerm, setPlayerSearchTerm] = useState('');
+const feeRanges = [
+  { label: "FREE", min: 0, max: 0 },
+  { label: "₱1–₱500", min: 1, max: 500 },
+  { label: "₱501–₱1000", min: 501, max: 1000 },
+  { label: "₱1001+", min: 1001, max: Infinity },
+];
+
+
+  useEffect(() => {
+  fetchTournaments();
+}, []);
+
+const fetchTournaments = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+
+    const res = await fetch("/api/tournaments"); // hits backend
+    if (!res.ok) throw new Error("Failed to fetch tournaments");
+
+    const data = await res.json();
+    setTournaments(data);
+  } catch (err) {
+    console.error("Error fetching tournaments:", err);
+    setError("Unable to load tournaments.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+// Helper function to check if a category is allowed for the player
+
+
   const [registeredPlayers, setRegisteredPlayers] = useState([
     { 
       pplId: 'PPL001', 
@@ -3220,1904 +3339,40 @@ function Tournament() {
     registrationForm.teamMembers
   ]);
   
-  // Fee ranges
-  const feeRanges = [
-    { label: '₱0 - ₱1,000', min: 0, max: 1000 },
-    { label: '₱1,001 - ₱3,000', min: 1001, max: 3000 },
-    { label: '₱3,001 - ₱6,000', min: 3001, max: 6000 }
-  ];
 
-  const filteredTournaments = tournaments.filter(tournament => {
-    // Search by name or location
-    const matchesSearch = tournament.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         tournament.location.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // Check if tournament matches selected tier/category
-    const matchesTier = !selectedTier || (() => {
-      console.log('Checking tournament:', tournament.name); // Debugging
-      
-      // Handle tournament categories structure
-      if (tournament.tournamentCategories) {
-        return Object.values(tournament.tournamentCategories).some(category => {
-          console.log('Checking category:', category); // Debugging
-          
-          // Check if we have valid category data
-          if (!category || !category.skillLevel) return false;
-          
-          if (selectedTier.startsWith('open-')) {
-            // For Open tier categories
-            const targetTier = parseInt(selectedTier.split('-')[1]);
-            // Convert skillLevel to lowercase for case-insensitive comparison
-            const skillLevel = category.skillLevel.toLowerCase();
-            const categoryTier = Number(category.tier) || 1; // Default to tier 1 if not specified
-            
-            console.log('Comparing:', { 
-              skillLevel,
-              categoryTier,
-              targetTier,
-              matches: skillLevel === 'open' && categoryTier === targetTier
-            }); // Debugging
-            
-            // Check if this is an Open category with matching tier
-            return skillLevel === 'open' && categoryTier === targetTier;
-          } else {
-            // For Beginner, Intermediate and Advanced categories
-            return category.skillLevel.toLowerCase() === selectedTier.toLowerCase();
-          }
-        });
-      } else {
-        // Fallback for old data structure
-        if (selectedTier.startsWith('open-')) {
-          const targetTier = parseInt(selectedTier.split('-')[1]);
-          const tournamentTier = Number(tournament.tier) || 1; // Default to tier 1 if not specified
-          return tournament.tournamentType?.toLowerCase() === 'open' && 
-                 tournamentTier === targetTier;
-        }
-        return tournament.tournamentType?.toLowerCase() === selectedTier.toLowerCase();
-      }
-    })();
+const filteredTournaments = tournaments.filter((tournament) => {
+  // 1️⃣ Search by name or location
+  const search = (searchTerm || "").toLowerCase();
+  const name = (tournament.tournamentName || "").toLowerCase();
+  const location = ((tournament.venueCity || "") + " " + (tournament.venueState || "")).toLowerCase();
+  const matchesSearch = name.includes(search) || location.includes(search);
 
-    // Check fee range
-    const matchesFeeRange = !selectedFeeRange || (
-      tournament.entryFee >= feeRanges[parseInt(selectedFeeRange)].min &&
-      tournament.entryFee <= feeRanges[parseInt(selectedFeeRange)].max
-    );
+  // 2️⃣ Tier/category filter
+  const matchesTier = !selectedTier || tournament.tournamentCategories?.some((category) => {
+    if (!category || !category.skillLevel) return false;
 
-    return matchesSearch && matchesTier && matchesFeeRange;
+    if (selectedTier.startsWith("open-")) {
+      const targetTier = parseInt(selectedTier.split("-")[1]);
+      const skillLevel = category.skillLevel.toLowerCase();
+      const categoryTier = Number(category.tier) || 1;
+      return skillLevel === "open" && categoryTier === targetTier;
+    } else {
+      return category.skillLevel.toLowerCase() === selectedTier.toLowerCase();
+    }
   });
 
-  const fetchTournaments = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  // 3️⃣ Fee range filter
+  const matchesFeeRange = !selectedFeeRange || (() => {
+    const minFee = tournament.entryFeeMin ?? 0;
+    const maxFee = tournament.entryFeeMax ?? minFee;
+    const range = feeRanges[parseInt(selectedFeeRange)];
+    if (!range) return true;
+    return maxFee >= range.min && minFee <= range.max;
+  })();
 
-      /**
-       * CORRECT TOURNAMENT STRUCTURE:
-       * 
-       * Tournament Categories:
-       * - Men's Singles, Women's Singles
-       * - Men's Doubles, Women's Doubles, Mixed Doubles
-       * 
-       * Each category has:
-       * - 4 Skill Levels: Beginner, Intermediate, Advanced, Open
-       * - 3 Age Groups: 18+, 35+, 50+
-       * 
-       * Example Categories:
-       * - Men's Singles Intermediate 18+, Men's Singles Advanced 35+, etc.
-       * - Women's Singles Intermediate 18+, Women's Singles Advanced 35+, etc.
-       * - Mixed Doubles Intermediate 18+, Mixed Doubles Advanced 35+, etc.
-       * 
-       * Each category shows: 
-       * - First and Last Name (no stage names!)
-       * - Round Wins, Round Losses, Win Points, Loss Points
-       * - Top 2 advance (ranked by Round Wins, tiebreaker: Win Points - Loss Points)
-       * 
-       * BACKEND INTEGRATION REQUIRED:
-       * Database Schema - Add these fields to tournaments table:
-       * - endDate: timestamp (for multi-day tournaments)
-       * - address: text (full venue address)
-       * - latitude: decimal(10,8) (for map pin location)
-       * - longitude: decimal(11,8) (for map pin location)
-       * - tournamentType: enum('beginner', 'intermediate', 'advanced', 'open')
-       * - description: text (tournament description)
-       * - contactEmail: varchar(255)
-       * - contactPhone: varchar(20)
-       * - rules: json (array of tournament rules)
-       * - amenities: json (array of available amenities)
-       * 
-       * API Endpoints:
-       * GET /api/tournaments/:id/details - Get detailed tournament info
-       * POST /api/tournaments/:id/register - Register for tournament
-       * GET /api/tournaments/:id/participants - Get participants list
-       * POST /api/tournaments - Create tournament (with capacity selection)
-       * GET /api/tournaments/:id/brackets - Get tournament brackets with players
-       * PUT /api/tournaments/:id/registrations/:registrationId/approve - Approve registration
-       * PUT /api/tournaments/:id/registrations/:registrationId/reject - Reject registration
-       * POST /api/tournaments/:id/brackets/assign - Randomly assign approved players to brackets
-       * 
-       * Tournament Capacity Logic:
-       * - Organizers can select max participants: 8, 12, 16, 20, or 24
-       * - 4 brackets with max 6 players each = 24 total capacity
-       * - Smaller tournaments use fewer slots per bracket
-       * 
-       * UI for Tournament Creation:
-       * - Dropdown: "Select Tournament Capacity"
-       * - Options: 8 (2 per bracket), 12 (3 per bracket), 16 (4 per bracket), 20 (5 per bracket), 24 (6 per bracket - MAX)
-       * - Shows preview: "This will create 4 brackets with X players each"
-       * 
-       * Bracket Assignment Algorithm:
-       * 1. Organizer selects tournament capacity (8-24 players)
-       * 2. When registration is approved, player is automatically assigned
-       * 3. System randomly selects next available bracket slot
-       * 4. Players distributed evenly across 4 brackets as they're approved
-       * 5. Examples:
-       *    - 8 players  = 2,2,2,2 distribution
-       *    - 12 players = 3,3,3,3 distribution  
-       *    - 16 players = 4,4,4,4 distribution
-       *    - 20 players = 5,5,5,5 distribution
-       *    - 24 players = 6,6,6,6 distribution (FULL)
-       * 
-       * Assignment Process:
-       * - Player registers → Pending status
-       * - Organizer approves → System auto-assigns to random bracket slot
-       * - No manual bracket selection by players
-       */
-      
-      // Enhanced tournament data with all required fields
-      const tournamentData = [
-        {
-          id: '1',
-          name: 'PPL Summer Championship 2025',
-          date: '2025-08-15T09:00:00Z',
-          endDate: '2025-08-17T18:00:00Z', // 3-day tournament
-          location: 'Manila Pickleball Center',
-          address: '123 Sports Complex Ave, Makati City, Metro Manila',
-          latitude: 14.5547,
-          longitude: 121.0244,
-          entryFee: 1500,
-          prizePool: 50000,
-          maxParticipants: 20,
-          currentParticipants: 18,
-          registrationDeadline: '2025-07-01T23:59:59Z',
-          bannerUrl: 'https://images.unsplash.com/photo-1686721135036-22ac6cbb8ce8?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-          tier: 3,
-          tournamentType: 'open',
-          description: 'Join the most prestigious pickleball tournament in the Philippines! This 3-day championship features multiple divisions and attracts the best players from across the country.',
-          contactEmail: 'championship@philippinepickleball.com',
-          contactPhone: '+63 912 345 6789',
-          divisions: ["Men's Singles", "Women's Singles", "Men's Doubles", "Women's Doubles", "Mixed Doubles"],
-          // Multiple Tournament Categories with Brackets
-          tournamentCategories: {
-            't1-mens-singles-intermediate-18': {
-              id: 't1-mens-singles-intermediate-18',
-              name: "Men's Singles Intermediate 18+",
-              ageGroup: '18+',
-              skillLevel: 'Intermediate',
-              participants: 16,
-              maxParticipants: 16,
-              prizePool: 15000,
-              description: 'Men\'s singles intermediate level competition for players 18 and older',
-              groupStage: {
-                bracketA: [
-                  { id: '1', name: 'John Doe', rating: '3.5', roundWins: 3, roundLosses: 1, winPoints: 33, lossPoints: 21, position: 1, age: 24 },
-                  { id: '5', name: 'Carlos Rodriguez', rating: '3.4', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 2, age: 28 },
-                  { id: '9', name: 'Miguel Torres', rating: '3.3', roundWins: 2, roundLosses: 2, winPoints: 24, lossPoints: 28, position: 3, age: 31 },
-                  { id: '13', name: 'Alex Martinez', rating: '3.2', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 4, age: 26 }
-                ],
-                bracketB: [
-                  { id: '2', name: 'Michael Johnson', rating: '3.6', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 12, position: 1, age: 29 },
-                  { id: '6', name: 'Luis Chen', rating: '3.5', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 18, position: 2, age: 25 },
-                  { id: '10', name: 'Roberto Kim', rating: '3.3', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 33, position: 3, age: 33 },
-                  { id: '14', name: 'David Park', rating: '3.1', roundWins: 0, roundLosses: 4, winPoints: 15, lossPoints: 44, position: 4, age: 27 }
-                ],
-                bracketC: [
-                  { id: '3', name: 'Jason Park', rating: '3.7', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 19, position: 1, age: 30 },
-                  { id: '7', name: 'Anthony Chen', rating: '3.4', roundWins: 3, roundLosses: 1, winPoints: 31, lossPoints: 22, position: 2, age: 24 },
-                  { id: '11', name: 'Marcus Tan', rating: '3.2', roundWins: 2, roundLosses: 2, winPoints: 26, lossPoints: 26, position: 3, age: 32 },
-                  { id: '15', name: 'Steven Wong', rating: '3.0', roundWins: 0, roundLosses: 4, winPoints: 14, lossPoints: 44, position: 4, age: 26 }
-                ],
-                bracketD: [
-                  { id: '4', name: 'Patrick Lim', rating: '3.5', roundWins: 3, roundLosses: 1, winPoints: 32, lossPoints: 20, position: 1, age: 28 },
-                  { id: '8', name: 'Jonathan Wu', rating: '3.3', roundWins: 2, roundLosses: 2, winPoints: 29, lossPoints: 25, position: 2, age: 25 },
-                  { id: '12', name: 'Brandon Choi', rating: '3.1', roundWins: 2, roundLosses: 2, winPoints: 25, lossPoints: 29, position: 3, age: 29 },
-                  { id: '16', name: 'Daniel Ko', rating: '2.9', roundWins: 1, roundLosses: 3, winPoints: 20, lossPoints: 32, position: 4, age: 31 }
-                ]
-              },
-              knockoutStage: {
-                quarterFinals: [
-                  { 
-                    id: 'qf1', 
-                    player1: { name: 'John Doe', seed: 'A1' }, 
-                    player2: { name: 'Anthony Chen', seed: 'C2' },
-                    score: '11-8, 11-6',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf2', 
-                    player1: { name: 'Michael Johnson', seed: 'B1' }, 
-                    player2: { name: 'Jonathan Wu', seed: 'D2' },
-                    score: '11-9, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf3', 
-                    player1: { name: 'Jason Park', seed: 'C1' }, 
-                    player2: { name: 'Luis Chen', seed: 'B2' },
-                    score: '11-5, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf4', 
-                    player1: { name: 'Patrick Lim', seed: 'D1' }, 
-                    player2: { name: 'Carlos Rodriguez', seed: 'A2' },
-                    score: '11-7, 11-9',
-                    winner: 'player2',
-                    completed: true
-                  }
-                ],
-                semiFinals: [
-                  { 
-                    id: 'sf1', 
-                    player1: { name: 'John Doe', seed: 'QF1' }, 
-                    player2: { name: 'Michael Johnson', seed: 'QF2' },
-                    score: '11-9, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'sf2', 
-                    player1: { name: 'Jason Park', seed: 'QF3' }, 
-                    player2: { name: 'Carlos Rodriguez', seed: 'QF4' },
-                    score: '11-6, 11-10',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                final: {
-                  id: 'final',
-                  player1: { name: 'John Doe', seed: 'SF1' },
-                  player2: { name: 'Jason Park', seed: 'SF2' },
-                  score: '11-8, 11-9',
-                  winner: 'player1',
-                  completed: true
-                },
-                thirdPlace: {
-                id: 'thirdPlace',
-                  player1: { name: 'Michael Johnson', seed: 'SF1-L' },
-                  player2: { name: 'Carlos Rodriguez', seed: 'SF2-L' },
-                  score: '11-5, 11-7',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            },
-            't1-womens-singles-intermediate-18': {
-              id: 't1-womens-singles-intermediate-18',
-              name: "Women's Singles Intermediate 18+", 
-              ageGroup: '18+',
-              skillLevel: 'Intermediate',
-              participants: 12,
-              maxParticipants: 16,
-              prizePool: 15000,
-              description: 'Competitive women\'s singles for intermediate players',
-              groupStage: {
-                bracketA: [
-                  { id: '1', name: 'Maria Santos', rating: '3.8', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 21, position: 1, age: 24 },
-                  { id: '4', name: 'Ana Reyes', rating: '3.6', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 2, age: 26 },
-                  { id: '7', name: 'Sofia Garcia', rating: '3.4', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 3, age: 28 }
-                ],
-                bracketB: [
-                  { id: '2', name: 'Elena Cruz', rating: '3.7', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 15, position: 1, age: 25 },
-                  { id: '5', name: 'Carmen Lopez', rating: '3.5', roundWins: 2, roundLosses: 2, winPoints: 29, lossPoints: 27, position: 2, age: 30 },
-                  { id: '8', name: 'Patricia Wong', rating: '3.3', roundWins: 0, roundLosses: 4, winPoints: 12, lossPoints: 44, position: 3, age: 27 }
-                ],
-                bracketC: [
-                  { id: '3', name: 'Andrea Martinez', rating: '3.9', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 19, position: 1, age: 23 },
-                  { id: '6', name: 'Rachel Gonzalez', rating: '3.7', roundWins: 2, roundLosses: 2, winPoints: 31, lossPoints: 24, position: 2, age: 29 },
-                  { id: '9', name: 'Lisa Johnson', rating: '3.5', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 35, position: 3, age: 31 }
-                ],
-                bracketD: [
-                  { id: '10', name: 'Sarah Kim', rating: '3.6', roundWins: 3, roundLosses: 1, winPoints: 36, lossPoints: 18, position: 1, age: 26 },
-                  { id: '11', name: 'Michelle Yang', rating: '3.4', roundWins: 2, roundLosses: 2, winPoints: 25, lossPoints: 29, position: 2, age: 28 },
-                  { id: '12', name: 'Victoria Huang', rating: '3.2', roundWins: 1, roundLosses: 3, winPoints: 19, lossPoints: 36, position: 3, age: 24 }
-                ]
-              },
-              knockoutStage: {
-                quarterFinals: [
-                  { 
-                    id: 'qf1', 
-                    player1: { name: 'Maria Santos', seed: 'A1' }, 
-                    player2: { name: 'Michelle Yang', seed: 'D2' },
-                    score: '11-7, 11-9',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf2', 
-                    player1: { name: 'Elena Cruz', seed: 'B1' }, 
-                    player2: { name: 'Rachel Gonzalez', seed: 'C2' },
-                    score: '11-8, 11-6',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf3', 
-                    player1: { name: 'Andrea Martinez', seed: 'C1' }, 
-                    player2: { name: 'Ana Reyes', seed: 'A2' },
-                    score: '11-5, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf4', 
-                    player1: { name: 'Sarah Kim', seed: 'D1' }, 
-                    player2: { name: 'Carmen Lopez', seed: 'B2' },
-                    score: '11-9, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                semiFinals: [
-                  { 
-                    id: 'sf1', 
-                    player1: { name: 'Maria Santos', seed: 'QF1' }, 
-                    player2: { name: 'Elena Cruz', seed: 'QF2' },
-                    score: '11-6, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'sf2', 
-                    player1: { name: 'Andrea Martinez', seed: 'QF3' }, 
-                    player2: { name: 'Sarah Kim', seed: 'QF4' },
-                    score: '11-9, 11-5',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                final: {
-                  id: 'final',
-                  player1: { name: 'Maria Santos', seed: 'SF1' },
-                  player2: { name: 'Andrea Martinez', seed: 'SF2' },
-                  score: '11-7, 11-9',
-                  winner: 'player1',
-                  completed: true
-                },
-                thirdPlace: {
-                  id: 'thirdPlace',
-                  player1: { name: 'Elena Cruz', seed: 'SF1-L' },
-                  player2: { name: 'Sarah Kim', seed: 'SF2-L' },
-                  score: '11-4, 11-6',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            },
-            'mixed-doubles-open-18': {
-              id: 'mixed-doubles-open-18',
-              name: "Mixed Doubles Open 18+",
-              ageGroup: '18+',
-              skillLevel: 'Open',
-              participants: 8,
-              maxParticipants: 8,
-              prizePool: 10000,
-              description: 'Open-level mixed doubles competition',
-              groupStage: {
-                bracketA: [
-                  { id: '1', name: 'John Doe & Maria Santos', rating: '4.2', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 21, position: 1, players: ['John Doe', 'Maria Santos'] },
-                  { id: '2', name: 'Carlos Rodriguez & Ana Reyes', rating: '4.0', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 30, position: 2, players: ['Carlos Rodriguez', 'Ana Reyes'] }
-                ],
-                bracketB: [
-                  { id: '3', name: 'Miguel Torres & Sofia Garcia', rating: '4.1', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 18, position: 1, players: ['Miguel Torres', 'Sofia Garcia'] },
-                  { id: '4', name: 'Luis Chen & Elena Cruz', rating: '3.9', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 38, position: 2, players: ['Luis Chen', 'Elena Cruz'] }
-                ],
-                bracketC: [
-                  { id: '5', name: 'Jason Park & Andrea Martinez', rating: '4.3', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 23, position: 1, players: ['Jason Park', 'Andrea Martinez'] },
-                  { id: '6', name: 'Patrick Lim & Rachel Gonzalez', rating: '3.8', roundWins: 2, roundLosses: 2, winPoints: 26, lossPoints: 28, position: 2, players: ['Patrick Lim', 'Rachel Gonzalez'] }
-                ],
-                bracketD: [
-                  { id: '7', name: 'Michael Johnson & Sarah Kim', rating: '4.0', roundWins: 2, roundLosses: 2, winPoints: 31, lossPoints: 25, position: 1, players: ['Michael Johnson', 'Sarah Kim'] },
-                  { id: '8', name: 'Anthony Chen & Carmen Lopez', rating: '3.7', roundWins: 1, roundLosses: 3, winPoints: 19, lossPoints: 35, position: 2, players: ['Anthony Chen', 'Carmen Lopez'] }
-                ]
-              },
-              knockoutStage: {
-                quarterFinals: [
-                  { 
-                    id: 'qf1', 
-                    player1: { name: 'John & Maria', seed: 'A1' }, 
-                    player2: { name: 'Anthony & Carmen', seed: 'D2' },
-                    score: '11-8, 11-6',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf2', 
-                    player1: { name: 'Miguel & Sofia', seed: 'B1' }, 
-                    player2: { name: 'Patrick & Rachel', seed: 'C2' },
-                    score: '11-9, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf3', 
-                    player1: { name: 'Jason & Andrea', seed: 'C1' }, 
-                    player2: { name: 'Luis & Elena', seed: 'B2' },
-                    score: '11-5, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf4', 
-                    player1: { name: 'Michael & Sarah', seed: 'D1' }, 
-                    player2: { name: 'Carlos & Ana', seed: 'A2' },
-                    score: '11-7, 11-9',
-                    winner: 'player2',
-                    completed: true
-                  }
-                ],
-                semiFinals: [
-                  { 
-                    id: 'sf1', 
-                    player1: { name: 'John & Maria', seed: 'QF1' }, 
-                    player2: { name: 'Miguel & Sofia', seed: 'QF2' },
-                    score: '11-9, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'sf2', 
-                    player1: { name: 'Jason & Andrea', seed: 'QF3' }, 
-                    player2: { name: 'Carlos & Ana', seed: 'QF4' },
-                    score: '11-6, 11-10',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                final: {
-                  id: 'final',
-                  player1: { name: 'John & Maria', seed: 'SF1' },
-                  player2: { name: 'Jason & Andrea', seed: 'SF2' },
-                  score: '11-8, 11-9',
-                  winner: 'player1',
-                  completed: true
-                },
-                thirdPlace: {
-                  id: 'thirdPlace',
-                  player1: { name: 'Miguel & Sofia', seed: 'SF1-L' },
-                  player2: { name: 'Carlos & Ana', seed: 'SF2-L' },
-                  score: '11-5, 11-7',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            },
-            't2-mens-singles': {
-              id: 't2-mens-singles',
-              name: "Men's Singles Advanced 18+",
-              ageGroup: '18+',
-              skillLevel: 'Advanced',
-              icon: '👨',
-              participants: 16,
-              maxParticipants: 16,
-              prizePool: 25000,
-              groupStage: {
-                bracketA: [
-                  { id: '1', name: 'John Doe', rating: '4.8', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 12, position: 1, age: 24 },
-                  { id: '5', name: 'Carlos Rodriguez', rating: '4.6', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 18, position: 2, age: 28 },
-                  { id: '9', name: 'Miguel Torres', rating: '4.4', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 3, age: 31 },
-                  { id: '13', name: 'Alex Martinez', rating: '4.2', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 4, age: 26 }
-                ],
-                bracketB: [
-                  { id: '2', name: 'Michael Johnson', rating: '4.7', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 10, position: 1, age: 29 },
-                  { id: '6', name: 'Luis Chen', rating: '4.5', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 15, position: 2, age: 25 },
-                  { id: '10', name: 'Roberto Kim', rating: '4.3', roundWins: 2, roundLosses: 2, winPoints: 26, lossPoints: 28, position: 3, age: 33 },
-                  { id: '14', name: 'David Park', rating: '4.1', roundWins: 1, roundLosses: 3, winPoints: 15, lossPoints: 37, position: 4, age: 27 }
-                ],
-                bracketC: [
-                  { id: '3', name: 'Jason Park', rating: '4.6', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 8, position: 1, age: 30 },
-                  { id: '7', name: 'Anthony Chen', rating: '4.4', roundWins: 3, roundLosses: 1, winPoints: 39, lossPoints: 12, position: 2, age: 24 },
-                  { id: '11', name: 'Marcus Tan', rating: '4.2', roundWins: 2, roundLosses: 2, winPoints: 24, lossPoints: 28, position: 3, age: 32 },
-                  { id: '15', name: 'Steven Wong', rating: '4.0', roundWins: 1, roundLosses: 3, winPoints: 12, lossPoints: 39, position: 4, age: 26 }
-                ],
-                bracketD: [
-                  { id: '4', name: 'Patrick Lim', rating: '4.5', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 6, position: 1, age: 28 },
-                  { id: '8', name: 'Jonathan Wu', rating: '4.3', roundWins: 3, roundLosses: 1, winPoints: 36, lossPoints: 15, position: 2, age: 25 },
-                  { id: '12', name: 'Brandon Choi', rating: '4.1', roundWins: 2, roundLosses: 2, winPoints: 22, lossPoints: 30, position: 3, age: 29 },
-                  { id: '16', name: 'Daniel Ko', rating: '3.9', roundWins: 1, roundLosses: 3, winPoints: 15, lossPoints: 36, position: 4, age: 31 }
-                ]
-              },
-              knockoutStage: {
-                quarterFinals: [
-                  { 
-                    id: 'qf1', 
-                    player1: { name: 'John Doe', seed: 'A1' }, 
-                    player2: { name: 'Anthony Chen', seed: 'C2' },
-                    score: '11-8, 11-6',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf2', 
-                    player1: { name: 'Michael Johnson', seed: 'B1' }, 
-                    player2: { name: 'Jonathan Wu', seed: 'D2' },
-                    score: '11-9, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf3', 
-                    player1: { name: 'Jason Park', seed: 'C1' }, 
-                    player2: { name: 'Luis Chen', seed: 'B2' },
-                    score: '11-5, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf4', 
-                    player1: { name: 'Patrick Lim', seed: 'D1' }, 
-                    player2: { name: 'Carlos Rodriguez', seed: 'A2' },
-                    score: '11-7, 11-9',
-                    winner: 'player2',
-                    completed: true
-                  }
-                ],
-                semiFinals: [
-                  { 
-                    id: 'sf1', 
-                    player1: { name: 'John Doe', seed: 'QF1' }, 
-                    player2: { name: 'Michael Johnson', seed: 'QF2' },
-                    score: '11-9, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'sf2', 
-                    player1: { name: 'Jason Park', seed: 'QF3' }, 
-                    player2: { name: 'Carlos Rodriguez', seed: 'QF4' },
-                    score: '11-6, 11-10',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                final: {
-                  id: 'final',
-                  player1: { name: 'John Doe', seed: 'SF1' },
-                  player2: { name: 'Jason Park', seed: 'SF2' },
-                  score: '11-8, 11-9',
-                  winner: 'player1',
-                  completed: true
-                },
-                thirdPlace: {
-                  id: 'thirdPlace',
-                  player1: { name: 'Michael Johnson', seed: 'SF1-L' },
-                  player2: { name: 'Carlos Rodriguez', seed: 'SF2-L' },
-                  score: '11-5, 11-7',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            },
-            't2-womens-singles': {
-              id: 't2-womens-singles',
-              name: "Women's Singles 18+ Intermediate", 
-              ageGroup: '18+',
-              skillLevel: 'Intermediate',
-              icon: '👩',
-              participants: 12,
-              maxParticipants: 12,
-              prizePool: 15000,
-              groupStage: {
-                bracketA: [
-                  { id: '1', name: 'Maria Santos', rating: '3.8', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 21, position: 1, age: 24 },
-                  { id: '4', name: 'Ana Reyes', rating: '3.6', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 2, age: 26 },
-                  { id: '7', name: 'Sofia Garcia', rating: '3.4', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 3, age: 28 }
-                ],
-                bracketB: [
-                  { id: '2', name: 'Elena Cruz', rating: '3.7', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 15, position: 1, age: 25 },
-                  { id: '5', name: 'Carmen Lopez', rating: '3.5', roundWins: 2, roundLosses: 2, winPoints: 29, lossPoints: 27, position: 2, age: 30 },
-                  { id: '8', name: 'Patricia Wong', rating: '3.3', roundWins: 0, roundLosses: 4, winPoints: 12, lossPoints: 44, position: 3, age: 27 }
-                ],
-                bracketC: [
-                  { id: '3', name: 'Andrea Martinez', rating: '3.9', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 19, position: 1, age: 23 },
-                  { id: '6', name: 'Rachel Gonzalez', rating: '3.7', roundWins: 2, roundLosses: 2, winPoints: 31, lossPoints: 24, position: 2, age: 29 },
-                  { id: '9', name: 'Lisa Johnson', rating: '3.5', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 35, position: 3, age: 31 }
-                ],
-                bracketD: [
-                  { id: '10', name: 'Sarah Kim', rating: '3.6', roundWins: 3, roundLosses: 1, winPoints: 36, lossPoints: 18, position: 1, age: 26 },
-                  { id: '11', name: 'Michelle Yang', rating: '3.4', roundWins: 2, roundLosses: 2, winPoints: 25, lossPoints: 29, position: 2, age: 28 },
-                  { id: '12', name: 'Victoria Huang', rating: '3.2', roundWins: 1, roundLosses: 3, winPoints: 19, lossPoints: 36, position: 3, age: 24 }
-                ]
-              },
-              knockoutStage: {
-                quarterFinals: [
-                  { 
-                    id: 'qf1', 
-                    player1: { name: 'Maria Santos', seed: 'A1' }, 
-                    player2: { name: 'Michelle Yang', seed: 'D2' },
-                    score: '11-7, 11-9',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf2', 
-                    player1: { name: 'Elena Cruz', seed: 'B1' }, 
-                    player2: { name: 'Rachel Gonzalez', seed: 'C2' },
-                    score: '11-8, 11-6',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf3', 
-                    player1: { name: 'Andrea Martinez', seed: 'C1' }, 
-                    player2: { name: 'Ana Reyes', seed: 'A2' },
-                    score: '11-5, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf4', 
-                    player1: { name: 'Sarah Kim', seed: 'D1' }, 
-                    player2: { name: 'Carmen Lopez', seed: 'B2' },
-                    score: '11-9, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                semiFinals: [
-                  { 
-                    id: 'sf1', 
-                    player1: { name: 'Maria Santos', seed: 'QF1' }, 
-                    player2: { name: 'Elena Cruz', seed: 'QF2' },
-                    score: '11-6, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'sf2', 
-                    player1: { name: 'Andrea Martinez', seed: 'QF3' }, 
-                    player2: { name: 'Sarah Kim', seed: 'QF4' },
-                    score: '11-9, 11-5',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                final: {
-                  id: 'final',
-                  player1: { name: 'Maria Santos', seed: 'SF1' },
-                  player2: { name: 'Andrea Martinez', seed: 'SF2' },
-                  score: '11-7, 11-9',
-                  winner: 'player1',
-                  completed: true
-                },
-                thirdPlace: {
-                  id: 'thirdPlace',
-                  player1: { name: 'Elena Cruz', seed: 'SF1-L' },
-                  player2: { name: 'Sarah Kim', seed: 'SF2-L' },
-                  score: '11-4, 11-6',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            }
-          },
-          rules: [
-            'All matches follow official IFP rules',
-            'Players must check in 30 minutes before their scheduled match',
-            'Proper athletic attire and non-marking shoes required',
-            'No coaching allowed during matches'
-          ],
-          amenities: ['Parking', 'Restrooms', 'Food Court', 'Pro Shop', 'Air Conditioning'],
-          brackets: [
-            {
-              id: 'bracket-1',
-              name: 'Bracket A',
-              maxPlayers: 5, // 20 total capacity ÷ 4 brackets = 5 per bracket
-              players: [
-                { id: '1', name: 'John "The Ace" Doe', status: 'approved', rating: '4.5', team: 'Manila Smashers' },
-                { id: '8', name: 'Elena Cruz', status: 'approved', rating: '3.9', team: 'Alabang Aces' },
-                { id: '13', name: 'James "Comet" Taylor', status: 'approved', rating: '3.6', team: 'Paranaque Phoenix' },
-                { id: '16', name: 'Sarah "Whirlwind" Kim', status: 'approved', rating: '3.4', team: 'Valenzuela Vipers' },
-                                  { id: '17', name: 'Alex Martinez', status: 'approved', rating: '3.2', team: 'Caloocan Cobras' }
-              ]
-            },
-            {
-              id: 'bracket-2',
-              name: 'Bracket B',
-              maxPlayers: 5,
-              players: [
-                { id: '2', name: 'Maria Santos', status: 'approved', rating: '4.3', team: 'QC Warriors' },
-                { id: '7', name: 'Luis "Rocket" Chen', status: 'approved', rating: '4.0', team: 'Pasig Panthers' },
-                { id: '12', name: 'Patricia "Viper" Wong', status: 'approved', rating: '3.7', team: 'Mandaluyong Meteors' },
-                { id: '14', name: 'Lisa "Arrow" Johnson', status: 'approved', rating: '3.5', team: 'Las Pinas Lions' }
-              ]
-            },
-            {
-              id: 'bracket-3',
-              name: 'Bracket C',
-              maxPlayers: 5,
-              players: [
-                { id: '3', name: 'Carlos "The Wall" Rodriguez', status: 'approved', rating: '4.4', team: 'BGC Titans' },
-                { id: '9', name: 'Roberto "Hammer" Kim', status: 'approved', rating: '4.1', team: 'Greenhills Gladiators' },
-                { id: '11', name: 'David "Spike" Park', status: 'approved', rating: '4.0', team: 'Cubao Crushers' },
-                { id: '15', name: 'Michael "Bolt" Chang', status: 'approved', rating: '3.8', team: 'Muntinlupa Mustangs' }
-              ]
-            },
-            {
-              id: 'bracket-4',
-              name: 'Bracket D',
-              maxPlayers: 5,
-              players: [
-                { id: '4', name: 'Ana "Fire" Reyes', status: 'approved', rating: '4.2', team: 'Makati Sharks' },
-                { id: '5', name: 'Miguel Torres', status: 'approved', rating: '4.6', team: 'Ortigas Eagles' },
-                { id: '6', name: 'Sofia "Ice" Garcia', status: 'approved', rating: '4.1', team: 'Taguig Thunder' },
-                { id: '10', name: 'Carmen "Flash" Lopez', status: 'approved', rating: '3.8', team: 'Marikina Mavericks' },
-                { id: '18', name: 'Rachel Gonzalez', status: 'approved', rating: '3.3', team: 'Malabon Mako' }
-              ]
-            }
-          ],
-          registrations: [
-            // Approved players in brackets
-            { id: '1', playerName: 'John "The Ace" Doe', registeredAt: '2025-01-10T10:30:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.5', team: 'Manila Smashers', age: 24, gender: 'male', categoryId: 't2-mens-singles' },
-            { id: '2', playerName: 'Maria Santos', registeredAt: '2025-01-10T11:15:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.3', team: 'QC Warriors', age: 26, gender: 'female', categoryId: 't2-womens-singles' },
-            { id: '3', playerName: 'Carlos "The Wall" Rodriguez', registeredAt: '2025-01-10T14:20:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.4', team: 'BGC Titans', age: 28, gender: 'male', categoryId: 't2-mens-singles' },
-            { id: '4', playerName: 'Ana "Fire" Reyes', registeredAt: '2025-01-11T09:45:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.2', team: 'Makati Sharks', age: 25, gender: 'female', categoryId: 't2-womens-singles' },
-            { id: '5', playerName: 'Miguel Torres', registeredAt: '2025-01-11T13:10:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.6', team: 'Ortigas Eagles', age: 30, gender: 'male', categoryId: 't2-mens-singles' },
-            { id: '6', playerName: 'Sofia "Ice" Garcia', registeredAt: '2025-01-12T08:30:00Z', status: 'approved', bracketId: 'bracket-1', rating: '4.1', team: 'Taguig Thunder', age: 27, gender: 'female', categoryId: 't2-womens-singles' },
-            { id: '7', playerName: 'Luis "Rocket" Chen', registeredAt: '2025-01-12T16:45:00Z', status: 'approved', bracketId: 'bracket-2', rating: '4.0', team: 'Pasig Panthers', age: 29, gender: 'male', categoryId: 't2-mens-singles' },
-            { id: '8', playerName: 'Elena Cruz', registeredAt: '2025-01-13T12:00:00Z', status: 'approved', bracketId: 'bracket-2', rating: '3.9', team: 'Alabang Aces', age: 31, gender: 'female', categoryId: 't2-womens-singles' },
-            { id: '9', playerName: 'Roberto "Hammer" Kim', registeredAt: '2025-01-13T15:20:00Z', status: 'approved', bracketId: 'bracket-2', rating: '4.1', team: 'Greenhills Gladiators', age: 33, gender: 'male', categoryId: 't2-mens-singles' },
-            { id: '10', playerName: 'Carmen "Flash" Lopez', registeredAt: '2025-01-14T10:10:00Z', status: 'approved', bracketId: 'bracket-2', rating: '3.8', team: 'Marikina Mavericks', age: 32, gender: 'female', categoryId: 't2-womens-singles' },
-            { id: '11', playerName: 'David "Spike" Park', registeredAt: '2025-01-14T14:30:00Z', status: 'approved', bracketId: 'bracket-2', rating: '4.0', team: 'Cubao Crushers', age: 26, gender: 'male', categoryId: 't2-mens-singles' },
-            { id: '12', playerName: 'Patricia "Viper" Wong', registeredAt: '2025-01-15T09:00:00Z', status: 'approved', bracketId: 'bracket-2', rating: '3.7', team: 'Mandaluyong Meteors', age: 28, gender: 'female', categoryId: 't2-womens-singles' },
-            { id: '13', playerName: 'James "Comet" Taylor', registeredAt: '2025-01-15T11:30:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.6', team: 'Paranaque Phoenix', age: 22, gender: 'male', categoryId: 't1-mens-singles-intermediate-18' },
-            { id: '14', playerName: 'Lisa "Arrow" Johnson', registeredAt: '2025-01-15T16:15:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.5', team: 'Las Pinas Lions', age: 23, gender: 'female', categoryId: 't1-womens-singles-intermediate-18' },
-            { id: '15', playerName: 'Michael "Bolt" Chang', registeredAt: '2025-01-16T09:20:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.8', team: 'Muntinlupa Mustangs', age: 24, gender: 'male', categoryId: 't1-mens-singles-intermediate-18' },
-            { id: '16', playerName: 'Sarah "Whirlwind" Kim', registeredAt: '2025-01-16T14:45:00Z', status: 'approved', bracketId: 'bracket-3', rating: '3.4', team: 'Valenzuela Vipers', age: 21, gender: 'female', categoryId: 't1-womens-singles-intermediate-18' },
-            { id: '17', playerName: 'Alex Martinez', registeredAt: '2025-01-17T10:30:00Z', status: 'approved', bracketId: 'bracket-4', rating: '3.2', team: 'Caloocan Cobras', age: 19, gender: 'male', categoryId: 't1-mens-singles-intermediate-18' },
-            { id: '18', playerName: 'Rachel Gonzalez', registeredAt: '2025-01-17T15:20:00Z', status: 'approved', bracketId: 'bracket-4', rating: '3.3', team: 'Malabon Mako', age: 20, gender: 'female', categoryId: 't1-womens-singles-intermediate-18' },
-            // Pending approvals
-            { id: '19', playerName: 'Kevin Lim', registeredAt: '2025-01-18T09:15:00Z', status: 'pending', bracketId: null, rating: '3.1', team: 'Pasay Predators', age: 25, gender: 'male', categoryId: 'mens-doubles-intermediate-18' },
-            { id: '20', playerName: 'Nina Cruz', registeredAt: '2025-01-18T11:30:00Z', status: 'pending', bracketId: null, rating: '3.4', team: 'Quezon Quakes', age: 27, gender: 'female', categoryId: 't3-womens-doubles' },
-            { id: '21', playerName: 'Tony Reyes', registeredAt: '2025-01-18T14:45:00Z', status: 'pending', bracketId: null, rating: '3.6', team: 'Masinag Magic', age: 29, gender: 'male', categoryId: 'mens-doubles-intermediate-18' },
-            { id: '22', playerName: 'Grace Tan', registeredAt: '2025-01-18T16:20:00Z', status: 'pending', bracketId: null, rating: '3.2', team: 'Fairview Falcons', age: 24, gender: 'female', categoryId: 't3-womens-doubles' },
-            // Rejected applications
-            { id: '23', playerName: 'Mark Brown', registeredAt: '2025-01-19T10:00:00Z', status: 'rejected', bracketId: null, rating: '2.5', team: 'Independent', note: 'Rating below minimum requirement', age: 26, gender: 'male', categoryId: 't1-mens-singles-intermediate-18' },
-            { id: '24', playerName: 'Jenny Davis', registeredAt: '2025-01-19T13:15:00Z', status: 'rejected', bracketId: null, rating: '2.8', team: 'Independent', note: 'Incomplete documentation', age: 28, gender: 'female', categoryId: 't1-womens-singles-intermediate-18' }
-          ]
-        },
-        {
-          id: '2',
-          name: 'Intermediate Skills Tournament',
-          date: '2025-07-20T09:00:00Z',
-          endDate: '2025-07-20T17:00:00Z', // Single day
-          location: 'Quezon City Sports Complex',
-          address: '456 Sports St, Quezon City, Metro Manila',
-          latitude: 14.6760,
-          longitude: 121.0437,
-          entryFee: 800,
-          prizePool: 20000,
-          maxParticipants: 24,
-          currentParticipants: 24,
-          registrationDeadline: '2025-06-20T23:59:59Z',
-          bannerUrl: 'https://images.unsplash.com/photo-1723004714201-cf224222b897?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-          tier: 2,
-          tournamentType: 'intermediate',
-          description: 'Perfect for developing players! This competitive tournament welcomes intermediate skill levels with a focus on improving gameplay and strategy.',
-          contactEmail: 'intermediate@philippinepickleball.com',
-          contactPhone: '+63 912 345 6788',
-          divisions: ["Mixed Doubles", "Men's Doubles", "Women's Doubles"],
-          // Multiple Tournament Categories with Brackets
-          tournamentCategories: {
-            'mens-doubles-intermediate-18': {
-              id: 'mens-doubles-intermediate-18',
-              name: "Men's Doubles Intermediate 18+",
-              ageGroup: '18+',
-              skillLevel: 'Intermediate',
-              participants: 8,
-              maxParticipants: 8,
-              prizePool: 8000,
-              description: 'Competitive men\'s doubles for intermediate-level players',
-              groupStage: {
-                bracketA: [
-                  { id: '1', name: 'Mark Lee & Tony Yang', rating: '3.5', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 22, position: 1, players: ['Mark Lee', 'Tony Yang'] },
-                  { id: '2', name: 'Kevin Ng & Daniel Ko', rating: '3.4', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 26, position: 2, players: ['Kevin Ng', 'Daniel Ko'] }
-                ],
-                bracketB: [
-                  { id: '3', name: 'Alex Chen & Ryan Lim', rating: '3.6', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 18, position: 1, players: ['Alex Chen', 'Ryan Lim'] },
-                  { id: '4', name: 'Chris Wang & Ben Chua', rating: '3.2', roundWins: 1, roundLosses: 3, winPoints: 20, lossPoints: 35, position: 2, players: ['Chris Wang', 'Ben Chua'] }
-                ],
-                bracketC: [
-                  { id: '5', name: 'Jake Huang & Sam Choi', rating: '3.3', roundWins: 3, roundLosses: 1, winPoints: 33, lossPoints: 21, position: 1, players: ['Jake Huang', 'Sam Choi'] },
-                  { id: '6', name: 'Eric Goh & Gary Yap', rating: '3.1', roundWins: 2, roundLosses: 2, winPoints: 25, lossPoints: 28, position: 2, players: ['Eric Goh', 'Gary Yap'] }
-                ],
-                bracketD: [
-                  { id: '7', name: 'Ken Lai & Max Teo', rating: '3.0', roundWins: 2, roundLosses: 2, winPoints: 29, lossPoints: 27, position: 1, players: ['Ken Lai', 'Max Teo'] },
-                  { id: '8', name: 'Ivan Soh & Oscar Chia', rating: '2.9', roundWins: 1, roundLosses: 3, winPoints: 18, lossPoints: 33, position: 2, players: ['Ivan Soh', 'Oscar Chia'] }
-                ]
-              },
-              knockoutStage: {
-                quarterFinals: [
-                  { 
-                    id: 'qf1', 
-                    player1: { name: 'Mark & Tony', seed: 'A1' }, 
-                    player2: { name: 'Ivan & Oscar', seed: 'D2' },
-                    score: '11-6, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf2', 
-                    player1: { name: 'Alex & Ryan', seed: 'B1' }, 
-                    player2: { name: 'Eric & Gary', seed: 'C2' },
-                    score: '11-9, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf3', 
-                    player1: { name: 'Jake & Sam', seed: 'C1' }, 
-                    player2: { name: 'Chris & Ben', seed: 'B2' },
-                    score: '11-5, 11-10',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf4', 
-                    player1: { name: 'Ken & Max', seed: 'D1' }, 
-                    player2: { name: 'Kevin & Daniel', seed: 'A2' },
-                    score: '11-8, 11-6',
-                    winner: 'player2',
-                    completed: true
-                  }
-                ],
-                semiFinals: [
-                  { 
-                    id: 'sf1', 
-                    player1: { name: 'Mark & Tony', seed: 'QF1' }, 
-                    player2: { name: 'Alex & Ryan', seed: 'QF2' },
-                    score: '11-7, 11-9',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'sf2', 
-                    player1: { name: 'Jake & Sam', seed: 'QF3' }, 
-                    player2: { name: 'Kevin & Daniel', seed: 'QF4' },
-                    score: '11-6, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                final: {
-                  id: 'final',
-                  player1: { name: 'Mark & Tony', seed: 'SF1' },
-                  player2: { name: 'Jake & Sam', seed: 'SF2' },
-                  score: '11-9, 11-7',
-                  winner: 'player1',
-                  completed: true
-                },
-                thirdPlace: {
-                  id: 'thirdPlace',
-                  player1: { name: 'Alex & Ryan', seed: 'SF1-L' },
-                  player2: { name: 'Kevin & Daniel', seed: 'SF2-L' },
-                  score: '11-4, 11-6',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            },
-            't3-womens-doubles': {
-              id: 't3-womens-doubles',
-              name: "Women's Doubles Intermediate 18+", 
-              ageGroup: '18+',
-              skillLevel: 'Intermediate',
-              icon: '👭',
-              participants: 8,
-              maxParticipants: 8,
-              prizePool: 7000,
-              description: 'Women\'s doubles competition for developing players',
-              groupStage: {
-                bracketA: [
-                  { id: '1', name: 'Maya & Nina', rating: '3.3', wins: 1, points: 3, position: 1, players: ['Maya Patel', 'Nina Xu'] },
-                  { id: '2', name: 'Grace & Amy', rating: '3.2', wins: 1, points: 3, position: 2, players: ['Grace Liu', 'Amy Zhao'] }
-                ],
-                bracketB: [
-                  { id: '3', name: 'Jenny & Emma', rating: '3.4', wins: 1, points: 3, position: 1, players: ['Jenny Wu', 'Emma Zhou'] },
-                  { id: '4', name: 'Coco & Fiona', rating: '3.0', wins: 1, points: 3, position: 2, players: ['Coco Tan', 'Fiona Ong'] }
-                ],
-                bracketC: [
-                  { id: '5', name: 'Diana & Lisa', rating: '3.2', wins: 1, points: 3, position: 1, players: ['Diana Tan', 'Lisa Park'] },
-                  { id: '6', name: 'Helen & Joy', rating: '2.9', wins: 1, points: 3, position: 2, players: ['Helen Low', 'Joy Koh'] }
-                ],
-                bracketD: [
-                  { id: '7', name: 'Lily & Nora', rating: '2.8', wins: 1, points: 3, position: 1, players: ['Lily Sim', 'Nora Wee'] },
-                  { id: '8', name: 'Sarah & Priya', rating: '3.1', wins: 1, points: 3, position: 2, players: ['Sarah Kim', 'Priya Singh'] }
-                ]
-              },
-              knockoutStage: {
-                quarterFinals: [
-                  { 
-                    id: 'qf1', 
-                    player1: { name: 'Maya & Nina', seed: 'A1' }, 
-                    player2: { name: 'Sarah & Priya', seed: 'D2' },
-                    score: '11-8, 11-6',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf2', 
-                    player1: { name: 'Jenny & Emma', seed: 'B1' }, 
-                    player2: { name: 'Helen & Joy', seed: 'C2' },
-                    score: '11-5, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf3', 
-                    player1: { name: 'Diana & Lisa', seed: 'C1' }, 
-                    player2: { name: 'Coco & Fiona', seed: 'B2' },
-                    score: '11-9, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf4', 
-                    player1: { name: 'Lily & Nora', seed: 'D1' }, 
-                    player2: { name: 'Grace & Amy', seed: 'A2' },
-                    score: '11-7, 11-9',
-                    winner: 'player2',
-                    completed: true
-                  }
-                ],
-                semiFinals: [
-                  { 
-                    id: 'sf1', 
-                    player1: { name: 'Maya & Nina', seed: 'QF1' }, 
-                    player2: { name: 'Jenny & Emma', seed: 'QF2' },
-                    score: '11-6, 11-9',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'sf2', 
-                    player1: { name: 'Diana & Lisa', seed: 'QF3' }, 
-                    player2: { name: 'Grace & Amy', seed: 'QF4' },
-                    score: '11-8, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                final: {
-                  id: 'final',
-                  player1: { name: 'Maya & Nina', seed: 'SF1' },
-                  player2: { name: 'Diana & Lisa', seed: 'SF2' },
-                  score: '11-9, 11-8',
-                  winner: 'player1',
-                  completed: true
-                },
-                thirdPlace: {
-                  id: 'thirdPlace',
-                  player1: { name: 'Jenny & Emma', seed: 'SF1-L' },
-                  player2: { name: 'Grace & Amy', seed: 'SF2-L' },
-                  score: '11-5, 11-7',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            },
-            'mixed-doubles': {
-              id: 'mixed-doubles',
-              name: "Mixed Doubles Intermediate 18+",
-              ageGroup: '18+',
-              skillLevel: 'Intermediate',
-              icon: '👫',
-              participants: 8,
-              maxParticipants: 8,
-              prizePool: 5000,
-              description: 'Fun and competitive mixed doubles for all skill levels'
-              // No bracket data for recreational - just show placeholder
-            }
-          },
-          rules: [
-            'Open to players with 1-3 years experience',
-            'Standard scoring system applies',
-            'Limited coaching allowed between games',
-            'Emphasis on competitive play and sportsmanship'
-          ],
-          amenities: ['Parking', 'Restrooms', 'Refreshments'],
-          brackets: [
-            {
-              id: 'bracket-1',
-              name: 'Bracket A',
-              maxPlayers: 6, // 24 total capacity ÷ 4 brackets = 6 per bracket (FULL CAPACITY)
-              players: [
-                { id: '1', name: 'Sarah Kim', status: 'approved', rating: '3.2', team: 'QC Slammers' },
-                { id: '9', name: 'Priya Singh', status: 'approved', rating: '3.1', team: 'BGC Breakers' },
-                { id: '13', name: 'Grace Liu', status: 'approved', rating: '3.4', team: 'Makati Movers' },
-                { id: '19', name: 'Amy Zhao', status: 'approved', rating: '3.0', team: 'Ortigas Owls' },
-                { id: '21', name: 'Coco Tan', status: 'approved', rating: '3.3', team: 'Taguig Tigers' },
-                { id: '24', name: 'Gary Yap', status: 'approved', rating: '3.2', team: 'Pasig Pirates' }
-              ]
-            },
-            {
-              id: 'bracket-2',
-              name: 'Bracket B',
-              maxPlayers: 6,
-              players: [
-                { id: '2', name: 'Mark Lee', status: 'approved', rating: '3.5', team: 'Manila Mayhem' },
-                { id: '7', name: 'Maya Patel', status: 'approved', rating: '3.3', team: 'Alabang Aces' },
-                { id: '14', name: 'Tony Yang', status: 'approved', rating: '3.1', team: 'Greenhills Giants' },
-                { id: '17', name: 'Nina Xu', status: 'approved', rating: '3.4', team: 'Marikina Magic' },
-                { id: '20', name: 'Ben Chua', status: 'approved', rating: '3.2', team: 'Cubao Cyclones' },
-                { id: '23', name: 'Fiona Ong', status: 'approved', rating: '3.0', team: 'Mandaluyong Meteors' }
-              ]
-            },
-            {
-              id: 'bracket-3',
-              name: 'Bracket C',
-              maxPlayers: 6,
-              players: [
-                { id: '3', name: 'Jenny Wu', status: 'approved', rating: '3.3', team: 'Paranaque Panthers' },
-                { id: '8', name: 'Kevin Ng', status: 'approved', rating: '3.4', team: 'Las Pinas Lions' },
-                { id: '12', name: 'Daniel Ko', status: 'approved', rating: '3.1', team: 'Muntinlupa Mustangs' },
-                { id: '15', name: 'Emma Zhou', status: 'approved', rating: '3.5', team: 'Valenzuela Vipers' },
-                { id: '18', name: 'Sam Choi', status: 'approved', rating: '3.2', team: 'Caloocan Cobras' },
-                { id: '22', name: 'Eric Goh', status: 'approved', rating: '3.3', team: 'Malabon Mako' }
-              ]
-            },
-            {
-              id: 'bracket-4',
-              name: 'Bracket D',
-              maxPlayers: 6,
-              players: [
-                { id: '4', name: 'Alex Chen', status: 'approved', rating: '3.6', team: 'Pasay Predators' },
-                { id: '5', name: 'Diana Tan', status: 'approved', rating: '3.2', team: 'Quezon Quakes' },
-                { id: '6', name: 'Ryan Lim', status: 'approved', rating: '3.4', team: 'Masinag Magic' },
-                { id: '10', name: 'Chris Wang', status: 'approved', rating: '3.1', team: 'Fairview Falcons' },
-                { id: '11', name: 'Lisa Park', status: 'approved', rating: '3.5', team: 'Antipolo Arrows' },
-                { id: '16', name: 'Jake Huang', status: 'approved', rating: '3.3', team: 'San Juan Spartans' }
-              ]
-            }
-          ],
-          registrations: Array.from({ length: 32 }, (_, i) => ({
-            id: (i + 1).toString(),
-            playerName: [
-              'Sarah Kim', 'Mark Lee', 'Jenny Wu', 'Alex Chen', 'Diana Tan', 'Ryan Lim',
-              'Maya Patel', 'Kevin Ng', 'Priya Singh', 'Chris Wang', 'Lisa Park', 'Daniel Ko',
-              'Grace Liu', 'Tony Yang', 'Emma Zhou', 'Jake Huang', 'Nina Xu', 'Sam Choi',
-              'Amy Zhao', 'Ben Chua', 'Coco Tan', 'Eric Goh', 'Fiona Ong', 'Gary Yap',
-              'Helen Low', 'Ivan Soh', 'Joy Koh', 'Ken Lai', 'Lily Sim', 'Max Teo',
-              'Nora Wee', 'Oscar Chia'
-            ][i],
-            registeredAt: new Date(Date.now() - (32 - i) * 24 * 60 * 60 * 1000).toISOString(),
-            status: i < 24 ? 'approved' : 'pending',
-            bracketId: i < 24 ? `bracket-${Math.floor(i / 6) + 1}` : null,
-            categoryId: [
-              'mens-doubles-intermediate-18', 't3-womens-doubles', 't4-womens-singles', 'senior-doubles'
-            ][i % 4]
-          })),
-          // Tournament Bracket Data - Intermediate Level
-          tournamentBracket: {
-            groupStage: {
-              bracketA: [
-                { id: '1', name: 'Sarah Kim', rating: '3.2', wins: 5, points: 15, position: 1 },
-                { id: '9', name: 'Priya Singh', rating: '3.1', wins: 4, points: 12, position: 2 },
-                { id: '13', name: 'Grace Liu', rating: '3.4', wins: 3, points: 9, position: 3 },
-                { id: '19', name: 'Amy Zhao', rating: '3.0', wins: 2, points: 6, position: 4 },
-                { id: '21', name: 'Coco Tan', rating: '3.3', wins: 1, points: 3, position: 5 },
-                { id: '24', name: 'Gary Yap', rating: '3.2', wins: 0, points: 0, position: 6 }
-              ],
-              bracketB: [
-                { id: '2', name: 'Mark Lee', rating: '3.5', wins: 4, points: 12, position: 1 },
-                { id: '7', name: 'Maya Patel', rating: '3.3', wins: 4, points: 12, position: 2 },
-                { id: '14', name: 'Tony Yang', rating: '3.1', wins: 3, points: 9, position: 3 },
-                { id: '17', name: 'Nina Xu', rating: '3.4', wins: 2, points: 6, position: 4 },
-                { id: '20', name: 'Ben Chua', rating: '3.2', wins: 1, points: 3, position: 5 },
-                { id: '23', name: 'Fiona Ong', rating: '3.0', wins: 0, points: 0, position: 6 }
-              ],
-              bracketC: [
-                { id: '3', name: 'Jenny Wu', rating: '3.3', wins: 5, points: 15, position: 1 },
-                { id: '8', name: 'Kevin Ng', rating: '3.4', wins: 3, points: 9, position: 2 },
-                { id: '12', name: 'Daniel Ko', rating: '3.1', wins: 3, points: 9, position: 3 },
-                { id: '15', name: 'Emma Zhou', rating: '3.5', wins: 2, points: 6, position: 4 },
-                { id: '18', name: 'Sam Choi', rating: '3.2', wins: 1, points: 3, position: 5 },
-                { id: '22', name: 'Eric Goh', rating: '3.3', wins: 0, points: 0, position: 6 }
-              ],
-              bracketD: [
-                { id: '4', name: 'Alex Chen', rating: '3.6', wins: 4, points: 12, position: 1 },
-                { id: '5', name: 'Diana Tan', rating: '3.2', wins: 4, points: 12, position: 2 },
-                { id: '6', name: 'Ryan Lim', rating: '3.4', wins: 3, points: 9, position: 3 },
-                { id: '10', name: 'Chris Wang', rating: '3.1', wins: 2, points: 6, position: 4 },
-                { id: '11', name: 'Lisa Park', rating: '3.5', wins: 1, points: 3, position: 5 },
-                { id: '16', name: 'Jake Huang', rating: '3.3', wins: 0, points: 0, position: 6 }
-              ]
-            },
-            knockoutStage: {
-              quarterFinals: [
-                { 
-                  id: 'qf1', 
-                  player1: { name: 'Sarah Kim', seed: 'A1' }, 
-                  player2: { name: 'Kevin Ng', seed: 'C2' },
-                  score: '11-9, 11-7',
-                  winner: 'player1',
-                  completed: true
-                },
-                { 
-                  id: 'qf2', 
-                  player1: { name: 'Mark Lee', seed: 'B1' }, 
-                  player2: { name: 'Diana Tan', seed: 'D2' },
-                  score: '11-6, 11-8',
-                  winner: 'player1',
-                  completed: true
-                },
-                { 
-                  id: 'qf3', 
-                  player1: { name: 'Jenny Wu', seed: 'C1' }, 
-                  player2: { name: 'Priya Singh', seed: 'A2' },
-                  score: '11-4, 11-6',
-                  winner: 'player1',
-                  completed: true
-                },
-                { 
-                  id: 'qf4', 
-                  player1: { name: 'Alex Chen', seed: 'D1' }, 
-                  player2: { name: 'Maya Patel', seed: 'B2' },
-                  score: '11-8, 11-10',
-                  winner: 'player1',
-                  completed: true
-                }
-              ],
-              semiFinals: [
-                { 
-                  id: 'sf1', 
-                  player1: { name: 'Sarah Kim', seed: 'QF1' }, 
-                  player2: { name: 'Mark Lee', seed: 'QF2' },
-                  score: '11-7, 11-9',
-                  winner: 'player1',
-                  completed: true
-                },
-                { 
-                  id: 'sf2', 
-                  player1: { name: 'Jenny Wu', seed: 'QF3' }, 
-                  player2: { name: 'Alex Chen', seed: 'QF4' },
-                  score: '11-9, 11-6',
-                  winner: 'player1',
-                  completed: true
-                }
-              ],
-              final: {
-                id: 'final',
-                player1: { name: 'Sarah Kim', seed: 'SF1' },
-                player2: { name: 'Jenny Wu', seed: 'SF2' },
-                score: '11-9, 11-8',
-                winner: 'player1',
-                completed: true
-              },
-              thirdPlace: {
-                id: 'thirdPlace',
-                player1: { name: 'Mark Lee', seed: 'SF1-L' },
-                player2: { name: 'Alex Chen', seed: 'SF2-L' },
-                score: '11-4, 11-7',
-                winner: 'player1',
-                completed: true
-              }
-            }
-          }
-        },
-        {
-          id: '3',
-          name: 'Indoor Championship Series',
-          date: '2025-07-01T09:00:00Z',
-          endDate: '2025-07-02T18:00:00Z', // 2-day tournament
-          location: 'BGC Indoor Sports Complex',
-          address: '789 Bonifacio Global City, Taguig, Metro Manila',
-          latitude: 14.5515,
-          longitude: 121.0470,
-          entryFee: 2000,
-          prizePool: 75000,
-          maxParticipants: 16,
-          currentParticipants: 15,
-          registrationDeadline: '2025-06-15T23:59:59Z',
-          bannerUrl: 'https://plus.unsplash.com/premium_photo-1709048991290-1d36455a2895?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-          tier: 3,
-          tournamentType: 'advanced',
-          description: 'High-level competition in a premium indoor facility. This tournament features the best players and highest prize pool of the season.',
-          contactEmail: 'indoor@philippinepickleball.com',
-          contactPhone: '+63 912 345 6787',
-          divisions: ["Men's Singles", "Women's Singles", "Men's Doubles", "Women's Doubles", "Mixed Doubles", "Senior Doubles"],
-          // Multiple Tournament Categories with Brackets
-          tournamentCategories: {
-            'mens-singles-advanced-35': {
-              id: 'mens-singles-advanced-35',
-              name: "Men's Singles Advanced 35+",
-              ageGroup: '35+',
-              skillLevel: 'Advanced',
-              icon: '🏆',
-              participants: 16,
-              maxParticipants: 16,
-              prizePool: 30000,
-              description: 'Elite men\'s singles competition for advanced players',
-              groupStage: {
-                bracketA: [
-                  { id: '1', name: 'Michael Johnson', rating: '4.8', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 19, position: 1, age: 38 },
-                  { id: '2', name: 'Anthony Chen', rating: '4.5', roundWins: 2, roundLosses: 2, winPoints: 32, lossPoints: 28, position: 2, age: 42 }
-                ],
-                bracketB: [
-                  { id: '3', name: 'Andrea Martinez', rating: '4.7', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 15, position: 1, age: 36 },
-                  { id: '4', name: 'Marcus Tan', rating: '4.4', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 39, position: 2, age: 40 }
-                ],
-                bracketC: [
-                  { id: '5', name: 'Jason Park', rating: '4.6', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 21, position: 1, age: 39 },
-                  { id: '6', name: 'Vanessa Liu', rating: '4.4', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 30, position: 2, age: 37 }
-                ],
-                bracketD: [
-                  { id: '7', name: 'Rachel Kim', rating: '4.5', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 12, position: 1, age: 35 },
-                  { id: '8', name: 'Steven Wong', rating: '4.3', roundWins: 0, roundLosses: 4, winPoints: 18, lossPoints: 44, position: 2, age: 41 }
-                ]
-              },
-              knockoutStage: {
-                quarterFinals: [
-                  { 
-                    id: 'qf1', 
-                    player1: { name: 'Michael Johnson', seed: 'A1' }, 
-                    player2: { name: 'Steven Wong', seed: 'D2' },
-                    score: '11-7, 11-9',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf2', 
-                    player1: { name: 'Andrea Martinez', seed: 'B1' }, 
-                    player2: { name: 'Vanessa Liu', seed: 'C2' },
-                    score: '11-5, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf3', 
-                    player1: { name: 'Jason Park', seed: 'C1' }, 
-                    player2: { name: 'Marcus Tan', seed: 'B2' },
-                    score: '11-9, 11-6',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf4', 
-                    player1: { name: 'Rachel Kim', seed: 'D1' }, 
-                    player2: { name: 'Anthony Chen', seed: 'A2' },
-                    score: '11-8, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                semiFinals: [
-                  { 
-                    id: 'sf1', 
-                    player1: { name: 'Michael Johnson', seed: 'QF1' }, 
-                    player2: { name: 'Andrea Martinez', seed: 'QF2' },
-                    score: '11-9, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'sf2', 
-                    player1: { name: 'Jason Park', seed: 'QF3' }, 
-                    player2: { name: 'Rachel Kim', seed: 'QF4' },
-                    score: '11-6, 11-10',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                final: {
-                  id: 'final',
-                  player1: { name: 'Michael Johnson', seed: 'SF1' },
-                  player2: { name: 'Jason Park', seed: 'SF2' },
-                  score: '11-8, 11-9',
-                  winner: 'player1',
-                  completed: true
-                },
-                thirdPlace: {
-                  id: 'thirdPlace',
-                  player1: { name: 'Andrea Martinez', seed: 'SF1-L' },
-                  player2: { name: 'Rachel Kim', seed: 'SF2-L' },
-                  score: '11-5, 11-9',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            },
-            't4-womens-singles': {
-              id: 't4-womens-singles',
-              name: "Women's Singles Advanced 18+", 
-              ageGroup: '18+',
-              skillLevel: 'Advanced',
-              icon: '👩',
-              participants: 8,
-              maxParticipants: 12,
-              prizePool: 25000,
-              description: 'High-level women\'s singles championship',
-              groupStage: {
-                bracketA: [
-                  { id: '1', name: 'Amanda Yeh', rating: '4.3', roundWins: 3, roundLosses: 1, winPoints: 37, lossPoints: 19, position: 1, age: 25 },
-                  { id: '2', name: 'Victoria Huang', rating: '4.1', roundWins: 2, roundLosses: 2, winPoints: 28, lossPoints: 30, position: 2, age: 24 }
-                ],
-                bracketB: [
-                  { id: '3', name: 'Michelle Yang', rating: '4.1', roundWins: 4, roundLosses: 0, winPoints: 44, lossPoints: 15, position: 1, age: 28 },
-                  { id: '4', name: 'Catherine Lee', rating: '4.2', roundWins: 1, roundLosses: 3, winPoints: 22, lossPoints: 38, position: 2, age: 26 }
-                ],
-                bracketC: [
-                  { id: '5', name: 'Jonathan Wu', rating: '4.2', roundWins: 3, roundLosses: 1, winPoints: 35, lossPoints: 21, position: 1, age: 27 },
-                  { id: '6', name: 'Patrick Lim', rating: '4.2', roundWins: 2, roundLosses: 2, winPoints: 26, lossPoints: 28, position: 2, age: 29 }
-                ],
-                bracketD: [
-                  { id: '7', name: 'Brandon Choi', rating: '4.1', roundWins: 2, roundLosses: 2, winPoints: 31, lossPoints: 25, position: 1, age: 30 },
-                  { id: '8', name: 'Daniel Ko', rating: '3.9', roundWins: 1, roundLosses: 3, winPoints: 19, lossPoints: 35, position: 2, age: 28 }
-                ]
-              },
-              knockoutStage: {
-                quarterFinals: [
-                  { 
-                    id: 'qf1', 
-                    player1: { name: 'Amanda Yeh', seed: 'A1' }, 
-                    player2: { name: 'Daniel Ko', seed: 'D2' },
-                    score: '11-6, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf2', 
-                    player1: { name: 'Michelle Yang', seed: 'B1' }, 
-                    player2: { name: 'Patrick Lim', seed: 'C2' },
-                    score: '11-9, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf3', 
-                    player1: { name: 'Jonathan Wu', seed: 'C1' }, 
-                    player2: { name: 'Catherine Lee', seed: 'B2' },
-                    score: '11-5, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf4', 
-                    player1: { name: 'Brandon Choi', seed: 'D1' }, 
-                    player2: { name: 'Victoria Huang', seed: 'A2' },
-                    score: '11-7, 11-9',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                semiFinals: [
-                  { 
-                    id: 'sf1', 
-                    player1: { name: 'Amanda Yeh', seed: 'QF1' }, 
-                    player2: { name: 'Michelle Yang', seed: 'QF2' },
-                    score: '11-8, 11-6',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'sf2', 
-                    player1: { name: 'Jonathan Wu', seed: 'QF3' }, 
-                    player2: { name: 'Brandon Choi', seed: 'QF4' },
-                    score: '11-9, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                final: {
-                  id: 'final',
-                  player1: { name: 'Amanda Yeh', seed: 'SF1' },
-                  player2: { name: 'Jonathan Wu', seed: 'SF2' },
-                  score: '11-7, 11-9',
-                  winner: 'player1',
-                  completed: true
-                },
-                thirdPlace: {
-                  id: 'thirdPlace',
-                  player1: { name: 'Michelle Yang', seed: 'SF1-L' },
-                  player2: { name: 'Brandon Choi', seed: 'SF2-L' },
-                  score: '11-4, 11-6',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            },
-            'senior-doubles': {
-              id: 'senior-doubles',
-              name: "Mixed Doubles Open 50+",
-              ageGroup: '50+',
-              skillLevel: 'Open',
-              icon: '🎖️',
-              participants: 6,
-              prizePool: 20000,
-              description: 'Competitive doubles for experienced senior players',
-              groupStage: {
-                bracketA: [
-                  { id: '1', name: 'Robert & James Sr.', rating: '4.0', wins: 2, points: 6, position: 1, players: ['Robert Senior', 'James Wilson Sr.'], ages: [45, 48] },
-                  { id: '2', name: 'Frank & Thomas', rating: '3.8', wins: 1, points: 3, position: 2, players: ['Frank Miller', 'Thomas Brown'], ages: [42, 44] },
-                  { id: '3', name: 'William & Charles', rating: '3.6', wins: 0, points: 0, position: 3, players: ['William Davis', 'Charles Garcia'], ages: [41, 43] }
-                ],
-                bracketB: [
-                  { id: '4', name: 'Richard & Joseph', rating: '3.9', wins: 2, points: 6, position: 1, players: ['Richard Taylor', 'Joseph Anderson'], ages: [46, 47] },
-                  { id: '5', name: 'Paul & Mark Sr.', rating: '3.7', wins: 1, points: 3, position: 2, players: ['Paul Martinez', 'Mark Rodriguez Sr.'], ages: [40, 45] },
-                  { id: '6', name: 'Donald & Kenneth', rating: '3.5', wins: 0, points: 0, position: 3, players: ['Donald Wilson', 'Kenneth Lee'], ages: [44, 42] }
-                ]
-              },
-              knockoutStage: {
-                quarterFinals: [
-                  { 
-                    id: 'qf1', 
-                    player1: { name: 'Robert & James Sr.', seed: 'A1' }, 
-                    player2: { name: 'Paul & Mark Sr.', seed: 'B2' },
-                    score: '11-8, 11-6',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  { 
-                    id: 'qf2', 
-                    player1: { name: 'Richard & Joseph', seed: 'B1' }, 
-                    player2: { name: 'Frank & Thomas', seed: 'A2' },
-                    score: '11-9, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                semiFinals: [
-                  { 
-                    id: 'sf1', 
-                    player1: { name: 'Robert & James Sr.', seed: 'QF1' }, 
-                    player2: { name: 'Richard & Joseph', seed: 'QF2' },
-                    score: '11-9, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  }
-                ],
-                final: {
-                  id: 'final',
-                  player1: { name: 'Robert & James Sr.', seed: 'SF1' },
-                  player2: { name: 'Richard & Joseph', seed: 'SF1-L' },
-                  score: '11-7, 11-9',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            }
-          },
-          rules: [
-            'USAPA tournament rules strictly enforced',
-            'Seeded bracket based on ratings',
-            'No timeouts allowed',
-            'Professional referees for all matches'
-          ],
-          amenities: ['Valet Parking', 'VIP Lounge', 'Live Streaming', 'Professional Photography', 'Medical Support'],
-          brackets: [
-            {
-              id: 'bracket-1',
-              name: 'Bracket A',
-              maxPlayers: 4, // 16 total capacity ÷ 4 brackets = 4 per bracket
-              players: [
-                { id: '1', name: 'Michael Johnson', status: 'approved', rating: '4.8', team: 'Elite Manila' },
-                { id: '7', name: 'Anthony Chen', status: 'approved', rating: '4.5', team: 'BGC Pros' },
-                { id: '14', name: 'Amanda Yeh', status: 'approved', rating: '4.3', team: 'Makati Masters' },
-                { id: '18', name: 'Victoria Huang', status: 'approved', rating: '4.1', team: 'Ortigas Elite' }
-              ]
-            },
-            {
-              id: 'bracket-2',
-              name: 'Bracket B',
-              maxPlayers: 4,
-              players: [
-                { id: '2', name: 'Andrea Martinez', status: 'approved', rating: '4.7', team: 'QC Champions' },
-                { id: '9', name: 'Marcus Tan', status: 'approved', rating: '4.4', team: 'Pasig Powerhouse' },
-                { id: '13', name: 'Jonathan Wu', status: 'approved', rating: '4.2', team: 'Alabang All-Stars' },
-                { id: '16', name: 'Michelle Yang', status: 'approved', rating: '4.1', team: 'Greenhills Gladiators' }
-              ]
-            },
-            {
-              id: 'bracket-3',
-              name: 'Bracket C',
-              maxPlayers: 4,
-              players: [
-                { id: '3', name: 'Jason Park', status: 'approved', rating: '4.6', team: 'Cubao Crushers' },
-                { id: '8', name: 'Vanessa Liu', status: 'approved', rating: '4.4', team: 'Mandaluyong Meteors' },
-                { id: '11', name: 'Patrick Lim', status: 'approved', rating: '4.2', team: 'Paranaque Phoenixes' },
-                { id: '15', name: 'Brandon Choi', status: 'approved', rating: '4.1', team: 'Las Pinas Legends' }
-              ]
-            },
-            {
-              id: 'bracket-4',
-              name: 'Bracket D',
-              maxPlayers: 4,
-              players: [
-                { id: '4', name: 'Rachel Kim', status: 'approved', rating: '4.5', team: 'Valenzuela Vipers' },
-                { id: '5', name: 'Steven Wong', status: 'approved', rating: '4.3', team: 'Caloocan Cobras' },
-                { id: '6', name: 'Catherine Lee', status: 'approved', rating: '4.2', team: 'Malabon Mako' }
-              ]
-            }
-          ],
-          registrations: Array.from({ length: 85 }, (_, i) => ({
-            id: (i + 1).toString(),
-            playerName: `Player ${i + 1}`,
-            registeredAt: new Date(Date.now() - (85 - i) * 12 * 60 * 60 * 1000).toISOString(),
-            status: i < 20 ? 'approved' : i < 65 ? 'pending' : 'rejected',
-            bracketId: i < 20 ? `bracket-${Math.floor(i / 6) + 1}` : null,
-            categoryId: [
-              't1-mens-singles-intermediate-18', 't1-womens-singles-intermediate-18', 'mixed-doubles-open-18', 't2-mens-singles', 't2-womens-singles', 'mens-doubles-intermediate-18', 't3-womens-doubles', 'mixed-doubles'
-            ][i % 8]
-          })),
-          // Tournament Bracket Data - Advanced Level Championship
-          tournamentBracket: {
-            groupStage: {
-              bracketA: [
-                { id: '1', name: 'Michael Johnson', rating: '4.8', wins: 3, points: 9, position: 1 },
-                { id: '7', name: 'Anthony Chen', rating: '4.5', wins: 3, points: 9, position: 2 },
-                { id: '14', name: 'Amanda Yeh', rating: '4.3', wins: 2, points: 6, position: 3 },
-                { id: '18', name: 'Victoria Huang', rating: '4.1', wins: 0, points: 0, position: 4 }
-              ],
-              bracketB: [
-                { id: '2', name: 'Andrea Martinez', rating: '4.7', wins: 3, points: 9, position: 1 },
-                { id: '9', name: 'Marcus Tan', rating: '4.4', wins: 2, points: 6, position: 2 },
-                { id: '13', name: 'Jonathan Wu', rating: '4.2', wins: 2, points: 6, position: 3 },
-                { id: '16', name: 'Michelle Yang', rating: '4.1', wins: 0, points: 0, position: 4 }
-              ],
-              bracketC: [
-                { id: '3', name: 'Jason Park', rating: '4.6', wins: 3, points: 9, position: 1 },
-                { id: '8', name: 'Vanessa Liu', rating: '4.4', wins: 2, points: 6, position: 2 },
-                { id: '11', name: 'Patrick Lim', rating: '4.2', wins: 1, points: 3, position: 3 },
-                { id: '15', name: 'Brandon Choi', rating: '4.1', wins: 0, points: 0, position: 4 }
-              ],
-              bracketD: [
-                { id: '4', name: 'Rachel Kim', rating: '4.5', wins: 2, points: 6, position: 1 },
-                { id: '5', name: 'Steven Wong', rating: '4.3', wins: 2, points: 6, position: 2 },
-                { id: '6', name: 'Catherine Lee', rating: '4.2', wins: 1, points: 3, position: 3 }
-              ]
-            },
-            knockoutStage: {
-              quarterFinals: [
-                { 
-                  id: 'qf1', 
-                  player1: { name: 'Michael Johnson', seed: 'A1' }, 
-                  player2: { name: 'Vanessa Liu', seed: 'C2' },
-                  score: '11-7, 11-9',
-                  winner: 'player1',
-                  completed: true
-                },
-                { 
-                  id: 'qf2', 
-                  player1: { name: 'Andrea Martinez', seed: 'B1' }, 
-                  player2: { name: 'Steven Wong', seed: 'D2' },
-                  score: '11-5, 11-8',
-                  winner: 'player1',
-                  completed: true
-                },
-                { 
-                  id: 'qf3', 
-                  player1: { name: 'Jason Park', seed: 'C1' }, 
-                  player2: { name: 'Anthony Chen', seed: 'A2' },
-                  score: '11-9, 9-11, 11-6',
-                  winner: 'player1',
-                  completed: true
-                },
-                { 
-                  id: 'qf4', 
-                  player1: { name: 'Rachel Kim', seed: 'D1' }, 
-                  player2: { name: 'Marcus Tan', seed: 'B2' },
-                  score: '11-8, 11-7',
-                  winner: 'player1',
-                  completed: true
-                }
-              ],
-              semiFinals: [
-                { 
-                  id: 'sf1', 
-                  player1: { name: 'Michael Johnson', seed: 'QF1' }, 
-                  player2: { name: 'Andrea Martinez', seed: 'QF2' },
-                  score: '11-9, 11-8',
-                  winner: 'player1',
-                  completed: true
-                },
-                { 
-                  id: 'sf2', 
-                  player1: { name: 'Jason Park', seed: 'QF3' }, 
-                  player2: { name: 'Rachel Kim', seed: 'QF4' },
-                  score: '11-6, 11-10',
-                  winner: 'player1',
-                  completed: true
-                }
-              ],
-              final: {
-                id: 'final',
-                player1: { name: 'Michael Johnson', seed: 'SF1' },
-                player2: { name: 'Jason Park', seed: 'SF2' },
-                score: '11-8, 11-9',
-                winner: 'player1',
-                completed: true
-              },
-              thirdPlace: {
-                id: 'thirdPlace',
-                player1: { name: 'Andrea Martinez', seed: 'SF1-L' },
-                player2: { name: 'Rachel Kim', seed: 'SF2-L' },
-                score: '11-5, 11-9',
-                winner: 'player1',
-                completed: true
-              }
-            }
-          }
-        },
-        {
-          id: '4',
-          name: 'Beginner Friendly Tournament',
-          date: '2025-06-05T09:00:00Z',
-          endDate: '2025-06-05T16:00:00Z', // Single day
-          location: 'Community Recreation Center',
-          address: '789 Beginner Lane, Pasig City, Metro Manila',
-          latitude: 14.5696,
-          longitude: 121.0874,
-          entryFee: 300,
-          prizePool: 5000,
-          maxParticipants: 16,
-          currentParticipants: 12,
-          registrationDeadline: '2025-05-25T23:59:59Z',
-          bannerUrl: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-          tier: 1,
-          tournamentType: 'beginner',
-          description: 'Perfect for newcomers to pickleball! This beginner-friendly tournament welcomes players who are just learning the game. Great atmosphere for first-time competitors.',
-          contactEmail: 'beginner@philippinepickleball.com',
-          contactPhone: '+63 912 345 6789',
-          divisions: ["Mixed Doubles", "Men's Doubles", "Women's Doubles"],
-          // Multiple Tournament Categories with Brackets
-          tournamentCategories: {
-            'mixed-doubles-beginner-18': {
-              id: 'mixed-doubles-beginner-18',
-              name: "Mixed Doubles Beginner 18+",
-              ageGroup: '18+',
-              skillLevel: 'Beginner',
-              participants: 8,
-              maxParticipants: 8,
-              prizePool: 3000,
-              description: 'Fun and welcoming mixed doubles for beginners',
-              groupStage: {
-                bracketA: [
-                  { name: 'James Wilson & Lisa Chen', roundWins: 2, roundLosses: 1, winPoints: 63, lossPoints: 58 },
-                  { name: 'Mark Torres & Sarah Kim', roundWins: 2, roundLosses: 1, winPoints: 61, lossPoints: 59 },
-                  { name: 'Alex Rivera & Emma Davis', roundWins: 1, roundLosses: 2, winPoints: 58, lossPoints: 62 },
-                  { name: 'Chris Lee & Nina Lopez', roundWins: 1, roundLosses: 2, winPoints: 56, lossPoints: 64 }
-                ],
-                bracketB: [
-                  { name: 'David Park & Amy Wong', roundWins: 3, roundLosses: 0, winPoints: 66, lossPoints: 44 },
-                  { name: 'Tom Garcia & Jen Liu', roundWins: 2, roundLosses: 1, winPoints: 58, lossPoints: 56 },
-                  { name: 'Ryan Ng & Kate Miller', roundWins: 1, roundLosses: 2, winPoints: 52, lossPoints: 60 },
-                  { name: 'Sam Cruz & Mia Taylor', roundWins: 0, roundLosses: 3, winPoints: 48, lossPoints: 66 }
-                ]
-              },
-              singleElimination: {
-                semifinals: {
-                  sf1: {
-                    id: 'sf1',
-                    player1: { name: 'James Wilson & Lisa Chen', seed: 'A1' },
-                    player2: { name: 'Tom Garcia & Jen Liu', seed: 'B2' },
-                    score: '11-8, 11-6',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  sf2: {
-                    id: 'sf2',
-                    player1: { name: 'David Park & Amy Wong', seed: 'B1' },
-                    player2: { name: 'Mark Torres & Sarah Kim', seed: 'A2' },
-                    score: '11-9, 8-11, 11-7',
-                    winner: 'player1',
-                    completed: true
-                  }
-                },
-                finals: {
-                  id: 'finals',
-                  player1: { name: 'James Wilson & Lisa Chen', seed: 'SF1-W' },
-                  player2: { name: 'David Park & Amy Wong', seed: 'SF2-W' },
-                  score: '11-13, 11-9, 11-8',
-                  winner: 'player2',
-                  completed: true
-                },
-                thirdPlace: {
-                  id: 'thirdPlace',
-                  player1: { name: 'Tom Garcia & Jen Liu', seed: 'SF1-L' },
-                  player2: { name: 'Mark Torres & Sarah Kim', seed: 'SF2-L' },
-                  score: '11-6, 11-4',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            },
-            'mens-doubles-beginner-18': {
-              id: 'mens-doubles-beginner-18',
-              name: "Men's Doubles Beginner 18+",
-              ageGroup: '18+',
-              skillLevel: 'Beginner',
-              participants: 8,
-              maxParticipants: 8,
-              prizePool: 2000,
-              description: 'Entry-level men\'s doubles perfect for new players',
-              groupStage: {
-                bracketA: [
-                  { name: 'John Smith & Mike Johnson', roundWins: 2, roundLosses: 1, winPoints: 59, lossPoints: 55 },
-                  { name: 'Steve Davis & Paul Wilson', roundWins: 2, roundLosses: 1, winPoints: 57, lossPoints: 58 },
-                  { name: 'Rich Martinez & Tony Chen', roundWins: 1, roundLosses: 2, winPoints: 54, lossPoints: 60 },
-                  { name: 'Ben Lee & Dan Garcia', roundWins: 1, roundLosses: 2, winPoints: 53, lossPoints: 61 }
-                ],
-                bracketB: [
-                  { name: 'Carlos Torres & Jim Kim', roundWins: 3, roundLosses: 0, winPoints: 66, lossPoints: 48 },
-                  { name: 'Rob Taylor & Ed Liu', roundWins: 2, roundLosses: 1, winPoints: 58, lossPoints: 54 },
-                  { name: 'Matt Cruz & Joe Park', roundWins: 1, roundLosses: 2, winPoints: 52, lossPoints: 58 },
-                  { name: 'Sam Wong & Alex Ng', roundWins: 0, roundLosses: 3, winPoints: 46, lossPoints: 66 }
-                ]
-              },
-              singleElimination: {
-                semifinals: {
-                  sf1: {
-                    id: 'sf1',
-                    player1: { name: 'John Smith & Mike Johnson', seed: 'A1' },
-                    player2: { name: 'Rob Taylor & Ed Liu', seed: 'B2' },
-                    score: '11-7, 11-9',
-                    winner: 'player1',
-                    completed: true
-                  },
-                  sf2: {
-                    id: 'sf2',
-                    player1: { name: 'Carlos Torres & Jim Kim', seed: 'B1' },
-                    player2: { name: 'Steve Davis & Paul Wilson', seed: 'A2' },
-                    score: '11-6, 11-8',
-                    winner: 'player1',
-                    completed: true
-                  }
-                },
-                finals: {
-                  id: 'finals',
-                  player1: { name: 'John Smith & Mike Johnson', seed: 'SF1-W' },
-                  player2: { name: 'Carlos Torres & Jim Kim', seed: 'SF2-W' },
-                  score: '9-11, 11-7, 11-9',
-                  winner: 'player2',
-                  completed: true
-                },
-                thirdPlace: {
-                  id: 'thirdPlace',
-                  player1: { name: 'Rob Taylor & Ed Liu', seed: 'SF1-L' },
-                  player2: { name: 'Steve Davis & Paul Wilson', seed: 'SF2-L' },
-                  score: '11-8, 11-6',
-                  winner: 'player1',
-                  completed: true
-                }
-              }
-            }
-          },
-          rules: [
-           
-            'Professional referees for all matches'
-          ],
-          amenities: []
-        },
-       
-        {
-          id: "team-championship-2024",
-          name: "Team Championship 2024",
-          date: "2024-06-20T09:00:00Z",
-          endDate: "2024-06-21T18:00:00Z",
-          location: "Metro Sports Arena",
-          address: "789 Team Sports Blvd, Metro City, CA 90210",
-          latitude: 34.0522,
-          longitude: -118.2437,
-          status: "upcoming",
-          entryFee: 3000,
-          prizePool: 75000,
-          maxParticipants: 48,
-          currentParticipants: 18,
-          tournamentType: "open",
-          tier: 2,
-          description: "The ultimate team pickleball championship featuring 4-player teams competing in multiple formats. Teams will compete in singles, doubles, and mixed doubles matches with cumulative scoring to determine the champion team.",
-          bannerUrl: "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.1.0",
-          registrationDeadline: "2024-06-15T23:59:59Z",
-          contactEmail: "teams@metropickleball.com",
-          contactPhone: "+1 (555) 123-4567",
-          organizer: "Metro Pickleball Association",
-          organizerProfile: {
-            name: "Metro Pickleball Association",
-            email: "teams@metropickleball.com",
-            phone: "+1 (555) 123-4567",
-            bio: "Leading organizer of team-based pickleball tournaments in the metro area."
-          },
-          rules: [
-                       "Teams must arrive 60 minutes before first scheduled match"
-          ],
-          amenities: [
-           
-          ],
-          tournamentCategories: {
-            "team-open": {
-              id: "team-open",
-              name: "Team Open Division",
-              skillLevel: "Open",
-              tier: 2,
-              prizePool: 45000,
-              participants: 12,
-              maxParticipants: 16,
-              ageGroup: "18+",
-              registrations: [
-                { id: "team1", name: "Thunder Bolts", members: ["Mike Johnson", "Sarah Davis", "Alex Chen", "Maria Rodriguez"], status: "approved", rating: "4.2", seed: 1 },
-                { id: "team2", name: "Net Ninjas", members: ["David Kim", "Lisa Wong", "Carlos Martinez", "Emma Thompson"], status: "approved", rating: "4.0", seed: 2 },
-                { id: "team3", name: "Court Crushers", members: ["Ryan Lee", "Jessica Park", "Antonio Garcia", "Nicole Brown"], status: "approved", rating: "3.9", seed: 3 }
-              ],
-              brackets: {
-                "round-1": [
-                  { id: "teammatch1", team1: "Thunder Bolts", team2: "Net Ninjas", score: "TBD", winner: null, court: 1, time: "9:00 AM" },
-                  { id: "teammatch2", team1: "Court Crushers", team2: "TBD", score: "TBD", winner: null, court: 2, time: "9:00 AM" }
-                ],
-                "semifinals": [
-                  { id: "teammatch3", team1: "TBD", team2: "TBD", score: "TBD", winner: null, court: 1, time: "2:00 PM" }
-                ],
-                "finals": [
-                  { id: "teammatch4", team1: "TBD", team2: "TBD", score: "TBD", winner: null, court: 1, time: "5:00 PM" }
-                ]
-              }
-            },
-            "team-intermediate": {
-              id: "team-intermediate",
-              name: "Team Intermediate Division",
-              skillLevel: "Intermediate",
-              prizePool: 30000,
-              participants: 6,
-              maxParticipants: 12,
-              ageGroup: "18+",
-              registrations: [
-                { id: "team4", name: "Paddle Power", members: ["John Smith", "Kate Johnson", "Mark Davis", "Nina Patel"], status: "approved", rating: "3.8", seed: 1 },
-                { id: "team5", name: "Spin Masters", members: ["Carlos Ruiz", "Jennifer Lee", "Ryan Clark", "Sophia Wang"], status: "approved", rating: "3.6", seed: 2 }
-              ],
-              brackets: {
-                "round-1": [
-                  { id: "intteammatch1", team1: "Paddle Power", team2: "Spin Masters", score: "TBD", winner: null, court: 3, time: "10:00 AM" }
-                ],
-                "finals": [
-                  { id: "intteammatch2", team1: "TBD", team2: "TBD", score: "TBD", winner: null, court: 3, time: "3:00 PM" }
-                ]
-              }
-            }
-          },
-          events: [
-            {
-              id: "teamevent1",
-              title: "Team Registration & Check-in",
-              description: "All team members must check in together. Bring team roster and payment confirmation.",
-              date: "2024-06-20T08:00:00Z",
-              duration: "60 minutes",
-              location: "Main Lobby"
-            },
-            
-          ]
-        }
-      ];
+  return matchesSearch && matchesTier && matchesFeeRange;
+});
 
-      // Add status to each tournament based on dates and participant count
-      const tournamentsWithStatus = tournamentData.map(tournament => ({
-        ...tournament,
-        status: getTournamentStatus(
-          tournament.date, 
-          tournament.registrationDeadline,
-          tournament.currentParticipants,
-          tournament.maxParticipants
-        )
-      }));
-
-      setTournaments(tournamentsWithStatus);
-    } catch (error) {
-      console.error('Failed to fetch tournaments:', error);
-      setError('Failed to load tournaments. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     fetchTournaments();
@@ -5140,55 +3395,34 @@ function Tournament() {
     }
   }, [location.state]);
 
-  // Auto-populate primary player information when user is authenticated
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      // Create enhanced user data with pickleball-specific information
-      const enhancedUser = {
-        pplId: 'PPL999', // Dummy PPLID for current user
-        name: user.name || `${user.firstName} ${user.lastName}` || '',
-        gender: 'male', // Default - in real app this would come from user profile
-        age: user.age || 25, // Use user's actual age, fallback to 25
-        duprRatings: {
-          singles: '4.2',
-          doubles: '4.0'
-        }
-      };
-
-      setRegistrationForm(prev => ({
-        ...prev,
-        primaryPlayer: enhancedUser
-      }));
-    } else {
-      // Reset to empty when not authenticated
-      setRegistrationForm(prev => ({
-        ...prev,
-        primaryPlayer: {
-          pplId: '',
-          name: '',
-          gender: 'male',
-          age: '',
-          duprRatings: {
-            singles: '',
-            doubles: ''
-          }
-        }
-      }));
-    }
-  }, [isAuthenticated, user]);
+  
+useEffect(() => {
+  const params = new URLSearchParams(location.search);
+  if (params.get("showRegistration") === "true") {
+    setShowRegistrationForm(true);
+  }
+}, [location.search]);
 
   // Handle tournament card click to show detailed view
-  const handleTournamentClick = (tournament) => {
-    setSelectedTournament(tournament);
-    setShowDetailedView(true);
-    // Optionally expand first category by default
-    if (tournament.tournamentCategories) {
-      const firstCategory = Object.keys(tournament.tournamentCategories)[0];
-      if (firstCategory) {
-        setExpandedCategories({ [firstCategory]: true });
-      }
+  const handleRegisterClick = (tournament) => {
+  // 1️⃣ Set the selected tournament
+  setSelectedTournament(tournament);
+
+  // 2️⃣ Show tournament details
+  setShowDetailedView(true);
+
+  // 3️⃣ Expand the first category by default (optional)
+  if (tournament.tournamentCategories) {
+    const firstCategory = Object.keys(tournament.tournamentCategories)[0];
+    if (firstCategory) {
+      setExpandedCategories({ [firstCategory]: true });
     }
-  };
+  }
+
+  // 4️⃣ Open registration form/modal
+  setShowRegistrationForm(true); // <-- your registration form state
+};
+
 
   // Handle closing detailed view
   const handleCloseDetailedView = () => {
@@ -5231,111 +3465,81 @@ function Tournament() {
    * Handles tournament registration
    * @param {string} tournamentId - Tournament identifier
    */
-  const handleRegister = async (tournamentId) => {
-    // Wait for auth loading to complete
-    if (authLoading) {
-      return;
-    }
-    
-    // Check auth state
-    if (!isAuthenticated) {
-      setShowAuthModal(true);
-      return;
-    }
+const handleRegister = async (tournamentId) => {
+  // Wait for auth loading to complete
+  if (authLoading) return;
 
-    // Find the tournament - check both tournaments array and selectedTournament
-    let tournament = tournaments.find(t => t.id === tournamentId);
-    
-    // If not found in tournaments array, check if it's the currently selected tournament
-    if (!tournament && selectedTournament && selectedTournament.id === tournamentId) {
-      tournament = selectedTournament;
-    }
-    
-    if (tournament) {
-      setRegistrationTournament(tournament);
-      setShowRegistrationModal(true);
-      // Reset form but preserve primary player information if user is authenticated
-      setRegistrationForm(prev => {
-        const primaryPlayerInfo = isAuthenticated && user ? {
-          pplId: 'PPL999',
-          name: user.name || `${user.firstName} ${user.lastName}` || '',
-          gender: user.gender || 'male', // Use user's actual gender, fallback to 'male'
-          age: user.age || 25, // Use user's actual age, fallback to 25
-          duprRatings: {
-            singles: '4.2',
-            doubles: '4.0'
-          }
-        } : {
-          pplId: '',
-          name: '',
-          gender: 'male', // Default for non-authenticated users
-          age: '', // Empty for non-authenticated users
-          duprRatings: {
-            singles: '',
-            doubles: ''
-          }
-        };
+  // Check auth state
+  if (!isAuthenticated) {
+    setShowAuthModal(true);
+    return;
+  }
 
-        // Auto-select the first available category for the user's gender
-        const userGender = primaryPlayerInfo.gender;
-        
-        // Filter categories based on user gender
-        const allCategories = Object.values(tournament?.tournamentCategories || {});
-        const availableCategories = allCategories
-          .filter(category => {
-            return isCategoryAllowedForGender(category.name, userGender);
-          });
-            
-        const autoSelectedCategory = '';
+  // Find the tournament
+  let tournament = tournaments.find(t => t.id === tournamentId);
+  if (!tournament && selectedTournament && selectedTournament.id === tournamentId) {
+    tournament = selectedTournament;
+  }
 
-        return {
-          category: autoSelectedCategory,
-          primaryPlayer: primaryPlayerInfo,
-          partner: {
-            pplId: '',
-            name: '',
-            gender: ''
-          },
-          teamMembers: [
-            { pplId: '', name: '', gender: 'male', required: true, label: 'Male Player 2' },
-            { pplId: '', name: '', gender: 'female', required: true, label: 'Female Player 1' },
-            { pplId: '', name: '', gender: 'female', required: true, label: 'Female Player 2' },
-            { pplId: '', name: '', gender: 'male', required: false, label: 'Optional Player 1' },
-            { pplId: '', name: '', gender: 'female', required: false, label: 'Optional Player 2' }
-          ],
-          name: '',
-          email: '',
-          contactNumber: '',
-          proofOfPayment: null
-        };
-      });
-    }
-  };
+  if (tournament) {
+    setRegistrationTournament(tournament);
+    setShowRegistrationModal(true);
+
+    // Reset form with primary player info from user
+    setRegistrationForm({
+      category: '',
+      primaryPlayer: {
+        pplId: user.pplId || 'PPL999',
+        name: user.name || `${user.firstName} ${user.lastName}` || '',
+        gender: user.gender || 'male',
+        age: user.birthDate ? new Date().getFullYear() - new Date(user.birthDate).getFullYear() : 25,
+        duprId: user.duprId || '',
+      },
+      partner: { pplId: '', name: '', gender: '' },
+      teamMembers: [
+        { pplId: '', name: '', gender: 'male', required: true, label: 'Male Player 2' },
+        { pplId: '', name: '', gender: 'female', required: true, label: 'Female Player 1' },
+        { pplId: '', name: '', gender: 'female', required: true, label: 'Female Player 2' },
+        { pplId: '', name: '', gender: 'male', required: false, label: 'Optional Player 1' },
+        { pplId: '', name: '', gender: 'female', required: false, label: 'Optional Player 2' }
+      ],
+      name: user.name || '',
+      email: user.email || '',
+      contactNumber: user.contactNumber || '',
+      proofOfPayment: null,
+      status: 'pending'
+    });
+  }
+};
 
   /**
    * Handle viewing tournament registration form (read-only preview for profile)
    * @param {string} tournamentId - Tournament identifier
    */
-  const handleViewForm = (tournamentId) => {
-    // Find the tournament - check both tournaments array and selectedTournament
-    let tournament = tournaments.find(t => t.id === tournamentId);
-    
-    // If not found in tournaments array, check if it's the currently selected tournament
-    if (!tournament && selectedTournament && selectedTournament.id === tournamentId) {
-      tournament = selectedTournament;
-    }
-    
-    if (tournament) {
-      setViewFormTournament(tournament);
-      setShowViewFormModal(true);
-    }
-  };
+  const handleViewForm = async (tournamentId) => {
+  try {
+    const res = await axios.get(`/api/tournaments/${tournamentId}`);
+    setViewFormTournament(res.data); // This is the actual tournament from backend
+    setShowViewFormModal(true);
+  } catch (err) {
+    console.error(err);
+    showNotification("Failed to load tournament form", "error");
+  }
+};
+
+
 
   // Close view form modal
   const closeViewFormModal = () => {
     setShowViewFormModal(false);
     setViewFormTournament(null);
   };
+// Inside your Tournament.jsx component
+const handleTournamentClick = (tournament) => {
+  setSelectedTournament(tournament);       // Set the clicked tournament
+  setShowDetailedView(true);               // Open tournament details view
+  setExpandedCategories({});               // Optional: collapse all categories initially
+};
 
   // Registration form handlers
   const handleRegistrationFormChange = (field, value) => {
@@ -5960,35 +4164,37 @@ function Tournament() {
 
   // Handle player selection from modal
   const handleSelectPlayer = (player) => {
+  setRegistrationForm(prev => {
+    const updatedForm = { ...prev };
+
     if (playerSelectionType === 'partner') {
-      setRegistrationForm(prev => ({
-        ...prev,
-        partner: {
-          pplId: player.pplId,
-          name: player.name,
-          gender: player.gender,
-          duprRatings: player.duprRatings,
-          age: player.age
-        }
-      }));
-    } else if (playerSelectionType.startsWith('team-')) {
-      const index = parseInt(playerSelectionType.split('-')[1]);
-      setRegistrationForm(prev => ({
-        ...prev,
-        teamMembers: prev.teamMembers.map((member, i) => 
-          i === index ? {
-            ...member,
-            pplId: player.pplId,
-            name: player.name,
-            gender: player.gender,
-            duprRatings: player.duprRatings,
-            age: player.age
-          } : member
-        )
-      }));
+      updatedForm.partner = {
+        pplId: player.pplId,
+        duprId: player.duprId,
+        name: player.name,
+        gender: player.gender,
+        age: player.age,
+        duprRatings: player.duprRatings || {}
+      };
+    } else if (typeof playerSelectionType === 'number') {
+      // For team members
+      updatedForm.teamMembers[playerSelectionType] = {
+        pplId: player.pplId,
+        duprId: player.duprId,
+        name: player.name,
+        gender: player.gender,
+        age: player.age,
+        duprRatings: player.duprRatings || {},
+        required: updatedForm.teamMembers[playerSelectionType]?.required || false,
+        label: updatedForm.teamMembers[playerSelectionType]?.label || ''
+      };
     }
-    setShowPlayerSelectionModal(false);
-  };
+
+    return updatedForm;
+  });
+
+  setShowPlayerSelectionModal(false); // Close modal after selection
+};
 
   // Filter players based on category and selection type
   const getFilteredPlayers = () => {
@@ -6048,8 +4254,8 @@ function Tournament() {
     
     return (
       <PageContainer>
-        <TournamentDetailContent>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <tailContent>
+          <div style={{ display: 'flex', justifyContent: 'spaceTournamentDe-between', alignItems: 'center', marginBottom: '32px' }}>
             <BackButton onClick={handleCloseDetailedView}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
@@ -6057,23 +4263,61 @@ function Tournament() {
               {location.state?.fromProfile ? 'Back to Profile' : 'Back to Tournaments'}
             </BackButton>
             
-            {/* Show edit button if in host view or if user is authenticated and is the tournament organizer */}
-            {(isHostView || (isAuthenticated && user?.name === selectedTournament.organizer)) && (
-              <EditTournamentButton onClick={() => navigate('/host-tournament', { state: { editTournament: selectedTournament } })}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Edit Tournament
-              </EditTournamentButton>
-            )}
+           {isAuthenticated && user?.role === "clubadmin" && user?._id === selectedTournament.createdBy && (
+  <>
+    {/* Edit button */}
+    <EditTournamentButton
+      onClick={() =>
+        navigate("/host-tournament", {
+          state: { editTournament: selectedTournament },
+        })
+      }
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path
+          d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      Edit Tournament
+    </EditTournamentButton>
+
+{/* Delete button (only if more than 7 days before tournament date) */}
+{new Date(selectedTournament.date) - new Date() > 7 * 24 * 60 * 60 * 1000 && (
+  <DeleteTournamentButton
+    onClick={() => handleDeleteTournament(selectedTournament._id)}
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 6h18" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 11v6M14 11v6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+    Delete Tournament
+  </DeleteTournamentButton>
+)}
+  </>
+)}
+
           </div>
 
           <TournamentDetailHeader>
             <TournamentDetailBanner>
-              {selectedTournament.bannerUrl && (
-                <img src={selectedTournament.bannerUrl} alt={selectedTournament.name} />
-              )}
+             {selectedTournament.tournamentPicture ? (
+    <img 
+      src={`http://localhost:5000${selectedTournament.tournamentPicture}`} 
+      alt={selectedTournament.tournamentName} 
+      style={{ width: "100%", objectFit: "cover" }}
+    />
+  ) : (
+    <div style={{padding: "40px", textAlign: "center", color: "#888"}}>No Image</div>
+  )}
             </TournamentDetailBanner>
             <TournamentDetailStatusBadge $status={selectedTournament.status}>
               {selectedTournament.status}
@@ -6082,33 +4326,9 @@ function Tournament() {
 
           <TournamentDetailBody>
             <TournamentDetailLeft>
-                {/* 
-                  Database Schema Reference:
-                  Tournament {
-                    id: string,
-                    name: string,
-                    description: string,
-                    tournamentCategories: {
-                      [categoryId: string]: {
-                        id: string,
-                        name: string,
-                        skillLevel: "Beginner" | "Intermediate" | "Advanced" | "Open",
-                        tier?: 1 | 2 | 3,  // Required when skillLevel is "Open"
-                        prizePool: number,
-                        participants: number,
-                        maxParticipants: number,
-                        ageGroup: string,
-                        description: string,
-                        groupStage?: {...},
-                        knockoutStage?: {...}
-                      }
-                    }
-                  }
-                */}
                 <TournamentDetailTitle>
                   <h1>{selectedTournament.name}</h1>
                 </TournamentDetailTitle>
-
                 <TournamentDetailDescription>
                   {selectedTournament.description}
                 </TournamentDetailDescription>              {/* Tab Navigation */}
@@ -6164,47 +4384,78 @@ function Tournament() {
                           </DetailItemIcon>
                           <DetailItemContent>
                             <div>
-                              <DetailItemLabel>Registration Fee</DetailItemLabel>
-                            </div>
-                            <DetailItemValue className="price">₱{selectedTournament.entryFee.toLocaleString()}</DetailItemValue>
-                          </DetailItemContent>
-                        </TournamentDetailsItem>
+<DetailItemLabel>Registration Fee</DetailItemLabel>
+</div>
+<DetailItemValue className="price">
+  ₱
+  {selectedTournament.entryFeeMin != null
+    ? selectedTournament.entryFeeMin.toLocaleString()
+    : "0"}
+</DetailItemValue>
+</DetailItemContent>
+</TournamentDetailsItem>
 
+<TournamentDetailsItem>
+  <DetailItemIcon>
+    <CalendarIcon />
+  </DetailItemIcon>
+  <DetailItemContent>
+    <div>
+      <DetailItemLabel>Tournament Date</DetailItemLabel>
+    </div>
+    <DetailItemValue>
+      {(() => {
+        const dates = selectedTournament?.tournamentDates || [];
+        if (!dates.length) return "TBA";
 
+        // Sort dates ascending
+        const sortedDates = dates.map(d => new Date(d)).sort((a, b) => a - b);
 
-                        <TournamentDetailsItem>
-                          <DetailItemIcon>
-                            <CalendarIcon />
-                          </DetailItemIcon>
-                          <DetailItemContent>
-                            <div>
-                              <DetailItemLabel>Tournament Date</DetailItemLabel>
-                            </div>
-                            <DetailItemValue>
-                              {(() => {
-                                const start = new Date(selectedTournament.date);
-                                const end = new Date(selectedTournament.endDate);
-                                
-                                if (start.toDateString() === end.toDateString()) {
-                                  return start.toLocaleDateString('en-US', { 
-                                    year: 'numeric', 
-                                    month: 'long', 
-                                    day: 'numeric' 
-                                  });
-                                } else {
-                                  return `${start.toLocaleDateString('en-US', { 
-                                    month: 'long', 
-                                    day: 'numeric' 
-                                  })} - ${end.toLocaleDateString('en-US', { 
-                                    month: 'long', 
-                                    day: 'numeric', 
-                                    year: 'numeric' 
-                                  })}`;
-                                }
-                              })()}
-                            </DetailItemValue>
-                          </DetailItemContent>
-                        </TournamentDetailsItem>
+        const ranges = [];
+        let start = sortedDates[0];
+        let end = sortedDates[0];
+
+        for (let i = 1; i <= sortedDates.length; i++) {
+          const current = sortedDates[i];
+          const prev = sortedDates[i - 1];
+
+          if (
+            current &&
+            (current - prev) / (1000 * 60 * 60 * 24) === 1 // consecutive day
+          ) {
+            end = current;
+          } else {
+            ranges.push([start, end]);
+            start = current;
+            end = current;
+          }
+        }
+
+        const formatted = ranges
+          .map(([s, e]) => {
+            const sameMonth = s.getMonth() === e.getMonth();
+            if (sameMonth) {
+              return ` ${s.toLocaleDateString("en-US", {
+                month: "short",
+              })} ${s.getDate()}–${e.getDate()}`;
+            } else {
+              return ` ${s.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}–${e.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}`;
+            }
+          })
+          .join(" & ");
+
+        return `${formatted}, ${sortedDates[0].getFullYear()}`;
+      })()}
+    </DetailItemValue>
+  </DetailItemContent>
+</TournamentDetailsItem>
+
 
                         <TournamentDetailsItem>
                           <DetailItemIcon>
@@ -6239,24 +4490,27 @@ function Tournament() {
                               <DetailItemLabel>Skill Levels</DetailItemLabel>
                             </div>
                             <DetailItemValue>
-                              {selectedTournament.tournamentCategories ? (
-                                (() => {
-                                  // Get unique skill levels
-                                  const skillLevels = new Set();
-                                  Object.values(selectedTournament.tournamentCategories).forEach(category => {
-                                    if (category.skillLevel === 'Open') {
-                                      skillLevels.add(`Open - Tier ${category.tier || 1}`);
-                                    } else if (['Beginner', 'Intermediate', 'Advanced'].includes(category.skillLevel)) {
-                                      skillLevels.add(category.skillLevel);
-                                    }
-                                  });
-                                  
-                                  return Array.from(skillLevels).sort().join(', ');
-                                })()
-                              ) : (
-                                // Fallback for old data structure
-                                `${selectedTournament.tournamentType.charAt(0).toUpperCase() + selectedTournament.tournamentType.slice(1)}${selectedTournament.tournamentType === 'open' ? ` - Tier ${selectedTournament.tier}` : ''}`
-                              )}
+{selectedTournament?.tournamentCategories?.length > 0
+    ? (() => {
+        const skillLevels = new Set();
+        selectedTournament.tournamentCategories.forEach(category => {
+          const level = category.skillLevel?.toLowerCase();
+          if (!level) return;
+
+          if (level === 'open') {
+            skillLevels.add(`Open - Tier ${category.tier || 1}`);
+          } else if (['beginner', 'intermediate', 'advanced'].includes(level)) {
+            // capitalize first letter
+            skillLevels.add(category.skillLevel.charAt(0).toUpperCase() + category.skillLevel.slice(1));
+          }
+        });
+        return skillLevels.size > 0 ? Array.from(skillLevels).sort().join(', ') : 'Not specified';
+      })()
+    : selectedTournament?.tournamentType
+    ? `${selectedTournament.tournamentType.charAt(0).toUpperCase() + selectedTournament.tournamentType.slice(1)}${
+        selectedTournament.tournamentType.toLowerCase() === 'open' ? ` - Tier ${selectedTournament.tier || 1}` : ''
+      }`
+    : 'Not specified'}
                             </DetailItemValue>
                           </DetailItemContent>
                         </TournamentDetailsItem>
@@ -6364,32 +4618,45 @@ function Tournament() {
                                   }}>
                                     {(() => {
                                       // Extract division from name, removing skill level and age
-                                      let division = category.name;
+                                      let division = category?.name ?? "";
                                       
                                       // Remove age categories first (including at the end of strings)
-                                      const ageCategories = ['18+', '35+', '50+'];
-                                      ageCategories.forEach(age => {
-                                        // Remove age category anywhere in the string, including at the end
-                                        division = division.replace(new RegExp(`\\s*${age.replace('+', '\\+')}\\s*`, 'gi'), ' ');
-                                        // Also remove if it's at the very end
-                                        division = division.replace(new RegExp(`\\s*${age.replace('+', '\\+')}$`, 'gi'), '');
-                                      });
-                                      
-                                      // Remove skill level words from the name
-                                      const skillLevels = ['Beginner', 'Intermediate', 'Advanced', 'Open'];
-                                      skillLevels.forEach(skill => {
-                                        division = division.replace(new RegExp(`\\s*${skill}\\s*`, 'gi'), ' ');
-                                      });
-                                      
-                                      // Clean up extra spaces and get the division
-                                      division = division.replace(/\s+/g, ' ').trim();
-                                      
-                                      let skillLevel = category.skillLevel || '';
-                                      
-                                      // For Open categories, include tier information
-                                      if (skillLevel === 'Open' && category.tier) {
-                                        skillLevel = `Open Tier ${category.tier}`;
-                                      }
+    const ageCategories = ['18+', '35+', '50+'];
+
+if (typeof division === "string") {
+  ageCategories.forEach(age => {
+    // Remove age category anywhere in the string, including at the end
+    division = division.replace(
+      new RegExp(`\\s*${age.replace('+', '\\+')}\\s*`, 'gi'),
+      ' '
+    );
+    // Also remove if it's at the very end
+    division = division.replace(
+      new RegExp(`\\s*${age.replace('+', '\\+')}$`, 'gi'),
+      ''
+    );
+  });
+}
+// Always start division as a safe string
+
+
+// Remove skill level words only if not empty
+if (division) {
+  const skillLevels = ['Beginner', 'Intermediate', 'Advanced', 'Open'];
+  skillLevels.forEach(skill => {
+    division = division.replace(new RegExp(`\\s*${skill}\\s*`, 'gi'), ' ');
+  });
+
+  // Clean spaces
+  division = division.replace(/\s+/g, ' ').trim();
+}
+
+let skillLevel = category?.skillLevel ?? '';
+
+if (skillLevel === 'Open' && category?.tier) {
+  skillLevel = `Open Tier ${category.tier}`;
+}
+
                                       
                                       const age = category.ageGroup || '';
                                       
@@ -6479,62 +4746,78 @@ function Tournament() {
                       </div>
                     </TournamentDetailSection>
 
-                    <TournamentDetailSection>
-                      <TournamentDetailSectionTitle>
-                        <LocationIcon />
-                        Tournament Location & Map
-                      </TournamentDetailSectionTitle>
-                      
-                      <LocationCard>
-                        <LocationHeader>
+<TournamentDetailSection>
+  <TournamentDetailSectionTitle>
+    <LocationIcon />
+    Tournament Location & Map
+  </TournamentDetailSectionTitle>
 
-                          <LocationActions>
-                            <LocationButton 
-                              $primary 
-                              onClick={() => window.open(`https://maps.google.com/?q=${selectedTournament.latitude},${selectedTournament.longitude}`, '_blank')}
-                            >
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                              Get Directions
-                            </LocationButton>
-                            <LocationButton onClick={() => navigator.share?.({ 
-                              title: `Location: ${selectedTournament.location}`,
-                              text: selectedTournament.address,
-                              url: `https://maps.google.com/?q=${selectedTournament.latitude},${selectedTournament.longitude}` 
-                            })}>
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" strokeLinecap="round" strokeLinejoin="round" />
-                                <polyline points="15,3 21,3 21,9" strokeLinecap="round" strokeLinejoin="round" />
-                                <line x1="10" y1="14" x2="21" y2="3" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                              Share
-                            </LocationButton>
-                          </LocationActions>
-                        </LocationHeader>
-                        
-                        <LocationInfo>
-                          <div className="venue-name">{selectedTournament.location}</div>
-                          <div className="venue-address">{selectedTournament.address}</div>
-                          <div className="coordinates">
-                            Coordinates: {selectedTournament.latitude}, {selectedTournament.longitude}
-                          </div>
-                        </LocationInfo>
-                        
-                        <MapContainer 
-                          onClick={() => window.open(`https://maps.google.com/?q=${selectedTournament.latitude},${selectedTournament.longitude}`, '_blank')}
-                        >
-                          <div className="map-text">
-                            <div className="main-text">Interactive Map View</div>
-                            <div className="sub-text">Click to open in Google Maps</div>
-                          </div>
-                        </MapContainer>
-                      </LocationCard>
-                      
+  <LocationCard>
+    <LocationHeader>
+      {/* <LocationActions>
+        <LocationButton 
+          $primary 
+          onClick={() => window.open(`https://maps.google.com/?q=${selectedTournament.latitude},${selectedTournament.longitude}`, '_blank')}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Get Directions
+        </LocationButton>
+        <LocationButton onClick={() => navigator.share?.({ 
+          title: `Location: ${selectedTournament.location}`,
+          text: selectedTournament.address,
+          url: `https://maps.google.com/?q=${selectedTournament.latitude},${selectedTournament.longitude}` 
+        })}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" strokeLinecap="round" strokeLinejoin="round" />
+            <polyline points="15,3 21,3 21,9" strokeLinecap="round" strokeLinejoin="round" />
+            <line x1="10" y1="14" x2="21" y2="3" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Share
+        </LocationButton>
+      </LocationActions>*/}
+    </LocationHeader>
 
-                    </TournamentDetailSection>
-                  </>
+
+    {/* Embedded map */}
+<MapContainer
+  onClick={() =>
+    window.open(
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        `${selectedTournament.venueName}, ${selectedTournament.venueAddress}, ${selectedTournament.venueCity}, ${selectedTournament.venueState} ${selectedTournament.venueZip}`
+      )}`,
+      "_blank"
+    )
+  }
+>
+  <iframe
+    width="100%"
+    height="400"
+    style={{ border: 0 }}
+    loading="lazy"
+    allowFullScreen
+    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyDTLYs6fgEmKxspHDNzTrKNwQiv5EI4AU8&q=${encodeURIComponent(
+      `${selectedTournament.venueName}, ${selectedTournament.venueAddress}, ${selectedTournament.venueCity}, ${selectedTournament.venueState} ${selectedTournament.venueZip}`
+    )}`}
+  ></iframe>
+
+  <div className="map-text">
+    <div className="main-text">Interactive Map View</div>
+    <div className="sub-text">Click to open in Google Maps</div>
+    <div className="venue-details">
+      <p>{selectedTournament.venueName}</p>
+      <p>{selectedTournament.venueAddress}</p>
+      <p>
+        {selectedTournament.venueCity}, {selectedTournament.venueState} {selectedTournament.venueZip}
+      </p>
+    </div>
+  </div>
+</MapContainer>
+  </LocationCard>
+</TournamentDetailSection>
+</>
                 )}
 
                 {activeTab === 'events' && (
@@ -6543,7 +4826,6 @@ function Tournament() {
                       <CalendarIcon />
                       Tournament Events Schedule
                     </TournamentDetailSectionTitle>
-                    
                     <div style={{
                       background: 'white',
                       border: '1px solid #e2e8f0',
@@ -6555,15 +4837,11 @@ function Tournament() {
                         lineHeight: '1.6',
                         color: '#334155',
                         whiteSpace: 'pre-wrap'
-                      }}>
-                        {selectedTournament.eventsText || 
-                         (selectedTournament.events && selectedTournament.events.length > 0 
-                           ? selectedTournament.events.map(event => 
-                               `${event.title}\n${event.description}${event.location ? `\nLocation: ${event.location}` : ''}${event.duration ? `\nDuration: ${event.duration}` : ''}`
-                             ).join('\n\n')
-                           : 'Day 1 - 9:00 AM\nRegistration & Check-in\nAll participants must check in and complete registration process. Bring valid ID and proof of payment.\n\nDay 1 - 10:00 AM\nTournament Briefing\nMandatory rules briefing and player introductions. Tournament format explanation.\n\nDay 1 - 10:30 AM\nOpening Ceremony\nWelcome address, national anthem, and ceremonial first serve.\n\nDay 1 - 11:00 AM\nRound 1 Matches\nFirst round matches for all divisions begin. Players should be ready 15 minutes early.')}
-                      </div>
-                    </div>
+                      }}
+  dangerouslySetInnerHTML={{ __html: selectedTournament.events || 'No events available.' }}
+/>
+    </div>
+                    
                   </TournamentDetailSection>
                 )}
 
@@ -6576,285 +4854,1556 @@ function Tournament() {
                       Tournament Brackets
                     </TournamentDetailSectionTitle>
 
-                    {/* Display all categories as expandable cards */}
-                    {selectedTournament.tournamentCategories ? (
-                      <div>
-                        {Object.values(selectedTournament.tournamentCategories).map((category) => (
-                          <CategoryCard key={category.id}>
-                            <CategoryHeader 
-                              $expanded={expandedCategories[category.id]}
-                              onClick={() => toggleCategoryExpansion(category.id)}
-                            >
-                              <CategoryHeaderContent>
-                                <CategoryHeaderInfo>
-                                  <div className="category-title" style={{
-                                    fontSize: '1.1rem',
-                                    fontWeight: '600',
-                                    color: '#1e293b',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
-                                  }}>
-                                    <span>{(() => {
-                                      // Extract division from name, removing skill level and age
-                                      let division = category.name;
-                                      
-                                      // Remove age categories first (including at the end of strings)
-                                      const ageCategories = ['18+', '35+', '50+'];
-                                      ageCategories.forEach(age => {
-                                        // Remove age category anywhere in the string, including at the end
-                                        division = division.replace(new RegExp(`\\s*${age.replace('+', '\\+')}\\s*`, 'gi'), ' ');
-                                        // Also remove if it's at the very end
-                                        division = division.replace(new RegExp(`\\s*${age.replace('+', '\\+')}$`, 'gi'), '');
-                                      });
-                                      
-                                      // Remove skill level words from the name
-                                      const skillLevels = ['Beginner', 'Intermediate', 'Advanced', 'Open'];
-                                      skillLevels.forEach(skill => {
-                                        division = division.replace(new RegExp(`\\s*${skill}\\s*`, 'gi'), ' ');
-                                      });
-                                      
-                                      // Clean up extra spaces and get the division
-                                      return division.replace(/\s+/g, ' ').trim();
-                                    })()}</span>
-                                    <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
-                                    <span style={{ color: '#059669' }}>
-                                      {category.skillLevel === 'Open' && category.tier 
-                                        ? `Open Tier ${category.tier}` 
-                                        : category.skillLevel}
-                                    </span>
-                                    <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
-                                    <span>{category.ageGroup}</span>
-                                  </div>
-                                </CategoryHeaderInfo>
-                                <CategoryExpandIcon $expanded={expandedCategories[category.id]}>
-                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
-                                  </svg>
-                                </CategoryExpandIcon>
-                              </CategoryHeaderContent>
-                            </CategoryHeader>
-                            
-                            {expandedCategories[category.id] && (
-                              <CategoryBracketContent $expanded={expandedCategories[category.id]}>
-                                {/* Group Stage Section - Always show if groupStage exists */}
-                                {category.groupStage && (
+{/* Display all categories as expandable cards */}
+{selectedTournament.tournamentCategories ? (
+  <div>
+    {selectedTournament.tournamentCategories
+      .filter(category => selectedPlayerCategory === 'all' || category.division === selectedPlayerCategory)
+      .map((category) => (
+        <CategoryCard key={category.division}>
+          <CategoryHeader 
+            $expanded={!!expandedCategories[category.division]}
+            onClick={() => toggleCategoryExpansion(category.division)}
+          >
+            <CategoryHeaderContent>
+              <CategoryHeaderInfo>
+                <div
+                  className="category-title"
+                  style={{
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    color: '#1e293b',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <span>{(() => {
+                    let division = category.division;
+
+                    // Remove age categories
+                    const ageCategories = ['18+', '35+', '50+'];
+                    ageCategories.forEach(age => {
+                      division = division.replace(new RegExp(`\\s*${age.replace('+', '\\+')}\\s*`, 'gi'), ' ');
+                    });
+
+                    // Remove skill level words
+                    const skillLevels = ['Beginner', 'Intermediate', 'Advanced', 'Open'];
+                    skillLevels.forEach(skill => {
+                      division = division.replace(new RegExp(`\\s*${skill}\\s*`, 'gi'), ' ');
+                    });
+
+                    return division.replace(/\s+/g, ' ').trim();
+                  })()}</span>
+                  <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
+                  <span style={{ color: '#059669' }}>
+                    {category.skillLevel === 'Open' && category.tier
+                      ? `Open Tier ${category.tier}`
+                      : category.skillLevel}
+                  </span>
+                  <span style={{ color: '#64748b', fontSize: '1rem' }}>|</span>
+                  <span>{category.ageCategory}</span>
+                </div>
+              </CategoryHeaderInfo>
+              <CategoryExpandIcon $expanded={!!expandedCategories[category.division]}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </CategoryExpandIcon>
+            </CategoryHeaderContent>
+          </CategoryHeader>
+          
+          {expandedCategories[category.division] && (
+            <CategoryBracketContent $expanded={expandedCategories[category.division]}>
+              {category.groupStage && (
                                   <GroupStageSection>
-                                    <div className="section-title">Group Stage Results</div>
-                                    <div className="groups-grid">
-                                      {Object.entries(category.groupStage).map(([bracketKey, players]) => (
-                                        <GroupCard key={bracketKey}>
-                                          <GroupHeader>Bracket {bracketKey.slice(-1).toUpperCase()}</GroupHeader>
-                                          <StandingsTable>
-                                            <div className="standings-header">
-                                              <div>Player</div>
-                                              <div>R.Wins</div>
-                                              <div>R.Loss</div>
-                                              <div>W.Pts</div>
-                                              <div>L.Pts</div>
-                                            </div>
-                                            {players.map((player) => (
-                                              <StandingsRow key={player.id} $qualified={player.position <= 2}>
-                                                <div className="player-info">
-                                                  <div className="position">{player.position}</div>
-                                                  <div className="player-name">{player.name}</div>
-                                                </div>
-                                                <div className="round-wins">{player.roundWins || player.wins || 0}</div>
-                                                <div className="round-losses">{player.roundLosses || 0}</div>
-                                                <div className="win-points">{player.winPoints || 0}</div>
-                                                <div className="loss-points">{player.lossPoints || 0}</div>
-                                              </StandingsRow>
-                                            ))}
-                                          </StandingsTable>
-                                        </GroupCard>
-                                      ))}
+                                    {/* Tournament Format Selection */}
+                                    <div style={{
+                                      display: 'flex',
+                                      gap: '12px',
+                                      marginBottom: '0px',
+                                      justifyContent: 'center',
+                                      padding: '16px',
+                                      borderRadius: '12px',
+                                    }}>
+                                      <button
+                                        style={{
+                                          padding: '12px 24px',
+                                          backgroundColor: '#3b82f6',
+                                          color: 'white',
+                                          border: 'none',
+                                          borderRadius: '8px',
+                                          fontSize: '0.875rem',
+                                          fontWeight: '600',
+                                          cursor: 'pointer',
+                                          transition: 'all 0.2s ease',
+                                          boxShadow: '0 2px 4px rgba(59, 130, 246, 0.2)',
+                                          minWidth: '140px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          gap: '8px'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                          e.target.style.backgroundColor = '#2563eb';
+                                          e.target.style.transform = 'translateY(-1px)';
+                                          e.target.style.boxShadow = '0 4px 8px rgba(59, 130, 246, 0.3)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                          e.target.style.backgroundColor = '#3b82f6';
+                                          e.target.style.transform = 'translateY(0)';
+                                          e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.2)';
+                                        }}
+                                        onClick={() => {
+                                          console.log('Generate Round Robin for category:', category.name);
+                                          
+                                          // Always enable Round Robin and reset elimination when clicked
+                                          setRoundRobinCategories(prev => ({
+                                            ...prev,
+                                            [category.id]: true
+                                          }));
+                                          setEliminationCategories(prev => ({
+                                            ...prev,
+                                            [category.id]: false
+                                          }));
+                                          // Initialize available brackets with default A, B, C, D
+                                          setAvailableBrackets(prev => ({
+                                            ...prev,
+                                            [category.id]: ['A', 'B', 'C', 'D']
+                                          }));
+                                        }}
+                                      >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <circle cx="12" cy="12" r="10"/>
+                                          <polygon points="16.24,7.76 14.12,14.12 7.76,16.24 9.88,9.88"/>
+                                        </svg>
+                                        Round Robin
+                                      </button>
+                                      <button 
+                                        style={{ 
+                                          padding: '12px 24px', 
+                                          backgroundColor: '#f59e0b', 
+                                          color: 'white', 
+                                          border: 'none', 
+                                          borderRadius: '8px', 
+                                          fontSize: '0.875rem', 
+                                          fontWeight: '600', 
+                                          cursor: 'pointer', 
+                                          transition: 'all 0.2s ease', 
+                                          boxShadow: '0 2px 4px rgba(245, 158, 11, 0.2)', 
+                                          minWidth: '140px', 
+                                          display: 'flex', 
+                                          alignItems: 'center', 
+                                          justifyContent: 'center', 
+                                          gap: '8px' 
+                                        }} 
+                                        onMouseEnter={(e) => { 
+                                          e.target.style.backgroundColor = '#d97706'; 
+                                          e.target.style.transform = 'translateY(-1px)'; 
+                                          e.target.style.boxShadow = '0 4px 8px rgba(245, 158, 11, 0.3)'; 
+                                        }} 
+                                        onMouseLeave={(e) => { 
+                                          e.target.style.backgroundColor = '#f59e0b'; 
+                                          e.target.style.transform = 'translateY(0)'; 
+                                          e.target.style.boxShadow = '0 2px 4px rgba(245, 158, 11, 0.2)'; 
+                                        }} 
+                                        onClick={() => { 
+                                          console.log('Generate Elimination Draw for category:', category.name); 
+                                          
+                                          // Always enable Elimination and reset round robin when clicked
+                                          setEliminationCategories(prev => ({ 
+                                            ...prev, 
+                                            [category.id]: true 
+                                          })); 
+                                          setRoundRobinCategories(prev => ({ 
+                                            ...prev, 
+                                            [category.id]: false 
+                                          })); 
+                                        }} 
+                                      > 
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"> 
+                                          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/> 
+                                          <polyline points="7.5,4.21 12,6.81 16.5,4.21"/> 
+                                          <polyline points="7.5,19.79 7.5,14.6 3,12"/> 
+                                          <polyline points="21,12 16.5,14.6 16.5,19.79"/> 
+                                          <polyline points="3.27,6.96 12,12.01 20.73,6.96"/> 
+                                          <line x1="12" y1="22.08" x2="12" y2="12"/> 
+                                        </svg> 
+                                        Elimination Draw 
+                                      </button> 
                                     </div>
+
+                                    {/* Round Robin Bracket Buttons */}
+                                    {roundRobinCategories[category.id] && !eliminationCategories[category.id] && (
+                                      <div style={{
+                                        display: 'flex',
+                                        gap: '8px',
+                                        marginBottom: '16px',
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                      }}>
+                                                                                
+                                        {/* Bracket Buttons - Auto-determine 4 or 8 based on tournament logic */}
+                                        {(() => {
+                                          // Determine bracket count based on tournament size or other logic
+                                          // For now, defaulting to 4 brackets, but this can be dynamic
+                                          const bracketCount = 4; // This could be determined by player count, tournament settings, etc.
+                                          const brackets = bracketCount === 8 
+                                            ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+                                            : ['A', 'B', 'C', 'D'];
+                                          
+                                          return brackets.map((bracket) => (
+                                            <button
+                                              key={bracket}
+                                              style={{
+                                                padding: '8px 16px',
+                                                backgroundColor: '#3b82f6',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                fontSize: '0.875rem',
+                                                fontWeight: '600',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease',
+                                                minWidth: '80px'
+                                              }}
+                                              onMouseEnter={(e) => {
+                                                e.target.style.backgroundColor = '#2563eb';
+                                                e.target.style.transform = 'translateY(-1px)';
+                                              }}
+                                              onMouseLeave={(e) => {
+                                                e.target.style.backgroundColor = '#3b82f6';
+                                                e.target.style.transform = 'translateY(0)';
+                                              }}
+                                              onClick={() => {
+                                                console.log(`Generate Bracket ${bracket} for category:`, category.name);
+                                                setSelectedBrackets(prev => ({
+                                                  ...prev,
+                                                  [category.id]: bracket
+                                                }));
+                                              }}
+                                            >
+                                              Bracket {bracket}
+                                            </button>
+                                          ));
+                                        })()}
+                                      </div>
+                                    )}
+
+                                    {/* Round Robin Content - Show when Round Robin is selected */}
+                                    {roundRobinCategories[category.id] && (
+                                      <div style={{
+                                        marginTop: '24px',
+                                        padding: '20px',
+                                        background: '#f8fafc',
+                                        
+                                      }}>
+                                        <h4 style={{
+                                          color: '#1e293b',
+                                          marginBottom: '16px',
+                                          fontSize: '1.1rem',
+                                          fontWeight: '300',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '8px'
+                                        }}>
+                                          
+                                          
+                                        </h4>
+                                        
+                                        {(() => {
+                                          // Mock data for round robin groups
+                                          const roundRobinGroups = {
+                                            A: [
+                                              { name: 'John Doe', wins: 3, losses: 0, pointsFor: 44, pointsAgainst: 28 },
+                                              { name: 'Carlos Rodriguez', wins: 2, losses: 1, pointsFor: 28, pointsAgainst: 35 },
+                                              { name: 'Michael Johnson', wins: 1, losses: 2, pointsFor: 35, pointsAgainst: 37 },
+                                              { name: 'Luis Chen', wins: 0, losses: 3, pointsFor: 25, pointsAgainst: 44 }
+                                            ],
+                                            B: [
+                                              { name: 'Jason Park', wins: 3, losses: 0, pointsFor: 37, pointsAgainst: 31 },
+                                              { name: 'Anthony Chen', wins: 2, losses: 1, pointsFor: 31, pointsAgainst: 32 },
+                                              { name: 'Patrick Lim', wins: 1, losses: 2, pointsFor: 32, pointsAgainst: 29 },
+                                              { name: 'Jonathan Wu', wins: 0, losses: 3, pointsFor: 29, pointsAgainst: 37 }
+                                            ],
+                                            C: [
+                                              { name: 'Carmen Lopez', wins: 2, losses: 1, pointsFor: 29, pointsAgainst: 44 },
+                                              { name: 'Elena Cruz', wins: 3, losses: 0, pointsFor: 44, pointsAgainst: 31 },
+                                              { name: 'Rachel Gonzalez', wins: 1, losses: 2, pointsFor: 31, pointsAgainst: 37 },
+                                              { name: 'Andrea Martinez', wins: 0, losses: 3, pointsFor: 37, pointsAgainst: 25 }
+                                            ],
+                                            D: [
+                                              { name: 'Michelle Yang', wins: 1, losses: 2, pointsFor: 25, pointsAgainst: 35 },
+                                              { name: 'Maria Santos', wins: 2, losses: 1, pointsFor: 35, pointsAgainst: 32 },
+                                              { name: 'Victoria Huang', wins: 0, losses: 3, pointsFor: 19, pointsAgainst: 36 },
+                                              { name: 'Sarah Kim', wins: 3, losses: 0, pointsFor: 36, pointsAgainst: 19 }
+                                            ]
+                                          };
+
+                                          const roundRobinMatches = {
+                                            A: [
+                                              { id: 1, player1: 'John Doe', player2: 'Carlos Rodriguez', time: '09:00', court: '1', date: '08/22/2024', score1: 11, score2: 8 },
+                                              { id: 2, player1: 'Michael Johnson', player2: 'Luis Chen', time: '09:30', court: '2', date: '08/22/2024', score1: 11, score2: 6 },
+                                              { id: 3, player1: 'John Doe', player2: 'Michael Johnson', time: '10:00', court: '1', date: '08/22/2024', score1: 11, score2: 9 },
+                                              { id: 4, player1: 'Carlos Rodriguez', player2: 'Luis Chen', time: '10:30', court: '2', date: '08/22/2024', score1: 11, score2: 7 }
+                                            ],
+                                            B: [
+                                              { id: 5, player1: 'Jason Park', player2: 'Anthony Chen', time: '11:00', court: '1', date: '08/22/2024', score1: 11, score2: 8 },
+                                              { id: 6, player1: 'Patrick Lim', player2: 'Jonathan Wu', time: '11:30', court: '2', date: '08/22/2024', score1: 11, score2: 9 }
+                                            ]
+                                          };
+
+                                          return (
+                                            <>
+                                              {/* Bracket Cards - Only show selected bracket */}
+                                              {selectedBrackets[category.id] && roundRobinGroups[selectedBrackets[category.id]] ? (
+                                                (() => {
+                                                    const groupName = selectedBrackets[category.id];
+                                                    const players = roundRobinGroups[groupName];
+                                                    
+                                                    return (
+                                                      <>
+                                                        {/* Player Standings Container */}
+                                                        <div style={{
+                                                          marginBottom: '24px',
+                                                          padding: '20px',
+                                                          background: 'white',
+                                                          borderRadius: '12px',
+                                                          border: '1px solid #e2e8f0',
+                                                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+                                                        }}>
+                                                          <h5 style={{
+                                                            color: '#1e293b',
+                                                            fontSize: '1.1rem',
+                                                            fontWeight: '600',
+                                                            marginBottom: '16px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '8px'
+                                                          }}>
+                                                            
+                                                            Bracket {selectedBrackets[category.id]}
+                                                          </h5>
+                                                          <StandingsTable>
+                                                            <div className="standings-header">
+                                                              <div>Rank</div>
+                                                              <div>Player</div>
+                                                              <div>Matches<br/>(W-L)</div>
+                                                              <div>Points<br/>(W-L)</div>
+                                                            </div>
+                                                            {players
+                                                              .sort((a, b) => {
+                                                                if (b.wins !== a.wins) return b.wins - a.wins;
+                                                                return (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst);
+                                                              })
+                                                              .map((player, index) => (
+                                                              <StandingsRow key={player.name}>
+                                                                <div className="rank-number">{index + 1}</div>
+                                                                <div className="player-info">
+                                                                  <div className="player-name">
+                                                                    <div>
+                                                                      {player.name.includes('/') ? (
+                                                                        player.name.split('/').map((name, nameIndex) => (
+                                                                          <div key={nameIndex}>
+                                                                            {nameIndex > 0 }{name.trim()}
+                                                                          </div>
+                                                                        ))
+                                                                      ) : (
+                                                                        player.name
+                                                                      )}
+                                                                    </div>
+                                                                  </div>
+                                                                </div>
+                                                                <div className="matches-record">
+                                                                  {player.wins}-{player.losses}
+                                                                </div>
+                                                                <div className="points-record">
+                                                                  {player.pointsFor}-{player.pointsAgainst}
+                                                                </div>
+                                                              </StandingsRow>
+                                                            ))}
+                                                          </StandingsTable>
+                                                        </div>
+
+                                                        {/* Match Schedule Container */}
+                                                        <div style={{
+                                                          padding: '20px',
+                                                          background: 'white',
+                                                          borderRadius: '12px',
+                                                          border: '1px solid #e2e8f0',
+                                                          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+                                                        }}>
+                                                          <h6 style={{
+                                                            color: '#1e293b',
+                                                            fontSize: '1rem',
+                                                            fontWeight: '600',
+                                                            marginBottom: '12px',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '8px'
+                                                          }}>
+                                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                              <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                                              <line x1="16" x2="16" y1="2" y2="6"/>
+                                                              <line x1="8" x2="8" y1="2" y2="6"/>
+                                                              <line x1="3" x2="21" y1="10" y2="10"/>
+                                                            </svg>
+                                                            Match Schedule
+                                                          </h6>
+                                                          <MatchTable>
+                                                            <div className="match-schedule-header">
+                                                              <div>Match</div>
+                                                              <div>Player 1</div>
+                                                              <div>VS</div>
+                                                              <div>Player 2</div>
+                                                              <div>Time</div>
+                                                              <div>Court</div>
+                                                              <div>Date</div>
+                                                              <div>G1</div>
+                                                              <div>G2</div>
+                                                              <div>G3</div>
+                                                              <div>Standing</div>
+                                                            </div>
+                                                            {(roundRobinMatches[groupName] || []).map((match, index) => (
+                                                              <MatchRow key={match.id}>
+                                                                <div className="match-number">#{match.id}</div>
+                                                                <div className="player-name">{match.player1}</div>
+                                                                <div className="vs-text">VS</div>
+                                                                <div className="player-name">{match.player2}</div>
+                                                                <div className="match-time">{match.time}</div>
+                                                                <div className="court-number">{match.court}</div>
+                                                                <div className="match-date">{match.date}</div>
+                                                                <div className="game-score">{match.g1 || '-'}</div>
+                                                                <div className="game-score">{match.g2 || '-'}</div>
+                                                                <div className="game-score">{match.g3 || '-'}</div>
+                                                                <div className="match-standing">{match.standing || 'TBD'}</div>
+                                                              </MatchRow>
+                                                            ))}
+                                                            {(!roundRobinMatches[groupName] || roundRobinMatches[groupName].length === 0) && (
+                                                              <div style={{
+                                                                padding: '20px',
+                                                                textAlign: 'center',
+                                                                color: '#64748b',
+                                                                background: 'white'
+                                                              }}>
+                                                                No matches scheduled
+                                                              </div>
+                                                            )}
+                                                          </MatchTable>
+                                                        </div>
+                                                      </>
+                                                    );
+                                                  })()
+                                              ) : (
+                                                <div style={{
+                                                  padding: '40px',
+                                                  textAlign: 'center',
+                                                  color: '#64748b',
+                                                  background: 'white',
+                                                  borderRadius: '8px',
+                                                  border: '1px solid #e2e8f0'
+                                                }}>
+                                                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ margin: '0 auto 16px', display: 'block', opacity: 0.5 }}>
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <polygon points="16.24,7.76 14.12,14.12 7.76,16.24 9.88,9.88"/>
+                                                  </svg>
+                                                  <h4 style={{ margin: '0 0 8px', color: '#374151', fontSize: '1.1rem', fontWeight: '600' }}>Select a Bracket</h4>
+                                                  <p style={{ margin: 0, fontSize: '0.9rem' }}>Click on a bracket button above to view the standings and match schedule.</p>
+                                                </div>
+                                              )}
+                                            </>
+                                          );
+                                        })()}
+                                      </div>
+                                    )}
+
+                                    {/* Elimination Draw Content - Show when Elimination Draw is selected */}
+                                    {eliminationCategories[category.id] && (
+                                      <div style={{
+                                        marginTop: '24px',
+                                        padding: '20px',
+                                        background: '#f8fafc',
+                                        borderRadius: '12px',
+                                        border: '1px solid #e2e8f0'
+                                      }}>
+                                        <h4 style={{
+                                          color: '#1e293b',
+                                          marginBottom: '16px',
+                                          fontSize: '1.1rem',
+                                          fontWeight: '600',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '8px'
+                                        }}>
+                                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                            <polyline points="7.5,4.21 12,6.81 16.5,4.21"/>
+                                            <polyline points="7.5,19.79 7.5,14.6 3,12"/>
+                                            <polyline points="21,12 16.5,14.6 16.5,19.79"/>
+                                            <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
+                                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                                          </svg>
+                                          Elimination Draw - Knockout Stage
+                                        </h4>
+
+                                        {(() => {
+                                          // Mock data for elimination matches
+                                         
+                                          // Define elimination matches for both 4-bracket and 8-bracket scenarios
+                                          const eliminationMatches = {
+                                            quarterFinals: [
+                                              { id: 'qf1', player1: 'John Doe', player2: 'Maria Santos', winner: 'John Doe', scores: [[11, 8], [11, 6]], court: 'Court 1', date: 'Aug 22', time: '2:00 PM' },
+                                              { id: 'qf2', player1: 'Elena Cruz', player2: 'Anthony Chen', winner: 'Elena Cruz', scores: [[11, 9], [11, 7]], court: 'Court 2', date: 'Aug 22', time: '2:00 PM' },
+                                              { id: 'qf3', player1: 'Jason Park', player2: 'Carmen Lopez', winner: 'Jason Park', scores: [[11, 5], [11, 8]], court: 'Court 3', date: 'Aug 22', time: '2:30 PM' },
+                                              { id: 'qf4', player1: 'Sarah Kim', player2: 'Carlos Rodriguez', winner: 'Sarah Kim', scores: [[11, 7], [11, 9]], court: 'Court 4', date: 'Aug 22', time: '2:30 PM' }
+                                            ],
+                                            semiFinals: [
+                                              { id: 'sf1', player1: 'John Doe', player2: 'Elena Cruz', winner: 'John Doe', scores: [[11, 9], [11, 8]], court: 'Court 1', date: 'Aug 23', time: '3:30 PM' },
+                                              { id: 'sf2', player1: 'Jason Park', player2: 'Sarah Kim', winner: 'Jason Park', scores: [[11, 6], [11, 7]], court: 'Court 2', date: 'Aug 23', time: '3:30 PM' }
+                                            ],
+                                            final: {
+                                              id: 'final', player1: 'John Doe', player2: 'Jason Park', winner: 'John Doe', scores: [[11, 8], [11, 9]], court: 'Center Court', date: 'Aug 24', time: '5:00 PM'
+                                            },
+                                            bronzeBattle: {
+                                              id: 'bronze', player1: 'Elena Cruz', player2: 'Sarah Kim', winner: 'Elena Cruz', scores: [[11, 7], [11, 6]], court: 'Court 1', date: 'Aug 24', time: '4:30 PM'
+                                            }
+                                          };
+
+                                          // Reusable MatchCard component
+                                          const MatchCard = ({ match, matchNumber, isChampionship = false, isBronze = false }) => (
+                                            <div style={{
+                                              background: 'white',
+                                              border: isChampionship ? '2px solid #fbbf24' : isBronze ? '2px solid #cd7c0f' : '1px solid #e2e8f0',
+                                              borderRadius: '8px',
+                                              padding: '0',
+                                              marginBottom: '12px',
+                                              boxShadow: isChampionship ? '0 4px 12px rgba(251, 191, 36, 0.2)' : isBronze ? '0 4px 12px rgba(205, 124, 15, 0.2)' : '0 2px 4px rgba(0, 0, 0, 0.1)',
+                                              position: 'relative',
+                                              display: 'flex',
+                                              minWidth: '200px'
+                                            }}>
+                                              {isChampionship && (
+                                                <div style={{
+                                                  position: 'absolute',
+                                                  top: '-8px',
+                                                  left: '50%',
+                                                  transform: 'translateX(-50%)',
+                                                  background: '#fbbf24',
+                                                  color: 'white',
+                                                  padding: '4px 12px',
+                                                  borderRadius: '12px',
+                                                  fontSize: '0.75rem',
+                                                  fontWeight: '600'
+                                                }}>
+                                                  🏆 CHAMPIONSHIP
+                                                </div>
+                                              )}
+                                              {isBronze && (
+                                                <div style={{
+                                                  position: 'absolute',
+                                                  top: '-8px',
+                                                  left: '50%',
+                                                  transform: 'translateX(-50%)',
+                                                  background: '#cd7c0f',
+                                                  color: 'white',
+                                                  padding: '4px 12px',
+                                                  borderRadius: '12px',
+                                                  fontSize: '0.75rem',
+                                                  fontWeight: '600'
+                                                }}>
+                                                  🥉 BRONZE BATTLE
+                                                </div>
+                                              )}
+                                              
+                                              {/* Match Number */}
+                                              <div style={{
+                                                background: '#f8fafc',
+                                                padding: '16px 12px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                borderRight: '1px solid #e2e8f0',
+                                                fontSize: '1.25rem',
+                                                fontWeight: '600',
+                                                color: '#334155',
+                                                minWidth: '50px'
+                                              }}>
+                                                {matchNumber}
+                                              </div>
+                                              
+                                              {/* Match Content */}
+                                              <div style={{
+                                                flex: 1,
+                                                padding: '12px 16px',
+                                                display: 'flex',
+                                                flexDirection: 'column'
+                                              }}>
+                                                {/* Players and Scores Row */}
+                                                <div style={{
+                                                  display: 'flex',
+                                                  alignItems: 'stretch',
+                                                  flex: 1
+                                                }}>
+                                                  {/* Players Column */}
+                                                  <div style={{
+                                                    flex: 1,
+                                                    display: 'flex',
+                                                    flexDirection: 'column'
+                                                  }}>
+                                                    {/* Player 1 */}
+                                                    <div style={{
+                                                      padding: '8px 0',
+                                                      borderBottom: '1px solid #f1f5f9',
+                                                      fontWeight: match.winner === match.player1 ? '700' : '500',
+                                                      color: match.winner === match.player1 ? '#059669' : '#334155',
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      gap: '8px',
+                                                      fontSize: '0.9rem',
+                                                      flex: 1
+                                                    }}>
+                                                      {match.winner === match.player1 && '🏆'}
+                                                      {match.player1 || 'TBD'}
+                                                    </div>
+                                                    
+                                                    {/* Player 2 */}
+                                                    <div style={{
+                                                      padding: '8px 0',
+                                                      fontWeight: match.winner === match.player2 ? '700' : '500',
+                                                      color: match.winner === match.player2 ? '#059669' : '#334155',
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      gap: '8px',
+                                                      fontSize: '0.9rem',
+                                                      flex: 1
+                                                    }}>
+                                                      {match.winner === match.player2 && '🏆'}
+                                                      {match.player2 || 'TBD'}
+                                                    </div>
+                                                  </div>
+                                                  
+                                                  {/* Score Columns */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    borderLeft: '1px solid #f1f5f9',
+                                                    marginLeft: '12px'
+                                                  }}>
+                                                    {/* Set 1 */}
+                                                    <div style={{
+                                                      width: '30px',
+                                                      display: 'flex',
+                                                      flexDirection: 'column',
+                                                      borderRight: '1px solid #f1f5f9'
+                                                    }}>
+                                                      <div style={{
+                                                        padding: '8px 4px',
+                                                        textAlign: 'center',
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: '600',
+                                                        borderBottom: '1px solid #f1f5f9',
+                                                        flex: 1,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                      }}>
+                                                        {match.scores?.[0]?.[0] || '-'}
+                                                      </div>
+                                                      <div style={{
+                                                        padding: '8px 4px',
+                                                        textAlign: 'center',
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: '600',
+                                                        flex: 1,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                      }}>
+                                                        {match.scores?.[0]?.[1] || '-'}
+                                                      </div>
+                                                    </div>
+                                                    
+                                                    {/* Set 2 */}
+                                                    <div style={{
+                                                      width: '30px',
+                                                      display: 'flex',
+                                                      flexDirection: 'column',
+                                                      borderRight: '1px solid #f1f5f9'
+                                                    }}>
+                                                      <div style={{
+                                                        padding: '8px 4px',
+                                                        textAlign: 'center',
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: '600',
+                                                        borderBottom: '1px solid #f1f5f9',
+                                                        flex: 1,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                      }}>
+                                                        {match.scores?.[1]?.[0] || '-'}
+                                                      </div>
+                                                      <div style={{
+                                                        padding: '8px 4px',
+                                                        textAlign: 'center',
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: '600',
+                                                        flex: 1,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                      }}>
+                                                        {match.scores?.[1]?.[1] || '-'}
+                                                      </div>
+                                                    </div>
+                                                    
+                                                    {/* Set 3 */}
+                                                    <div style={{
+                                                      width: '30px',
+                                                      display: 'flex',
+                                                      flexDirection: 'column'
+                                                    }}>
+                                                      <div style={{
+                                                        padding: '8px 4px',
+                                                        textAlign: 'center',
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: '600',
+                                                        borderBottom: '1px solid #f1f5f9',
+                                                        flex: 1,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                      }}>
+                                                        {match.scores?.[2]?.[0] || '-'}
+                                                      </div>
+                                                      <div style={{
+                                                        padding: '8px 4px',
+                                                        textAlign: 'center',
+                                                        fontSize: '0.8rem',
+                                                        fontWeight: '600',
+                                                        flex: 1,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                      }}>
+                                                        {match.scores?.[2]?.[1] || '-'}
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                                
+                                                {/* Court and Time */}
+                                                <div style={{
+                                                  marginTop: '8px',
+                                                  padding: '8px 0',
+                                                  borderTop: '1px solid #f1f5f9',
+                                                  display: 'flex',
+                                                  justifyContent: 'space-between',
+                                                  alignItems: 'center',
+                                                  fontSize: '0.75rem',
+                                                  color: '#64748b'
+                                                }}>
+                                                  <span>Court: {match.court || 'TBD'}</span>
+                                                  <span>{match.date || 'Aug 22'} - {match.time || 'TBD'}</span>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          );
+
+                                          // Determine current mode based on number of brackets
+                                          const currentMode = 4; // Can be 4 or 8 depending on tournament structure
+                                          
+                                          return (
+                                            <div style={{
+                                              overflowX: 'auto',
+                                              padding: '20px 0'
+                                            }}>
+                                              {currentMode === 4 ? (
+                                                // 4-bracket tournament tree - Complete elimination draw
+                                                <div style={{
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  gap: '60px',
+                                                  width: 'max-content'
+                                                }}>
+                                                  {/* Quarter Finals */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '30px'
+                                                  }}>
+                                                    <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Quarter Finals</div>
+                                                    <MatchCard match={eliminationMatches.quarterFinals[0]} matchNumber={1} />
+                                                    <MatchCard match={eliminationMatches.quarterFinals[1]} matchNumber={2} />
+                                                    <MatchCard match={eliminationMatches.quarterFinals[2]} matchNumber={3} />
+                                                    <MatchCard match={eliminationMatches.quarterFinals[3]} matchNumber={4} />
+                                                  </div>
+                                                  
+                                                  {/* Connecting lines to Semi Finals */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-around',
+                                                    height: '100%',
+                                                    minHeight: '500px'
+                                                  }}>
+                                                    {/* Connection for QF1 and QF2 to SF1 */}
+                                                    <div style={{
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      gap: '0',
+                                                      marginTop: '40px'
+                                                    }}>
+                                                      <div style={{
+                                                        width: '20px',
+                                                        height: '2px',
+                                                        background: '#d1d5db'
+                                                      }}></div>
+                                                      <div style={{
+                                                        width: '2px',
+                                                        height: '60px',
+                                                        background: '#d1d5db'
+                                                      }}></div>
+                                                      <div style={{
+                                                        width: '20px',
+                                                        height: '2px',
+                                                        background: '#d1d5db'
+                                                      }}></div>
+                                                    </div>
+                                                    
+                                                    {/* Connection for QF3 and QF4 to SF2 */}
+                                                    <div style={{
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      gap: '0',
+                                                      marginBottom: '40px'
+                                                    }}>
+                                                      <div style={{
+                                                        width: '20px',
+                                                        height: '2px',
+                                                        background: '#d1d5db'
+                                                      }}></div>
+                                                      <div style={{
+                                                        width: '2px',
+                                                        height: '60px',
+                                                        background: '#d1d5db'
+                                                      }}></div>
+                                                      <div style={{
+                                                        width: '20px',
+                                                        height: '2px',
+                                                        background: '#d1d5db'
+                                                      }}></div>
+                                                    </div>
+                                                  </div>
+                                                  
+                                                  {/* Semi Finals */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '80px',
+                                                    justifyContent: 'center'
+                                                  }}>
+                                                    <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Semi Finals</div>
+                                                    <MatchCard match={eliminationMatches.semiFinals[0]} matchNumber={5} />
+                                                    <MatchCard match={eliminationMatches.semiFinals[1]} matchNumber={6} />
+                                                  </div>
+                                                  
+                                                  {/* Connecting lines to Final */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '20px'
+                                                  }}>
+                                                    <div style={{
+                                                      width: '40px',
+                                                      height: '2px',
+                                                      background: '#d1d5db',
+                                                      marginTop: '60px'
+                                                    }}></div>
+                                                    <div style={{
+                                                      width: '2px',
+                                                      height: '80px',
+                                                      background: '#d1d5db'
+                                                    }}></div>
+                                                    <div style={{
+                                                      width: '40px',
+                                                      height: '2px',
+                                                      background: '#d1d5db',
+                                                      marginBottom: '60px'
+                                                    }}></div>
+                                                  </div>
+                                                  
+                                                  {/* Final and Bronze Battle Column */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center',
+                                                    gap: '40px'
+                                                  }}>
+                                                    {/* Final */}
+                                                    <div style={{
+                                                      display: 'flex',
+                                                      flexDirection: 'column',
+                                                      justifyContent: 'center'
+                                                    }}>
+                                                      <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Final</div>
+                                                      <MatchCard match={eliminationMatches.final} matchNumber={7} isChampionship={true} />
+                                                    </div>
+                                                    
+                                                    {/* Bronze Battle */}
+                                                    <div style={{
+                                                      display: 'flex',
+                                                      flexDirection: 'column',
+                                                      justifyContent: 'center'
+                                                    }}>
+                                                      <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Bronze Battle</div>
+                                                      <MatchCard match={eliminationMatches.bronzeBattle} matchNumber={8} isBronze={true} />
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              ) : (
+                                                // 8-bracket tournament tree (Round of 16)
+                                                <div style={{
+                                                  display: 'flex',
+                                                  alignItems: 'center',
+                                                  gap: '60px',
+                                                  width: 'max-content'
+                                                }}>
+                                                  {/* Round of 16 */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '20px'
+                                                  }}>
+                                                    <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Round of 16</div>
+                                                    {eliminationMatches.quarterFinals.slice(0, 8).map((match, index) => (
+                                                      <MatchCard key={match.id} match={match} matchNumber={index + 1} />
+                                                    ))}
+                                                  </div>
+                                                  
+                                                  {/* Connecting lines */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'space-around',
+                                                    height: '100%',
+                                                    minHeight: '600px'
+                                                  }}>
+                                                    {[...Array(4)].map((_, i) => (
+                                                      <div key={i} style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0'
+                                                      }}>
+                                                        <div style={{
+                                                          width: '20px',
+                                                          height: '2px',
+                                                          background: '#d1d5db'
+                                                        }}></div>
+                                                        <div style={{
+                                                          width: '2px',
+                                                          height: '40px',
+                                                          background: '#d1d5db'
+                                                        }}></div>
+                                                        <div style={{
+                                                          width: '20px',
+                                                          height: '2px',
+                                                          background: '#d1d5db'
+                                                        }}></div>
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                  
+                                                  {/* Quarter Finals */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '40px',
+                                                    justifyContent: 'center'
+                                                  }}>
+                                                    <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Quarter Finals</div>
+                                                    {eliminationMatches.quarterFinals.slice(0, 4).map((match, index) => (
+                                                      <MatchCard key={match.id} match={match} matchNumber={index + 9} />
+                                                    ))}
+                                                  </div>
+                                                  
+                                                  {/* Connecting lines to Semi Finals */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'space-around',
+                                                    height: '100%',
+                                                    minHeight: '300px'
+                                                  }}>
+                                                    {[...Array(2)].map((_, i) => (
+                                                      <div key={i} style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0'
+                                                      }}>
+                                                        <div style={{
+                                                          width: '20px',
+                                                          height: '2px',
+                                                          background: '#d1d5db'
+                                                        }}></div>
+                                                        <div style={{
+                                                          width: '2px',
+                                                          height: '80px',
+                                                          background: '#d1d5db'
+                                                        }}></div>
+                                                        <div style={{
+                                                          width: '20px',
+                                                          height: '2px',
+                                                          background: '#d1d5db'
+                                                        }}></div>
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                  
+                                                  {/* Semi Finals */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '80px',
+                                                    justifyContent: 'center'
+                                                  }}>
+                                                    <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Semi Finals</div>
+                                                    {eliminationMatches.semiFinals.map((match, index) => (
+                                                      <MatchCard key={match.id} match={match} matchNumber={index + 13} />
+                                                    ))}
+                                                  </div>
+                                                  
+                                                  {/* Connecting lines to Final */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '20px'
+                                                  }}>
+                                                    <div style={{
+                                                      width: '40px',
+                                                      height: '2px',
+                                                      background: '#d1d5db',
+                                                      marginTop: '60px'
+                                                    }}></div>
+                                                    <div style={{
+                                                      width: '2px',
+                                                      height: '80px',
+                                                      background: '#d1d5db'
+                                                    }}></div>
+                                                    <div style={{
+                                                      width: '40px',
+                                                      height: '2px',
+                                                      background: '#d1d5db',
+                                                      marginBottom: '60px'
+                                                    }}></div>
+                                                  </div>
+                                                  
+                                                  {/* Final and Bronze Battle Column */}
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    justifyContent: 'center',
+                                                    gap: '40px'
+                                                  }}>
+                                                    {/* Final */}
+                                                    <div style={{
+                                                      display: 'flex',
+                                                      flexDirection: 'column',
+                                                      justifyContent: 'center'
+                                                    }}>
+                                                      <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Final</div>
+                                                      <MatchCard match={eliminationMatches.final} matchNumber={15} isChampionship={true} />
+                                                    </div>
+                                                    
+                                                    {/* Bronze Battle */}
+                                                    <div style={{
+                                                      display: 'flex',
+                                                      flexDirection: 'column',
+                                                      justifyContent: 'center'
+                                                    }}>
+                                                      <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Bronze Battle</div>
+                                                      <MatchCard match={eliminationMatches.bronzeBattle} matchNumber={16} isBronze={true} />
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        })()}
+                                      </div>
+                                    )}
                                   </GroupStageSection>
                                 )}
 
                                 {/* Knockout Stage Bracket - Show if exists */}
                                 {category.knockoutStage ? (
-                                  <TournamentBracket>
-                                    <BracketContainer style={{ marginTop: '-80px' }}>
-                                      {/* Quarter Finals */}
-                                      <BracketColumn>
-                                        <BracketRound>
-                                          <h4>Quarter-Finals</h4>
-                                          <div className="round-subtitle">Top 8 Players</div>
-                                        </BracketRound>
-                                        {category.knockoutStage.quarterFinals.map((match) => (
-                                          <MatchCard key={match.id} $isWinner={match.completed}>
-                                            <div className="match-info">
-                                              <div className="player-name">
-                                                <span className="player-seed">{match.player1.seed}</span>
-                                                {match.player1.name}
-                                              </div>
-                                              {match.completed && <div className="match-score">{match.winner === 'player1' ? '✓' : ''}</div>}
-                                            </div>
-                                            <div className="match-info">
-                                              <div className="player-name">
-                                                <span className="player-seed">{match.player2.seed}</span>
-                                                {match.player2.name}
-                                              </div>
-                                              {match.completed && <div className="match-score">{match.winner === 'player2' ? '✓' : ''}</div>}
-                                            </div>
-                                            {match.completed && <div className="match-result">{match.score}</div>}
-                                          </MatchCard>
-                                        ))}
-                                      </BracketColumn>
-
-                                      {/* Semi Finals */}
-                                      <BracketColumn>
-                                        <BracketRound>
-                                          <h4>Semi-Finals</h4>
-                                          <div className="round-subtitle">Final 4</div>
-                                        </BracketRound>
-                                        {category.knockoutStage.semiFinals.map((match, index) => (
-                                          <MatchCard 
-                                            key={match.id} 
-                                            $isWinner={match.completed} 
-                                            style={{ 
-                                              marginTop: index === 0 ? '0px' : '40px',
-                                              '@media (min-width: 768px)': {
-                                                marginTop: index === 0 ? '50px' : '30px'
-                                              }
-                                            }}
-                                          >
-                                            <div className="match-info">
-                                              <div className="player-name">
-                                                <span className="player-seed">W{match.player1.seed}</span>
-                                                {match.player1.name}
-                                              </div>
-                                              {match.completed && <div className="match-score">{match.winner === 'player1' ? '✓' : ''}</div>}
-                                            </div>
-                                            <div className="match-info">
-                                              <div className="player-name">
-                                                <span className="player-seed">W{match.player2.seed}</span>
-                                                {match.player2.name}
-                                              </div>
-                                              {match.completed && <div className="match-score">{match.winner === 'player2' ? '✓' : ''}</div>}
-                                            </div>
-                                            {match.completed && <div className="match-result">{match.score}</div>}
-                                          </MatchCard>
-                                        ))}
-                                      </BracketColumn>
-
-                                      {/* Championship */}
-                                      <ChampionshipSection style={{ marginTop: '200px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '-10px' }}>
-                                          <div className="championship-trophy">🏆</div>
-                                          <BracketRound style={{ margin: 0 }}>
-                                            <h4>Championship</h4>
-                                            <div className="round-subtitle">Final Match</div>
-                                          </BracketRound>
-                                        </div>
-                                        {category.knockoutStage.final && (
-                                          <MatchCard 
-                                            className="championship-match" 
-                                            $isWinner={category.knockoutStage.final.completed}
-                                          >
-                                            <div className="match-info">
-                                              <div className="player-name">
-                                                <span className="player-seed">W{category.knockoutStage.final.player1.seed}</span>
-                                                {category.knockoutStage.final.player1.name}
-                                              </div>
-                                              {category.knockoutStage.final.completed && (
-                                                <div className="match-score">
-                                                  {category.knockoutStage.final.winner === 'player1' ? '🥇' : '🥈'}
-                                                </div>
-                                              )}
-                                            </div>
-                                            <div className="match-info">
-                                              <div className="player-name">
-                                                <span className="player-seed">W{category.knockoutStage.final.player2.seed}</span>
-                                                {category.knockoutStage.final.player2.name}
-                                              </div>
-                                              {category.knockoutStage.final.completed && (
-                                                <div className="match-score">
-                                                  {category.knockoutStage.final.winner === 'player2' ? '🥇' : '🥈'}
-                                                </div>
-                                              )}
-                                            </div>
-                                            {category.knockoutStage.final.completed && (
-                                              <div className="match-result" style={{ fontWeight: 'bold', color: '#16a34a' }}>
-                                                {category.knockoutStage.final.score}
-                                              </div>
-                                            )}
-                                          </MatchCard>
-                                        )}
-
-                                        {/* Third Place Match */}
-                                        {category.knockoutStage.thirdPlace && (
-                                          <div style={{ 
-                                            marginTop: '100px', 
-                                            marginLeft: 'auto',
-                                            marginRight: '0',
-                                            width: '100%',
-                                            maxWidth: '300px'
-                                          }}>
-                                            <BracketRound>
-                                              <h4>Third Place</h4>
-                                              <div className="round-subtitle">Bronze Medal Match</div>
-                                            </BracketRound>
-                                            <MatchCard 
-                                              className="championship-match" 
-                                              $isWinner={category.knockoutStage.thirdPlace.completed}
-                                              style={{ width: '100%' }}
-                                            >
-                                              <div className="match-info">
-                                                <div className="player-name">
-                                                  <span className="player-seed">L{category.knockoutStage.thirdPlace.player1.seed}</span>
-                                                  {category.knockoutStage.thirdPlace.player1.name}
-                                                </div>
-                                                {category.knockoutStage.thirdPlace.completed && (
-                                                  <div className="match-score">
-                                                    {category.knockoutStage.thirdPlace.winner === 'player1' ? '🥉' : ''}
-                                                  </div>
-                                                )}
-                                              </div>
-                                              <div className="match-info">
-                                                <div className="player-name">
-                                                  <span className="player-seed">L{category.knockoutStage.thirdPlace.player2.seed}</span>
-                                                  {category.knockoutStage.thirdPlace.player2.name}
-                                                </div>
-                                                {category.knockoutStage.thirdPlace.completed && (
-                                                  <div className="match-score">
-                                                    {category.knockoutStage.thirdPlace.winner === 'player2' ? '🥉' : ''}
-                                                  </div>
-                                                )}
-                                              </div>
-                                              {category.knockoutStage.thirdPlace.completed && (
-                                                <div className="match-result" style={{ fontWeight: 'bold', color: '#16a34a' }}>
-                                                  {category.knockoutStage.thirdPlace.score}
-                                                </div>
-                                              )}
-                                            </MatchCard>
-                                          </div>
-                                        )}
-                                      </ChampionshipSection>
-                                    </BracketContainer>
-                                  </TournamentBracket>
+                                  <div>
+                                    {/* Knockout stage content would go here */}
+                                  </div>
                                 ) : (
-                                  // Show placeholder if no knockout stage yet
-                                  <div style={{ 
-                                    textAlign: 'center', 
-                                    padding: '32px 24px',
-                                    background: 'white',
-                                    borderRadius: '12px',
-                                    border: '1px solid #e2e8f0',
-                                    marginTop: '16px'
-                                  }}>
-                                    <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🏆</div>
-                                    <h3 style={{ color: '#334155', marginBottom: '8px', fontSize: '1.1rem' }}>Knockout Bracket Coming Soon</h3>
-                                    <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '16px' }}>
-                                      The knockout bracket will be generated once the group stage is complete.
-                                    </p>
-                                    <div style={{
-
-                                    }}>
-
-
-                                    </div>
+                                  // Show bracket logic for determining top players
+                                  <div style={{ padding: '24px' }}>
+                                    {(() => {
+                                      // Reusable Match Card Component
+                                      const MatchCard = ({ match, matchNumber }) => (
+                                        <div style={{
+                                          background: 'white',
+                                          border: '1px solid #e2e8f0',
+                                          borderRadius: '8px',
+                                          minWidth: '400px',
+                                          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                                          display: 'flex',
+                                          position: 'relative'
+                                        }}>
+                                          {/* Match Number as first cell */}
+                                          <div style={{
+                                            background: '#f8fafc',
+                                            borderRight: '1px solid #e2e8f0',
+                                            width: '40px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '14px',
+                                            fontWeight: 'bold',
+                                            color: '#1e293b',
+                                            borderTopLeftRadius: '8px',
+                                            borderBottomLeftRadius: '8px'
+                                          }}>{matchNumber}</div>
+                                          
+                                          <div style={{
+                                            flex: 1,
+                                            position: 'relative'
+                                          }}>
+                                            {/* Refresh Icon */}
+                                            <div style={{
+                                              position: 'absolute',
+                                              top: '8px',
+                                              right: '8px',
+                                              cursor: 'pointer',
+                                              padding: '2px'
+                                            }}>
+                                             
+                                            </div>
+                                          
+                                          {/* Player 1 */}
+                                          <div style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'stretch',
+                                            borderBottom: '1px solid #f1f5f9'
+                                          }}>
+                                            <div style={{
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              padding: '12px',
+                                              flex: 1
+                                            }}>
+                                              <span style={{ 
+                                                fontWeight: '600', 
+                                                color: '#1e293b',
+                                                fontSize: '16px'
+                                              }}>{match.player1.name}</span>
+                                            </div>
+                                            <div style={{
+                                              display: 'flex',
+                                              borderLeft: '1px solid #e2e8f0'
+                                            }}>
+                                              <div style={{
+                                                background: match.player1.points === 11 ? '#dcfce7' : 'transparent',
+                                                color: match.player1.points === 11 ? '#166534' : '#64748b',
+                                                padding: '12px',
+                                                fontSize: '16px',
+                                                fontWeight: '600',
+                                                minWidth: '50px',
+                                                textAlign: 'center',
+                                                borderRight: '1px solid #e2e8f0',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                              }}>{match.player1.points}</div>
+                                              <div style={{
+                                                background: match.player1.points === 11 ? '#dcfce7' : 'transparent',
+                                                color: match.player1.points === 11 ? '#166534' : '#64748b',
+                                                padding: '12px',
+                                                fontSize: '16px',
+                                                fontWeight: '600',
+                                                minWidth: '50px',
+                                                textAlign: 'center',
+                                                borderRight: '1px solid #e2e8f0',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                              }}>{match.player1.points}</div>
+                                              <div style={{
+                                                background: match.player1.points === 11 ? '#dcfce7' : 'transparent',
+                                                color: match.player1.points === 11 ? '#166534' : '#64748b',
+                                                padding: '12px',
+                                                fontSize: '16px',
+                                                fontWeight: '600',
+                                                minWidth: '50px',
+                                                textAlign: 'center',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                              }}>{match.player1.points}</div>
+                                            </div>
+                                          </div>
+                                          
+                                          {/* Player 2 */}
+                                          <div style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'stretch',
+                                            borderBottom: '1px solid #f1f5f9'
+                                          }}>
+                                            <div style={{
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              padding: '12px',
+                                              flex: 1
+                                            }}>
+                                              <span style={{ 
+                                                fontWeight: '600', 
+                                                color: '#1e293b',
+                                                fontSize: '16px'
+                                              }}>{match.player2.name}</span>
+                                            </div>
+                                            <div style={{
+                                              display: 'flex',
+                                              borderLeft: '1px solid #e2e8f0'
+                                            }}>
+                                              <div style={{
+                                                background: match.player2.points === 11 ? '#dcfce7' : 'transparent',
+                                                color: match.player2.points === 11 ? '#166534' : '#64748b',
+                                                padding: '12px',
+                                                fontSize: '16px',
+                                                fontWeight: '600',
+                                                minWidth: '50px',
+                                                textAlign: 'center',
+                                                borderRight: '1px solid #e2e8f0',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                              }}>{match.player2.points}</div>
+                                              <div style={{
+                                                background: match.player2.points === 11 ? '#dcfce7' : 'transparent',
+                                                color: match.player2.points === 11 ? '#166534' : '#64748b',
+                                                padding: '12px',
+                                                fontSize: '16px',
+                                                fontWeight: '600',
+                                                minWidth: '50px',
+                                                textAlign: 'center',
+                                                borderRight: '1px solid #e2e8f0',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                              }}>{match.player2.points}</div>
+                                              <div style={{
+                                                background: match.player2.points === 11 ? '#dcfce7' : 'transparent',
+                                                color: match.player2.points === 11 ? '#166534' : '#64748b',
+                                                padding: '12px',
+                                                fontSize: '16px',
+                                                fontWeight: '600',
+                                                minWidth: '50px',
+                                                textAlign: 'center',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                              }}>{match.player2.points}</div>
+                                            </div>
+                                          </div>
+                                          
+                                            {/* Court and Date Info */}
+                                            <div style={{
+                                              display: 'flex',
+                                              justifyContent: 'space-between',
+                                              alignItems: 'center',
+                                              padding: '8px 12px',
+                                              fontSize: '12px',
+                                              color: '#64748b'
+                                            }}>
+                                              <span>Court: CC</span>
+                                              <span>Aug 22 - 09:19 AM +08</span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      );
+                                      
+                                      // Get top 2 players from each bracket
+                                      const getTopPlayersFromBrackets = () => {
+                                        const currentMode = 4; // Default to 4 brackets since no switch button
+                                        const brackets = currentMode === 8 
+                                          ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+                                          : ['A', 'B', 'C', 'D'];
+                                        const topPlayers = {};
+                                        
+                                        brackets.forEach(bracket => {
+                                          const expectedGroupId = `group-${bracket.toLowerCase()}`;
+                                          const group = category.groupStage?.groups?.find(g => g.id === expectedGroupId);
+                                          
+                                          if (group && group.standings) {
+                                            // Sort players by points (wins), then by games won
+                                            const sortedPlayers = [...group.standings].sort((a, b) => {
+                                              if (b.points !== a.points) return b.points - a.points;
+                                              return b.gamesWon - a.gamesWon;
+                                            });
+                                            
+                                            topPlayers[bracket] = {
+                                              first: sortedPlayers[0] || null,
+                                              second: sortedPlayers[1] || null
+                                            };
+                                          } else {
+                                            topPlayers[bracket] = { first: null, second: null };
+                                          }
+                                        });
+                                        
+                                        return topPlayers;
+                                      };
+                                      
+                                      const currentMode = 4; // Default to 4 brackets
+                                      let eliminationMatches = [];
+                                      
+                                      if (currentMode === 4) {
+                                        // Get top 2 players from each bracket for proper quarterfinals matchups
+                                        const topPlayers = getTopPlayersFromBrackets();
+                                        console.log('Category groupStage:', category.groupStage);
+                                        console.log('Top players:', topPlayers);
+                                        
+                                        // 4 bracket elimination - Quarter Finals matchups: a1 vs b2, d1 vs c2, c1 vs d2, b1 vs a2
+                                        eliminationMatches = [
+                                          {
+                                            id: 'quarter1',
+                                            title: 'Quarter-Final 1: A1 vs B2',
+                                            player1: topPlayers.A?.first ? { 
+                                              name: topPlayers.A.first.name, 
+                                              bracket: 'A', 
+                                              position: '1st', 
+                                              points: topPlayers.A.first.points || 0 
+                                            } : { name: 'TBD', bracket: 'A', position: '1st', points: '' },
+                                            player2: topPlayers.B?.second ? { 
+                                              name: topPlayers.B.second.name, 
+                                              bracket: 'B', 
+                                              position: '2nd', 
+                                              points: topPlayers.B.second.points || 0 
+                                            } : { name: 'TBD', bracket: 'B', position: '2nd', points: '' }
+                                          },
+                                          {
+                                            id: 'quarter2',
+                                            title: 'Quarter-Final 2: D1 vs C2',
+                                            player1: topPlayers.D?.first ? { 
+                                              name: topPlayers.D.first.name, 
+                                              bracket: 'D', 
+                                              position: '1st', 
+                                              points: topPlayers.D.first.points || 0 
+                                            } : { name: 'TBD', bracket: 'D', position: '1st', points: '' },
+                                            player2: topPlayers.C?.second ? { 
+                                              name: topPlayers.C.second.name, 
+                                              bracket: 'C', 
+                                              position: '2nd', 
+                                              points: topPlayers.C.second.points || 0 
+                                            } : { name: 'TBD', bracket: 'C', position: '2nd', points: '' }
+                                          },
+                                          {
+                                            id: 'quarter3',
+                                            title: 'Quarter-Final 3: C1 vs D2',
+                                            player1: topPlayers.C?.first ? { 
+                                              name: topPlayers.C.first.name, 
+                                              bracket: 'C', 
+                                              position: '1st', 
+                                              points: topPlayers.C.first.points || 0 
+                                            } : { name: 'TBD', bracket: 'C', position: '1st', points: '' },
+                                            player2: topPlayers.D?.second ? { 
+                                              name: topPlayers.D.second.name, 
+                                              bracket: 'D', 
+                                              position: '2nd', 
+                                              points: topPlayers.D.second.points || 0 
+                                            } : { name: 'TBD', bracket: 'D', position: '2nd', points: '' }
+                                          },
+                                          {
+                                            id: 'quarter4',
+                                            title: 'Quarter-Final 4: B1 vs A2',
+                                            player1: topPlayers.B?.first ? { 
+                                              name: topPlayers.B.first.name, 
+                                              bracket: 'B', 
+                                              position: '1st', 
+                                              points: topPlayers.B.first.points || 0 
+                                            } : { name: 'TBD', bracket: 'B', position: '1st', points: '' },
+                                            player2: topPlayers.A?.second ? { 
+                                              name: topPlayers.A.second.name, 
+                                              bracket: 'A', 
+                                              position: '2nd', 
+                                              points: topPlayers.A.second.points || 0 
+                                            } : { name: 'TBD', bracket: 'A', position: '2nd', points: '' }
+                                          },
+                                          {
+                                            id: 'semi1',
+                                            title: 'Semi-Final 1',
+                                            player1: { name: 'Winner QF1', bracket: 'QF1 Winner', position: 'Winner', points: '' },
+                                            player2: { name: 'Winner QF2', bracket: 'QF2 Winner', position: 'Winner', points: '' }
+                                          },
+                                          {
+                                            id: 'semi2',
+                                            title: 'Semi-Final 2',
+                                            player1: { name: 'Winner QF3', bracket: 'QF3 Winner', position: 'Winner', points: '' },
+                                            player2: { name: 'Winner QF4', bracket: 'QF4 Winner', position: 'Winner', points: '' }
+                                          },
+                                          {
+                                            id: 'final',
+                                            title: 'Final',
+                                            player1: { name: 'Winner SF1', bracket: 'SF1 Winner', position: 'Finalist', points: '' },
+                                            player2: { name: 'Winner SF2', bracket: 'SF2 Winner', position: 'Finalist', points: '' }
+                                          },
+                                          {
+                                            id: 'bronze',
+                                            title: 'Bronze Battle',
+                                            player1: { name: 'Loser SF1', bracket: 'SF1 Loser', position: '3rd Place', points: '' },
+                                            player2: { name: 'Loser SF2', bracket: 'SF2 Loser', position: '3rd Place', points: '' }
+                                          }
+                                        ];
+                                      } else {
+                                        // 8 bracket elimination - automatically starts at Round of 16
+                                        eliminationMatches = [
+                                          {
+                                            id: 'round16_1',
+                                            title: 'Round of 16 - Match 1',
+                                            player1: { name: 'John Doe', bracket: 'A', position: '1st', points: 44 },
+                                            player2: { name: 'Carmen Lopez', bracket: 'E', position: '2nd', points: 29 }
+                                          },
+                                          {
+                                            id: 'round16_2',
+                                            title: 'Round of 16 - Match 2',
+                                            player1: { name: 'Carlos Rodriguez', bracket: 'A', position: '2nd', points: 28 },
+                                            player2: { name: 'Elena Cruz', bracket: 'E', position: '1st', points: 44 }
+                                          },
+                                          {
+                                            id: 'round16_3',
+                                            title: 'Round of 16 - Match 3',
+                                            player1: { name: 'Michael Johnson', bracket: 'B', position: '1st', points: 44 },
+                                            player2: { name: 'Rachel Gonzalez', bracket: 'F', position: '2nd', points: 31 }
+                                          },
+                                          {
+                                            id: 'round16_4',
+                                            title: 'Round of 16 - Match 4',
+                                            player1: { name: 'Luis Chen', bracket: 'B', position: '2nd', points: 35 },
+                                            player2: { name: 'Andrea Martinez', bracket: 'F', position: '1st', points: 37 }
+                                          },
+                                          {
+                                            id: 'round16_5',
+                                            title: 'Round of 16 - Match 5',
+                                            player1: { name: 'Jason Park', bracket: 'C', position: '1st', points: 37 },
+                                            player2: { name: 'Michelle Yang', bracket: 'G', position: '2nd', points: 25 }
+                                          },
+                                          {
+                                            id: 'round16_6',
+                                            title: 'Round of 16 - Match 6',
+                                            player1: { name: 'Anthony Chen', bracket: 'C', position: '2nd', points: 31 },
+                                            player2: { name: 'Maria Santos', bracket: 'G', position: '1st', points: 35 }
+                                          },
+                                          {
+                                            id: 'round16_7',
+                                            title: 'Round of 16 - Match 7',
+                                            player1: { name: 'Patrick Lim', bracket: 'D', position: '1st', points: 32 },
+                                            player2: { name: 'Victoria Huang', bracket: 'H', position: '2nd', points: 19 }
+                                          },
+                                          {
+                                            id: 'round16_8',
+                                            title: 'Round of 16 - Match 8',
+                                            player1: { name: 'Jonathan Wu', bracket: 'D', position: '2nd', points: 29 },
+                                            player2: { name: 'Sarah Kim', bracket: 'H', position: '1st', points: 36 }
+                                          },
+                                          // Quarter Finals
+                                          {
+                                            id: 'quarter1',
+                                            title: 'Quarter-Final 1',
+                                            player1: { name: 'Winner R16-1', bracket: 'R16-1 Winner', position: 'QF', points: '' },
+                                            player2: { name: 'Winner R16-2', bracket: 'R16-2 Winner', position: 'QF', points: '' }
+                                          },
+                                          {
+                                            id: 'quarter2',
+                                            title: 'Quarter-Final 2',
+                                            player1: { name: 'Winner R16-3', bracket: 'R16-3 Winner', position: 'QF', points: '' },
+                                            player2: { name: 'Winner R16-4', bracket: 'R16-4 Winner', position: 'QF', points: '' }
+                                          },
+                                          {
+                                            id: 'quarter3',
+                                            title: 'Quarter-Final 3',
+                                            player1: { name: 'Winner R16-5', bracket: 'R16-5 Winner', position: 'QF', points: '' },
+                                            player2: { name: 'Winner R16-6', bracket: 'R16-6 Winner', position: 'QF', points: '' }
+                                          },
+                                          {
+                                            id: 'quarter4',
+                                            title: 'Quarter-Final 4',
+                                            player1: { name: 'Winner R16-7', bracket: 'R16-7 Winner', position: 'QF', points: '' },
+                                            player2: { name: 'Winner R16-8', bracket: 'R16-8 Winner', position: 'QF', points: '' }
+                                          },
+                                          // Semi Finals
+                                          {
+                                            id: 'semi1',
+                                            title: 'Semi-Final 1',
+                                            player1: { name: 'Winner QF1', bracket: 'QF1 Winner', position: 'Semifinalist', points: '' },
+                                            player2: { name: 'Winner QF2', bracket: 'QF2 Winner', position: 'Semifinalist', points: '' }
+                                          },
+                                          {
+                                            id: 'semi2',
+                                            title: 'Semi-Final 2',
+                                            player1: { name: 'Winner QF3', bracket: 'QF3 Winner', position: 'Semifinalist', points: '' },
+                                            player2: { name: 'Winner QF4', bracket: 'QF4 Winner', position: 'Semifinalist', points: '' }
+                                          },
+                                          // Final
+                                          {
+                                            id: 'final',
+                                            title: 'Final',
+                                            player1: { name: 'Winner SF1', bracket: 'SF1 Winner', position: 'Finalist', points: '' },
+                                            player2: { name: 'Winner SF2', bracket: 'SF2 Winner', position: 'Finalist', points: '' }
+                                          },
+                                          // Bronze Battle
+                                          {
+                                            id: 'bronze',
+                                            title: 'Bronze Battle',
+                                            player1: { name: 'Loser SF1', bracket: 'SF1 Loser', position: '3rd Place', points: '' },
+                                            player2: { name: 'Loser SF2', bracket: 'SF2 Loser', position: '3rd Place', points: '' }
+                                          }
+                                        ];
+                                      }
+                                      
+                                      if (currentMode === 4) {
+                                        
+                                        // Show placeholder if no knockout stage yet
+                                        return (
+                                          <div style={{ 
+                                            textAlign: 'center', 
+                                            padding: '32px 24px',
+                                            background: 'white',
+                                            borderRadius: '12px',
+                                            border: '1px solid #e2e8f0',
+                                            marginTop: '16px'
+                                          }}>
+                                            <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🏆</div>
+                                            <h3 style={{ color: '#334155', marginBottom: '8px', fontSize: '1.1rem' }}>Knockout Bracket Coming Soon</h3>
+                                            <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '16px' }}>
+                                              The knockout bracket will be generated once the group stage is complete.
+                                            </p>
+                                           {Object.keys(topPlayers).length > 0 && (
+  <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '16px' }}>
+    <p>Top players from each bracket:</p>
+    {Object.entries(topPlayers).map(([bracket, players]) => (
+      <div key={bracket} style={{ margin: '4px 0' }}>
+        Bracket {bracket}: {players.first?.name || 'TBD'} (1st), {players.second?.name || 'TBD'} (2nd)
+      </div>
+    ))}
+  </div>
+)}
+                                          </div>
+                                        );
+                                      }
+                                      
+                                      return null;
+                                    })()
+                                    }
                                   </div>
                                 )}
                               </CategoryBracketContent>
@@ -6926,11 +6475,13 @@ function Tournament() {
                         onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                       >
                         <option value="all">All Categories</option>
-                        {selectedTournament.tournamentCategories && Object.values(selectedTournament.tournamentCategories).map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
+                       {selectedTournament.tournamentCategories &&
+  selectedTournament.tournamentCategories.map((category, index) => (
+    <option key={index} value={category.division}>
+      {category.division} {category.skillLevel ? `- ${category.skillLevel}` : ''}
+    </option>
+  ))}
+
                       </select>
                     </div>
                     
@@ -7552,6 +7103,7 @@ function Tournament() {
                                   )}
                                   
                                   {/* Action Buttons */}
+                                  
                                 </div>
                               ))}
                           </div>
@@ -7609,65 +7161,63 @@ function Tournament() {
                       Tournament Guidelines
                     </TournamentDetailSectionTitle>
                     
-                    {(selectedTournament.rules && selectedTournament.rules.length > 0) || selectedTournament.rulesText ? (
-                      <div>
-                        <div style={{ 
-                          background: '#fef3c7', 
-                          padding: '16px', 
-                          borderRadius: '8px', 
-                          border: '1px solid #f59e0b',
-                          marginBottom: '24px'
-                        }}>
-                          <div style={{ 
-                            color: '#92400e', 
-                            fontWeight: '600', 
-                            marginBottom: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                          }}>
-                            <span>⚠️</span>
-                            Important Notice
-                          </div>
-                          <div style={{ color: '#92400e', fontSize: '0.9rem', lineHeight: '1.5' }}>
-                            Please read and understand all tournament guidelines before participating. 
-                            Violations may result in disqualification.
-                          </div>
-                        </div>
-                        
-                        <div style={{
-                          background: 'white',
-                          border: '1px solid #e2e8f0',
-                          borderRadius: '12px',
-                          padding: '24px'
-                        }}>
-                          <div style={{
-                            fontSize: '1rem',
-                            lineHeight: '1.6',
-                            color: '#334155',
-                            whiteSpace: 'pre-wrap'
-                          }}>
-                            {selectedTournament.rulesText || 
-                             (selectedTournament.rules && selectedTournament.rules.join('\n\n')) ||
-                             'All matches follow official IFP rules\n\nPlayers must check in 30 minutes before their scheduled match\n\nProper athletic attire and non-marking shoes required\n\nNo coaching allowed during matches'}
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div style={{ 
-                        textAlign: 'center', 
-                        padding: '48px 24px',
-                        background: '#f8fafc',
-                        borderRadius: '16px',
-                        border: '1px dashed #e2e8f0'
-                      }}>
-                        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📋</div>
-                        <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Guidelines Available</h3>
-                        <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
-                          Tournament guidelines will be posted by the organizer before the event begins.
-                        </p>
-                      </div>
-                    )}
+                    {selectedTournament.rules && selectedTournament.rules.trim() ? (
+      <div>
+        <div style={{ 
+          background: '#fef3c7', 
+          padding: '16px', 
+          borderRadius: '8px', 
+          border: '1px solid #f59e0b',
+          marginBottom: '24px'
+        }}>
+          <div style={{ 
+            color: '#92400e', 
+            fontWeight: '600', 
+            marginBottom: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>⚠️</span>
+            Important Notice
+          </div>
+          <div style={{ color: '#92400e', fontSize: '0.9rem', lineHeight: '1.5' }}>
+            Please read and understand all tournament guidelines before participating. 
+            Violations may result in disqualification.
+          </div>
+        </div>
+
+        <div style={{
+          background: 'white',
+          border: '1px solid #e2e8f0',
+          borderRadius: '12px',
+          padding: '24px'
+        }}>
+          <div
+            style={{
+              fontSize: '1rem',
+              lineHeight: '1.6',
+              color: '#334155',
+            }}
+            dangerouslySetInnerHTML={{ __html: selectedTournament.rules }}
+          />
+        </div>
+      </div>
+    ) : (
+      <div style={{ 
+        textAlign: 'center', 
+        padding: '48px 24px',
+        background: '#f8fafc',
+        borderRadius: '16px',
+        border: '1px dashed #e2e8f0'
+      }}>
+        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📋</div>
+        <h3 style={{ color: '#334155', marginBottom: '8px' }}>No Guidelines Available</h3>
+        <p style={{ color: '#64748b', fontSize: '0.95rem' }}>
+          Tournament guidelines will be posted by the organizer before the event begins.
+        </p>
+      </div>
+    )}
                   </TournamentDetailSection>
                 )}
 
@@ -7678,46 +7228,60 @@ function Tournament() {
             <TournamentDetailRight>
               <StickyActionBar>
                 <StickyActionTitle>Tournament Registration</StickyActionTitle>
-                
-                <PriceDisplay>
-                  <div className="price">₱{selectedTournament.entryFee.toLocaleString()}</div>
-                </PriceDisplay>
+  <PriceDisplay>
+  <div className="price">
+    ₱{selectedTournament?.entryFee != null 
+        ? selectedTournament.entryFee.toLocaleString() 
+        : "0"}
+  </div>
+</PriceDisplay>
 
-                {/* Action Buttons */}
-                <TournamentActionButtons>
-  
-                  {(user?.name !== selectedTournament.organizer || isHostView) && (
-                    <ActionButton variant="primary" 
-                    onClick={() => {
-                      // Always open registration regardless of source
-                      handleRegister(selectedTournament.id);
-                    }}
-                    disabled={selectedTournament.currentParticipants >= selectedTournament.maxParticipants || !isAuthenticated}
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    Register Now
-                  </ActionButton>
-                  )}
-                  <ActionButton variant="secondary" onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({
-                        title: selectedTournament.name,
-                        text: `Check out this tournament: ${selectedTournament.name}`,
-                        url: window.location.href
-                      });
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                      // You could add a notification here
-                    }
-                  }}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    Share
-                  </ActionButton>
-                </TournamentActionButtons>
+{/* Action Buttons */}
+<TournamentActionButtons>
+  {(user && selectedTournament && (user.name !== selectedTournament.clubadmin || isHostView)) && (
+    <ActionButton
+      variant="primary"
+      onClick={() => {
+        // 1️⃣ Ensure the tournament is selected
+        setSelectedTournament(selectedTournament);
+
+        // 2️⃣ Open the registration form/modal
+        setShowRegistrationForm(true);
+      }}
+      disabled={
+        selectedTournament.currentParticipants >= selectedTournament.maxParticipants || !isAuthenticated
+      }
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      Register Now
+    </ActionButton>
+  )}
+
+  <ActionButton
+    variant="secondary"
+    onClick={() => {
+      if (!selectedTournament) return;
+
+      if (navigator.share) {
+        navigator.share({
+          title: selectedTournament.tournamentName,
+          text: `Check out this tournament: ${selectedTournament.tournamentName}`,
+          url: window.location.href
+        });
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        // optional: show a notification here
+      }
+    }}
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+    Share
+  </ActionButton>
+</TournamentActionButtons>
 
 
               </StickyActionBar>
@@ -7828,7 +7392,7 @@ function Tournament() {
               </div>
             </TournamentDetailRight>
           </TournamentDetailBody>
-        </TournamentDetailContent>
+        </tailContent>
 
         {showAuthModal && (
           <AuthModal
@@ -7839,166 +7403,163 @@ function Tournament() {
           />
         )}
 
-        {showRegistrationModal && registrationTournament && (
-          <RegistrationModal onClick={closeRegistrationModal}>
-            <RegistrationModalContent onClick={e => e.stopPropagation()}>
-              <RegistrationModalHeader>
-                <RegistrationModalTitle>Register for {registrationTournament.name}</RegistrationModalTitle>
-                <CloseButton onClick={closeRegistrationModal}>×</CloseButton>
-              </RegistrationModalHeader>
-              
-              <RegistrationModalBody>
-                <form onSubmit={handleRegistrationSubmit}>
-                  {/* Category/Division/Level Selection */}
-                  <RegistrationFormSection>
-                    <RegistrationSectionTitle>Tournament Category</RegistrationSectionTitle>
-                    
-                    <RegistrationFormRow>
-                      <RegistrationFormGroup>
-                        <RegistrationSelect
-                          key={categoryFilterKey}
-                          value={registrationForm.category}
-                          onChange={(e) => handleRegistrationFormChange('category', e.target.value)}
-                          required
-                        >
-                          <option value="">Select Tournament Category</option>
-                          {registrationTournament && Object.values(registrationTournament?.tournamentCategories || {}).map((category) => {
-                            // Use the full category name as display name
-                            let displayName = category.name || '';
-                            
-                            // If name is empty or undefined, create display name from parts
-                            if (!displayName) {
-                              const division = category.division || '';
-                              const skillLevel = category.skillLevel === 'Open' && category.tier 
-                                ? `Open Tier ${category.tier}` 
-                                : category.skillLevel || '';
-                              const age = category.ageGroup || '';
-                              
-                              const parts = [division, skillLevel, age].filter(part => part);
-                              displayName = parts.join(' | ') || 'Unknown Category';
-                            }
-                            
-                            // Check if this category is allowed for the user's gender and age
-                            const userGender = user?.gender || registrationForm.primaryPlayer?.gender || 'male';
-                            console.log(`🎯 DROPDOWN DEBUG: user object:`, user);
-                            console.log(`🎯 DROPDOWN DEBUG: registrationForm.primaryPlayer:`, registrationForm.primaryPlayer);
-                            console.log(`🎯 DROPDOWN DEBUG: Final userGender="${userGender}"`);
-                            const isAllowed = isCategoryAllowed(category, userGender);
-                            console.log(`📝 Dropdown: Category "${category.name}" for user "${userGender}": allowed=${isAllowed}`);
-                            
-                            return (
-                              <option 
-                                key={category.id} 
-                                value={category.id}
-                                disabled={!isAllowed}
-                                style={{
-                                  color: isAllowed ? 'inherit' : '#9ca3af',
-                                  fontStyle: isAllowed ? 'normal' : 'italic'
-                                }}
-                              >
-                                {displayName}
-                              </option>
-                            );
-                          })}
-                        </RegistrationSelect>
-                      </RegistrationFormGroup>
-                    </RegistrationFormRow>
-                    
 
-                  </RegistrationFormSection>
+{showRegistrationModal && registrationTournament && (
+  <RegistrationModal onClick={closeRegistrationModal}>
+    <RegistrationModalContent onClick={e => e.stopPropagation()}>
+      <RegistrationModalHeader>
+        <RegistrationModalTitle>Register for {registrationTournament.tournamentName}</RegistrationModalTitle>
+        <CloseButton onClick={closeRegistrationModal}>×</CloseButton>
+      </RegistrationModalHeader>
+
+      <RegistrationModalBody>
+        <form onSubmit={handleRegistrationSubmit}>
+          {/* Category/Division/Level Selection */}
+          <RegistrationFormSection>
+            <RegistrationSectionTitle>Tournament Category</RegistrationSectionTitle>
+
+            <RegistrationFormRow>
+              <RegistrationFormGroup>
+                <RegistrationSelect
+  key={categoryFilterKey}
+  value={registrationForm.category}
+  onChange={(e) => handleRegistrationFormChange('category', e.target.value)}
+  required
+>
+  <option value="">Select Tournament Category</option>
+
+  {registrationTournament?.tournamentCategories?.map((category) => {
+    const division = category.division || '';
+    const skillLevel = category.skillLevel === 'Open' && category.tier
+      ? `Open Tier ${category.tier}`
+      : category.skillLevel || '';
+    const ageCategory = category.ageCategory || '';
+    const displayName = [division, skillLevel, ageCategory].filter(Boolean).join(' | ') || 'Unknown Category';
+
+    // Use logged-in user info
+    const primaryPlayer = {
+      gender: user?.gender || 'male',
+      age: user?.birthDate ? new Date().getFullYear() - new Date(user.birthDate).getFullYear() : 25,
+    };
+
+    const isAllowed = isCategoryAllowed(category, primaryPlayer);
+
+    return (
+      <option
+        key={category._id}
+        value={category._id}
+        disabled={!isAllowed}
+        style={{
+          color: isAllowed ? 'inherit' : '#9ca3af',
+          fontStyle: isAllowed ? 'normal' : 'italic',
+        }}
+      >
+        {displayName}
+      </option>
+    );
+  })}
+</RegistrationSelect>
+              </RegistrationFormGroup>
+            </RegistrationFormRow>
+          </RegistrationFormSection>
 
                   {/* Personal Information */}
-                  <RegistrationFormSection>
-                    <RegistrationSectionTitle>Personal Information</RegistrationSectionTitle>
-                    
-                    {/* Player Information based on category type */}
-                    {registrationForm.category && (() => {
-                      const selectedCategory = Object.values(registrationTournament?.tournamentCategories || {})
-                        .find(cat => cat.id === registrationForm.category);
-                      const categoryType = getCategoryType(selectedCategory?.name || '');
-                      
-                      return (
-                        <div style={{ marginBottom: '20px' }}>
-                          {/* Primary Player (always shown) */}
-                          <div style={{ marginBottom: '16px' }}>
-                            <RegistrationLabel style={{ marginBottom: '8px', display: 'block' }}>
-                              Primary Player (You)
-                            </RegistrationLabel>
-                            <PlayerSlot>
-                              <PlayerSlotContent>
-                                <PlayerInfo>
-                                  <PlayerName>
-                                    {registrationForm.primaryPlayer?.name || 'Enter your name'}
-                                  </PlayerName>
-                                  <PlayerDetails>
-                                    PPLID: {registrationForm.primaryPlayer?.pplId || 'Not assigned'} | 
-                                    Gender: {registrationForm.primaryPlayer?.gender || 'male'} | 
-                                    Age: {registrationForm.primaryPlayer?.age || 'Not specified'}
-                                    {(() => {
-                                      const selectedCategory = Object.values(registrationTournament?.tournamentCategories || {})
-                                        .find(cat => cat.id === registrationForm.category);
-                                      const duprRating = getDuprRatingForCategory(
-                                        selectedCategory?.name, 
-                                        registrationForm.primaryPlayer?.duprRatings
-                                      );
-                                      return duprRating ? ` | DUPR: ${duprRating}` : '';
-                                    })()}
-                                  </PlayerDetails>
-                                </PlayerInfo>
-                              </PlayerSlotContent>
-                            </PlayerSlot>
-                          </div>
+<RegistrationFormSection>
+  <RegistrationSectionTitle>Personal Information</RegistrationSectionTitle>
 
-                          {/* Partner for Doubles */}
-                          {categoryType === 'doubles' && (
-                            <div style={{ marginBottom: '16px' }}>
-                              <RegistrationLabel style={{ marginBottom: '8px', display: 'block' }}>
-                                Partner
-                              </RegistrationLabel>
-                              <PlayerSlot 
-                                onClick={() => handlePlayerSelection('partner')}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                <PlayerSlotContent>
-                                  {registrationForm.partner?.pplId ? (
-                                    <>
-                                      <PlayerInfo>
-                                        <PlayerName>{registrationForm.partner?.name}</PlayerName>
-                                        <PlayerDetails>
-                                          PPLID: {registrationForm.partner?.pplId} | 
-                                          Gender: {registrationForm.partner?.gender} | 
-                                          Age: {registrationForm.partner?.age || 'Not specified'}
-                                          {(() => {
-                                            const selectedCategory = Object.values(registrationTournament?.tournamentCategories || {})
-                                              .find(cat => cat.id === registrationForm.category);
-                                            const duprRating = getDuprRatingForCategory(
-                                              selectedCategory?.name, 
-                                              registrationForm.partner?.duprRatings
-                                            );
-                                            return duprRating ? ` | DUPR: ${duprRating}` : '';
-                                          })()} 
-                                        </PlayerDetails>
-                                      </PlayerInfo>
-                                      <RemovePlayerButton
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleRemovePlayer('partner');
-                                        }}
-                                        title="Remove partner"
-                                      >
-                                        ×
-                                      </RemovePlayerButton>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <AddPlayerIcon>+</AddPlayerIcon>
-                                      <PlayerSlotLabel>Click to select partner</PlayerSlotLabel>
-                                    </>
-                                  )}
-                                </PlayerSlotContent>
-                              </PlayerSlot>
-                            </div>
-                          )}
+  {/* Player Information based on category type */}
+  {registrationForm.category && (() => {
+    const selectedCategory = registrationTournament?.tournamentCategories?.find(
+      cat => cat._id === registrationForm.category
+    );
+    const categoryType = getCategoryType(selectedCategory?.name || '');
+
+    // Pre-fill primary player info from logged-in user
+    const primaryPlayer = {
+      name: registrationForm.primaryPlayer?.name || `${user.firstName} ${user.lastName}` || '',
+      pplId: registrationForm.primaryPlayer?.pplId || user.pplId || 'PPL999',
+      duprId: registrationForm.primaryPlayer?.duprId || user.duprId || '',
+      gender: registrationForm.primaryPlayer?.gender || user.gender || 'male',
+      age: registrationForm.primaryPlayer?.age || (user.birthDate ? new Date().getFullYear() - new Date(user.birthDate).getFullYear() : 25),
+      duprRatings: registrationForm.primaryPlayer?.duprRatings || {}
+    };
+
+    // Get DUPR rating for selected category
+    const duprRating = getDuprRatingForCategory(selectedCategory?.name, primaryPlayer.duprRatings);
+
+    return (
+      <div style={{ marginBottom: '20px' }}>
+        {/* Primary Player (always shown) */}
+        <div style={{ marginBottom: '16px' }}>
+          <RegistrationLabel style={{ marginBottom: '8px', display: 'block' }}>
+            Primary Player (You)
+          </RegistrationLabel>
+          <PlayerSlot>
+            <PlayerSlotContent>
+              <PlayerInfo>
+                <PlayerName>{primaryPlayer.name || 'Enter your name'}</PlayerName>
+                <PlayerDetails>
+                  PPLID: {primaryPlayer.pplId} | 
+                  Gender: {primaryPlayer.gender} | 
+                  Age: {primaryPlayer.age}
+                  DUPRID: {primaryPlayer.duprId}
+                </PlayerDetails>
+              </PlayerInfo>
+            </PlayerSlotContent>
+          </PlayerSlot>
+          </div>
+                         {/* Partner for Doubles */}
+{categoryType === 'doubles' && (
+  <RegistrationFormSection>
+    <RegistrationLabel style={{ marginBottom: '8px', display: 'block' }}>
+      Partner
+    </RegistrationLabel>
+
+    <PlayerSlot 
+      onClick={() => handlePlayerSelection('partner')}
+      style={{ cursor: 'pointer' }}
+    >
+      <PlayerSlotContent>
+        {registrationForm.partner?.pplId ? (
+          <>
+            <PlayerInfo>
+              <PlayerName>{registrationForm.partner.name}</PlayerName>
+              <PlayerDetails>
+                PPLID: {registrationForm.partner.pplId} | 
+                Gender: {registrationForm.partner.gender} | 
+                Age: {registrationForm.partner.age || 'Not specified'}
+                {(() => {
+                  const selectedCategory = registrationTournament?.tournamentCategories?.find(
+                    cat => cat._id === registrationForm.category
+                  );
+                  const duprRating = getDuprRatingForCategory(
+                    selectedCategory?.name, 
+                    registrationForm.partner?.duprRatings
+                  );
+                  return duprRating ? ` | DUPR: ${duprRating}` : '';
+                })()}
+              </PlayerDetails>
+            </PlayerInfo>
+            <RemovePlayerButton
+              onClick={(e) => {
+                e.stopPropagation(); // prevent opening selection modal
+                handleRemovePlayer('partner');
+              }}
+              title="Remove partner"
+            >
+              ×
+            </RemovePlayerButton>
+          </>
+        ) : (
+          <>
+            <AddPlayerIcon>+</AddPlayerIcon>
+            <PlayerSlotLabel>Click to select partner</PlayerSlotLabel>
+          </>
+        )}
+      </PlayerSlotContent>
+    </PlayerSlot>
+  </RegistrationFormSection>
+)}
 
                           {/* Team Members for Team categories */}
                           {categoryType === 'team' && (
@@ -8300,82 +7861,145 @@ function Tournament() {
           </Select>
         </FiltersContainer>
       </SearchSection>
+{filteredTournaments.length > 0 ? (
+  <TournamentGrid>
+    {filteredTournaments.map((tournament) => (
+      <TournamentCard 
+        key={tournament._id} 
+        onClick={() => handleTournamentClick(tournament)}
+        style={{ cursor: 'pointer' }}
+      >
+<TournamentBanner>
+  {tournament.tournamentPicture ? (
+    <img 
+      src={`http://localhost:5000${tournament.tournamentPicture}`} 
+      alt={tournament.tournamentName} 
+      style={{ width: "100%", height: "150px", objectFit: "cover" }}
+    />
+  ) : (
+    <div style={{padding: "40px", textAlign: "center", color: "#888"}}>No Image</div>
+  )}
+  <StatusBadge $status={tournament.status}>
+    {tournament.status}
+  </StatusBadge>
+</TournamentBanner>
 
-      {filteredTournaments.length > 0 ? (
-      <TournamentGrid>
-        {filteredTournaments.map((tournament) => (
-          <TournamentCard 
-            key={tournament.id}
-            onClick={() => handleTournamentClick(tournament)}
-            style={{ cursor: 'pointer' }}
-          >
-            <TournamentBanner>
-              {tournament.bannerUrl && (
-              <img src={tournament.bannerUrl} alt={tournament.name} />
-              )}
-              <StatusBadge $status={tournament.status}>
-                {tournament.status}
-              </StatusBadge>
-            </TournamentBanner>
-                          <TournamentInfo>
-                <TournamentName>{tournament.name}</TournamentName>
-              <TournamentDate>
-                <CalendarIcon />
-                {new Date(tournament.date).toLocaleDateString()}
-              </TournamentDate>
-              <TournamentLocation>
-                <LocationIcon />
-                {tournament.location}
-              </TournamentLocation>
-              <TournamentSkillLevels>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="m22 21-3-3m0 0a5.5 5.5 0 1 0-7.78-7.78 5.5 5.5 0 0 0 7.78 7.78Z" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                {tournament.tournamentCategories ? (
-                  (() => {
-                    // Get unique categories
-                    const categories = new Set();
-                    Object.values(tournament.tournamentCategories).forEach(category => {
-                      if (category.skillLevel?.toLowerCase() === 'open') {
-                        // Ensure tier is a number, default to 1 if not specified
-                        const tier = Number(category.tier) || 1;
-                        categories.add(`Open - Tier ${tier}`);
-                      } else if (['Beginner', 'Intermediate', 'Advanced'].includes(category.skillLevel)) {
-                        categories.add(category.skillLevel);
-                      }
-                    });
-                    
-                    return Array.from(categories).join(', ');
-                  })()
-                ) : (
-                  // Fallback for old data structure
-                  `${tournament.tournamentType.charAt(0).toUpperCase() + tournament.tournamentType.slice(1)}${tournament.tournamentType === 'open' ? ` - Tier ${tournament.tier}` : ''}`
-                )}
-              </TournamentSkillLevels>
-              <TournamentStats>
-                <RegistrationFee>
-                  <MoneyIcon />
-                  <div>
-                    <span>₱{tournament.entryFee}</span>
-                    <span></span> 
-                  </div>
-                </RegistrationFee>
-              </TournamentStats>
-              <RegisterButton 
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent card click when clicking register
-                  handleRegister(tournament.id);
-                }}
-                disabled={tournament.currentParticipants >= tournament.maxParticipants}
-              >
-                {tournament.currentParticipants >= tournament.maxParticipants 
-                  ? 'Full'
-                  : !isAuthenticated 
-                  ? 'Sign In to Register'
-                  : 'Register Now'}
-              </RegisterButton>
+        <TournamentInfo>
+          <TournamentName>{tournament.tournamentName}</TournamentName>
+<TournamentDate>
+  <CalendarIcon />
+  {(() => {
+    const dates = tournament.tournamentDates || [];
+    if (!dates.length) return "TBA";
+
+    const sortedDates = dates.map(d => new Date(d)).sort((a, b) => a - b);
+    const ranges = [];
+    let start = sortedDates[0];
+    let end = sortedDates[0];
+
+    for (let i = 1; i <= sortedDates.length; i++) {
+      const current = sortedDates[i];
+      const prev = sortedDates[i - 1];
+
+      if (current && (current - prev) / (1000 * 60 * 60 * 24) === 1) {
+        end = current; // consecutive day
+      } else {
+        ranges.push([start, end]);
+        start = current;
+        end = current;
+      }
+    }
+
+    const formatted = ranges
+      .map(([s, e]) => {
+        const sameMonth = s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear();
+        const sameDay = s.getTime() === e.getTime();
+        const monthFormat = { month: "short" };
+
+        if (sameDay) return s.toLocaleDateString("en-US", { ...monthFormat, day: "numeric" });
+
+        if (sameMonth) return `${s.toLocaleDateString("en-US", monthFormat)} ${s.getDate()}–${e.getDate()}`;
+
+        return `${s.toLocaleDateString("en-US", { month: "short", day: "numeric" })}–${e.toLocaleDateString(
+          "en-US",
+          { month: "short", day: "numeric" }
+        )}`;
+      })
+      .join(" & ");
+
+    return `${formatted}, ${sortedDates[0].getFullYear()}`;
+  })()}
+</TournamentDate>
+          <TournamentLocation>
+            <LocationIcon />
+            {tournament.venueCity}, {tournament.venueState}
+          </TournamentLocation>
+
+          <TournamentSkillLevels>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="m22 21-3-3m0 0a5.5 5.5 0 1 0-7.78-7.78 5.5 5.5 0 0 0 7.78 7.78Z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+           {tournament.tournamentCategories
+  ?.map(cat => {
+    if (cat.skillLevel.toLowerCase() === 'open') {
+      return `Open - Tier ${cat.tier || 1}`;
+    }
+    return cat.skillLevel;
+  })
+  .join(', ')
+  .toUpperCase()}
+</TournamentSkillLevels>
+
+<TournamentStats>
+  <RegistrationFee>
+    <MoneyIcon />
+    <div>
+      <span>
+        {tournament
+          ? (() => {
+              const min = tournament.entryFeeMin ?? 0;
+              const max = tournament.entryFeeMax;
+
+              if (min === 0 && (!max || max === 0)) return "FREE";
+
+              if (max != null && max !== min) {
+                return `₱${min.toLocaleString()} – ₱${max.toLocaleString()}`;
+              }
+
+              return `₱${min.toLocaleString()}`;
+            })()
+          : "Loading..."}
+      </span>
+    </div>
+  </RegistrationFee>
+</TournamentStats>
+
+<RegisterButton
+  onClick={(e) => {
+    e.stopPropagation(); // Prevent card click
+    setSelectedTournament(tournament);
+    setShowDetailedView(true);
+
+    if (!isAuthenticated) {
+      // Guest: show sign-in modal instead of registration
+      setShowAuthModal(true);
+    } else {
+      // Logged in: show registration modal
+      setRegistrationTournament(tournament);
+      setShowRegistrationModal(true);
+    }
+  }}
+  disabled={tournament.currentParticipants >= tournament.maxParticipants}
+>
+  {tournament.currentParticipants >= tournament.maxParticipants
+    ? "Full"
+    : !isAuthenticated
+    ? "Sign In to Register"
+    : "Register Now"}
+</RegisterButton>
+
             </TournamentInfo>
           </TournamentCard>
         ))}
@@ -8400,132 +8024,103 @@ function Tournament() {
         />
       )}
 
-     
+     {showRegistrationForm && selectedTournament && (
+  <RegistrationForm
+    tournament={selectedTournament}
+    onClose={() => setShowRegistrationForm(false)}
+  />
+)}
+
       
-      {/* View Form Modal (Read-only preview for profile) */}
-      {showViewFormModal && viewFormTournament && (
-        <RegistrationModal onClick={closeViewFormModal}>
-          <RegistrationModalContent onClick={e => e.stopPropagation()}>
-            <RegistrationModalHeader>
-              <RegistrationModalTitle>Registration Form Preview - {viewFormTournament.name}</RegistrationModalTitle>
-              <CloseButton onClick={closeViewFormModal}>×</CloseButton>
-            </RegistrationModalHeader>
+{showViewFormModal && viewFormTournament && (
+  <RegistrationModal onClick={closeViewFormModal}>
+    <RegistrationModalContent onClick={e => e.stopPropagation()}>
+      <RegistrationModalHeader>
+        <RegistrationModalTitle>
+          Registration Form Preview - {viewFormTournament.tournamentName}
+        </RegistrationModalTitle>
+        <CloseButton onClick={closeViewFormModal}>×</CloseButton>
+      </RegistrationModalHeader>
 
-            <RegistrationModalBody>
-              <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '8px', marginBottom: '24px' }}>
-                <div style={{ color: '#475569', fontSize: '14px', fontWeight: '500' }}>
-                  📋 This is a preview of the registration form for this tournament. To actually register, please visit the tournament from the main tournaments page.
-                </div>
+      <RegistrationModalBody>
+        {/* Tournament Categories */}
+        <RegistrationFormSection>
+          <RegistrationSectionTitle>Available Tournament Categories</RegistrationSectionTitle>
+          {viewFormTournament.tournamentCategories.map(category => (
+            <div key={category._id} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px', marginBottom: '12px', background: '#fafafa' }}>
+              <div style={{ fontWeight: '600', color: '#1e293b', marginBottom: '8px' }}>{category.division}</div>
+              <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '8px' }}>
+                <strong>Skill Level:</strong> {category.skillLevel.toLowerCase() === 'open' ? `Open - Tier ${category.tier || 1}` : category.skillLevel}
               </div>
-
-              {/* Tournament Categories Preview */}
-              <RegistrationFormSection>
-                <RegistrationSectionTitle>Available Tournament Categories</RegistrationSectionTitle>
-                
-                {viewFormTournament.tournamentCategories && Object.values(viewFormTournament.tournamentCategories).map((category) => (
-                  <div key={category.id} style={{ 
-                    border: '1px solid #e2e8f0', 
-                    borderRadius: '8px', 
-                    padding: '16px', 
-                    marginBottom: '12px',
-                    background: '#fafafa'
-                  }}>
-                    <div style={{ fontWeight: '600', color: '#1e293b', marginBottom: '8px' }}>
-                      {category.name}
-                    </div>
-                    <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '8px' }}>
-                      <strong>Skill Level:</strong> {category.skillLevel === 'open' ? `Open - Tier ${category.tier}` : category.skillLevel}
-                    </div>
-                    {category.ageRange && (
-                      <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '8px' }}>
-                        <strong>Age Range:</strong> {category.ageRange}
-                      </div>
-                    )}
-                    <div style={{ fontSize: '14px', color: '#64748b' }}>
-                      <strong>Entry Fee:</strong> ₱{viewFormTournament.entryFee}
-                    </div>
-                  </div>
-                ))}
-              </RegistrationFormSection>
-
-              {/* Required Information Preview */}
-              <RegistrationFormSection>
-                <RegistrationSectionTitle>Required Information from Participants</RegistrationSectionTitle>
-                
-                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px' }}>
-                  <div style={{ marginBottom: '12px' }}>
-                    <strong style={{ color: '#1e293b' }}>Player Information:</strong>
-                    <ul style={{ margin: '8px 0', paddingLeft: '20px', color: '#64748b' }}>
-                      <li>Full Name</li>
-                      <li>Gender</li>
-                      <li>Age</li>
-                      <li>DUPR Ratings (Singles & Doubles)</li>
-                    </ul>
-                  </div>
-                  
-                  <div style={{ marginBottom: '12px' }}>
-                    <strong style={{ color: '#1e293b' }}>Contact Information:</strong>
-                    <ul style={{ margin: '8px 0', paddingLeft: '20px', color: '#64748b' }}>
-                      <li>Email Address</li>
-                      <li>Contact Number</li>
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <strong style={{ color: '#1e293b' }}>Payment Information:</strong>
-                    <ul style={{ margin: '8px 0', paddingLeft: '20px', color: '#64748b' }}>
-                      <li>Proof of Payment (Image or PDF)</li>
-                      <li>Registration Fee: ₱{viewFormTournament.entryFee}</li>
-                    </ul>
-                  </div>
+              {category.ageCategory && (
+                <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '8px' }}>
+                  <strong>Age Category:</strong> {category.ageCategory}
                 </div>
-              </RegistrationFormSection>
-
-              {/* Payment Details Preview */}
-              <RegistrationFormSection>
-                <RegistrationSectionTitle>Payment Details</RegistrationSectionTitle>
-                
-                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px' }}>
-                  <div style={{ marginBottom: '16px' }}>
-                    <strong style={{ color: '#1e293b' }}>Bank Transfer Details:</strong>
-                    <div style={{ marginTop: '8px', fontSize: '14px', color: '#64748b' }}>
-                      <div><strong>Bank Name:</strong> BDO Unibank</div>
-                      <div><strong>Account Name:</strong> John Doe Tournament</div>
-                      <div><strong>Account Number:</strong> 1234-5678-9012</div>
-                      <div><strong>Reference:</strong> TEAM-REG-2024</div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <strong style={{ color: '#1e293b' }}>Alternative Payment:</strong>
-                    <div style={{ marginTop: '8px', fontSize: '14px', color: '#64748b' }}>
-                      GCash QR Code available during registration
-                    </div>
-                  </div>
-                </div>
-              </RegistrationFormSection>
-
-              <div style={{ textAlign: 'center', marginTop: '24px' }}>
-                <button 
-                  onClick={closeViewFormModal}
-                  style={{
-                    background: '#29ba9b',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '12px 24px',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Close Preview
-                </button>
+              )}
+              <div style={{ fontSize: '14px', color: '#64748b' }}>
+                <strong>Max Participants:</strong> {category.maxParticipants}
               </div>
-            </RegistrationModalBody>
-          </RegistrationModalContent>
-        </RegistrationModal>
-      )}
+            </div>
+          ))}
+        </RegistrationFormSection>
+
+        {/* Required Information */}
+        <RegistrationFormSection>
+          <RegistrationSectionTitle>Required Information from Participants</RegistrationSectionTitle>
+          <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px' }}>
+            <div style={{ marginBottom: '12px' }}>
+              <strong style={{ color: '#1e293b' }}>Player Information:</strong>
+              <ul style={{ margin: '8px 0', paddingLeft: '20px', color: '#64748b' }}>
+                <li>Full Name</li>
+                <li>Gender</li>
+                <li>Age</li>
+                <li>DUPR ID</li>
+              </ul>
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <strong style={{ color: '#1e293b' }}>Contact Information:</strong>
+              <ul style={{ margin: '8px 0', paddingLeft: '20px', color: '#64748b' }}>
+                <li>Email Address</li>
+                <li>Contact Number</li>
+              </ul>
+            </div>
+          </div>
+        </RegistrationFormSection>
+
+        {/* Payment Details */}
+        <RegistrationFormSection>
+          <RegistrationSectionTitle>Payment Details</RegistrationSectionTitle>
+          {viewFormTournament.paymentMethods.map((pm, index) => (
+            <div key={index} style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', marginBottom: '12px' }}>
+              <div><strong>Bank Name:</strong> {pm.bankName}</div>
+              <div><strong>Account Name:</strong> {pm.accountName}</div>
+              <div><strong>Account Number:</strong> {pm.accountNumber}</div>
+              {pm.qrCodeImage && <img src={pm.qrCodeImage} alt="QR Code" style={{ width: '120px', marginTop: '8px' }} />}
+            </div>
+          ))}
+        </RegistrationFormSection>
+
+        <div style={{ textAlign: 'center', marginTop: '24px' }}>
+          <button 
+            onClick={closeViewFormModal}
+            style={{
+              background: '#29ba9b',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px 24px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            Close Preview
+          </button>
+        </div>
+      </RegistrationModalBody>
+    </RegistrationModalContent>
+  </RegistrationModal>
+)}
 
     </PageContainer>
   );

@@ -3,6 +3,9 @@ import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
+import { LoadScript, GoogleMap, Marker, } from "@react-google-maps/api";
+import { useLocation } from 'react-router-dom';
+
 
 
 // Styled Components
@@ -1104,13 +1107,17 @@ const HostTournament = () => {
     tournamentCategories: []
   });
   
+  const [mapCenter, setMapCenter] = useState({ lat: 14.5995, lng: 120.9842 });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [showMap, setShowMap] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [tempSelectedDates, setTempSelectedDates] = useState([]);
-  
+  const [addressInput, setAddressInput] = useState("");
+  const location = useLocation();
+  const editTournament = location.state?.editTournament;
+
   // Rich text editor refs
   const rulesEditorRef = useRef(null);
   const eventsEditorRef = useRef(null);
@@ -1118,6 +1125,11 @@ const HostTournament = () => {
   const storedUser = JSON.parse(localStorage.getItem("user"));
 const token = storedUser?.token;
 const user = storedUser; // or storedUser.user if login stores nested user object
+const tournamentPictureURL = formData.tournamentPicture
+  ? formData.tournamentPicture instanceof File
+    ? URL.createObjectURL(formData.tournamentPicture)
+    : formData.tournamentPicture // already a URL string
+  : null;
 
 if (!user || !token) {
   return (
@@ -1134,6 +1146,56 @@ if (!user || !token) {
     </HostTournamentContainer>
   );
 }
+
+useEffect(() => {
+  if (editTournament) {
+    setFormData(prev => ({
+      ...prev,
+      tournamentName: editTournament.tournamentName || '',
+      description: editTournament.description || '',
+      tournamentPicture: editTournament.tournamentPicture || null,
+      registrationInstructions: editTournament.registrationInstructions || '',
+      tournamentDates: editTournament.tournamentDates || [],
+      registrationDeadline: editTournament.registrationDeadline || '',
+      category: editTournament.category || '',
+      skillLevel: editTournament.skillLevel || '',
+      entryFeeMin: editTournament.entryFeeMin || '',
+      entryFeeMax: editTournament.entryFeeMax || '',
+      prizePool: editTournament.prizePool || '',
+      venueName: editTournament.venueName || '',
+      venueAddress: editTournament.venueAddress || '',
+      venueCity: editTournament.venueCity || '',
+      venueState: editTournament.venueState || '',
+      venueZip: editTournament.venueZip || '',
+      contactEmail: editTournament.contactEmail || '',
+      contactPhone: editTournament.contactPhone || '',
+      rules: editTournament.rules || '',
+      events: editTournament.events || '',
+      paymentMethods: editTournament.paymentMethods || [
+        {
+          id: 1,
+          bankName: '',
+          accountName: '',
+          accountNumber: '',
+          qrCodeImage: null
+        }
+      ],
+      additionalInfo: editTournament.additionalInfo || '',
+      tournamentCategories: editTournament.tournamentCategories || []
+    }));
+  }
+}, [editTournament]);
+
+
+// 3️⃣ pre-fill rich text editors
+useEffect(() => {
+  if (rulesEditorRef.current && formData.rules) {
+    rulesEditorRef.current.innerHTML = formData.rules;
+  }
+  if (eventsEditorRef.current && formData.events) {
+    eventsEditorRef.current.innerHTML = formData.events;
+  }
+}, [formData.rules, formData.events]);
   // Initialize with one empty category
   useEffect(() => {
     if (formData.tournamentCategories.length === 0) {
@@ -1152,6 +1214,17 @@ if (!user || !token) {
       }));
     }
   }, []);
+
+useEffect(() => {
+  return () => {
+    formData.paymentMethods.forEach(pm => {
+      if (pm.qrCodeImage instanceof File) {
+        URL.revokeObjectURL(pm.qrCodeImage);
+      }
+    });
+  };
+}, [formData.paymentMethods]);
+
 
   // Initialize rich text editor content
   useEffect(() => {
@@ -1424,6 +1497,64 @@ if (!user || !token) {
     }));
   };
 
+
+
+// Add this to your component
+const handleAddressSearch = async () => {
+  if (!addressInput) return;
+
+  try {
+    const res = await axios.get(
+      "https://maps.googleapis.com/maps/api/geocode/json",
+      {
+        params: {
+          address: addressInput,
+          key: "YOUR_API_KEY_HERE", // replace with your Google Maps API key
+        },
+      }
+    );
+
+    const result = res.data.results[0];
+    if (result) {
+      // Extract city, state, zip
+      let city = "";
+      let state = "";
+      let zip = "";
+
+      result.address_components.forEach(component => {
+        const types = component.types;
+        if (types.includes("locality")) city = component.long_name;
+        if (types.includes("administrative_area_level_1")) state = component.short_name;
+        if (types.includes("postal_code")) zip = component.long_name;
+      });
+
+      const newLocation = {
+        name: result.formatted_address,
+        address: result.formatted_address,
+        lat: result.geometry.location.lat,
+        lng: result.geometry.location.lng,
+      };
+
+      setSelectedLocation(newLocation);
+
+      // Update form data
+      setFormData(prev => ({
+        ...prev,
+        venueName: newLocation.name,
+        venueAddress: newLocation.address,
+        venueCity: city,
+        venueState: state,
+        venueZip: zip,
+      }));
+    } else {
+      alert("Address not found, try again!");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error fetching location.");
+  }
+};
+
   const handleQRCodeUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -1523,30 +1654,10 @@ if (!user || !token) {
     }
   };
 
-  const handleMapClick = () => {
-    setShowMap(true);
-    // Simulate opening Google Maps for location selection
-    // In a real implementation, this would integrate with Google Maps API
-    setTimeout(() => {
-      const mockLocation = {
-        name: "Riverside Pickleball Complex",
-        address: "123 Tournament Drive, Riverside, CA 92501",
-        lat: 33.9533,
-        lng: -117.3962
-      };
-      setSelectedLocation(mockLocation);
-      setFormData(prev => ({
-        ...prev,
-        venueName: mockLocation.name,
-        venueAddress: mockLocation.address,
-        venueCity: "Riverside",
-        venueState: "CA",
-        venueZip: "92501"
-      }));
-      setShowMap(false);
-      // Removed notification as location selection should be silent
-    }, 2000);
-  };
+const handleMapClick = () => {
+  setShowMap(true);
+  // Optionally, scroll or focus map UI
+};
 
   const clearLocation = () => {
     setSelectedLocation(null);
@@ -1801,18 +1912,22 @@ const handleCancel = () => {
               </FileUploadArea>
             ) : (
               <div style={{ position: 'relative', marginTop: '12px' }}>
-                <img 
-                  src={URL.createObjectURL(formData.tournamentPicture)} 
-                  alt="Tournament Picture" 
-                  style={{ 
-                    width: '100%', 
-                    height: '400px', 
-                    objectFit: 'cover',
-                    borderRadius: '20px',
-                    border: '2px solid #e2e8f0',
-                    display: 'block'
-                  }} 
-                />
+                <img
+  src={
+    formData.tournamentPicture instanceof File
+      ? URL.createObjectURL(formData.tournamentPicture)
+      : formData.tournamentPicture || ''
+  }
+  alt="Tournament Picture"
+  style={{
+    width: '100%',
+    height: '400px',
+    objectFit: 'cover',
+    borderRadius: '20px',
+    border: '2px solid #e2e8f0',
+    display: 'block'
+  }}
+/>
                 <button
                   type="button"
                   onClick={removeTournamentPicture}
@@ -2179,61 +2294,128 @@ const handleCancel = () => {
           </FormRow>
         </FormSection>
 
-        {/* Venue Information */}
-        <FormSection>
-          <SectionTitle>Venue Location</SectionTitle>
-          
-          {!selectedLocation ? (
-            <FormGroup>
-              <Label>Select Tournament Location *</Label>
-              <MapContainer>
-                {showMap ? (
-                  <MapPlaceholder>
-                    <MapIcon>🗺️</MapIcon>
-                    <MapText>Loading Google Maps...</MapText>
-                    <MapSubtext>Please wait while we load the map for location selection</MapSubtext>
-                  </MapPlaceholder>
-                ) : (
-                  <MapPlaceholder onClick={handleMapClick}>
-                    <MapIcon>📍</MapIcon>
-                    <MapText>Pin Your Tournament Location</MapText>
-                    <MapSubtext>Click here to open Google Maps and select your tournament venue location</MapSubtext>
-                  </MapPlaceholder>
-                )}
-              </MapContainer>
-            </FormGroup>
-          ) : (
-            <FormGroup>
-              <Label>Selected Location</Label>
-              <LocationInfo>
-                <LocationTitle>{selectedLocation.name}</LocationTitle>
-                <LocationAddress>{selectedLocation.address}</LocationAddress>
-                <LocationActions>
-                  <LocationButton variant="primary" onClick={openInGoogleMaps}>
-                    View in Google Maps
-                  </LocationButton>
-                  <LocationButton onClick={clearLocation}>
-                    Change Location
-                  </LocationButton>
-                </LocationActions>
-              </LocationInfo>
-            </FormGroup>
-          )}
+{/* Venue Information */}
+<FormSection>
+  <SectionTitle>Venue Location</SectionTitle>
 
-          {/* Manual entry option for venue name if needed */}
-          {selectedLocation && (
-            <FormGroup>
-              <Label>Venue Name (Edit if needed)</Label>
-              <Input
-                type="text"
-                name="venueName"
-                value={formData.venueName}
-                onChange={handleInputChange}
-                placeholder="Enter venue name"
-              />
-            </FormGroup>
-          )}
-        </FormSection>
+  {/* Google Map (always visible) */}
+  <FormGroup>
+    <LoadScript googleMapsApiKey="AIzaSyDTLYs6fgEmKxspHDNzTrKNwQiv5EI4AU8">
+      <GoogleMap
+        mapContainerStyle={{ width: "100%", height: "400px" }}
+        center={selectedLocation || mapCenter || { lat: 14.5995, lng: 120.9842 }} // default Manila
+        zoom={15}
+        onClick={(e) => {
+          const lat = e.latLng.lat();
+          const lng = e.latLng.lng();
+
+          const geocoder = new window.google.maps.Geocoder();
+          geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+            if (status === "OK" && results[0]) {
+              const result = results[0];
+              const components = result.address_components;
+
+              const city = components.find((c) => c.types.includes("locality"))?.long_name || "";
+              const state = components.find((c) =>
+                c.types.includes("administrative_area_level_1")
+              )?.short_name || "";
+              const zip = components.find((c) => c.types.includes("postal_code"))?.long_name || "";
+
+              const locationData = {
+                name: result.formatted_address,
+                address: result.formatted_address,
+                lat,
+                lng,
+              };
+
+              setSelectedLocation(locationData);
+              setFormData((prev) => ({
+                ...prev,
+                venueName: locationData.name,
+                venueAddress: locationData.address,
+                venueCity: city,
+                venueState: state,
+                venueZip: zip,
+              }));
+              setMapCenter({ lat, lng });
+            } else {
+              alert("Could not fetch location. Try again.");
+            }
+          });
+        }}
+      >
+        {selectedLocation && <Marker position={selectedLocation} />}
+      </GoogleMap>
+    </LoadScript>
+  </FormGroup>
+
+  {/* Show selected location info */}
+  {selectedLocation && (
+    <>
+      <FormGroup>
+        <Label>Selected Location</Label>
+        <LocationInfo>
+          <LocationTitle>{selectedLocation.name || "Custom Location"}</LocationTitle>
+          <LocationAddress>
+            {selectedLocation.address || `${selectedLocation.lat}, ${selectedLocation.lng}`}
+          </LocationAddress>
+          <LocationActions>
+            <LocationButton variant="primary" onClick={openInGoogleMaps}>
+              View in Google Maps
+            </LocationButton>
+            <LocationButton onClick={clearLocation}>Change Location</LocationButton>
+          </LocationActions>
+        </LocationInfo>
+      </FormGroup>
+
+      <FormGroup>
+        <Label>Venue Name (Edit if needed)</Label>
+        <Input
+          type="text"
+          name="venueName"
+          value={formData.venueName}
+          onChange={handleInputChange}
+          placeholder="Enter venue name"
+        />
+      </FormGroup>
+
+      <FormGroup>
+        <Label>City</Label>
+        <Input
+          type="text"
+          name="venueCity"
+          value={formData.venueCity}
+          onChange={handleInputChange}
+          placeholder="City"
+        />
+      </FormGroup>
+
+      <FormGroup>
+        <Label>State</Label>
+        <Input
+          type="text"
+          name="venueState"
+          value={formData.venueState}
+          onChange={handleInputChange}
+          placeholder="State"
+        />
+      </FormGroup>
+
+      <FormGroup>
+        <Label>ZIP Code</Label>
+        <Input
+          type="text"
+          name="venueZip"
+          value={formData.venueZip}
+          onChange={handleInputChange}
+          placeholder="ZIP"
+        />
+      </FormGroup>
+    </>
+  )}
+</FormSection>
+
+
 
         {/* Contact Information */}
         <FormSection>
@@ -2345,17 +2527,24 @@ const handleCancel = () => {
                         </QRCodePlaceholder>
                       ) : (
                         <div style={{ position: 'relative' }}>
-                          <img 
-                            src={URL.createObjectURL(paymentMethod.qrCodeImage)} 
-                            alt="QR Code" 
-                            style={{ 
-                              width: '100%', 
-                              height: '200px', 
-                              objectFit: 'contain',
-                              borderRadius: '8px',
-                              border: '2px solid #e0e0e0'
-                            }} 
-                          />
+                          <div style={{ position: 'relative' }}>
+  <img
+    src={
+      paymentMethod.qrCodeImage instanceof File
+        ? URL.createObjectURL(paymentMethod.qrCodeImage)
+        : paymentMethod.qrCodeImage || ''
+    }
+    alt="QR Code"
+    style={{
+      width: '100%',
+      height: '200px',
+      objectFit: 'contain',
+      borderRadius: '8px',
+      border: '2px solid #e0e0e0'
+    }}
+  />
+</div>
+
                           <button
                             type="button"
                             onClick={() => removeQRCodeImage(paymentMethod.id)}

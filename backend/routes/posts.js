@@ -1,4 +1,3 @@
-// routes/posts.js
 const express = require('express');
 const router = express.Router();
 const {
@@ -11,32 +10,39 @@ const {
   deletePost,
   approvePost,
   rejectPost,
-  deleteComment, 
+  deleteComment,
   deleteReply,
   deletePostSuperAdmin,
 } = require('../controllers/postController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// routes/posts.js
-// Public: get approved posts
+// ----------------------
+// Public route
+// ----------------------
 router.get('/', getPosts);
 
-// Protected: create / like / comment / approve / reject
-router.post('/', authMiddleware, createPost);
-router.put('/:id/like', authMiddleware, toggleLikePost);
-router.get('/:postId/comments', authMiddleware, getComments);
-router.post('/:postId/comments', authMiddleware, addComment);
-router.post('/:postId/comments/:commentId/replies', authMiddleware, addReply);
-router.patch('/:id/approve', authMiddleware, approvePost);
-router.patch('/:id/reject', authMiddleware, rejectPost);
+// ----------------------
+// Protected routes (any logged-in user)
+// ----------------------
+router.use(authMiddleware());
 
-// Delete a comment
-router.delete('/:postId/comments/:commentId', authMiddleware, deleteComment);
-// Delete a reply
-router.delete('/:postId/comments/:commentId/replies/:replyId', authMiddleware, deleteReply);
-// Get posts
-router.get('/', authMiddleware, getPosts);
-// Delete a post
-router.delete('/:id', authMiddleware, deletePost);
-router.delete('/superadmin/:id', authMiddleware, deletePostSuperAdmin);
+router.post('/', createPost);
+router.put('/:id/like', toggleLikePost);
+
+router.get('/:postId/comments', getComments);
+router.post('/:postId/comments', addComment);
+router.post('/:postId/comments/:commentId/replies', addReply);
+
+router.delete('/:id', deletePost);
+router.delete('/:postId/comments/:commentId', deleteComment);
+router.delete('/:postId/comments/:commentId/replies/:replyId', deleteReply);
+
+// ----------------------
+// Superadmin-only routes
+// ----------------------
+router.patch('/:id/approve', authMiddleware(['superadmin']), approvePost);
+
+router.patch('/:id/reject', authMiddleware(['superadmin']), rejectPost);
+router.delete('/superadmin/:id', authMiddleware(['superadmin']), deletePostSuperAdmin);
+
 module.exports = router;

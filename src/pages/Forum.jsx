@@ -2643,13 +2643,11 @@ const handleReplyClick = (commentId) => {
 
 const createPost = async (postData) => {
   try {
-    const response = await axios.post('http://localhost:5000/api/posts', postData, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    return { success: true, post: response.data };
+    const response = await axios.post("http://localhost:5000/api/posts", postData);
+    return { success: true, post: response.data.post };
   } catch (err) {
-    console.error('Create post error:', err);
-    return { success: false };
+    console.error("Create post error:", err.response?.data || err.message);
+    return { success: false, error: err.response?.data || err.message };
   }
 };
 
@@ -2715,7 +2713,7 @@ const handleSubmitPost = async (e) => {
         showNotification('Post created successfully!', 'success');
       } else {
         // Don't add to feed — only notify user
-        showNotification('Your post has been sent for superadmin approval.', 'info');
+        showNotification('Your post has been sent for superadmin approval.', 'Thank you for interacting');
       }
     } else {
       showNotification('Failed to create post. Please try again.', 'error');

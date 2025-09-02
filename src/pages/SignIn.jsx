@@ -568,7 +568,7 @@ import viteLogo from "/vite.svg";
             )}
           </Form>
 
-          <Divider>
+{/*       <Divider>
             <span>or continue with</span>
           </Divider>
 
@@ -578,7 +578,7 @@ import viteLogo from "/vite.svg";
               Google
             </SocialButton>
           </SocialButtons>
-
+*/}
           <LinkText>
             Don't have an account?<a href="/register">Create one</a>
           </LinkText>
