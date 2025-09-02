@@ -4798,7 +4798,7 @@ if (skillLevel === 'Open' && category?.tier) {
     style={{ border: 0 }}
     loading="lazy"
     allowFullScreen
-    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyDTLYs6fgEmKxspHDNzTrKNwQiv5EI4AU8&q=${encodeURIComponent(
+    src={`https://www.google.com/maps/embed/v1/place?key=GOOGLEAPI=${encodeURIComponent(
       `${selectedTournament.venueName}, ${selectedTournament.venueAddress}, ${selectedTournament.venueCity}, ${selectedTournament.venueState} ${selectedTournament.venueZip}`
     )}`}
   ></iframe>

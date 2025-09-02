@@ -2300,7 +2300,7 @@ const handleCancel = () => {
 
   {/* Google Map (always visible) */}
   <FormGroup>
-    <LoadScript googleMapsApiKey="AIzaSyDTLYs6fgEmKxspHDNzTrKNwQiv5EI4AU8">
+    <LoadScript googleMapsApiKey="GOOGLEAPI">
       <GoogleMap
         mapContainerStyle={{ width: "100%", height: "400px" }}
         center={selectedLocation || mapCenter || { lat: 14.5995, lng: 120.9842 }} // default Manila
