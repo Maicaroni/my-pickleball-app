@@ -5,9 +5,7 @@ import { FaEllipsisH } from 'react-icons/fa';
 import AuthModal from '../components/AuthModal';
 import { useAuth } from '../contexts/AuthContext';
 import { FiTrash2 } from "react-icons/fi"; // trash icon
-import { FiFlag } from "react-icons/fi"; 
-import Dropdown from 'react-bootstrap/Dropdown';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { FiFlag } from "react-icons/fi";
 
 
 import axios from 'axios';
@@ -385,6 +383,8 @@ const PostAuthor = styled.div`
 const PostContent = styled.div`
   padding: 0 32px 12px;
   text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   
   @media (max-width: 768px) {
     padding: 0 24px 12px;
@@ -396,6 +396,8 @@ const PostContent = styled.div`
     line-height: 1.6;
     color: #334155;
     text-align: left;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 
     @media (max-width: 768px) {
       font-size: 14px;
@@ -656,6 +658,7 @@ const CommentTextArea = styled.input`
   font-size: 14px;
   font-family: inherit;
   background: transparent;
+  white-space: pre-wrap;
 
   &::placeholder {
     color: #94a3b8;
@@ -740,6 +743,7 @@ const CommentItemContent = styled.div`
     
     .comment-text {
       font-weight: 400;
+      white-space: pre-wrap;
     }
   }
   
@@ -893,6 +897,7 @@ const ReplyTextArea = styled.input`
   font-family: inherit;
   outline: none;
   transition: all 0.2s ease;
+  white-space: pre-wrap;
 
   &:focus {
     border-color: #29ba9b;
@@ -1029,6 +1034,8 @@ const CommentContent = styled.div`
   flex: 1;
   font-size: 14px;
   line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 
   span {
     font-weight: 600;
@@ -1150,6 +1157,9 @@ const PostTextArea = styled.textarea`
   font-family: inherit;
   margin-bottom: 0px;
   overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
   
   @media (max-width: 768px) {
     font-size: 14px;
@@ -1590,6 +1600,8 @@ const ReportModalBody = styled.div`
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 
   /* Custom scrollbar styling - matches notification component */
   &::-webkit-scrollbar {
@@ -1638,6 +1650,8 @@ const ReportModalBody = styled.div`
     color: #64748b;
     line-height: 1.6;
     text-align: center;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 
     @media (max-width: 768px) {
       font-size: 15px;
@@ -1665,6 +1679,8 @@ const ReportOption = styled.button`
   font-weight: 500;
   color: ${props => props.$selected ? '#15803d' : '#374151'};
   position: relative;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 
   @media (max-width: 768px) {
     padding: 16px 18px;
@@ -2329,7 +2345,14 @@ function Forum() {
     textarea.style.height = Math.max(48, textarea.scrollHeight) + 'px'; // Min 48px for 2 lines with new line-height
   };
 
-  // Fetch posts on mount and page change
+
+// Utility to get token safely
+const getToken = () => {
+  const token = user?.token || localStorage.getItem("user") && JSON.parse(localStorage.getItem("user")).token;
+  return token;
+};
+
+
 // Fetch posts on mount and page change
 useEffect(() => {
   const fetchPosts = async () => {
@@ -2337,51 +2360,34 @@ useEffect(() => {
       setLoading(true);
       setError(null);
 
-      const config = user?.token
-        ? { headers: { Authorization: `Bearer ${user.token}` } }
-        : {};
+      const token = getToken();
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
-      const response = await axios.get(
-        `http://localhost:5000/api/posts?status=approved&page=${page}&limit=10`,
-        config
-      );
-
+      const response = await axios.get(`/api/posts?status=approved&page=${page}&limit=10`, config);
       const { posts: newPosts, totalCount } = response.data;
+
       setPosts(page === 1 ? newPosts : prev => [...prev, ...newPosts]);
       setHasMore(page * 10 < totalCount);
 
-      // Fetch comments only if logged in
-      if (user) {
+      if (token) {
+        // Fetch comments
         const commentPromises = newPosts.map(post =>
-          axios.get(`http://localhost:5000/api/posts/${post._id}/comments`, {
-            headers: { Authorization: `Bearer ${user.token}` },
-          })
+          axios.get(`/api/posts/${post._id}/comments`, { headers: { Authorization: `Bearer ${token}` } })
         );
-
         const commentResults = await Promise.allSettled(commentPromises);
 
         const commentsMap = {};
         const repliesMap = {};
-
         commentResults.forEach((result, i) => {
           const postId = newPosts[i]._id;
           if (result.status === "fulfilled") {
             const comments = result.value.data.comments || [];
             commentsMap[postId] = comments;
-
-            comments.forEach(comment => {
-              if (comment.replies?.length > 0) {
-                repliesMap[comment._id] = true;
-              }
+            comments.forEach(c => {
+              if (c.replies?.length > 0) repliesMap[c._id] = true;
             });
-          } else {
-            console.error(
-              `Failed to fetch comments for post ${postId}:`,
-              result.reason
-            );
           }
         });
-
         setPostComments(prev => ({ ...prev, ...commentsMap }));
         setShowReplies(prev => ({ ...prev, ...repliesMap }));
       }
@@ -2396,99 +2402,167 @@ useEffect(() => {
   fetchPosts();
 }, [page, user]);
 
-const handleInteraction = async (e, action, postId) => {
+
+const handleInteraction = async (e, action, postId, extra = {}) => {
   e.preventDefault();
 
-  // Redirect guests to login modal
   if (!isAuthenticated) {
     setShowAuthModal(true);
     return;
   }
 
+  const token = getToken();
+  if (!token) return setShowAuthModal(true);
+
   try {
     switch (action) {
-      case 'like':
-        // Optimistic UI update
+      // ----------------------
+      // LIKE / UNLIKE POST
+      // ----------------------
+      case "like": {
+        // Optimistic UI
         setPosts(prevPosts =>
           prevPosts.map(post => {
             if (post._id === postId) {
+              const oldIsLiked = post.isLiked;
               return {
                 ...post,
-                isLiked: !post.isLiked,
-                likeCount: post.isLiked ? post.likeCount - 1 : post.likeCount + 1,
+                isLiked: !oldIsLiked,
+                likeCount: oldIsLiked ? post.likeCount - 1 : post.likeCount + 1,
               };
             }
             return post;
           })
         );
 
-        // API call to update like
-        const token = localStorage.getItem('token') || '';
-        const likeResponse = await axios.put(
-          `http://localhost:5000/api/posts/${postId}/like`,
-          {},
+        const res = await axios.put(`/api/posts/${postId}/like`, {}, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const { likeCount, isLiked } = res.data;
+        setPosts(prevPosts =>
+          prevPosts.map(post => (post._id === postId ? { ...post, likeCount, isLiked } : post))
+        );
+        break;
+      }
+
+      // ----------------------
+      // COMMENT
+      // ----------------------
+      case "comment": {
+        const isOpening = !showComments[postId];
+        setShowComments(prev => ({ ...prev, [postId]: !prev[postId] }));
+        if (!commentInputs[postId]) setCommentInputs(prev => ({ ...prev, [postId]: "" }));
+
+        // Add a new comment
+        if (extra.content?.trim()) {
+          const tempId = "temp-" + Date.now();
+          const tempComment = {
+            _id: tempId,
+            content: extra.content,
+            author: { firstName: "You", lastName: "" },
+            replies: [],
+            createdAt: new Date(),
+          };
+
+          setPostComments(prev => ({
+            ...prev,
+            [postId]: prev[postId] ? [tempComment, ...prev[postId]] : [tempComment],
+          }));
+
+          const res = await axios.post(
+            `/api/posts/${postId}/comments`,
+            { content: extra.content },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          // Replace temp comment with server comment
+          setPostComments(prev => ({
+            ...prev,
+            [postId]: prev[postId].map(c =>
+              c._id === tempId ? res.data.comment : c
+            ),
+          }));
+
+          setCommentInputs(prev => ({ ...prev, [postId]: "" }));
+          return;
+        }
+
+        // Fetch comments if opening for first time
+        if (isOpening && !postComments[postId]) {
+          const res = await axios.get(`/api/posts/${postId}/comments`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setPostComments(prev => ({ ...prev, [postId]: res.data.comments || [] }));
+        }
+        break;
+      }
+
+      // ----------------------
+      // REPLY
+      // ----------------------
+      case "reply": {
+        const { commentId, content } = extra;
+        if (!content?.trim() || !commentId) return;
+
+        const tempId = "temp-" + Date.now();
+        const tempReply = {
+          _id: tempId,
+          content,
+          author: { firstName: "You", lastName: "" },
+          createdAt: new Date(),
+        };
+
+        // Optimistic UI: add temp reply
+        setPostComments(prev => ({
+          ...prev,
+          [postId]: prev[postId].map(c => {
+            if (c._id === commentId) {
+              return { ...c, replies: [...(c.replies || []), tempReply] };
+            }
+            return c;
+          }),
+        }));
+
+        const res = await axios.post(
+          `/api/posts/${postId}/comments/${commentId}/replies`,
+          { content },
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        const { likeCount, isLiked } = likeResponse.data;
-
-        // Sync posts with server response
-        setPosts(prevPosts =>
-          prevPosts.map(post => {
-            if (post._id === postId) {
-              return { ...post, isLiked, likeCount };
+        // Replace temp reply with server reply
+        setPostComments(prev => ({
+          ...prev,
+          [postId]: prev[postId].map(c => {
+            if (c._id === commentId) {
+              return {
+                ...c,
+                replies: c.replies.map(r =>
+                  r._id === tempId ? res.data.reply : r
+                ),
+              };
             }
-            return post;
-          })
-        );
+            return c;
+          }),
+        }));
+
+        setCommentInputs(prev => ({ ...prev, [commentId]: "" }));
         break;
-
-case 'comment':
-  const isOpening = !showComments[postId];
-
-  setShowComments(prev => ({
-    ...prev,
-    [postId]: !prev[postId]
-  }));
-
-  if (!commentInputs[postId]) {
-    setCommentInputs(prev => ({ ...prev, [postId]: '' }));
-  }
-
-  // Fetch comments only if opening and not already loaded
-  if (isOpening && !postComments[postId]) {
-    try {
-      const token = localStorage.getItem('token'); // ✅ get token first
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const commentsResponse = await axios.get(
-        `http://localhost:5000/api/posts/${postId}/comments`,
-        { headers }
-      );
-
-      setPostComments(prev => ({
-        ...prev,
-        [postId]: commentsResponse.data.comments || [],
-      }));
-    } catch (error) {
-      console.error('Failed to fetch comments:', error);
-      setPostComments(prev => ({ ...prev, [postId]: [] }));
-    }
-  }
-  break;
-
+      }
     }
   } catch (err) {
-    console.error('Error handling interaction:', err);
+    console.error("Error handling interaction:", err);
 
-    // Rollback optimistic like if API fails
-    if (action === 'like') {
+    // Rollback like if failed
+    if (action === "like") {
       setPosts(prevPosts =>
         prevPosts.map(post => {
           if (post._id === postId) {
+            const oldIsLiked = post.isLiked;
             return {
               ...post,
-              isLiked: !post.isLiked,
-              likeCount: post.isLiked ? post.likeCount - 1 : post.likeCount + 1,
+              isLiked: !oldIsLiked,
+              likeCount: oldIsLiked ? post.likeCount - 1 : post.likeCount + 1,
             };
           }
           return post;
@@ -2499,45 +2573,44 @@ case 'comment':
 };
 
 
-
-
-
+// --------------------- Submit Comment ---------------------
 const handleSubmitComment = async (postId) => {
   const commentText = commentInputs[postId]?.trim();
   if (!commentText || !isAuthenticated) return;
 
+  const token = getToken();
+  if (!token) return setShowAuthModal(true);
+
   try {
     setSubmittingComment(prev => ({ ...prev, [postId]: true }));
 
-    const response = await axios.post(
-      `http://localhost:5000/api/posts/${postId}/comments`,
-      { content: commentText },
-      { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
-    );
+    const res = await axios.post(`/api/posts/${postId}/comments`, { content: commentText }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-    const newComment = response.data.comment; // ✅ get the comment, not the whole response
+    const newComment = res.data.comment;
 
-    setPostComments(prev => ({
-      ...prev,
-      [postId]: [newComment, ...(prev[postId] || [])],
-    }));
+    // After successfully adding comment
+setShowComments(prev => ({ ...prev, [postId]: true }));
+setPostComments(prev => ({
+  ...prev,
+  [postId]: [newComment, ...(prev[postId] || [])],
+}));
+
 
     setPosts(prevPosts =>
-      prevPosts.map(post => {
-        if (post._id === postId) {
-          return { ...post, commentCount: post.commentCount + 1 };
-        }
-        return post;
-      })
+      prevPosts.map(post => post._id === postId ? { ...post, commentCount: post.commentCount + 1 } : post)
     );
 
-    setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+    setCommentInputs(prev => ({ ...prev, [postId]: "" }));
   } catch (err) {
-    console.error('Error submitting comment:', err);
+    console.error("Error submitting comment:", err);
   } finally {
     setSubmittingComment(prev => ({ ...prev, [postId]: false }));
   }
 };
+
+
 
 const handleDeleteCommentClick = (postId, commentId) => {
   setDeleteCommentTarget({ postId, commentId });
@@ -2551,34 +2624,26 @@ const cancelDeleteComment = () => {
 
 const confirmDeleteComment = async () => {
   if (!deleteCommentTarget) return;
+  const token = getToken();
+  if (!token) return setShowAuthModal(true);
 
   const { postId, commentId } = deleteCommentTarget;
 
   try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
+    await axios.delete(`/api/posts/${postId}/comments/${commentId}`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
 
-    if (response.ok) {
-      setPostComments(prev => ({
-        ...prev,
-        [postId]: prev[postId].filter(comment => comment._id !== commentId)
-      }));
-      setPosts(prevPosts =>
-        prevPosts.map(post => {
-          if (post._id === postId) {
-            return { ...post, commentCount: post.commentCount - 1 };
-          }
-          return post;
-        })
-      );
-      showNotification('Comment deleted!', 'success');
-    } else {
-      const data = await response.json();
-      showNotification(data.message || 'Failed to delete comment', 'error');
-    }
+    setPostComments(prev => ({
+      ...prev,
+      [postId]: prev[postId].filter(c => c._id !== commentId)
+    }));
+
+    setPosts(prevPosts =>
+      prevPosts.map(post => post._id === postId ? { ...post, commentCount: post.commentCount - 1 } : post)
+    );
+
+    showNotification('Comment deleted!', 'success');
   } catch (err) {
     console.error(err);
     showNotification('Failed to delete comment', 'error');
@@ -2591,43 +2656,42 @@ const confirmDeleteComment = async () => {
 
 
 
+// --------------------- Submit Reply ---------------------
 const handleSubmitReply = async (commentId, postId) => {
   const replyText = replyInputs[commentId]?.trim();
   if (!replyText || !isAuthenticated) return;
 
+  const token = getToken();
+  if (!token) return setShowAuthModal(true);
+
   try {
     setSubmittingReply(prev => ({ ...prev, [commentId]: true }));
 
-    const response = await axios.post(
-      `http://localhost:5000/api/posts/${postId}/comments/${commentId}/replies`,
+    const res = await axios.post(
+      `/api/posts/${postId}/comments/${commentId}/replies`,
       { content: replyText },
-      { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      { headers: { Authorization: `Bearer ${token}` } }
     );
 
-    const newReply = response.data.reply; // ✅ get the reply, not the whole response
+    const newReply = res.data.reply;
 
     setPostComments(prev => ({
       ...prev,
-      [postId]: prev[postId].map(comment => {
-        if (comment._id === commentId) {
-          return {
-            ...comment,
-            replies: [...(comment.replies || []), newReply],
-          };
-        }
-        return comment;
-      }),
+      [postId]: prev[postId].map(comment =>
+        comment._id === commentId ? { ...comment, replies: [...(comment.replies || []), newReply] } : comment
+      ),
     }));
 
-    setReplyInputs(prev => ({ ...prev, [commentId]: '' }));
+    setReplyInputs(prev => ({ ...prev, [commentId]: "" }));
     setShowReplyInput(prev => ({ ...prev, [commentId]: false }));
     setShowReplies(prev => ({ ...prev, [commentId]: true }));
   } catch (err) {
-    console.error('Error submitting reply:', err);
+    console.error("Error submitting reply:", err);
   } finally {
     setSubmittingReply(prev => ({ ...prev, [commentId]: false }));
   }
 };
+
 
 
   /**
@@ -2643,7 +2707,7 @@ const handleReplyClick = (commentId) => {
 
 const createPost = async (postData) => {
   try {
-    const response = await axios.post("http://localhost:5000/api/posts", postData);
+    const response = await axios.post("/api/posts", postData);
     return { success: true, post: response.data.post };
   } catch (err) {
     console.error("Create post error:", err.response?.data || err.message);
@@ -2731,8 +2795,6 @@ const handleSubmitPost = async (e) => {
     setIsSubmitting(false);
   }
 };
-
-
 
   const removeImage = (indexToRemove) => {
     setSelectedImages(prev => prev.filter((_, index) => index !== indexToRemove));
@@ -2866,36 +2928,23 @@ const handleDeleteClick = (postId) => {
 // Confirm delete in modal
 const confirmDelete = async () => {
   if (!postToDelete) return;
+  const token = getToken();
+  if (!token) return setShowAuthModal(true);
 
   try {
-    const token = user?.token || localStorage.getItem("token");
-    if (!token) throw new Error("No auth token found");
-
-    const response = await fetch(`/api/posts/${postToDelete}`, {
-      method: "DELETE",
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
+    const res = await axios.delete(`/api/posts/${postToDelete}`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
-
-    if (response.ok) {
-      setPosts(prevPosts => prevPosts.filter(post => post._id !== postToDelete));
-      showNotification('Post deleted successfully!', 'success');
-    } else if (response.status === 401 || response.status === 403) {
-      showNotification('You are not authorized. Please login again.', 'error');
-    } else {
-      const data = await response.json();
-      showNotification(data.message || 'Failed to delete post. Please try again.', 'error');
-    }
-
-  } catch (error) {
-    console.error(error);
+    setPosts(prev => prev.filter(post => post._id !== postToDelete));
+    showNotification('Post deleted successfully!', 'success');
+  } catch (err) {
+    console.error(err);
     showNotification('Failed to delete post. Please try again.', 'error');
   } finally {
-    setShowDeleteModal(false);
     setPostToDelete(null);
+    setShowDeleteModal(false);
   }
+
 };
 
 
@@ -2935,36 +2984,26 @@ const cancelDeleteReply = () => {
 // Confirm deletion
 const confirmDeleteReply = async () => {
   if (!deleteReplyTarget) return;
+  const token = getToken();
+  if (!token) return setShowAuthModal(true);
 
   const { postId, commentId, replyId } = deleteReplyTarget;
 
   try {
-    const token = localStorage.getItem('token');
-    const response = await fetch(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
+    await axios.delete(`/api/posts/${postId}/comments/${commentId}/replies/${replyId}`, {
+      headers: { Authorization: `Bearer ${token}` },
     });
 
-    if (response.ok) {
-      // Remove reply from state
-      setPostComments(prev => ({
-        ...prev,
-        [postId]: prev[postId].map(comment => {
-          if (comment._id === commentId) {
-            return {
-              ...comment,
-              replies: comment.replies.filter(r => r._id !== replyId)
-            };
-          }
-          return comment;
-        }),
-      }));
+    setPostComments(prev => ({
+      ...prev,
+      [postId]: prev[postId].map(comment =>
+        comment._id === commentId
+          ? { ...comment, replies: comment.replies.filter(r => r._id !== replyId) }
+          : comment
+      ),
+    }));
 
-      showNotification('Reply deleted!', 'success');
-    } else {
-      const data = await response.json();
-      showNotification(data.message || 'Failed to delete reply', 'error');
-    }
+    showNotification('Reply deleted!', 'success');
   } catch (err) {
     console.error(err);
     showNotification('Failed to delete reply', 'error');
@@ -2990,14 +3029,20 @@ const formatTime = (createdAt) => {
 
 // Submit report
 const handleReportSubmit = async () => {
-  if (!selectedReportReason || !reportingPostId) return;
+  // Check authentication first
+  if (!user) {
+    showNotification('Please log in to report content.', 'error');
+    return;
+  }
+
+  if (!selectedReportReason || !reportingPostId) {
+    showNotification('Please select a reason for reporting.', 'error');
+    return;
+  }
 
   // If "Other", make sure custom reason is provided
   if (selectedReportReason === 'Other' && !customReportReason.trim()) {
-    showNotification(
-      'Missing Information',
-      'Please provide a reason for reporting this post.'
-    );
+    showNotification('Please provide a reason for reporting.', 'error');
     return;
   }
 
@@ -3014,10 +3059,7 @@ const handleReportSubmit = async () => {
       { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
     );
 
-    showNotification(
-      'Report Submitted',
-      "Thank you! We'll review this content."
-    );
+    showNotification("Thank you! We'll review this content.", 'success');
 
     // Reset modal state
     setShowReportModal(false);
@@ -3027,10 +3069,7 @@ const handleReportSubmit = async () => {
 
   } catch (err) {
     console.error(err);
-    showNotification(
-      'Report Failed',
-      'Unable to submit your report. Please try again later.'
-    );
+    showNotification('Unable to submit your report. Please try again later.', 'error');
   }
 };
 
@@ -3264,14 +3303,14 @@ const handleReportCancel = () => {
 
             {openMenu[post._id] && (
               <MenuDropdown>
-                {post.author?._id === user?.id ? (
-                  <Dropdown.Item onClick={() => handleDeleteClick(post._id)}>
+                {post.author?._id === user?._id ? (
+                  <MenuItem onClick={() => handleDeleteClick(post._id)}>
                     <FiTrash2 style={{ marginRight: "8px", color: "#ef4444" }} /> Delete
-                  </Dropdown.Item>
+                  </MenuItem>
                 ) : (
-                  <Dropdown.Item onClick={() => handleReportClick(post._id)}>
+                  <MenuItem onClick={() => handleReportClick(post._id)}>
                     <FiFlag style={{ marginRight: "8px", color: "#f59e0b" }} /> Report
-                  </Dropdown.Item>
+                  </MenuItem>
                 )}
               </MenuDropdown>
             )}
@@ -3279,7 +3318,7 @@ const handleReportCancel = () => {
         </PostHeader>
 
         <PostContent>
-          <p>
+          <p style={{ whiteSpace: 'pre-wrap' }}>
             {expandedPosts[post._id] || (post.content?.length || 0) <= 200
               ? post.content || ''
               : truncateText(post.content || '', 200)}
@@ -3417,13 +3456,13 @@ const handleReportCancel = () => {
               <CommentItemContent>
                 <p className="comment-content">
                   <span className="comment-author">{comment.author?.firstName} {comment.author?.lastName}</span>
-                  <span className="comment-text">{comment.content}</span>
+                  <span className="comment-text" style={{ whiteSpace: 'pre-wrap' }}>{comment.content}</span>
                 </p>
                 <div className="comment-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <span className="comment-time" style={{ marginRight: '10px' }}>{formatTime(comment.createdAt)}</span>
                     <button className="comment-reply" style={{ marginRight: '10px' }} onClick={() => handleReplyClick(comment._id)} >Reply</button>
-                    {(comment.author?._id === user?.id || post.author?._id === user?.id) && (
+                    {(comment.author?._id === user?._id || post.author?._id === user?._id) && (
                     <button className="comment-delete" onClick={() => handleDeleteCommentClick(post._id, comment._id)} >Delete</button>
                     )}
                   </div> 
@@ -3464,13 +3503,13 @@ const handleReportCancel = () => {
         <ReplyContent>
           <p className="reply-content">
             <span className="reply-author">{reply.author?.firstName} {reply.author?.lastName}</span>
-            <span className="reply-text">{reply.content}</span>
+            <span className="reply-text" style={{ whiteSpace: 'pre-wrap' }}>{reply.content}</span>
           </p>
 
           <div className="reply-meta" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
     <span className="reply-time">{formatTime(reply.createdAt)}</span>
-    {(reply.author?._id === user?.id || comment.author?._id === user?.id || post.author?._id === user?.id) && (
+    {(reply.author?._id === user?._id || comment.author?._id === user?._id || post.author?._id === user?._id) && (
    <button className="reply-delete" onClick={() => handleDeleteReplyClick(post._id, comment._id, reply._id)} >Delete</button>
     )}
   </div>

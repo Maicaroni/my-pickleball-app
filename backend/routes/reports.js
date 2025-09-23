@@ -8,7 +8,7 @@ const {
 } = require('../controllers/reportController');
 const authMiddleware = require('../middleware/authMiddleware');
 // User reports a post
-router.post('/:postId', authMiddleware, reportPost);
+router.post('/:postId', authMiddleware(), reportPost);
 
 // Superadmin routes (no superAdminMiddleware for now)
 router.get('/', getAllReports);

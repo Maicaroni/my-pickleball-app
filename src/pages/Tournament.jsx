@@ -4,66 +4,49 @@ import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from '../components/AuthModal';
 
+// Helper function to compute age
+const getAge = (birthDate) => {
+  if (!birthDate) return "N/A";
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  if (
+    today.getMonth() < birth.getMonth() ||
+    (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())
+  ) {
+    age--;
+  }
+  return age;
+};
 
 // Detailed View Styled Components - Convert from Modal to Full Page
 const BackButton = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 8px 16px;
   background: #f8fafc;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 12px 20px;
-  color: #475569;
-  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
-
+  transition: all 0.2s ease;
+  
   &:hover {
-    background: #e2e8f0;
-    border-color: #cbd5e1;
+    background: #f1f5f9;
+    border-color: #cbd5e0;
+    color: #475569;
   }
-
+  
   svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  @media (max-width: 768px) {
-    padding: 10px 16px;
-    font-size: 14px;
+    width: 16px;
+    height: 16px;
   }
 `;
 
-const EditTournamentButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #29ba9b;
-  border: 2px solid #29ba9b;
-  border-radius: 12px;
-  padding: 12px 20px;
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: #26a085;
-    border-color: #26a085;
-    transform: translateY(-1px);
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  @media (max-width: 768px) {
-    padding: 10px 16px;
-    font-size: 14px;
-  }
-`;
+// EditTournamentButton removed - not needed for player view
 
 const TournamentDetailContent = styled.div`
   animation: fadeIn 0.3s ease;
@@ -80,28 +63,55 @@ const TournamentDetailContent = styled.div`
   }
 `;
 
-const TournamentDetailHeader = styled.div`
-  position: relative;
-  height: 400px;
-  border-radius: 20px;
-  overflow: hidden;
-  margin-bottom: 32px;
-
+// Tournament Detail View Components
+const TournamentDetailContainer = styled.div`
+  animation: fadeIn 0.3s ease;
+  margin-top: 24px;
+  
   @media (max-width: 768px) {
-    height: 300px;
-    border-radius: 16px;
-    margin-bottom: 24px;
+    margin-top: 16px;
+    padding: 0 5px;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+const TournamentDetailHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e2e8f0;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
   }
 `;
 
 const TournamentDetailBanner = styled.div`
-  width: 100%;
-  height: 100%;
+  position: relative;
+  height: 300px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 24px;
   background: linear-gradient(135deg, #29ba9b, #239b83);
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
 
   img {
     width: 100%;
@@ -115,8 +125,13 @@ const TournamentDetailBanner = styled.div`
     bottom: 0;
     left: 0;
     right: 0;
-    height: 120px;
-    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    height: 80px;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+  }
+  
+  @media (max-width: 768px) {
+    height: 200px;
+    border-radius: 12px;
   }
 `;
 
@@ -1041,6 +1056,37 @@ const BracketContainer = styled.div`
   }
 `;
 
+
+
+
+const GroupStageSection = styled.div`
+  margin-bottom: 32px;
+
+  h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #334155;
+    margin: 0 0 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    svg {
+      width: 20px;
+      height: 20px;
+      color: #29ba9b;
+    }
+  }
+
+  @media (max-width: 768px) {
+    margin-bottom: 24px;
+
+    h3 {
+      font-size: 1.2rem;
+    }
+  }
+`;
+
 const BracketColumn = styled.div`
   display: flex;
   flex-direction: column;
@@ -1240,321 +1286,348 @@ const ChampionshipSection = styled.div`
   }
 `;
 
-const GroupStageSection = styled.div`
-  margin-bottom: 16px;
-
-  @media (min-width: 768px) {
-    margin-bottom: 20px;
-  }
-  
-  .section-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #334155;
-    margin-bottom: 12px;
-    text-align: center;
-
-    @media (min-width: 768px) {
-      font-size: 1.2rem;
-      margin-bottom: 16px;
-    }
-  }
-  
-  .groups-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 16px;
-    margin-bottom: 16px;
-
-    @media (min-width: 768px) {
-      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-
-    @media (min-width: 1200px) {
-      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-      gap: 24px;
-    }
-  }
-  
-  .qualification-note {
-    background: #f0f9ff;
-    border: 1px solid #bae6fd;
-    border-radius: 8px;
-    padding: 12px;
-    text-align: center;
-    color: #0369a1;
-    font-size: 0.85rem;
-    font-weight: 500;
-
-    @media (min-width: 768px) {
-      border-radius: 12px;
-      padding: 16px;
-      font-size: 0.9rem;
-    }
-  }
-`;
-
 const GroupCard = styled.div`
   background: white;
-  border-radius: 12px;
-  padding: 16px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
-  &:hover {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-color: #cbd5e1;
-  }
-
-  @media (min-width: 768px) {
-    padding: 20px;
+  @media (max-width: 768px) {
+    padding: 16px;
+    margin-bottom: 16px;
   }
 `;
 
-const GroupHeader = styled.h4`
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #334155;
-  margin: 0 0 12px;
-  text-align: center;
-  padding: 10px 14px;
-  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+const GroupHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
 
-  @media (min-width: 768px) {
+  h4 {
     font-size: 1.1rem;
-    padding: 12px 16px;
-    margin: 0 0 16px;
+    font-weight: 400;
+    color: #334155;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .group-status {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+  }
+  .bracket-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bracket-btn {
+    padding: 6px 8px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .edit-btn {
+    background: #f0f9ff;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+  }
+
+  .edit-btn:hover {
+    background: #e0f2fe;
+    border-color: #7dd3fc;
+  }
+
+  .delete-btn {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+
+  .delete-btn:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+  }
+  @media (max-width: 768px) {
+    h4 {
+      font-size: 1rem;
+    }
+    
+    .bracket-btn {
+      padding: 4px 6px;
+      font-size: 0.7rem;
+    }
   }
 `;
 
 const StandingsTable = styled.div`
   .standings-header {
     display: grid;
-    grid-template-columns: 1fr 60px 60px 70px 70px;
-    gap: 8px;
-    padding: 12px 16px;
-    background: #f8fafc;
+    grid-template-columns: 60px 1fr 120px 120px;
+    gap: 12px;
+    padding: 18px 16px;
+    background: linear-gradient(135deg, #234255 0%, #29ba9b 100%);
     border-radius: 8px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    color: #64748b;
-    margin-bottom: 12px;
+    color: white;
+    margin-bottom: 16px;
     text-align: center;
-    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     
-    div:first-child {
+    div:nth-child(2) {
       text-align: left;
     }
 
-    @media (min-width: 768px) {
-      grid-template-columns: 1fr 70px 70px 80px 80px;
-      gap: 10px;
-      padding: 14px 18px;
-      font-size: 0.85rem;
+    @media (max-width: 1200px) {
+      grid-template-columns: 50px 1fr 100px 100px;
+      font-size: 0.7rem;
+      gap: 6px;
+      padding: 14px 14px;
+    }
+    
+    @media (max-width: 768px) {
+      grid-template-columns: 40px 1fr 80px 80px;
+      font-size: 0.65rem;
+      gap: 4px;
+      padding: 12px 12px;
     }
   }
 `;
 
 const StandingsRow = styled.div`
   display: grid;
-  grid-template-columns: 1fr 60px 60px 70px 70px;
-  gap: 8px;
-  padding: 12px 16px;
+  grid-template-columns: 60px 1fr 120px 120px;
+  gap: 12px;
+  padding: 20px 16px;
   border-radius: 8px;
-  font-size: 0.85rem;
-  margin-bottom: 6px;
-  background: ${props => props.$qualified ? '#dcfce7' : '#f8fafc'};
+  font-size: 0.8rem;
+  margin-bottom: 16px;
+  background: ${props => props.$qualified ? '#dcfce7' : 'white'};
   border: 1px solid ${props => props.$qualified ? '#bbf7d0' : '#e2e8f0'};
-  transition: all 0.2s ease;
-
+  align-items: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  
   &:hover {
-    background: ${props => props.$qualified ? '#bbf7d0' : '#f1f5f9'};
-    border-color: ${props => props.$qualified ? '#86efac' : '#cbd5e1'};
+    background: ${props => props.$qualified ? '#dcfce7' : '#f8fafc'};
+    border-color: #29ba9b;
   }
 
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 70px 70px 80px 80px;
-    gap: 10px;
-    padding: 14px 18px;
-    font-size: 0.9rem;
-    margin-bottom: 8px;
+  @media (max-width: 1200px) {
+    grid-template-columns: 50px 1fr 100px 100px;
+    gap: 6px;
+    padding: 14px 14px;
+    font-size: 0.75rem;
   }
   
+  @media (max-width: 768px) {
+    grid-template-columns: 40px 1fr 80px 80px;
+    gap: 4px;
+    padding: 12px 12px;
+    font-size: 0.7rem;
+  }
+
+  .rank-number {
+    text-align: center;
+    font-weight: 700;
+    color: #29ba9b;
+    font-size: 1.1em;
+  }
+
   .player-info {
     display: flex;
     align-items: center;
-    gap: 10px;
-
-    @media (min-width: 768px) {
-      gap: 12px;
+    text-align: left;
+    
+    .player-name {
+      font-weight: 500;
+      color: #1e293b;
     }
   }
-  
-  .position {
-    background: ${props => props.$qualified ? '#16a34a' : '#64748b'};
-    color: white;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
+
+  .round-wins,
+  .round-losses,
+  .win-points,
+  .loss-points {
+    text-align: center;
+    font-weight: 600;
+    color: #1e293b;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 600;
-    flex-shrink: 0;
-
-    @media (min-width: 768px) {
-      width: 22px;
-      height: 22px;
-      font-size: 0.8rem;
-    }
   }
-  
-  .player-name {
-    font-weight: 500;
-    color: ${props => props.$qualified ? '#166534' : '#334155'};
-    text-align: left;
-    font-size: 0.85rem;
-    line-height: 1.3;
 
-    @media (min-width: 768px) {
-      font-size: 0.9rem;
-    }
-  }
-  
-  .round-wins, .round-losses, .win-points, .loss-points {
+  .matches-record {
     text-align: center;
     font-weight: 600;
-    color: ${props => props.$qualified ? '#166534' : '#334155'};
-    font-size: 0.85rem;
-
-    @media (min-width: 768px) {
-      font-size: 0.9rem;
-    }
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  
-  /* Legacy support */
-  .wins, .points {
+
+  .points-record {
     text-align: center;
     font-weight: 600;
-    color: ${props => props.$qualified ? '#166534' : '#334155'};
-    font-size: 0.85rem;
-
-    @media (min-width: 768px) {
-      font-size: 0.9rem;
-    }
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 `;
 
 const MatchTable = styled.div`
+  margin-top: 20px;
+  max-width: 100%;
+  
+  
   .match-schedule-header {
     display: grid;
-    grid-template-columns: 40px 5fr 30px 5fr 35px 35px 35px 40px 40px 40px 45px;
-    gap: 16px;
-    padding: 16px 20px;
-    background: #f8fafc;
+    grid-template-columns: 45px 5fr 55px 60px 75px 85px 85px;
+    gap: 12px;
+    padding: 18px 16px;
+    background: linear-gradient(135deg, #234255 0%, #29ba9b 100%);
     border-radius: 8px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    color: #64748b;
-    margin-bottom: 12px;
+    color: white;
+    margin-bottom: 16px;
     text-align: center;
-    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     
-    div:first-child {
-      text-align: left;
+    @media (max-width: 1200px) {
+      grid-template-columns: 40px 4fr 50px 50px 65px 70px 70px;
+      font-size: 0.7rem;
+      gap: 6px;
+      padding: 14px 14px;
     }
     
-    div:nth-child(2) {
-      text-align: left;
-    }
-    
-    div:nth-child(4) {
-      text-align: left;
-    }
-
-    @media (min-width: 768px) {
-      grid-template-columns: 50px 5fr 35px 5fr 45px 45px 45px 50px 50px 50px 55px;
-      gap: 20px;
-      padding: 18px 24px;
-      font-size: 0.85rem;
+    @media (max-width: 768px) {
+      grid-template-columns: 35px 3fr 45px 40px 55px 60px 60px;
+      font-size: 0.65rem;
+      gap: 4px;
+      padding: 12px 12px;
     }
   }
 `;
 
 const MatchRow = styled.div`
   display: grid;
-  grid-template-columns: 40px 5fr 30px 5fr 35px 35px 35px 40px 40px 40px 45px;
-  gap: 16px;
-  padding: 16px 20px;
+  grid-template-columns: 45px 5fr 55px 60px 75px 85px 85px;
+  gap: 12px;
+  padding: 20px 16px;
   border-radius: 8px;
-  margin-bottom: 8px;
+  font-size: 0.8rem;
+  margin-bottom: 16px;
   background: white;
   border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
-  align-items: center;
-  font-size: 0.75rem;
-
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  
   &:hover {
     background: #f8fafc;
-    border-color: #cbd5e1;
+    border-color: #29ba9b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
   }
-
-  @media (min-width: 768px) {
-    grid-template-columns: 50px 5fr 35px 5fr 45px 45px 45px 50px 50px 50px 55px;
-    gap: 20px;
-    padding: 18px 24px;
-    font-size: 0.8rem;
+  
+  @media (max-width: 1200px) {
+    grid-template-columns: 40px 4fr 50px 50px 65px 70px 70px;
+    font-size: 0.75rem;
+    gap: 6px;
+    padding: 16px 14px;
+    margin-bottom: 12px;
   }
-
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 35px 3fr 45px 40px 55px 60px 60px;
+    font-size: 0.7rem;
+    gap: 4px;
+    padding: 14px 12px;
+    margin-bottom: 10px;
+  }
+  
   .match-number {
+    background: linear-gradient(135deg, #234255, #29ba9b);
+    color: white;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: 600;
-    color: #334155;
+    font-size: 0.7rem;
+    box-shadow: 0 1px 2px rgba(59, 130, 246, 0.3);
+    
+    @media (max-width: 768px) {
+      font-size: 0.6rem;
+    }
   }
-
-  .player-name {
-    font-weight: 500;
-    color: #334155;
-    text-align: left;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .vs-text {
-    font-weight: 600;
-    color: #29ba9b;
+  
+  .teams-horizontal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     text-align: center;
-    font-size: 0.8rem;
-  }
-
-  .match-players {
-    font-weight: 500;
-    color: #334155;
-    text-align: left;
-  }
-
-  .match-time, .match-court, .match-date, .match-score, .match-standing {
-    text-align: center;
-    color: #64748b;
-    font-weight: 500;
-  }
-
-  .match-standing {
-    font-weight: 600;
-    color: #334155;
-  }
-
-  .match-score {
-    font-weight: 600;
-    color: #334155;
-  }
+    padding: 0 4px;
+    
+    .team-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+      min-width: 0;
+      
+      .team-name {
+        font-weight: 500;
+        color: #374151;
+        font-size: 0.8rem;
+        line-height: 1.4;
+        display: block;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        
+        @media (max-width: 768px) {
+          font-size: 0.75rem;
+        }
+      }
+    }
+    
+    .vs-divider {
+      margin: 0 8px;
+      font-weight: 700;
+      color:hsl(0, 78.80%, 52.00%);
+      font-size: 0.9rem;
+      
+      @media (max-width: 768px) {
+        margin: 0 4px;
+        font-size: 0.8rem;
+      }
+    }
 `;
 
 const StickyActionBar = styled.div`
@@ -2159,29 +2232,49 @@ const RegistrationFee = styled(ParticipantCount)`
 `;
 
 
-const RegisterButton = styled.button`
+const RegisterButton = styled.div`
   width: 100%;
-  padding: 14px;
-  background: #29ba9b;
-  color: white;
+  padding: 16px 24px;
+  background: #e2e8f0;
+  color: #94a3b8;
   border: none;
-  border-radius: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 20px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: not-allowed;
   transition: all 0.2s ease;
-  font-size: 0.95rem;
-  
-  &:hover:not(:disabled) {
-    background: #25a589;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(41, 186, 155, 0.2);
-  }
-  
-  &:disabled {
-    background: #f1f5f9;
-    cursor: not-allowed;
-    color: #94a3b8;
+  opacity: 0.6;
+  margin-top: 20px;
+  position: relative;
+  text-align: center;
+
+  &:hover {
+    &::after {
+      content: 'Will be available in future implementation';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      z-index: 1000;
+      margin-bottom: 8px;
+    }
+    
+    &::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: rgba(0, 0, 0, 0.8);
+      margin-bottom: 4px;
+    }
   }
 `;
 
@@ -3074,7 +3167,9 @@ const TournamentActionButtons = styled.div`
   }
 `;
 
-const ActionButton = styled.button`
+const ActionButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => prop !== 'variant'
+})`
   display: flex;
   align-items: center;
   gap: 6px;
@@ -3141,6 +3236,9 @@ const [selectedTournament, setSelectedTournament] = useState(null);
   const [availableBrackets, setAvailableBrackets] = useState({});
   const [bracketMode, setBracketMode] = useState({}); // 4 or 8 brackets per category
   const [selectedBrackets, setSelectedBrackets] = useState({}); // Selected bracket per category
+  const [showBracketModal, setShowBracketModal] = useState(false);
+  const [pendingBracketChange, setPendingBracketChange] = useState({ categoryId: null, newMode: null });
+  const [isEditingBracket, setIsEditingBracket] = useState({});
 
   // Add state for players search
   const [playersSearchTerm, setPlayersSearchTerm] = useState('');
@@ -3200,88 +3298,8 @@ const fetchTournaments = async () => {
 // Helper function to check if a category is allowed for the player
 
 
-  const [registeredPlayers, setRegisteredPlayers] = useState([
-    { 
-      pplId: 'PPL001', 
-      name: 'John Doe', 
-      gender: 'male',
-      age: 28,
-      duprRatings: {
-        singles: '4.5',
-        doubles: '4.3'
-      }
-    },
-    { 
-      pplId: 'PPL002', 
-      name: 'Maria Santos', 
-      gender: 'female',
-      age: 32,
-      duprRatings: {
-        singles: '4.2',
-        doubles: '4.3'
-      }
-    },
-    { 
-      pplId: 'PPL003', 
-      name: 'Michael Johnson', 
-      gender: 'male',
-      age: 25,
-      duprRatings: {
-        singles: '3.8',
-        doubles: '3.9'
-      }
-    },
-    { 
-      pplId: 'PPL004', 
-      name: 'Elena Cruz', 
-      gender: 'female',
-      age: 29,
-      duprRatings: {
-        singles: '4.0',
-        doubles: '4.1'
-      }
-    },
-    { 
-      pplId: 'PPL005', 
-      name: 'Carlos Rodriguez', 
-      gender: 'male',
-      age: 35,
-      duprRatings: {
-        singles: '3.5',
-        doubles: '3.6'
-      }
-    },
-    { 
-      pplId: 'PPL006', 
-      name: 'Andrea Martinez', 
-      gender: 'female',
-      age: 27,
-      duprRatings: {
-        singles: '4.3',
-        doubles: '4.4'
-      }
-    },
-    { 
-      pplId: 'PPL007', 
-      name: 'Jason Park', 
-      gender: 'male',
-      age: 31,
-      duprRatings: {
-        singles: '3.9',
-        doubles: '4.0'
-      }
-    },
-    { 
-      pplId: 'PPL008', 
-      name: 'Sarah Kim', 
-      gender: 'female',
-      age: 26,
-      duprRatings: {
-        singles: '3.7',
-        doubles: '3.8'
-      }
-    }
-  ]);
+  // Get registered players from selected tournament
+  const registeredPlayers = selectedTournament?.registrations?.filter(reg => reg.status === 'approved') || [];
   const [registrationForm, setRegistrationForm] = useState({
     category: '',
     // Player information
@@ -3312,6 +3330,65 @@ const fetchTournaments = async () => {
     contactNumber: '',
     proofOfPayment: null
   });
+
+  // Calculate standings from match data
+  const calculateStandings = (matches, players) => {
+    console.log('🔢 calculateStandings called with:', { matches, players });
+    
+    // Initialize standings for all players
+    const standings = players.map(player => ({
+      player,
+      wins: 0,
+      losses: 0,
+      pointsFor: 0,
+      pointsAgainst: 0,
+      pointDifferential: 0
+    }));
+    
+    // Process each match
+    Object.entries(matches || {}).forEach(([matchKey, match]) => {
+      const player1 = match.player1;
+      const player2 = match.player2;
+      const score1 = parseInt(match.game1Player1) || 0;
+      const score2 = parseInt(match.game1Player2) || 0;
+      
+      if (player1 && player2) {
+        const p1Standing = standings.find(s => s.player === player1);
+        const p2Standing = standings.find(s => s.player === player2);
+        
+        if (p1Standing && p2Standing) {
+          // Update points
+          p1Standing.pointsFor += score1;
+          p1Standing.pointsAgainst += score2;
+          p2Standing.pointsFor += score2;
+          p2Standing.pointsAgainst += score1;
+          
+          // Update wins/losses
+          if (score1 > score2) {
+            p1Standing.wins++;
+            p2Standing.losses++;
+          } else if (score2 > score1) {
+            p2Standing.wins++;
+            p1Standing.losses++;
+          }
+        }
+      }
+    });
+    
+    // Calculate point differentials and sort
+    standings.forEach(standing => {
+      standing.pointDifferential = standing.pointsFor - standing.pointsAgainst;
+    });
+    
+    // Sort by wins (descending), then by point differential (descending)
+    standings.sort((a, b) => {
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      return b.pointDifferential - a.pointDifferential;
+    });
+    
+    console.log('📊 Calculated standings:', standings);
+    return standings;
+  };
   
   // Initialize user's gender in registration form
   useEffect(() => {
@@ -3405,6 +3482,10 @@ useEffect(() => {
 
   // Handle tournament card click to show detailed view
   const handleRegisterClick = (tournament) => {
+  // Registration temporarily disabled
+  console.log('Registration is temporarily disabled');
+  return;
+  
   // 1️⃣ Set the selected tournament
   setSelectedTournament(tournament);
 
@@ -3448,6 +3529,17 @@ useEffect(() => {
     }));
   };
 
+  // Bracket editing functions
+  const handleEditBracket = (categoryId, bracket) => {
+    const editKey = `${categoryId}-${bracket}`;
+    setIsEditingBracket(prev => ({
+      ...prev,
+      [editKey]: !prev[editKey]
+    }));
+  };
+
+  // saveChanges function removed - not needed for player view
+
   // Get category icon for cards
   const getCategoryIcon = (categoryId) => {
     switch (categoryId) {
@@ -3466,6 +3558,10 @@ useEffect(() => {
    * @param {string} tournamentId - Tournament identifier
    */
 const handleRegister = async (tournamentId) => {
+  // Registration temporarily disabled
+  console.log('Registration is temporarily disabled');
+  return;
+  
   // Wait for auth loading to complete
   if (authLoading) return;
 
@@ -4254,60 +4350,17 @@ const handleTournamentClick = (tournament) => {
     
     return (
       <PageContainer>
-        <tailContent>
-          <div style={{ display: 'flex', justifyContent: 'spaceTournamentDe-between', alignItems: 'center', marginBottom: '32px' }}>
-            <BackButton onClick={handleCloseDetailedView}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              {location.state?.fromProfile ? 'Back to Profile' : 'Back to Tournaments'}
-            </BackButton>
-            
-           {isAuthenticated && user?.role === "clubadmin" && user?._id === selectedTournament.createdBy && (
-  <>
-    {/* Edit button */}
-    <EditTournamentButton
-      onClick={() =>
-        navigate("/host-tournament", {
-          state: { editTournament: selectedTournament },
-        })
-      }
-    >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path
-          d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      Edit Tournament
-    </EditTournamentButton>
+        <TournamentDetailContent>
+          <TournamentDetailContainer>
+            <TournamentDetailHeader>
+              <BackButton onClick={handleCloseDetailedView}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {location.state?.fromProfile ? 'Back to Profile' : 'Back to Tournaments'}
+              </BackButton>
+            </TournamentDetailHeader>
 
-{/* Delete button (only if more than 7 days before tournament date) */}
-{new Date(selectedTournament.date) - new Date() > 7 * 24 * 60 * 60 * 1000 && (
-  <DeleteTournamentButton
-    onClick={() => handleDeleteTournament(selectedTournament._id)}
-  >
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M3 6h18" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M8 6v14a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M10 11v6M14 11v6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-    Delete Tournament
-  </DeleteTournamentButton>
-)}
-  </>
-)}
-
-          </div>
-
-          <TournamentDetailHeader>
             <TournamentDetailBanner>
              {selectedTournament.tournamentPicture ? (
     <img 
@@ -4318,11 +4371,10 @@ const handleTournamentClick = (tournament) => {
   ) : (
     <div style={{padding: "40px", textAlign: "center", color: "#888"}}>No Image</div>
   )}
-            </TournamentDetailBanner>
             <TournamentDetailStatusBadge $status={selectedTournament.status}>
               {selectedTournament.status}
             </TournamentDetailStatusBadge>
-          </TournamentDetailHeader>
+            </TournamentDetailBanner>
 
           <TournamentDetailBody>
             <TournamentDetailLeft>
@@ -4669,7 +4721,12 @@ if (skillLevel === 'Open' && category?.tier) {
                                     fontSize: '0.875rem',
                                     color: '#64748b'
                                   }}>
-                                    {category.participants || 0}/{category.maxParticipants} participants
+                                    {(() => {
+                                      const categoryApprovedCount = selectedTournament?.registrations?.filter(reg => 
+                                        reg.status === 'approved' && reg.category === category.division
+                                      ).length || 0;
+                                      return `${categoryApprovedCount}/${category.maxParticipants} participants`;
+                                    })()} 
                                     {category.prizePool && category.prizePool > 0 && (
                                       <span style={{ marginLeft: '12px', color: '#29ba9b', fontWeight: '500' }}>
                                         Prize: ₱{category.prizePool.toLocaleString()}
@@ -4681,13 +4738,33 @@ if (skillLevel === 'Open' && category?.tier) {
                               <div style={{
                                 fontSize: '0.875rem',
                                 fontWeight: '500',
-                                color: category.participants >= category.maxParticipants ? '#ef4444' : '#29ba9b',
-                                background: category.participants >= category.maxParticipants ? '#fef2f2' : '#f0fdf4',
+                                color: (() => {
+                                  const categoryApprovedCount = selectedTournament?.registrations?.filter(reg => 
+                                    reg.status === 'approved' && reg.category === category.division
+                                  ).length || 0;
+                                  return categoryApprovedCount >= category.maxParticipants ? '#ef4444' : '#29ba9b';
+                                })(),
+                                background: (() => {
+                                  const categoryApprovedCount = selectedTournament?.registrations?.filter(reg => 
+                                    reg.status === 'approved' && reg.category === category.division
+                                  ).length || 0;
+                                  return categoryApprovedCount >= category.maxParticipants ? '#fef2f2' : '#f0fdf4';
+                                })(),
                                 padding: '4px 8px',
                                 borderRadius: '6px',
-                                border: `1px solid ${category.participants >= category.maxParticipants ? '#fecaca' : '#bbf7d0'}`
+                                border: (() => {
+                                  const categoryApprovedCount = selectedTournament?.registrations?.filter(reg => 
+                                    reg.status === 'approved' && reg.category === category.division
+                                  ).length || 0;
+                                  return `1px solid ${categoryApprovedCount >= category.maxParticipants ? '#fecaca' : '#bbf7d0'}`;
+                                })()
                               }}>
-                                {category.participants >= category.maxParticipants ? 'Full' : 'Open'}
+                                {(() => {
+                                  const categoryApprovedCount = selectedTournament?.registrations?.filter(reg => 
+                                    reg.status === 'approved' && reg.category === category.division
+                                  ).length || 0;
+                                  return categoryApprovedCount >= category.maxParticipants ? 'Full' : 'Open';
+                                })()}
                               </div>
                             </div>
                           ))
@@ -4726,20 +4803,40 @@ if (skillLevel === 'Open' && category?.tier) {
                                   fontSize: '0.875rem',
                                   color: '#64748b'
                                 }}>
-                                  {selectedTournament.currentParticipants || 0}/{selectedTournament.maxParticipants} participants
+                                  {(() => {
+                                    const approvedCount = selectedTournament?.registrations?.filter(reg => reg.status === 'approved').length || 0;
+                                    const totalMaxParticipants = selectedTournament?.tournamentCategories?.reduce((sum, cat) => sum + (parseInt(cat.maxParticipants) || 0), 0) || selectedTournament?.maxParticipants || 0;
+                                    return `${approvedCount}/${totalMaxParticipants} participants`;
+                                  })()} 
                                 </div>
                               </div>
                             </div>
                             <div style={{
                               fontSize: '0.875rem',
                               fontWeight: '500',
-                              color: selectedTournament.currentParticipants >= selectedTournament.maxParticipants ? '#ef4444' : '#29ba9b',
-                              background: selectedTournament.currentParticipants >= selectedTournament.maxParticipants ? '#fef2f2' : '#f0fdf4',
+                              color: (() => {
+                                const approvedCount = selectedTournament?.registrations?.filter(reg => reg.status === 'approved').length || 0;
+                                const totalMaxParticipants = selectedTournament?.tournamentCategories?.reduce((sum, cat) => sum + (parseInt(cat.maxParticipants) || 0), 0) || selectedTournament?.maxParticipants || 0;
+                                return approvedCount >= totalMaxParticipants ? '#ef4444' : '#29ba9b';
+                              })(),
+                              background: (() => {
+                                const approvedCount = selectedTournament?.registrations?.filter(reg => reg.status === 'approved').length || 0;
+                                const totalMaxParticipants = selectedTournament?.tournamentCategories?.reduce((sum, cat) => sum + (parseInt(cat.maxParticipants) || 0), 0) || selectedTournament?.maxParticipants || 0;
+                                return approvedCount >= totalMaxParticipants ? '#fef2f2' : '#f0fdf4';
+                              })(),
                               padding: '4px 8px',
                               borderRadius: '6px',
-                              border: `1px solid ${selectedTournament.currentParticipants >= selectedTournament.maxParticipants ? '#fecaca' : '#bbf7d0'}`
+                              border: (() => {
+                                const approvedCount = selectedTournament?.registrations?.filter(reg => reg.status === 'approved').length || 0;
+                                const totalMaxParticipants = selectedTournament?.tournamentCategories?.reduce((sum, cat) => sum + (parseInt(cat.maxParticipants) || 0), 0) || selectedTournament?.maxParticipants || 0;
+                                return `1px solid ${approvedCount >= totalMaxParticipants ? '#fecaca' : '#bbf7d0'}`;
+                              })()
                             }}>
-                              {selectedTournament.currentParticipants >= selectedTournament.maxParticipants ? 'Full' : 'Open'}
+                              {(() => {
+                                const approvedCount = selectedTournament?.registrations?.filter(reg => reg.status === 'approved').length || 0;
+                                const totalMaxParticipants = selectedTournament?.tournamentCategories?.reduce((sum, cat) => sum + (parseInt(cat.maxParticipants) || 0), 0) || selectedTournament?.maxParticipants || 0;
+                                return approvedCount >= totalMaxParticipants ? 'Full' : 'Open';
+                              })()}
                             </div>
                           </div>
                         )}
@@ -5043,16 +5140,71 @@ if (skillLevel === 'Open' && category?.tier) {
                                         alignItems: 'center'
                                       }}>
                                                                                 
-                                        {/* Bracket Buttons - Auto-determine 4 or 8 based on tournament logic */}
-                                        {(() => {
-                                          // Determine bracket count based on tournament size or other logic
-                                          // For now, defaulting to 4 brackets, but this can be dynamic
-                                          const bracketCount = 4; // This could be determined by player count, tournament settings, etc.
-                                          const brackets = bracketCount === 8 
-                                            ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-                                            : ['A', 'B', 'C', 'D'];
-                                          
-                                          return brackets.map((bracket) => (
+                                        {/* 4/8 Bracket Toggle Switch */}
+                                        <div style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '12px',
+                                          marginRight: '20px'
+                                        }}>
+                                          <span style={{
+                                            fontSize: '0.875rem',
+                                            fontWeight: '600',
+                                            color: '#64748b'
+                                          }}>Brackets:</span>
+                                          <div 
+                                            onClick={() => {
+                                              const currentMode = bracketMode[category.id] || 4;
+                                              const newMode = currentMode === 4 ? 8 : 4;
+                                              setShowBracketModal(true);
+                                              setPendingBracketChange({ categoryId: category.id, newMode });
+                                            }}
+                                            style={{
+                                              position: 'relative',
+                                              width: '60px',
+                                              height: '30px',
+                                              backgroundColor: '#e2e8f0',
+                                              borderRadius: '15px',
+                                              cursor: 'pointer',
+                                              transition: 'all 0.3s ease',
+                                              border: '2px solid #cbd5e1'
+                                            }}
+                                          >
+                                            <div style={{
+                                              position: 'absolute',
+                                              top: '2px',
+                                              left: (bracketMode[category.id] || 4) === 8 ? '32px' : '2px',
+                                              width: '24px',
+                                              height: '24px',
+                                              backgroundColor: '#3b82f6',
+                                              borderRadius: '50%',
+                                              transition: 'all 0.3s ease'
+                                            }}></div>
+                                            <div style={{
+                                              position: 'absolute',
+                                              top: '50%',
+                                              left: '10px',
+                                              transform: 'translateY(-50%)',
+                                              fontSize: '0.75rem',
+                                              fontWeight: '600',
+                                              color: (bracketMode[category.id] || 4) === 4 ? 'white' : '#64748b',
+                                              zIndex: 2
+                                            }}>4</div>
+                                            <div style={{
+                                              position: 'absolute',
+                                              top: '50%',
+                                              right: '10px',
+                                              transform: 'translateY(-50%)',
+                                              fontSize: '0.75rem',
+                                              fontWeight: '600',
+                                              color: (bracketMode[category.id] || 4) === 8 ? 'white' : '#64748b',
+                                              zIndex: 2
+                                            }}>8</div>
+                                          </div>
+                                        </div>
+                                        {/* Bracket Buttons */}
+                                        {(availableBrackets[category.id] || ['A', 'B', 'C', 'D'])
+                                          .map((bracket) => (
                                             <button
                                               key={bracket}
                                               style={{
@@ -5085,7 +5237,26 @@ if (skillLevel === 'Open' && category?.tier) {
                                             >
                                               Bracket {bracket}
                                             </button>
-                                          ));
+                                        ))}
+                                        
+                                        {/* Auto-set brackets based on bracket mode */}
+                                        {(() => {
+                                          const currentMode = bracketMode[category.id] || 4;
+                                          const targetBrackets = currentMode === 8 
+                                            ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+                                            : ['A', 'B', 'C', 'D'];
+                                          const currentBrackets = availableBrackets[category.id] || ['A', 'B', 'C', 'D'];
+                                          
+                                          // Auto-update brackets if they don't match the required count
+                                          if (JSON.stringify(currentBrackets) !== JSON.stringify(targetBrackets)) {
+                                            setAvailableBrackets(prev => ({
+                                              ...prev,
+                                              [category.id]: targetBrackets
+                                            }));
+                                            console.log(`Auto-set to ${targetBrackets.length} brackets for category ${category.name} (mode: ${currentMode})`);
+                                          }
+                                          
+                                          return null; // No button needed - automatic behavior
                                         })()}
                                       </div>
                                     )}
@@ -5112,54 +5283,70 @@ if (skillLevel === 'Open' && category?.tier) {
                                         </h4>
                                         
                                         {(() => {
-                                          // Mock data for round robin groups
-                                          const roundRobinGroups = {
-                                            A: [
-                                              { name: 'John Doe', wins: 3, losses: 0, pointsFor: 44, pointsAgainst: 28 },
-                                              { name: 'Carlos Rodriguez', wins: 2, losses: 1, pointsFor: 28, pointsAgainst: 35 },
-                                              { name: 'Michael Johnson', wins: 1, losses: 2, pointsFor: 35, pointsAgainst: 37 },
-                                              { name: 'Luis Chen', wins: 0, losses: 3, pointsFor: 25, pointsAgainst: 44 }
-                                            ],
-                                            B: [
-                                              { name: 'Jason Park', wins: 3, losses: 0, pointsFor: 37, pointsAgainst: 31 },
-                                              { name: 'Anthony Chen', wins: 2, losses: 1, pointsFor: 31, pointsAgainst: 32 },
-                                              { name: 'Patrick Lim', wins: 1, losses: 2, pointsFor: 32, pointsAgainst: 29 },
-                                              { name: 'Jonathan Wu', wins: 0, losses: 3, pointsFor: 29, pointsAgainst: 37 }
-                                            ],
-                                            C: [
-                                              { name: 'Carmen Lopez', wins: 2, losses: 1, pointsFor: 29, pointsAgainst: 44 },
-                                              { name: 'Elena Cruz', wins: 3, losses: 0, pointsFor: 44, pointsAgainst: 31 },
-                                              { name: 'Rachel Gonzalez', wins: 1, losses: 2, pointsFor: 31, pointsAgainst: 37 },
-                                              { name: 'Andrea Martinez', wins: 0, losses: 3, pointsFor: 37, pointsAgainst: 25 }
-                                            ],
-                                            D: [
-                                              { name: 'Michelle Yang', wins: 1, losses: 2, pointsFor: 25, pointsAgainst: 35 },
-                                              { name: 'Maria Santos', wins: 2, losses: 1, pointsFor: 35, pointsAgainst: 32 },
-                                              { name: 'Victoria Huang', wins: 0, losses: 3, pointsFor: 19, pointsAgainst: 36 },
-                                              { name: 'Sarah Kim', wins: 3, losses: 0, pointsFor: 36, pointsAgainst: 19 }
-                                            ]
-                                          };
+                                          // Use real tournament data from category.groupStage.groups
+                                          const expectedGroupId = selectedBrackets[category.id] ? `group-${selectedBrackets[category.id].toLowerCase()}` : null;
+                                          const selectedGroup = expectedGroupId ? category.groupStage?.groups?.find(group => group.id === expectedGroupId) : null;
 
-                                          const roundRobinMatches = {
-                                            A: [
-                                              { id: 1, player1: 'John Doe', player2: 'Carlos Rodriguez', time: '09:00', court: '1', date: '08/22/2024', score1: 11, score2: 8 },
-                                              { id: 2, player1: 'Michael Johnson', player2: 'Luis Chen', time: '09:30', court: '2', date: '08/22/2024', score1: 11, score2: 6 },
-                                              { id: 3, player1: 'John Doe', player2: 'Michael Johnson', time: '10:00', court: '1', date: '08/22/2024', score1: 11, score2: 9 },
-                                              { id: 4, player1: 'Carlos Rodriguez', player2: 'Luis Chen', time: '10:30', court: '2', date: '08/22/2024', score1: 11, score2: 7 }
-                                            ],
-                                            B: [
-                                              { id: 5, player1: 'Jason Park', player2: 'Anthony Chen', time: '11:00', court: '1', date: '08/22/2024', score1: 11, score2: 8 },
-                                              { id: 6, player1: 'Patrick Lim', player2: 'Jonathan Wu', time: '11:30', court: '2', date: '08/22/2024', score1: 11, score2: 9 }
-                                            ]
-                                          };
+                                          // Get real match data from selected group
+                                          const groupMatches = selectedGroup?.matches ? Object.values(selectedGroup.matches) : [];
+
+                                          // Auto-select first available bracket if none is selected
+                                          if (!selectedBrackets[category.id] && availableBrackets[category.id]?.length > 0) {
+                                            const firstBracket = availableBrackets[category.id][0];
+                                            setSelectedBrackets(prev => ({
+                                              ...prev,
+                                              [category.id]: firstBracket
+                                            }));
+                                            return null; // Will re-render with bracket selected
+                                          }
+                                          
+                                          // If no bracket is selected and no available brackets, show instruction message
+                                          if (!selectedBrackets[category.id]) {
+                                            return (
+                                              <div style={{ 
+                                                textAlign: 'center', 
+                                                padding: '48px 24px',
+                                                background: 'white',
+                                                borderRadius: '12px',
+                                                border: '1px solid #e2e8f0',
+                                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                                              }}>
+                                                <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🎯</div>
+                                                <h3 style={{ color: '#334155', marginBottom: '8px', fontSize: '1.1rem' }}>
+                                                  Select a Bracket
+                                                </h3>
+                                                <p style={{ color: '#64748b', fontSize: '0.9rem' }}>
+                                                  Choose a bracket above to view group stage matches
+                                                </p>
+                                              </div>
+                                            );
+                                          }
 
                                           return (
                                             <>
                                               {/* Bracket Cards - Only show selected bracket */}
-                                              {selectedBrackets[category.id] && roundRobinGroups[selectedBrackets[category.id]] ? (
+                                              {selectedBrackets[category.id] && selectedGroup ? (
                                                 (() => {
                                                     const groupName = selectedBrackets[category.id];
-                                                    const players = roundRobinGroups[groupName];
+                                                    const players = selectedGroup?.standings ? selectedGroup.standings.map(s => s.player) : [];
+                                                    
+                                                    // Create enhanced matches with player names
+                                                    const enhancedMatches = {};
+                                                    Object.keys(selectedGroup?.matches || {}).forEach(key => {
+                                                      const match = selectedGroup.matches[key];
+                                                      const [playerIndex, opponentIndex] = key.split('-').map(Number);
+                                                      const player1 = selectedGroup.standings[playerIndex]?.player;
+                                                      const player2 = selectedGroup.standings[playerIndex + 1 + opponentIndex]?.player;
+                                                      
+                                                      enhancedMatches[key] = {
+                                                        ...match,
+                                                        player1: player1,
+                                                        player2: player2
+                                                      };
+                                                    });
+                                                    
+                                                    // Calculate current standings from match results
+                                                    const currentStandings = calculateStandings(enhancedMatches, players);
                                                     
                                                     return (
                                                       <>
@@ -5189,29 +5376,20 @@ if (skillLevel === 'Open' && category?.tier) {
                                                               <div>Rank</div>
                                                               <div>Player</div>
                                                               <div>Matches<br/>(W-L)</div>
-                                                              <div>Points<br/>(W-L)</div>
+                                                              <div>Points<br/>(PF-PA)</div>
                                                             </div>
-                                                            {players
-                                                              .sort((a, b) => {
-                                                                if (b.wins !== a.wins) return b.wins - a.wins;
-                                                                return (b.pointsFor - b.pointsAgainst) - (a.pointsFor - a.pointsAgainst);
-                                                              })
-                                                              .map((player, index) => (
-                                                              <StandingsRow key={player.name}>
+                                                            {currentStandings.map((player, index) => (
+                                                              <StandingsRow key={index}>
                                                                 <div className="rank-number">{index + 1}</div>
                                                                 <div className="player-info">
                                                                   <div className="player-name">
-                                                                    <div>
-                                                                      {player.name.includes('/') ? (
-                                                                        player.name.split('/').map((name, nameIndex) => (
-                                                                          <div key={nameIndex}>
-                                                                            {nameIndex > 0 }{name.trim()}
-                                                                          </div>
-                                                                        ))
-                                                                      ) : (
-                                                                        player.name
-                                                                      )}
-                                                                    </div>
+                                                                    {player.player && player.player.includes('/') ? (
+                                                                      player.player.split('/').map((name, nameIndex) => (
+                                                                        <div key={nameIndex}>{name.trim()}</div>
+                                                                      ))
+                                                                    ) : (
+                                                                      player.player || 'Unknown Player'
+                                                                    )}
                                                                   </div>
                                                                 </div>
                                                                 <div className="matches-record">
@@ -5253,33 +5431,64 @@ if (skillLevel === 'Open' && category?.tier) {
                                                           <MatchTable>
                                                             <div className="match-schedule-header">
                                                               <div>Match</div>
-                                                              <div>Player 1</div>
-                                                              <div>VS</div>
-                                                              <div>Player 2</div>
+                                                              <div>Players</div>
                                                               <div>Time</div>
                                                               <div>Court</div>
                                                               <div>Date</div>
-                                                              <div>G1</div>
-                                                              <div>G2</div>
-                                                              <div>G3</div>
+                                                              <div>Score</div>
                                                               <div>Standing</div>
                                                             </div>
-                                                            {(roundRobinMatches[groupName] || []).map((match, index) => (
-                                                              <MatchRow key={match.id}>
-                                                                <div className="match-number">#{match.id}</div>
-                                                                <div className="player-name">{match.player1}</div>
-                                                                <div className="vs-text">VS</div>
-                                                                <div className="player-name">{match.player2}</div>
-                                                                <div className="match-time">{match.time}</div>
-                                                                <div className="court-number">{match.court}</div>
-                                                                <div className="match-date">{match.date}</div>
-                                                                <div className="game-score">{match.g1 || '-'}</div>
-                                                                <div className="game-score">{match.g2 || '-'}</div>
-                                                                <div className="game-score">{match.g3 || '-'}</div>
-                                                                <div className="match-standing">{match.standing || 'TBD'}</div>
-                                                              </MatchRow>
-                                                            ))}
-                                                            {(!roundRobinMatches[groupName] || roundRobinMatches[groupName].length === 0) && (
+                                                            {selectedGroup?.standings?.map((player, playerIndex) =>
+                                                              selectedGroup.standings.slice(playerIndex + 1).map((opponent, opponentIndex) => {
+                                                                const matchIndex = `${playerIndex}-${opponentIndex}`;
+                                                                const matchNumber = `G${playerIndex + 1}`;
+                                                                const key = String(matchIndex);
+                                                                const matchData = selectedGroup.matches?.[key] || {};
+                                                                
+                                                                const timeValue = matchData.time || "08:00";
+                                                                const courtValue = matchData.court || "1";
+                                                                const dateValue = matchData.date || "2024-05-30";
+                                                                const player1Score = matchData.game1Player1 || "0";
+                                                                const player2Score = matchData.game1Player2 || "0";
+                                                                
+                                                                // Determine standing based on scores
+                                                                let standing = 'TBD';
+                                                                if (player1Score !== "0" || player2Score !== "0") {
+                                                                  if (parseInt(player1Score) > parseInt(player2Score)) {
+                                                                    standing = '1-0';
+                                                                  } else if (parseInt(player2Score) > parseInt(player1Score)) {
+                                                                    standing = '0-1';
+                                                                  } else {
+                                                                    standing = '0-0';
+                                                                  }
+                                                                }
+                                                                
+                                                                return (
+                                                                  <MatchRow key={`${matchIndex}-${player.player}-${opponent.player}`}>
+                                                                    <div className="match-number">{matchNumber}</div>
+                                                                    <div className="teams-horizontal">
+                                                                      <div className="team-column"><span>{player.player}</span></div>
+                                                                      <span className="vs-divider">vs</span>
+                                                                      <div className="team-column"><span>{opponent.player}</span></div>
+                                                                    </div>
+                                                                    <div className="match-time">{timeValue}</div>
+                                                                    <div className="court-number">{courtValue}</div>
+                                                                    <div className="match-date">{new Date(dateValue).toLocaleDateString()}</div>
+                                                                    <div className="game-score">{player1Score}-{player2Score}</div>
+                                                                    <div className="match-standing" style={{
+                                                                      fontWeight: '600',
+                                                                      color: standing.includes('1-0') ? '#059669' : standing.includes('0-1') ? '#dc2626' : '#64748b',
+                                                                      backgroundColor: standing.includes('1-0') ? '#d1fae5' : standing.includes('0-1') ? '#fee2e2' : 'transparent',
+                                                                      padding: '4px 8px',
+                                                                      borderRadius: '4px',
+                                                                      fontSize: '0.8rem'
+                                                                    }}>
+                                                                      {standing}
+                                                                    </div>
+                                                                  </MatchRow>
+                                                                );
+                                                              })
+                                                            ) || (
                                                               <div style={{
                                                                 padding: '20px',
                                                                 textAlign: 'center',
@@ -5347,27 +5556,207 @@ if (skillLevel === 'Open' && category?.tier) {
                                         </h4>
 
                                         {(() => {
-                                          // Mock data for elimination matches
-                                         
-                                          // Define elimination matches for both 4-bracket and 8-bracket scenarios
-                                          const eliminationMatches = {
-                                            quarterFinals: [
-                                              { id: 'qf1', player1: 'John Doe', player2: 'Maria Santos', winner: 'John Doe', scores: [[11, 8], [11, 6]], court: 'Court 1', date: 'Aug 22', time: '2:00 PM' },
-                                              { id: 'qf2', player1: 'Elena Cruz', player2: 'Anthony Chen', winner: 'Elena Cruz', scores: [[11, 9], [11, 7]], court: 'Court 2', date: 'Aug 22', time: '2:00 PM' },
-                                              { id: 'qf3', player1: 'Jason Park', player2: 'Carmen Lopez', winner: 'Jason Park', scores: [[11, 5], [11, 8]], court: 'Court 3', date: 'Aug 22', time: '2:30 PM' },
-                                              { id: 'qf4', player1: 'Sarah Kim', player2: 'Carlos Rodriguez', winner: 'Sarah Kim', scores: [[11, 7], [11, 9]], court: 'Court 4', date: 'Aug 22', time: '2:30 PM' }
-                                            ],
-                                            semiFinals: [
-                                              { id: 'sf1', player1: 'John Doe', player2: 'Elena Cruz', winner: 'John Doe', scores: [[11, 9], [11, 8]], court: 'Court 1', date: 'Aug 23', time: '3:30 PM' },
-                                              { id: 'sf2', player1: 'Jason Park', player2: 'Sarah Kim', winner: 'Jason Park', scores: [[11, 6], [11, 7]], court: 'Court 2', date: 'Aug 23', time: '3:30 PM' }
-                                            ],
-                                            final: {
-                                              id: 'final', player1: 'John Doe', player2: 'Jason Park', winner: 'John Doe', scores: [[11, 8], [11, 9]], court: 'Center Court', date: 'Aug 24', time: '5:00 PM'
-                                            },
-                                            bronzeBattle: {
-                                              id: 'bronze', player1: 'Elena Cruz', player2: 'Sarah Kim', winner: 'Elena Cruz', scores: [[11, 7], [11, 6]], court: 'Court 1', date: 'Aug 24', time: '4:30 PM'
-                                            }
-                                          };
+                                          // Create elimination matches based on cross-bracket pairing
+                                          const currentMode = bracketMode[category.id] || 4;
+                                          const persistedElimination = Array.isArray(category?.eliminationMatches?.matches)
+                                            ? category.eliminationMatches.matches
+                                            : (Array.isArray(category.eliminationMatches) ? category.eliminationMatches : []);
+                                          let eliminationMatches = [];
+                                          
+                                          if (currentMode === 4) {
+                                            console.log('Category groupStage:', category.groupStage);
+                                            console.log('Top players:', topPlayers);
+                                            
+                                            // 4 bracket elimination - Quarter Finals matchups: a1 vs b2, d1 vs c2, c1 vs d2, b1 vs a2
+                                            eliminationMatches = [
+                                              {
+                                                id: 'quarter1',
+                                                title: 'Quarter-Final 1: A1 vs B2',
+                                                player1: topPlayers.A?.first ? { 
+                                                  name: topPlayers.A.first.name, 
+                                                  bracket: 'A', 
+                                                  position: '1st', 
+                                                  points: topPlayers.A.first.points || 0 
+                                                } : { name: 'TBD', bracket: 'A', position: '1st', points: '' },
+                                                player2: topPlayers.B?.second ? { 
+                                                  name: topPlayers.B.second.name, 
+                                                  bracket: 'B', 
+                                                  position: '2nd', 
+                                                  points: topPlayers.B.second.points || 0 
+                                                } : { name: 'TBD', bracket: 'B', position: '2nd', points: '' }
+                                              },
+                                              {
+                                                id: 'quarter2',
+                                                title: 'Quarter-Final 2: D1 vs C2',
+                                                player1: topPlayers.D?.first ? { 
+                                                  name: topPlayers.D.first.name, 
+                                                  bracket: 'D', 
+                                                  position: '1st', 
+                                                  points: topPlayers.D.first.points || 0 
+                                                } : { name: 'TBD', bracket: 'D', position: '1st', points: '' },
+                                                player2: topPlayers.C?.second ? { 
+                                                  name: topPlayers.C.second.name, 
+                                                  bracket: 'C', 
+                                                  position: '2nd', 
+                                                  points: topPlayers.C.second.points || 0 
+                                                } : { name: 'TBD', bracket: 'C', position: '2nd', points: '' }
+                                              },
+                                              {
+                                                id: 'quarter3',
+                                                title: 'Quarter-Final 3: C1 vs D2',
+                                                player1: topPlayers.C?.first ? { 
+                                                  name: topPlayers.C.first.name, 
+                                                  bracket: 'C', 
+                                                  position: '1st', 
+                                                  points: topPlayers.C.first.points || 0 
+                                                } : { name: 'TBD', bracket: 'C', position: '1st', points: '' },
+                                                player2: topPlayers.D?.second ? { 
+                                                  name: topPlayers.D.second.name, 
+                                                  bracket: 'D', 
+                                                  position: '2nd', 
+                                                  points: topPlayers.D.second.points || 0 
+                                                } : { name: 'TBD', bracket: 'D', position: '2nd', points: '' }
+                                              },
+                                              {
+                                                id: 'quarter4',
+                                                title: 'Quarter-Final 4: B1 vs A2',
+                                                player1: topPlayers.B?.first ? { 
+                                                  name: topPlayers.B.first.name, 
+                                                  bracket: 'B', 
+                                                  position: '1st', 
+                                                  points: topPlayers.B.first.points || 0 
+                                                } : { name: 'TBD', bracket: 'B', position: '1st', points: '' },
+                                                player2: topPlayers.A?.second ? { 
+                                                  name: topPlayers.A.second.name, 
+                                                  bracket: 'A', 
+                                                  position: '2nd', 
+                                                  points: topPlayers.A.second.points || 0 
+                                                } : { name: 'TBD', bracket: 'A', position: '2nd', points: '' }
+                                              },
+                                              {
+                                                id: 'semi1',
+                                                title: 'Semi-Final 1',
+                                                player1: { name: 'Winner QF1', bracket: 'QF1 Winner', position: 'Winner', points: '' },
+                                                player2: { name: 'Winner QF2', bracket: 'QF2 Winner', position: 'Winner', points: '' }
+                                              },
+                                              {
+                                                id: 'semi2',
+                                                title: 'Semi-Final 2',
+                                                player1: { name: 'Winner QF3', bracket: 'QF3 Winner', position: 'Winner', points: '' },
+                                                player2: { name: 'Winner QF4', bracket: 'QF4 Winner', position: 'Winner', points: '' }
+                                              },
+                                              {
+                                                id: 'final',
+                                                title: 'Final',
+                                                player1: { name: 'Winner SF1', bracket: 'SF1 Winner', position: 'Finalist', points: '' },
+                                                player2: { name: 'Winner SF2', bracket: 'SF2 Winner', position: 'Finalist', points: '' }
+                                              },
+                                              {
+                                                id: 'bronze',
+                                                title: 'Bronze Battle',
+                                                player1: { name: 'Loser SF1', bracket: 'SF1 Loser', position: '3rd Place', points: '' },
+                                                player2: { name: 'Loser SF2', bracket: 'SF2 Loser', position: '3rd Place', points: '' }
+                                              }
+                                            ];
+                                          } else if (eliminationMatches.length === 0) {
+                                            // 8 bracket elimination - Round of 16 matches
+                                            const brackets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                                            
+                                            // Generate Round of 16 matches: A1 vs E2, B1 vs F2, C1 vs G2, D1 vs H2, E1 vs A2, F1 vs B2, G1 vs C2, H1 vs D2
+                                            const round16Matches = [
+                                              { bracket1: 'A', pos1: 'first', bracket2: 'E', pos2: 'second', title: 'Round of 16 - Match 1: A1 vs E2' },
+                                              { bracket1: 'B', pos1: 'first', bracket2: 'F', pos2: 'second', title: 'Round of 16 - Match 2: B1 vs F2' },
+                                              { bracket1: 'C', pos1: 'first', bracket2: 'G', pos2: 'second', title: 'Round of 16 - Match 3: C1 vs G2' },
+                                              { bracket1: 'D', pos1: 'first', bracket2: 'H', pos2: 'second', title: 'Round of 16 - Match 4: D1 vs H2' },
+                                              { bracket1: 'E', pos1: 'first', bracket2: 'A', pos2: 'second', title: 'Round of 16 - Match 5: E1 vs A2' },
+                                              { bracket1: 'F', pos1: 'first', bracket2: 'B', pos2: 'second', title: 'Round of 16 - Match 6: F1 vs B2' },
+                                              { bracket1: 'G', pos1: 'first', bracket2: 'C', pos2: 'second', title: 'Round of 16 - Match 7: G1 vs C2' },
+                                              { bracket1: 'H', pos1: 'first', bracket2: 'D', pos2: 'second', title: 'Round of 16 - Match 8: H1 vs D2' }
+                                            ];
+                                            
+                                            eliminationMatches = [
+                                              ...round16Matches.map((match, index) => ({
+                                                id: `round16_${index + 1}`,
+                                                title: match.title,
+                                                player1: topPlayers[match.bracket1]?.[match.pos1] ? {
+                                                  name: topPlayers[match.bracket1][match.pos1].name,
+                                                  bracket: match.bracket1,
+                                                  position: match.pos1 === 'first' ? '1st' : '2nd',
+                                                  points: topPlayers[match.bracket1][match.pos1].points || 0
+                                                } : { name: 'TBD', bracket: match.bracket1, position: match.pos1 === 'first' ? '1st' : '2nd', points: '' },
+                                                player2: topPlayers[match.bracket2]?.[match.pos2] ? {
+                                                  name: topPlayers[match.bracket2][match.pos2].name,
+                                                  bracket: match.bracket2,
+                                                  position: match.pos2 === 'first' ? '1st' : '2nd',
+                                                  points: topPlayers[match.bracket2][match.pos2].points || 0
+                                                } : { name: 'TBD', bracket: match.bracket2, position: match.pos2 === 'first' ? '1st' : '2nd', points: '' }
+                                              })),
+                                              // Quarter Finals
+                                              {
+                                                id: 'quarter1',
+                                                title: 'Quarter-Final 1',
+                                                player1: { name: 'Winner R16-1', bracket: 'R16-1 Winner', position: 'QF', points: '' },
+                                                player2: { name: 'Winner R16-2', bracket: 'R16-2 Winner', position: 'QF', points: '' }
+                                              },
+                                              {
+                                                id: 'quarter2',
+                                                title: 'Quarter-Final 2',
+                                                player1: { name: 'Winner R16-3', bracket: 'R16-3 Winner', position: 'QF', points: '' },
+                                                player2: { name: 'Winner R16-4', bracket: 'R16-4 Winner', position: 'QF', points: '' }
+                                              },
+                                              {
+                                                id: 'quarter3',
+                                                title: 'Quarter-Final 3',
+                                                player1: { name: 'Winner R16-5', bracket: 'R16-5 Winner', position: 'QF', points: '' },
+                                                player2: { name: 'Winner R16-6', bracket: 'R16-6 Winner', position: 'QF', points: '' }
+                                              },
+                                              {
+                                                id: 'quarter4',
+                                                title: 'Quarter-Final 4',
+                                                player1: { name: 'Winner R16-7', bracket: 'R16-7 Winner', position: 'QF', points: '' },
+                                                player2: { name: 'Winner R16-8', bracket: 'R16-8 Winner', position: 'QF', points: '' }
+                                              },
+                                              // Semi Finals
+                                              {
+                                                id: 'semi1',
+                                                title: 'Semi-Final 1',
+                                                player1: { name: 'Winner QF1', bracket: 'QF1 Winner', position: 'Semifinalist', points: '' },
+                                                player2: { name: 'Winner QF2', bracket: 'QF2 Winner', position: 'Semifinalist', points: '' }
+                                              },
+                                              {
+                                                id: 'semi2',
+                                                title: 'Semi-Final 2',
+                                                player1: { name: 'Winner QF3', bracket: 'QF3 Winner', position: 'Semifinalist', points: '' },
+                                                player2: { name: 'Winner QF4', bracket: 'QF4 Winner', position: 'Semifinalist', points: '' }
+                                              },
+                                              // Final
+                                              {
+                                                id: 'final',
+                                                title: 'Final',
+                                                player1: { name: 'Winner SF1', bracket: 'SF1 Winner', position: 'Finalist', points: '' },
+                                                player2: { name: 'Winner SF2', bracket: 'SF2 Winner', position: 'Finalist', points: '' }
+                                              },
+                                              // Bronze Battle
+                                              {
+                                                id: 'bronze',
+                                                title: 'Bronze Battle',
+                                                player1: { name: 'Loser SF1', bracket: 'SF1 Loser', position: '3rd Place', points: '' },
+                                                player2: { name: 'Loser SF2', bracket: 'SF2 Loser', position: '3rd Place', points: '' }
+                                              }
+                                            ];
+                                          }
+
+                                          // Overlay persisted schedule fields if available
+                                          if (persistedElimination.length) {
+                                            eliminationMatches = eliminationMatches.map((m, i) => ({
+                                              ...m,
+                                              court: persistedElimination[i]?.court || m.court,
+                                              date: persistedElimination[i]?.date || m.date,
+                                              time: persistedElimination[i]?.time || m.time,
+                                              winner: persistedElimination[i]?.winner || m.winner,
+                                              scores: persistedElimination[i]?.scores || m.scores
+                                            }));
+                                          }
 
                                           // Reusable MatchCard component
                                           const MatchCard = ({ match, matchNumber, isChampionship = false, isBronze = false }) => (
@@ -5610,7 +5999,6 @@ if (skillLevel === 'Open' && category?.tier) {
                                           );
 
                                           // Determine current mode based on number of brackets
-                                          const currentMode = 4; // Can be 4 or 8 depending on tournament structure
                                           
                                           return (
                                             <div style={{
@@ -5632,10 +6020,10 @@ if (skillLevel === 'Open' && category?.tier) {
                                                     gap: '30px'
                                                   }}>
                                                     <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Quarter Finals</div>
-                                                    <MatchCard match={eliminationMatches.quarterFinals[0]} matchNumber={1} />
-                                                    <MatchCard match={eliminationMatches.quarterFinals[1]} matchNumber={2} />
-                                                    <MatchCard match={eliminationMatches.quarterFinals[2]} matchNumber={3} />
-                                                    <MatchCard match={eliminationMatches.quarterFinals[3]} matchNumber={4} />
+                                                    <MatchCard match={eliminationMatches[0]} matchNumber={1} />
+                                                <MatchCard match={eliminationMatches[1]} matchNumber={2} />
+                                                <MatchCard match={eliminationMatches[2]} matchNumber={3} />
+                                                <MatchCard match={eliminationMatches[3]} matchNumber={4} />
                                                   </div>
                                                   
                                                   {/* Connecting lines to Semi Finals */}
@@ -5704,8 +6092,8 @@ if (skillLevel === 'Open' && category?.tier) {
                                                     justifyContent: 'center'
                                                   }}>
                                                     <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Semi Finals</div>
-                                                    <MatchCard match={eliminationMatches.semiFinals[0]} matchNumber={5} />
-                                                    <MatchCard match={eliminationMatches.semiFinals[1]} matchNumber={6} />
+                                                    <MatchCard match={eliminationMatches[4]} matchNumber={5} />
+                                                <MatchCard match={eliminationMatches[5]} matchNumber={6} />
                                                   </div>
                                                   
                                                   {/* Connecting lines to Final */}
@@ -5749,7 +6137,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                                       justifyContent: 'center'
                                                     }}>
                                                       <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Final</div>
-                                                      <MatchCard match={eliminationMatches.final} matchNumber={7} isChampionship={true} />
+                                                      <MatchCard match={eliminationMatches[6]} matchNumber={7} isChampionship={true} />
                                                     </div>
                                                     
                                                     {/* Bronze Battle */}
@@ -5759,7 +6147,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                                       justifyContent: 'center'
                                                     }}>
                                                       <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Bronze Battle</div>
-                                                      <MatchCard match={eliminationMatches.bronzeBattle} matchNumber={8} isBronze={true} />
+                                                      <MatchCard match={eliminationMatches[7]} matchNumber={8} isBronze={true} />
                                                     </div>
                                                   </div>
                                                 </div>
@@ -5778,9 +6166,9 @@ if (skillLevel === 'Open' && category?.tier) {
                                                     gap: '20px'
                                                   }}>
                                                     <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Round of 16</div>
-                                                    {eliminationMatches.quarterFinals.slice(0, 8).map((match, index) => (
-                                                      <MatchCard key={match.id} match={match} matchNumber={index + 1} />
-                                                    ))}
+                                                    {eliminationMatches.slice(0, 8).map((match, index) => (
+                                      <MatchCard key={match.id} match={match} matchNumber={index + 1} />
+                                    ))}
                                                   </div>
                                                   
                                                   {/* Connecting lines */}
@@ -5824,9 +6212,9 @@ if (skillLevel === 'Open' && category?.tier) {
                                                     justifyContent: 'center'
                                                   }}>
                                                     <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Quarter Finals</div>
-                                                    {eliminationMatches.quarterFinals.slice(0, 4).map((match, index) => (
-                                                      <MatchCard key={match.id} match={match} matchNumber={index + 9} />
-                                                    ))}
+                                                    {eliminationMatches.slice(8, 12).map((match, index) => (
+                                      <MatchCard key={match.id} match={match} matchNumber={index + 9} />
+                                    ))}
                                                   </div>
                                                   
                                                   {/* Connecting lines to Semi Finals */}
@@ -5870,9 +6258,9 @@ if (skillLevel === 'Open' && category?.tier) {
                                                     justifyContent: 'center'
                                                   }}>
                                                     <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Semi Finals</div>
-                                                    {eliminationMatches.semiFinals.map((match, index) => (
-                                                      <MatchCard key={match.id} match={match} matchNumber={index + 13} />
-                                                    ))}
+                                                    {eliminationMatches.slice(12, 14).map((match, index) => (
+                                      <MatchCard key={match.id} match={match} matchNumber={index + 13} />
+                                    ))}
                                                   </div>
                                                   
                                                   {/* Connecting lines to Final */}
@@ -5916,7 +6304,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                                       justifyContent: 'center'
                                                     }}>
                                                       <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Final</div>
-                                                      <MatchCard match={eliminationMatches.final} matchNumber={15} isChampionship={true} />
+                                                      <MatchCard match={eliminationMatches[14]} matchNumber={15} isChampionship={true} />
                                                     </div>
                                                     
                                                     {/* Bronze Battle */}
@@ -5926,7 +6314,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                                       justifyContent: 'center'
                                                     }}>
                                                       <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px', color: '#374151' }}>Bronze Battle</div>
-                                                      <MatchCard match={eliminationMatches.bronzeBattle} matchNumber={16} isBronze={true} />
+                                                      <MatchCard match={eliminationMatches[15]} matchNumber={16} isBronze={true} />
                                                     </div>
                                                   </div>
                                                 </div>
@@ -6504,12 +6892,12 @@ if (skillLevel === 'Open' && category?.tier) {
                     {/* Approved Players Tab Content */}
                     {activePlayerTab === 'approved' && (
                       selectedTournament.registrations && selectedTournament.registrations.filter(reg => {
-                        console.log('Approved player filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Status:', reg.status);
-                        return reg.status === 'approved';
+                        console.log('Approved player filter - Player:', reg.player?.firstName, reg.player?.lastName, 'Category:', reg.category, 'Selected:', selectedPlayerCategory, 'Status:', reg.status);
+                        return reg && reg.status === 'approved';
                       }).filter(reg => {
-                        const shouldShow = selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory;
-                        console.log('Category filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
-                        return shouldShow;
+                        const shouldShow = selectedPlayerCategory === 'all' || reg.category === selectedPlayerCategory;
+                        console.log('Category filter - Player:', reg.player?.firstName, reg.player?.lastName, 'Category:', reg.category, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
+                        return reg && shouldShow;
                       }).length > 0 ? (
                       <div>
                         {/* Search Bar */}
@@ -6569,13 +6957,19 @@ if (skillLevel === 'Open' && category?.tier) {
                         }}>
                           <span style={{ color: '#64748b', fontSize: '0.9rem' }}>
                             {(() => {
+                              // Get approved players in this category
                               const approvedPlayers = selectedTournament.registrations
                                 .filter(reg => reg.status === 'approved')
-                                .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory);
-                              const filteredPlayers = approvedPlayers.filter(player => {
-                                const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
-                                return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
+                                .filter(reg => selectedPlayerCategory === 'all' || reg.category === selectedPlayerCategory);
+
+                              // Filter by search term using firstName + lastName
+                              const filteredPlayers = approvedPlayers.filter(reg => {
+                                const fullName = reg.player 
+                                  ? `${reg.player.firstName || ""} ${reg.player.lastName || ""}`.trim() 
+                                  : "";
+                                return fullName.toLowerCase().includes((playersSearchTerm || "").toLowerCase());
                               });
+
                               return playersSearchTerm 
                                 ? `Showing ${filteredPlayers.length} of ${approvedPlayers.length} approved players`
                                 : `Total Approved Players: ${approvedPlayers.length}`;
@@ -6590,22 +6984,30 @@ if (skillLevel === 'Open' && category?.tier) {
                         }}>
                           {selectedTournament.registrations
                             .filter(reg => {
-                              console.log('Rendering approved - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Status:', reg.status);
+                              const fullName = reg.player 
+                                ? `${reg.player.firstName || ""} ${reg.player.lastName || ""}`.trim() 
+                                : "";
                               return reg.status === 'approved';
                             })
                             .filter(reg => {
-                              const shouldShow = selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory;
-                              console.log('Rendering category filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
+                              const shouldShow = selectedPlayerCategory === 'all' || reg.category === selectedPlayerCategory;
                               return shouldShow;
                             })
                             .filter(player => {
-                              const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
-                              return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
+                              const fullName = player.player 
+                                ? `${player.player.firstName || ""} ${player.player.lastName || ""}`.trim() 
+                                : "";
+                              return fullName.toLowerCase().includes((playersSearchTerm || "").toLowerCase());
                             })
                             .sort((a, b) => {
-                              const cleanNameA = a.playerName.replace(/["'].*?["']/g, '').trim();
-                              const cleanNameB = b.playerName.replace(/["'].*?["']/g, '').trim();
-                              return cleanNameA.localeCompare(cleanNameB);
+                              const fullNameA = a.player 
+                                ? `${a.player.firstName || ""} ${a.player.lastName || ""}`.trim() 
+                                : "";
+                              const fullNameB = b.player 
+                                ? `${b.player.firstName || ""} ${b.player.lastName || ""}`.trim() 
+                                : "";
+                              
+                              return fullNameA.localeCompare(fullNameB);
                             })
                             .map((player, index) => (
                               <div key={player.id} style={{
@@ -6635,7 +7037,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                     fontSize: '16px',
                                     flexShrink: 0
                                   }}>
-                                    {player.playerName.replace(/["'].*?["']/g, '').trim().split(' ').map(n => n[0]).join('').toUpperCase()}
+                                    {player.player ? `${(player.player.firstName || '')[0]}${(player.player.lastName || '')[0]}`.toUpperCase() : '?'}
                                   </div>
                                   <div style={{ flex: 1 }}>
                                 {/* Player Name - Left Aligned */}
@@ -6646,7 +7048,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                   marginBottom: '12px',
                                   textAlign: 'left'
                                 }}>
-                                  {player.playerName.replace(/["'].*?["']/g, '').trim()}
+                                  {player.player ? `${player.player.firstName} ${player.player.lastName}` : 'Unknown Player'}
                                 </div>
                                 
                                 {/* Player Details in One Row */}
@@ -6658,7 +7060,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                 }}>
                                   <div style={{
                                     background: '#FFFFFF',
-                                    padding: '8px',
+                                    padding: '0px',
                                     borderRadius: '6px',
                                     textAlign: 'center'
                                   }}>
@@ -6675,12 +7077,12 @@ if (skillLevel === 'Open' && category?.tier) {
                                       fontWeight: '600',
                                       color: '#29ba9b'
                                     }}>
-                                      {player.pplId || 'PPL' + String(Math.floor(Math.random() * 9000) + 1000)}
+                                      {player.player?.pplId || 'N/A'}
                                     </div>
                                   </div>
                                   <div style={{
                                     background: '#FFFFFF',
-                                    padding: '8px',
+                                    padding: '0px',
                                     borderRadius: '6px',
                                     textAlign: 'center'
                                   }}>
@@ -6698,12 +7100,12 @@ if (skillLevel === 'Open' && category?.tier) {
                                       color: '#334155',
                                       textTransform: 'capitalize'
                                     }}>
-                                      {player.gender || 'N/A'}
+                                      {player.player?.gender || 'N/A'}
                                     </div>
                                   </div>
                                   <div style={{
                                     background: '#FFFFFF',
-                                    padding: '8px',
+                                    padding: '0px',
                                     borderRadius: '6px',
                                     textAlign: 'center'
                                   }}>
@@ -6713,19 +7115,19 @@ if (skillLevel === 'Open' && category?.tier) {
                                       fontWeight: '500',
                                       marginBottom: '2px'
                                     }}>
-                                      AGE
+                                      Age
                                     </div>
                                     <div style={{
                                       fontSize: '0.85rem',
                                       fontWeight: '500',
                                       color: '#334155'
                                     }}>
-                                      {player.age || 'N/A'}
+                                      <span>{getAge(player.player?.birthDate)}</span>
                                     </div>
                                   </div>
                                   <div style={{
                                     background: '#FFFFFF',
-                                    padding: '8px',
+                                    padding: '0px',
                                     borderRadius: '6px',
                                     textAlign: 'center'
                                   }}>
@@ -6735,24 +7137,14 @@ if (skillLevel === 'Open' && category?.tier) {
                                       fontWeight: '500',
                                       marginBottom: '2px'
                                     }}>
-                                      DUPR 
+                                      DUPR ID
                                     </div>
                                     <div style={{
                                       fontSize: '0.85rem',
                                       fontWeight: '700',
                                       color: '#29ba9b'
                                     }}>
-                                      {(() => {
-                                        const category = selectedTournament.tournamentCategories && 
-                                          Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
-                                        const categoryType = category ? category.name.toLowerCase() : '';
-                                        if (categoryType.includes('singles')) {
-                                          return player.duprRatings?.singles || '4.2';
-                                        } else if (categoryType.includes('doubles') || categoryType.includes('mixed')) {
-                                          return player.duprRatings?.doubles || '4.1';
-                                        }
-                                        return player.duprRatings?.doubles || '4.1';
-                                      })()} 
+                                      {player.player?.duprId || 'N/A'}
                                     </div>
                                   </div>
                                 </div>
@@ -6773,8 +7165,8 @@ if (skillLevel === 'Open' && category?.tier) {
                                   }}>
                                     {(() => {
                                       const category = selectedTournament.tournamentCategories && 
-                                        Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
-                                      return category ? category.name : 'Category N/A';
+                                        Object.values(selectedTournament.tournamentCategories).find(cat => cat._id.toString() === player.category);
+                                      return category ? category.division : '';
                                     })()}
                                   </div>
                                 )}
@@ -6786,10 +7178,12 @@ if (skillLevel === 'Open' && category?.tier) {
                         {playersSearchTerm && 
                          selectedTournament.registrations
                            .filter(reg => reg.status === 'approved')
-                           .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory)
+                           .filter(reg => selectedPlayerCategory === 'all' || reg.category === selectedPlayerCategory)
                            .filter(player => {
-                             const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
-                             return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
+                             const fullName = player.player 
+                               ? `${player.player.firstName || ""} ${player.player.lastName || ""}`.trim() 
+                               : "";
+                             return fullName.toLowerCase().includes(playersSearchTerm.toLowerCase());
                            }).length === 0 && (
                           <div style={{ 
                             textAlign: 'center', 
@@ -6827,11 +7221,11 @@ if (skillLevel === 'Open' && category?.tier) {
                     {/* Pending Players Tab Content */}
                     {activePlayerTab === 'pending' && (
                       selectedTournament.registrations && selectedTournament.registrations.filter(reg => {
-                        console.log('Pending player filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Status:', reg.status);
+                        console.log('Pending player filter - Player:', reg.playerName, 'CategoryId:', reg.category, 'Selected:', selectedPlayerCategory, 'Status:', reg.status);
                         return reg.status === 'pending';
                       }).filter(reg => {
-                        const shouldShow = selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory;
-                        console.log('Pending category filter check - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
+                        const shouldShow = selectedPlayerCategory === 'all' || reg.category === selectedPlayerCategory;
+                        console.log('Pending category filter check - Player:', reg.playerName, 'CategoryId:', reg.category, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
                         return shouldShow;
                       }).length > 0 ? (
                         <div>
@@ -6894,7 +7288,7 @@ if (skillLevel === 'Open' && category?.tier) {
                               {(() => {
                                 const pendingPlayers = selectedTournament.registrations
                                   .filter(reg => reg.status === 'pending')
-                                  .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory);
+                                  .filter(reg => selectedPlayerCategory === 'all' || reg.category === selectedPlayerCategory);
                                 const filteredPlayers = pendingPlayers.filter(player => {
                                   const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
                                   return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
@@ -6913,12 +7307,12 @@ if (skillLevel === 'Open' && category?.tier) {
                           }}>
                             {selectedTournament.registrations
                               .filter(reg => {
-                                console.log('Rendering pending - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Status:', reg.status);
+                                console.log('Rendering pending - Player:', reg.playerName, 'CategoryId:', reg.category, 'Status:', reg.status);
                                 return reg.status === 'pending';
                               })
                               .filter(reg => {
-                                const shouldShow = selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory;
-                                console.log('Pending category filter - Player:', reg.playerName, 'CategoryId:', reg.categoryId, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
+                                const shouldShow = selectedPlayerCategory === 'all' || reg.category === selectedPlayerCategory;
+                                console.log('Pending category filter - Player:', reg.playerName, 'CategoryId:', reg.category, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
                                 return shouldShow;
                               })
                               .filter(player => {
@@ -7067,7 +7461,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                       }}>
                                         {(() => {
                                           const category = selectedTournament.tournamentCategories && 
-                                            Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
+                                            Object.values(selectedTournament.tournamentCategories).find(cat => cat._id.toString() === player.category);
                                           const categoryType = category ? category.name.toLowerCase() : '';
                                           if (categoryType.includes('singles')) {
                                             return player.duprRatings?.singles || '4.2';
@@ -7096,8 +7490,8 @@ if (skillLevel === 'Open' && category?.tier) {
                                     }}>
                                       {(() => {
                                         const category = selectedTournament.tournamentCategories && 
-                                          Object.values(selectedTournament.tournamentCategories).find(cat => cat.id === player.categoryId);
-                                        return category ? category.name : 'Category N/A';
+                                          Object.values(selectedTournament.tournamentCategories).find(cat => cat._id.toString() === player.category);
+                                        return category ? category.division : 'Category N/A';
                                       })()}
                                     </div>
                                   )}
@@ -7112,7 +7506,7 @@ if (skillLevel === 'Open' && category?.tier) {
                           {playersSearchTerm && 
                            selectedTournament.registrations
                              .filter(reg => reg.status === 'pending')
-                             .filter(reg => selectedPlayerCategory === 'all' || reg.categoryId === selectedPlayerCategory)
+                             .filter(reg => selectedPlayerCategory === 'all' || reg.category === selectedPlayerCategory)
                              .filter(player => {
                                const cleanName = player.playerName.replace(/["'].*?["']/g, '').trim();
                                return cleanName.toLowerCase().includes(playersSearchTerm.toLowerCase());
@@ -7249,7 +7643,7 @@ if (skillLevel === 'Open' && category?.tier) {
         setShowRegistrationForm(true);
       }}
       disabled={
-        selectedTournament.currentParticipants >= selectedTournament.maxParticipants || !isAuthenticated
+        (selectedTournament?.registrations?.filter(reg => reg.status === 'approved').length || 0) >= selectedTournament.maxParticipants || !isAuthenticated
       }
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -7392,7 +7786,8 @@ if (skillLevel === 'Open' && category?.tier) {
               </div>
             </TournamentDetailRight>
           </TournamentDetailBody>
-        </tailContent>
+          </TournamentDetailContainer>
+        </TournamentDetailContent>
 
         {showAuthModal && (
           <AuthModal
@@ -7979,19 +8374,10 @@ if (skillLevel === 'Open' && category?.tier) {
 <RegisterButton
   onClick={(e) => {
     e.stopPropagation(); // Prevent card click
-    setSelectedTournament(tournament);
-    setShowDetailedView(true);
-
-    if (!isAuthenticated) {
-      // Guest: show sign-in modal instead of registration
-      setShowAuthModal(true);
-    } else {
-      // Logged in: show registration modal
-      setRegistrationTournament(tournament);
-      setShowRegistrationModal(true);
-    }
+    // Registration temporarily disabled
+    console.log('Registration is temporarily disabled');
   }}
-  disabled={tournament.currentParticipants >= tournament.maxParticipants}
+  disabled={true}
 >
   {tournament.currentParticipants >= tournament.maxParticipants
     ? "Full"
@@ -8121,6 +8507,108 @@ if (skillLevel === 'Open' && category?.tier) {
     </RegistrationModalContent>
   </RegistrationModal>
 )}
+
+      {/* Bracket Mode Confirmation Modal */}
+      {showBracketModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '32px',
+            maxWidth: '400px',
+            width: '90%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                fontSize: '3rem',
+                marginBottom: '16px'
+              }}>⚠️</div>
+              <h3 style={{
+                color: '#334155',
+                fontSize: '1.25rem',
+                fontWeight: '600',
+                marginBottom: '8px'
+              }}>
+                Are you sure?
+              </h3>
+              <p style={{
+                color: '#64748b',
+                fontSize: '0.95rem',
+                lineHeight: '1.5'
+              }}>
+                Your tournament will now generate {pendingBracketChange.newMode} brackets. 
+              </p>
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={() => {
+                  setShowBracketModal(false);
+                  setPendingBracketChange({ categoryId: null, newMode: null });
+                }}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  border: '1px solid #e2e8f0',
+                  background: 'white',
+                  color: '#64748b',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // Update bracket mode
+                  setBracketMode(prev => ({
+                    ...prev,
+                    [pendingBracketChange.categoryId]: pendingBracketChange.newMode
+                  }));
+                  
+                  // Close modal
+                  setShowBracketModal(false);
+                  setPendingBracketChange({ categoryId: null, newMode: null });
+                }}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                  color: 'white',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </PageContainer>
   );

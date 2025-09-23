@@ -178,11 +178,15 @@ exports.getComments = async (req, res) => {
   }
 };
 
+// =========================
+// Add comment
+// =========================
 exports.addComment = async (req, res) => {
   try {
     const userId = req.user._id.toString();
     const { content } = req.body;
-    if (!content?.trim()) return res.status(400).json({ message: "Comment content is required" });
+    if (!content?.trim())
+      return res.status(400).json({ message: "Comment content is required" });
 
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
@@ -192,7 +196,7 @@ exports.addComment = async (req, res) => {
     post.commentCount = post.comments.length;
     await post.save();
 
-    const populatedPost = await Post.findById(req.params.postId)
+    let populatedPost = await Post.findById(req.params.postId)
       .populate("comments.author", "firstName lastName initials username email")
       .lean();
 
@@ -206,6 +210,10 @@ exports.addComment = async (req, res) => {
   }
 };
 
+
+// =========================
+// Add reply
+// =========================
 exports.addReply = async (req, res) => {
   try {
     const userId = req.user._id.toString();
@@ -222,12 +230,13 @@ exports.addReply = async (req, res) => {
     comment.replies.push(newReply);
     await post.save();
 
-    const populatedPost = await Post.findById(req.params.postId)
+    let populatedPost = await Post.findById(req.params.postId)
       .populate("comments.author", "firstName lastName initials username email")
       .populate("comments.replies.author", "firstName lastName initials username email")
       .lean();
 
     [populatedPost] = await attachAvatars(populatedPost);
+
     const latestReply = populatedPost.comments
       .find(c => c._id.toString() === req.params.commentId)
       .replies.slice(-1)[0];

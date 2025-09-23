@@ -192,5 +192,69 @@ router.post("/logout", async (req, res) => {
     res.status(500).json({ message: "Server error during logout" });
   }
 });
+// ------------------- ADMIN REGISTER -------------------
+router.post("/playerregister", async (req, res) => {
+  try {
+    let { firstName, lastName, email, password, birthDate, gender, roles, duprId } = req.body;
 
-module.exports = router;
+    // ✅ Validate required fields
+    if (!firstName || !lastName) {
+      return res.status(400).json({ message: "First name and last name are required." });
+    }
+
+    // Defaults for optional fields
+    email = email && email.trim() !== "" ? email.trim() : `noemail_${Date.now()}@example.com`;
+    gender = gender && gender.trim() !== "" ? gender : "N/A";
+    duprId = duprId && duprId.trim() !== "" ? duprId : "N/A";
+    birthDate = birthDate ? new Date(birthDate) : null;
+
+    // Auto-generate password if missing
+    if (!password || password.trim() === "") {
+      const birthStr = birthDate ? birthDate.toISOString().split("T")[0].replace(/-/g, "") : "00000000";
+      password = `${firstName}${lastName}${birthStr}`;
+    }
+
+    // Generate pplId
+    const counter = await Counter.findOneAndUpdate(
+      { name: "pplId" },
+      { $inc: { value: 1 } },
+      { new: true, upsert: true }
+    );
+    const pplId = counter.value.toString().padStart(6, "0");
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create User
+    const newUser = await User.create({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      birthDate,
+      gender,
+      roles: Array.isArray(roles) && roles.length ? roles : ["player"],
+      duprId,
+      pplId,
+    });
+
+    // Create Profile safely
+    await Profile.create({
+      user: newUser._id,
+      pplId,
+      duprRatings: { singles: 0, doubles: 0, mixedDoubles: 0 },
+    });
+
+    // Log the registration
+    await createLog(newUser, "admin-register");
+
+    res.status(201).json({ message: "Player registered successfully", newUser });
+  } catch (err) {
+    console.error("Admin register error:", err);
+    res.status(500).json({
+      message: "Server error during player registration",
+      error: err.message, // ✅ Send actual error for debugging
+    });
+  }
+});
+module.exports = router; 

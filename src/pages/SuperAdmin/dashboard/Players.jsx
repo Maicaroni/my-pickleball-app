@@ -3,7 +3,7 @@ import '../style.css';
 import axios from 'axios';
 import Sidebar from '../../../components/Superadmin/SuperAdminSidebar';
 import Navbar from '../../../components/Superadmin/SuperAdminNavbar';
-import { Modal, Button, Input, Form, message, Pagination } from 'antd';
+import { Modal, Button, Input, Form, message, Pagination, Select } from 'antd';
 import { FaTrash, FaEdit } from 'react-icons/fa';
 
 const Players = () => {
@@ -26,19 +26,18 @@ const Players = () => {
   }, []);
 
   const fetchPlayers = async () => {
-  try {
-    const res = await axios.get('/api/users?role=player');
-    setPlayers(Array.isArray(res.data) ? res.data : []);
-  } catch (err) {
-    console.error('Error fetching players:', err);
-    setPlayers([]); // fallback
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      const res = await axios.get('/api/users?role=player');
+      setPlayers(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error('Error fetching players:', err);
+      setPlayers([]); // fallback
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
-  // Delete player handler remains the same
+  // Delete player handler
   const handleDeleteConfirmed = async () => {
     if (!selectedPlayer) return;
     try {
@@ -52,7 +51,7 @@ const Players = () => {
     }
   };
 
-  // Edit player handler remains the same
+  // Edit player handler
   const handleEditSubmit = async () => {
     try {
       const values = await editForm.validateFields();
@@ -66,21 +65,52 @@ const Players = () => {
     }
   };
 
-  // Add player handler remains the same
+  // ✅ Add player handler (now uses /auth/register)
   const handleAddSubmit = async () => {
-    try {
-      const values = await addForm.validateFields();
-      values.birthDate = new Date(values.birthDate).toISOString();
-      await axios.post(`/api/users`, { ...values, role: 'player' });
-      fetchPlayers();
-      addForm.resetFields();
-      message.success('Player added successfully.');
-      setShowAddModal(false);
-    } catch (err) {
-      console.error('Error adding player:', err);
-      message.error('Failed to add player.');
+  try {
+    const values = await addForm.validateFields();
+
+    let birthStr = "00000000";
+    if (values.birthDate) {
+      const date = new Date(values.birthDate);
+      birthStr = date.toISOString().split("T")[0].replace(/-/g, "");
+      values.birthDate = date.toISOString();
+    } else {
+      values.birthDate = null;
     }
-  };
+
+    if (!values.password) {
+      values.password = `${values.firstName || ""}${values.lastName || ""}${birthStr}`;
+    }
+
+    if (!values.email || values.email.trim() === "") {
+      values.email = `noemail_${Date.now()}@example.com`; // ✅ unique placeholder
+    }
+
+    ["duprId", "username", "gender"].forEach((field) => {
+      if (!values[field]) values[field] = "N/A";
+    });
+
+    const payload = { ...values, roles: ["player"] };
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const token = storedUser?.token;
+    if (!token) return message.error("You must be logged in to register a player.");
+
+    const response = await axios.post("/api/auth/playerregister", payload, {
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    });
+
+    fetchPlayers();
+    addForm.resetFields();
+    setShowAddModal(false);
+    message.success(`Player registered successfully. Default password: ${values.password}`);
+  } catch (err) {
+    console.error("Error registering player:", err.response?.data || err);
+    message.error(err.response?.data?.message || "Failed to register player.");
+  }
+};
+
+
 
   const openEditModal = (player) => {
     setSelectedPlayer(player);
@@ -118,26 +148,28 @@ const Players = () => {
         <Navbar />
         <main className="p-6 max-w-screen-lg mx-auto">
           <h1 className="text-3xl font-extrabold text-nuBlue mb-8">Players</h1>
-<div className="flex flex-row justify-between items-center mb-8 gap-5 px-6">
-  <Button
-    type="primary"
-    className="bg-nuBlue text-white hover:bg-blue-700 rounded-lg px-5 py-3 shadow-md transition"
-    onClick={() => setShowAddModal(true)}
-  >
-    + Add Player
-  </Button>
-  <Input
-    placeholder="Search players..."
-    value={searchTerm}
-    onChange={(e) => {
-      setSearchTerm(e.target.value);
-      setCurrentPage(1);
-    }}
-    className="search-input rounded-lg shadow-sm"
-    style={{ maxWidth: '320px', padding: '10px 16px', fontSize: '16px' }}
-    allowClear
-  />
-</div>
+
+          {/* Top actions */}
+          <div className="flex flex-row justify-between items-center mb-8 gap-5 px-6">
+            <Button
+              type="primary"
+              className="bg-nuBlue text-white hover:bg-blue-700 rounded-lg px-5 py-3 shadow-md transition"
+              onClick={() => setShowAddModal(true)}
+            >
+              + Add Player
+            </Button>
+            <Input
+              placeholder="Search players..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="search-input rounded-lg shadow-sm"
+              style={{ maxWidth: '320px', padding: '10px 16px', fontSize: '16px' }}
+              allowClear
+            />
+          </div>
 
           {loading ? (
             <div className="loading-spinner text-center text-lg py-10">Loading...</div>
@@ -159,12 +191,12 @@ const Players = () => {
                   <tbody>
                     {currentPlayers.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="text-center py-10 text-gray-500 text-lg font-light">
+                        <td colSpan={7} className="text-center py-10 text-gray-500 text-lg font-light">
                           No players found.
                         </td>
                       </tr>
                     ) : (
-                      currentPlayers.map((player, index) => (
+                      currentPlayers.map((player) => (
                         <tr
                           key={player._id}
                           className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
@@ -231,29 +263,48 @@ const Players = () => {
           >
             <Form layout="vertical" form={editForm} onFinish={handleEditSubmit} labelAlign="left">
               <Form.Item
-                label="First Name"
-                name="firstName"
-                rules={[{ required: true, message: 'Please enter first name' }]}
-              >
-                <Input placeholder="First Name" size="large" />
-              </Form.Item>
-              <Form.Item
-                label="Last Name"
-                name="lastName"
-                rules={[{ required: true, message: 'Please enter last name' }]}
-              >
-                <Input placeholder="Last Name" size="large" />
-              </Form.Item>
-              <Form.Item
-                label="Email"
-                name="email"
-                rules={[
-                  { required: true, message: 'Please enter email' },
-                  { type: 'email', message: 'Enter a valid email' },
-                ]}
-              >
-                <Input placeholder="Email" size="large" />
-              </Form.Item>
+  label="First Name"
+  name="firstName"
+  rules={[{ required: true, message: 'Please enter first name' }]}
+>
+  <Input placeholder="First Name" size="large" />
+</Form.Item>
+
+<Form.Item
+  label="Last Name"
+  name="lastName"
+  rules={[{ required: true, message: 'Please enter last name' }]}
+>
+  <Input placeholder="Last Name" size="large" />
+</Form.Item>
+
+<Form.Item label="Email" name="email">
+  <Input placeholder="Email (optional)" size="large" />
+</Form.Item>
+
+<Form.Item label="Password" name="password">
+  <Input.Password placeholder="Leave empty to auto-generate" size="large" />
+</Form.Item>
+
+<Form.Item label="Birthdate" name="birthDate">
+  <Input type="date" size="large" />
+</Form.Item>
+
+<Form.Item label="Gender" name="gender">
+  <Select size="large" placeholder="Select Gender (optional)">
+    <Select.Option value="male">Male</Select.Option>
+    <Select.Option value="female">Female</Select.Option>
+  </Select>
+</Form.Item>
+
+<Form.Item label="DUPR ID" name="duprId">
+  <Input placeholder="DUPR ID (optional)" size="large" />
+</Form.Item>
+
+<Form.Item label="Username" name="username">
+  <Input placeholder="Username (optional)" size="large" />
+</Form.Item>
+
             </Form>
           </Modal>
 
@@ -288,57 +339,49 @@ const Players = () => {
             cancelButtonProps={{ style: { borderRadius: '6px' } }}
           >
             <Form layout="vertical" form={addForm} onFinish={handleAddSubmit} labelAlign="left">
-              <Form.Item
-                label="First Name"
-                name="firstName"
-                rules={[{ required: true, message: 'Please enter first name' }]}
-              >
-                <Input placeholder="First Name" size="large" />
-              </Form.Item>
-              <Form.Item
-                label="Last Name"
-                name="lastName"
-                rules={[{ required: true, message: 'Please enter last name' }]}
-              >
-                <Input placeholder="Last Name" size="large" />
-              </Form.Item>
-              <Form.Item
-                label="Email"
-                name="email"
-                rules={[
-                  { required: true, message: 'Please enter email' },
-                  { type: 'email', message: 'Enter a valid email' },
-                ]}
-              >
-                <Input placeholder="Email" size="large" />
-              </Form.Item>
-              <Form.Item
-                label="Username"
-                name="username"
-                rules={[{ required: true, message: 'Please enter username' }]}
-              >
-                <Input placeholder="Username" size="large" />
-              </Form.Item>
-              <Form.Item
-                label="Birthdate"
-                name="birthDate"
-                rules={[{ required: true, message: 'Please enter birthdate' }]}
-              >
-                <Input type="date" size="large" />
-              </Form.Item>
-              <Form.Item
-                label="Gender"
-                name="gender"
-              >
-                <Input placeholder="Gender (optional)" size="large" />
-              </Form.Item>
-              <Form.Item
-                label="Password"
-                name="password"
-                rules={[{ required: true, message: 'Please enter password' }]}
-              >
-                <Input.Password placeholder="Password" size="large" />
-              </Form.Item>
+             <Form.Item
+  label="First Name"
+  name="firstName"
+  rules={[{ required: true, message: 'Please enter first name' }]}
+>
+  <Input placeholder="First Name" size="large" />
+</Form.Item>
+
+<Form.Item
+  label="Last Name"
+  name="lastName"
+  rules={[{ required: true, message: 'Please enter last name' }]}
+>
+  <Input placeholder="Last Name" size="large" />
+</Form.Item>
+
+<Form.Item label="Email" name="email">
+  <Input placeholder="Email (optional)" size="large" />
+</Form.Item>
+
+<Form.Item label="Password" name="password">
+  <Input.Password placeholder="Leave empty to auto-generate" size="large" />
+</Form.Item>
+
+<Form.Item label="Birthdate" name="birthDate">
+  <Input type="date" size="large" />
+</Form.Item>
+
+<Form.Item label="Gender" name="gender">
+  <Select size="large" placeholder="Select Gender (optional)">
+    <Select.Option value="male">Male</Select.Option>
+    <Select.Option value="female">Female</Select.Option>
+  </Select>
+</Form.Item>
+
+<Form.Item label="DUPR ID" name="duprId">
+  <Input placeholder="DUPR ID (optional)" size="large" />
+</Form.Item>
+
+<Form.Item label="Username" name="username">
+  <Input placeholder="Username (optional)" size="large" />
+</Form.Item>
+
             </Form>
           </Modal>
         </main>

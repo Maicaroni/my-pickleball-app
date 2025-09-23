@@ -3,9 +3,12 @@ const router = express.Router();
 const {
   createTournament,
   getTournaments,
+  getTournamentById,
   getUserTournaments,
   updateTournament,
-   deleteTournament 
+   deleteTournament,
+  deleteRegistration,
+   addApprovedPlayer,
 } = require("../controllers/tournamentController");
 const authMiddleware = require("../middleware/authMiddleware");
 const multer = require("multer");
@@ -38,6 +41,9 @@ router.get("/", getTournaments);
 // ✅ Protected: Get logged-in user's tournaments
 router.get("/my-tournaments", authMiddleware(), getUserTournaments);
 
+// ✅ Public: Get single tournament by ID
+router.get("/:id", getTournamentById);
+
 // ✅ Create tournament (clubadmins only)
 router.post(
   "/",
@@ -66,3 +72,13 @@ router.delete(
   deleteTournament
 );
 module.exports = router;
+// ✅ Add approved player to a tournament category
+router.post(
+  "/:id/registrations/approve",
+  authMiddleware(["clubadmin"]),
+  addApprovedPlayer
+);
+// DELETE player registration
+router.delete("/:tournamentId/registrations/:registrationId", deleteRegistration);
+
+

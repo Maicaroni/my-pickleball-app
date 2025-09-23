@@ -4,9 +4,13 @@ import Sidebar from '../../../components/Superadmin/SuperAdminSidebar';
 import Navbar from '../../../components/Superadmin/SuperAdminNavbar';
 import { Button, Modal, message, Input, Spin } from 'antd';
 import { FaCheck, FaTimes, FaEye, FaTrash } from 'react-icons/fa';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const SuperAdminPosts = () => {
-  const [activeTab, setActiveTab] = useState('pending'); // pending | approved | rejected
+  const { user } = useAuth();
+  const token = user?.token;
+
+  const [activeTab, setActiveTab] = useState('pending'); 
   const [postsData, setPostsData] = useState({ pending: [], approved: [], rejected: [] });
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,12 +19,10 @@ const SuperAdminPosts = () => {
   const [selectedAttachment, setSelectedAttachment] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [postToDelete, setPostToDelete] = useState(null);
-  const [loadingPostId, setLoadingPostId] = useState(null); // per-post loading
+  const [loadingPostId, setLoadingPostId] = useState(null);
 
-  const token = localStorage.getItem('superadminToken');
   const axiosConfig = { headers: { Authorization: `Bearer ${token}` } };
 
-  // ------------------- FETCH POSTS -------------------
   const fetchPosts = async (status) => {
     if (!token) return;
     try {
@@ -35,9 +37,8 @@ const SuperAdminPosts = () => {
     }
   };
 
-  useEffect(() => { fetchPosts(activeTab); }, [activeTab]);
+  useEffect(() => { fetchPosts(activeTab); }, [activeTab, token]);
 
-  // ------------------- HELPERS -------------------
   const shortId = (id) => (id ? id.slice(0, 3) + id.slice(-3) : '-');
 
   const movePost = (postId, targetTab) => {
@@ -62,7 +63,6 @@ const SuperAdminPosts = () => {
     }));
   };
 
-  // ------------------- ACTIONS -------------------
   const handleApprove = async (postId) => {
     if (!token) return message.error("No token found");
     setLoadingPostId(postId);
@@ -73,9 +73,7 @@ const SuperAdminPosts = () => {
     } catch (err) {
       console.error('Approve error:', err.response || err);
       message.error(err.response?.data?.message || 'Approve failed ❌');
-    } finally {
-      setLoadingPostId(null);
-    }
+    } finally { setLoadingPostId(null); }
   };
 
   const handleReject = async (postId) => {
@@ -88,9 +86,7 @@ const SuperAdminPosts = () => {
     } catch (err) {
       console.error('Reject error:', err.response || err);
       message.error(err.response?.data?.message || 'Reject failed ❌');
-    } finally {
-      setLoadingPostId(null);
-    }
+    } finally { setLoadingPostId(null); }
   };
 
   const handleDeleteClick = (post) => { setPostToDelete(post); setDeleteModalOpen(true); };
@@ -112,7 +108,6 @@ const SuperAdminPosts = () => {
     }
   };
 
-  // ------------------- FILTERED POSTS -------------------
   const posts = postsData[activeTab];
   const filteredPosts = posts.filter(post => {
     const contentMatch = post.content?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -121,7 +116,6 @@ const SuperAdminPosts = () => {
     return contentMatch || idMatch || shortIdMatch;
   });
 
-  // ------------------- RENDER -------------------
   return (
     <div className="app">
       <Sidebar />
@@ -212,9 +206,6 @@ const SuperAdminPosts = () => {
             onOk={handleDeleteConfirm}
             okText="Delete"
             cancelText="Cancel"
-            okButtonProps={{ danger: true, style: { borderRadius: 6 } }}
-            cancelButtonProps={{ style: { borderRadius: 6 } }}
-            destroyOnHidden
           >
             <p className="text-lg">Are you sure you want to delete this post?</p>
           </Modal>
@@ -231,20 +222,17 @@ const SuperAdminPosts = () => {
               <h3 className="font-semibold mb-2">Content:</h3>
               <p className="mb-4 whitespace-pre-wrap">{selectedPost?.content}</p>
               {selectedPost?.images?.length > 0 && (
-                <>
-                  <h3 className="font-semibold mb-2">Attachments:</h3>
-                  <div className="flex gap-2 flex-wrap">
-                    {selectedPost.images.map((img, idx) => (
-                      <img
-                        key={idx}
-                        src={img.url || img}
-                        alt={`Attachment ${idx + 1}`}
-                        style={{ maxWidth: '100%', maxHeight: 300, objectFit: 'contain', borderRadius: 6, cursor: 'pointer' }}
-                        onClick={() => setSelectedAttachment(img.url || img)}
-                      />
-                    ))}
-                  </div>
-                </>
+                <div className="flex gap-2 flex-wrap">
+                  {selectedPost.images.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={img.url || img}
+                      alt={`Attachment ${idx + 1}`}
+                      style={{ maxWidth: '100%', maxHeight: 300, objectFit: 'contain', borderRadius: 6, cursor: 'pointer' }}
+                      onClick={() => setSelectedAttachment(img.url || img)}
+                    />
+                  ))}
+                </div>
               )}
             </div>
           </Modal>
@@ -260,9 +248,10 @@ const SuperAdminPosts = () => {
             {selectedAttachment?.endsWith?.('.pdf') ? (
               <embed src={selectedAttachment} width="100%" height="500px" type="application/pdf" />
             ) : (
-              <img src={selectedAttachment} alt="Attachment" style={{ width: '100%', maxHeight: '80vh', objectFit: 'contain', display: 'block' }} />
+              <img src={selectedAttachment} alt="Attachment" style={{ width: '100%', maxHeight: '80vh', objectFit: 'contain' }} />
             )}
           </Modal>
+
         </main>
       </section>
     </div>

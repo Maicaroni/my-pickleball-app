@@ -1368,7 +1368,7 @@ useEffect(() => {
                     <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   Coaches
-                  </ProfileDropdownItem>*/}
+                  </ProfileDropdownItem>
                 <ProfileDropdownItem onClick={() => handleNavigation('/settings')}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round" />
@@ -1383,7 +1383,7 @@ useEffect(() => {
                     <path d="M12 16h.01" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   Feedback
-                </ProfileDropdownItem>
+                </ProfileDropdownItem>*/}
                 <ProfileDropdownItem className="logout" onClick={handleLogout}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14l5-5-5-5m5 5H9" strokeLinecap="round" strokeLinejoin="round" />
@@ -1392,17 +1392,17 @@ useEffect(() => {
                 </ProfileDropdownItem>
               </ProfileDropdown>
 
-              {/* Notification Bell - RIGHT side of profile button */}
+              {/* Notification Bell - RIGHT side of profile button */} 
               <div style={{ position: 'relative' }} data-notification-container>
-                <NotificationButton onClick={() => setIsNotificationOpen(!isNotificationOpen)}>
+               {/* <NotificationButton onClick={() => setIsNotificationOpen(!isNotificationOpen)}>
                   <BellIcon />
                   {unreadCount > 0 && (
                     <NotificationBadge $count={unreadCount}>
                       {unreadCount > 99 ? '99+' : unreadCount > 0 ? unreadCount : ''}
                     </NotificationBadge>
                   )}
-                </NotificationButton>
-                
+                </NotificationButton>*/}
+               
                 <NotificationDropdown $isOpen={isNotificationOpen}>
                   <NotificationHeader>
                     <h3>Notifications</h3>

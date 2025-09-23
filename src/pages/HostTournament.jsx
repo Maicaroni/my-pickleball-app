@@ -1832,7 +1832,7 @@ const handleSubmit = async (e) => {
 
     // Submit
     const response = await axios.post(
-      "http://localhost:5000/api/tournaments",
+      "/api/tournaments",
       formDataToSend,
       {
         headers: {
@@ -2300,7 +2300,8 @@ const handleCancel = () => {
 
   {/* Google Map (always visible) */}
   <FormGroup>
-    <LoadScript googleMapsApiKey="GOOGLEAPI">
+    <LoadScript googleMapsApiKey="AIzaSyDTLYs6fgEmKxspHDNzTrKNwQiv5EI4AU8
+">
       <GoogleMap
         mapContainerStyle={{ width: "100%", height: "400px" }}
         center={selectedLocation || mapCenter || { lat: 14.5995, lng: 120.9842 }} // default Manila

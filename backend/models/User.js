@@ -4,24 +4,36 @@ const bcrypt = require("bcryptjs");
 const UserSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName:  { type: String, required: true },
-  email:     { type: String, required: true, unique: true },
+
+  // Optional email (use sparse so duplicates of null/undefined don’t break unique index)
+  email:     { type: String, required: false, unique: true, sparse: true },
+
   password:  { type: String, required: true },
-  birthDate: { type: Date, required: true },
+
+  // Birthdate is optional now
+  birthDate: { type: Date, required: false },
+
+  // Gender still required
   gender:    { type: String, enum: ['male', 'female'], required: true },
-  pplId: { type: String, unique: true },
-  duprId: { type: String, unique: true },
+
+  pplId: { type: String, unique: true, sparse: true },
+  duprId: { type: String, unique: true, sparse: true },
+
   avatarUrl: { type: String, default: null },
   initials: { type: String },
   bio: { type: String, default: "Tell us about yourself..." },
+
   roles: {
     type: [String],
     enum: ['player', 'organizer', 'clubadmin', 'coach'],
     default: ['player']
   },
+
   isConfirmed: { type: Boolean, default: false },
   isVerifiedCoach: { type: Boolean, default: false },
   isVerifiedOrganizer: { type: Boolean, default: false },
   isVerifiedClubAdmin: { type: Boolean, default: false },
+
   coachRequest: {
     status: { type: String, enum: ['pending', 'approved', 'rejected'] },
     attachment: { type: String },
@@ -38,7 +50,7 @@ const UserSchema = new mongoose.Schema({
     requested: { type: Boolean, default: false }
   },
 
-  // ✅ Add these two for OTP (Forgot Password)
+  // For OTP (Forgot Password)
   otpCode: { type: String },
   otpExpires: { type: Date },
 

@@ -47,7 +47,7 @@ const Hero = styled.div`
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 140px 16px 80px;
+  padding: 70px 16px 80px;
   background: linear-gradient(-45deg, #234255, #29ba9b, #1a2e3b, #a3e635);
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
@@ -55,8 +55,8 @@ const Hero = styled.div`
   overflow: hidden;
 
   @media (max-width: 768px) {
-    min-height: 74vh;
-    padding: 120px 16px 120px;
+    min-height: 75vh;
+    padding: 81px 16px 120px;
   }
 
   @keyframes gradient {
@@ -117,6 +117,7 @@ const Title = styled.h1`
   
   span {
     color: #a3e635;
+    font-family: inherit;
   }
 
   @media (max-width: 768px) {

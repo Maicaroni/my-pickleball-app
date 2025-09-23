@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 72px 16px 40px;
+  padding: 72px 28px 40px;
   animation: fadeIn 0.3s ease;
 
   @media (min-width: 768px) {
@@ -132,7 +132,17 @@ const FilterButton = styled.button`
   background: ${props => props.$active ? '#29ba9b' : 'white'};
   color: ${props => props.$active ? 'white' : '#64748b'};
   white-space: nowrap;
-  min-width: 140px;
+  flex: 1;
+  min-width: 100px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (min-width: 768px) {
+    flex: none;
+    min-width: 140px;
+  }
   
   &:hover {
     border-color: #29ba9b;
@@ -378,7 +388,7 @@ const BackButton = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 8px 10px;
   background: none;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
@@ -405,12 +415,16 @@ const VenueDetailContent = styled.div`
 `;
 
 const VenueDetailImageContainer = styled.div`
-  margin-bottom: 32px;
+  margin-bottom: 20px;
+
+  @media (min-width: 768px) {
+    margin-bottom: 32px;
+  }
 `;
 
 const VenueDetailMainImage = styled.div`
   width: 100%;
-  height: 280px;
+  height: 220px;
   background-image: url('/assets/brittany_cover.jpg');
   background-size: cover;
   background-position: center;
@@ -420,7 +434,7 @@ const VenueDetailMainImage = styled.div`
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 3.5rem;
+  font-size: 2.5rem;
   font-weight: 600;
   position: relative;
 
@@ -442,11 +456,16 @@ const VenueDetailMainImage = styled.div`
 `;
 
 const VenueDetailBody = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  @media (min-width: 768px) {
+    gap: 32px;
+  }
 
   @media (min-width: 1024px) {
+    display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 48px;
   }
@@ -455,10 +474,16 @@ const VenueDetailBody = styled.div`
 const VenueDetailLeft = styled.div``;
 
 const VenueDetailTitle = styled.div`
-  margin-bottom: 32px;
+  margin-bottom: 20px;
+  text-align: center;
+
+  @media (min-width: 768px) {
+    margin-bottom: 32px;
+    text-align: left;
+  }
 
   h1 {
-    font-size: 1.5rem;
+    font-size: 1.90rem;
     font-weight: 700;
     color: #234255;
     margin: 0;
@@ -476,9 +501,11 @@ const VenueNameContainer = styled.div`
   flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
+  justify-content: center;
 
   @media (min-width: 640px) {
     align-items: center;
+    justify-content: flex-start;
   }
 `;
 
@@ -487,6 +514,11 @@ const VenueDetailBadges = styled.div`
   gap: 12px;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
+
+  @media (min-width: 640px) {
+    justify-content: flex-start;
+  }
 `;
 
 const VenueVerifiedBadge = styled.div`
@@ -510,21 +542,25 @@ const VenueDetailDescription = styled.p`
   color: #64748b;
   font-size: 1rem;
   line-height: 1.6;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
+  margin-top: -20px;
   max-width: 640px;
   text-align: justify;
 
   @media (min-width: 768px) {
     font-size: 1.1rem;
     margin-bottom: 48px;
+    margin-top: -35px;
   }
 `;
 
 const VenueDetailSection = styled.div`
-  margin-bottom: 40px;
+  margin-bottom: 24px;
+  margin-top: 24px;
 
   @media (min-width: 768px) {
     margin-bottom: 56px;
+    margin-top: 0;
   }
 `;
 
@@ -532,12 +568,17 @@ const VenueDetailSectionTitle = styled.h3`
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #0f172a;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   padding-bottom: 8px;
   border-bottom: 1px solid #f1f5f9;
+
+  @media (min-width: 768px) {
+    font-size: 1.1rem;
+    margin-bottom: 24px;
+  }
 
   svg {
     width: 20px;
@@ -730,10 +771,15 @@ const VenueDetailMeta = styled.div`
 
 const VenueDetailMetaItem = styled.div`
   display: flex;
-  gap: 12px;
+  gap: 8px;
   align-items: flex-start;
-  padding: 16px 0;
+  padding: 8px 0;
   border-bottom: 1px solid #f1f5f9;
+
+  @media (min-width: 768px) {
+    gap: 10px;
+    padding: 16px 0;
+  }
 
   &:last-child {
     border-bottom: none;
@@ -741,40 +787,71 @@ const VenueDetailMetaItem = styled.div`
 
   div {
     flex: 1;
+    min-width: 0;
+    margin-left: -80px;
+
+    @media (min-width: 768px) {
+      margin-left: 0;
+    }
 
     span {
       display: block;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       font-weight: 500;
       color: #94a3b8;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+
+      @media (min-width: 768px) {
+        font-size: 0.75rem;
+        margin-bottom: 4px;
+      }
     }
 
     p {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: #0f172a;
       margin: 0;
-      line-height: 1.4;
+      line-height: 1.3;
       font-weight: 400;
+      word-break: break-word;
+
+      @media (min-width: 768px) {
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
     }
   }
 `;
 
 const VenueMetaIcon = styled.div`
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 1px;
+  padding-left: 100px;
+
+  @media (min-width: 768px) {
+    width: 20px;
+    height: 20px;
+    justify-content: center;
+    margin-top: 2px;
+    padding-left: 0;
+  }
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     color: #10b981;
+
+    @media (min-width: 768px) {
+      width: 18px;
+      height: 18px;
+    }
   }
 `;
 
@@ -919,7 +996,19 @@ const PhotoOverlay = styled.div`
   backdrop-filter: blur(2px);
 `;
 
-const VenueDetailSidebar = styled.div``;
+const VenueDetailSidebar = styled.div`
+  &.mobile-join {
+    @media (min-width: 1024px) {
+      display: none;
+    }
+  }
+
+  &:not(.mobile-join) {
+    @media (max-width: 1023px) {
+      display: none;
+    }
+  }
+`;
 
 const VenueDetailJoinCard = styled.div`
   background: white;
@@ -1201,6 +1290,18 @@ const ClubsCourts = () => {
               </VenueDetailTitle>
 
               <VenueDetailDescription>{selectedVenue.description}</VenueDetailDescription>
+
+              {/* Mobile Join Section - appears after description on mobile */}
+              <VenueDetailSidebar className="mobile-join">
+                <VenueDetailJoinCard>
+                  <VenueDetailJoinButton disabled>
+                    Join Now
+                  </VenueDetailJoinButton>
+                  <VenueDetailJoinNote>
+                    Join this venue to access exclusive features and connect with the community
+                  </VenueDetailJoinNote>
+                </VenueDetailJoinCard>
+              </VenueDetailSidebar>
 
               <VenueDetailSection>
                 <VenueDetailSectionTitle>

@@ -1,4 +1,3 @@
-import React from "react";
 import Sidebar from "../../../components/Superadmin/SuperAdminSidebar";
 import Navbar from "../../../components/Superadmin/SuperAdminNavbar";
 

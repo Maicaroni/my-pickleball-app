@@ -116,7 +116,7 @@ const SuperAdminTournaments = () => {
                           ))}
                         </td>
                         <td className="py-4 px-8">
-                          {tournament.tournamentDates?.map((d) => new Date(d).toLocaleDateString()).join(", ")}
+                          {tournament.tournamentDates?.map((d, index) => new Date(d).toLocaleDateString()).join(", ")}
                         </td>
                         <td className="py-4 px-8 flex gap-2 flex-wrap">
                           <Button
@@ -161,7 +161,7 @@ const SuperAdminTournaments = () => {
             cancelText="Cancel"
             okButtonProps={{ danger: true, style: { borderRadius: "6px" } }}
             cancelButtonProps={{ style: { borderRadius: "6px" } }}
-            destroyOnClose
+            destroyOnHidden
           >
             <p className="text-lg">Are you sure you want to delete this tournament?</p>
           </Modal>

@@ -21,7 +21,7 @@ const upload = multer({ storage });
 router.get("/me", auth, async (req, res) => {
   try {
     // Fetch profile and populate user info including pplId and duprId
-    let profile = await User.findOne({ user: req.user._id }).populate("user", [
+    let profile = await Profile.findOne({ user: req.user._id }).populate("user", [
       "firstName",
       "lastName",
       "email",
@@ -41,7 +41,7 @@ router.get("/me", auth, async (req, res) => {
       await profile.save();
 
       // Fetch again with populated user
-      profile = await User.findOne({ user: req.user._id }).populate("user", [
+      profile = await Profile.findOne({ user: req.user._id }).populate("user", [
         "firstName",
         "lastName",
         "email",

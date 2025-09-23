@@ -1,4 +1,3 @@
-// routes/users.js (clean!)
 const express = require("express");
 const router = express.Router();
 const {
@@ -8,9 +7,16 @@ const {
   deleteUser,
 } = require("../controllers/playerController");
 
-router.get("/", getAllUsers);
-router.post("/", createUser);
-router.put("/:id", updateUser);
-router.delete("/:id", deleteUser);
+const authMiddleware = require("../middleware/authMiddleware");
+
+// 👇 require login to see users
+router.get("/", authMiddleware(["superadmin", "clubadmin"]), getAllUsers);
+
+// 👇 allow clubadmin OR superadmin to create players
+router.post("/", authMiddleware(["superadmin", "clubadmin"]), createUser);
+
+// 👇 maybe only superadmin can update/delete users?
+router.put("/:id", authMiddleware(["superadmin"]), updateUser);
+router.delete("/:id", authMiddleware(["superadmin"]), deleteUser);
 
 module.exports = router;

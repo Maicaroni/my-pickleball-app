@@ -11,11 +11,55 @@ const registrationSchema = new mongoose.Schema({
   status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" }
 }, { timestamps: true });
 
+// Match schema for elimination brackets
+const matchSchema = new mongoose.Schema({
+  id: { type: String, required: true },
+  player1: { type: String, default: 'TBD' },
+  player2: { type: String, default: 'TBD' },
+  score1: { type: Number, default: 0 },
+  score2: { type: Number, default: 0 },
+  winner: { type: String, default: null },
+  round: { type: String, required: true },
+  court: { type: String, default: '' },
+  date: { type: String, default: '' },
+  time: { type: String, default: '' }
+});
+
+// Standing schema for group stage
+const standingSchema = new mongoose.Schema({
+  player: { type: String, required: true },
+  wins: { type: Number, default: 0 },
+  losses: { type: Number, default: 0 },
+  pointsFor: { type: Number, default: 0 },
+  pointsAgainst: { type: Number, default: 0 },
+  pointDifferential: { type: Number, default: 0 }
+});
+
+// Group schema for group stage
+const groupSchema = new mongoose.Schema({
+  id: { type: String, required: true },
+  name: { type: String, required: true },
+  standings: [standingSchema],
+  matches: { type: mongoose.Schema.Types.Mixed, default: {} }
+});
+
+// Group stage schema
+const groupStageSchema = new mongoose.Schema({
+  groups: [groupSchema]
+});
+
+// Elimination matches schema
+const eliminationMatchesSchema = new mongoose.Schema({
+  matches: [matchSchema]
+});
+
 const tournamentCategorySchema = new mongoose.Schema({
   division: { type: String, required: true },
   ageCategory: { type: String },
   skillLevel: { type: String, required: true },
   maxParticipants: { type: Number, required: true },
+  groupStage: { type: groupStageSchema, default: null },
+  eliminationMatches: { type: eliminationMatchesSchema, default: null }
 });
 
 const paymentMethodSchema = new mongoose.Schema({

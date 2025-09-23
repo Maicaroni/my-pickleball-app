@@ -4,9 +4,12 @@ import Sidebar from "../../../components/Superadmin/SuperAdminSidebar";
 import Navbar from "../../../components/Superadmin/SuperAdminNavbar";
 import { Button, Modal, message, Input } from "antd";
 import { FaTrash, FaUserPlus} from "react-icons/fa";
+import { useAuth } from "../../../contexts/AuthContext";
+
 
 const SuperAdminClubAdmins = () => {
-  const token = localStorage.getItem("superadminToken");
+  const { user, isAuthenticated } = useAuth();
+  const token = user?.token;
 
   const [activeTab, setActiveTab] = useState("pending");
   const [clubAdmins, setClubAdmins] = useState({ pending: [], approved: [] });
@@ -36,25 +39,28 @@ const SuperAdminClubAdmins = () => {
     fetchClubAdmins(activeTab);
   }, [activeTab]);
 
-  const fetchClubAdmins = async (status) => {
-    if (!token) return;
-    try {
-      setLoading(true);
-      const res = await axios.get(`/api/clubadmins?status=${status}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setClubAdmins(prev => ({ ...prev, [status]: res.data.users || [] }));
-    } catch (err) {
-      console.error(err);
-      message.error(err.response?.status === 401
-        ? "Unauthorized. Please login again."
-        : err.response?.status === 403
-        ? "Forbidden: insufficient role"
-        : "Failed to fetch users");
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchClubAdmins = async (status) => {
+  if (!token) return console.log("No token");
+  try {
+    setLoading(true);
+    console.log("Fetching club admins with status:", status);
+    const res = await axios.get(`/api/clubadmins?status=${status}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log("Fetch result:", res.data);
+    setClubAdmins(prev => ({ ...prev, [status]: res.data.users || [] }));
+  } catch (err) {
+    console.error("Fetch error:", err.response || err.message);
+    message.error(err.response?.status === 401
+      ? "Unauthorized. Please login again."
+      : err.response?.status === 403
+      ? "Forbidden: insufficient role"
+      : "Failed to fetch users");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const fetchAllPlayers = async () => {
     if (!token) return;
