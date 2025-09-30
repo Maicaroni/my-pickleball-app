@@ -1,4 +1,4 @@
-  const express = require("express");
+const express = require("express");
   const mongoose = require("mongoose");
   const cors = require("cors");
   require("dotenv").config();
@@ -37,29 +37,38 @@
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+  // Debug middleware to log all requests
+  app.use((req, res, next) => {
+    console.log(`🔹 ${req.method} ${req.url}`);
+    next();
+  });
+
   // Connect to MongoDB Atlas
   mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("MongoDB connected!"))
     .catch((err) => console.error("MongoDB connection error:", err));
 
   // Routes
-  app.use("/api/auth", authRoutes);
-  app.use('/api/rankings', rankingRoutes);
-  app.use('/api/analytics', analyticsRoutes);
-  app.use("/api/superadmin", superAdminRoutes);
-  app.use("/api/coaches", coachRoutes);
-  app.use("/api/organizers", organizerRoutes);
-  app.use("/api/clubadmins", clubAdminRoutes);
-  app.use("/api/feedbacks", feedbackRoutes);
-  app.use("/api/logs", logRoutes);
-  app.use("/api/users", userRoutes);
-  app.use('/api/posts', postRoutes);
-  app.use('/api/reports', reportRoutes);
-  app.use("/api/profiles", profileRoutes);
-  app.use("/api/tournaments", tournamentRoutes);
-  app.use("/api/verifications", verificationRoutes);
-  app.use("/api/forgotPassword", forgotPasswordRoutes);
-  app.use("/uploads", express.static("uploads"));
+console.log("🔹 Registering routes...");
+app.use("/api/auth", authRoutes);
+app.use('/api/rankings', rankingRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use("/api/superadmin", superAdminRoutes);
+app.use("/api/coaches", coachRoutes);
+app.use("/api/organizers", organizerRoutes);
+app.use("/api/clubadmins", clubAdminRoutes);
+console.log("🔹 Registering feedbacks route...");
+app.use("/api/feedbacks", feedbackRoutes);
+console.log("🔹 Feedbacks route registered");
+app.use("/api/logs", logRoutes);
+app.use("/api/users", userRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/reports', reportRoutes);
+app.use("/api/profiles", profileRoutes);
+app.use("/api/tournaments", tournamentRoutes);
+app.use("/api/verifications", verificationRoutes);
+app.use("/api/forgotPassword", forgotPasswordRoutes);
+app.use("/uploads", express.static("uploads"));
 
 
   // Default route

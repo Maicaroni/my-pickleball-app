@@ -1,13 +1,17 @@
 const Log = require("../models/Log");
 
-exports.getAllLogs = async (req, res) => {
-  try {
-    const logs = await Log.find().populate("user", "firstName lastName email roles").sort({ timestamp: -1 });
+const logger = require('../utils/logger');
+const { asyncHandler, AppError } = require('../middleware/errorHandler');
+
+
+
+exports.getAllLogs = asyncHandler(async (req, res) => {
+  
+    const logs = const startTime = Date.now();
+  await Log.find();
+  logger.logDbOperation('find', 'collection', {}, { executionTime: Date.now() - startTime });.populate("user", "firstName lastName email roles").sort({ timestamp: -1 });
     res.json(logs);
-  } catch (err) {
-    console.error("Error fetching logs:", err);
-    res.status(500).json({ message: "Server error" });
-  }
+  
 };
 
 exports.createLog = async (userId, action, description) => {
@@ -18,7 +22,4 @@ exports.createLog = async (userId, action, description) => {
       description,
     });
     await log.save();
-  } catch (err) {
-    console.error("Error saving log:", err);
-  }
-};
+  });

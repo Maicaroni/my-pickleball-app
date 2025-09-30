@@ -1,5 +1,10 @@
 const nodemailer = require("nodemailer");
 
+const logger = require('../utils/logger');
+const { asyncHandler, AppError } = require('../middleware/errorHandler');
+
+
+
 // In-memory OTP store (⚠️ will reset if server restarts, better to use DB/Redis later)
 let otpStore = {};
 
@@ -13,7 +18,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Send OTP
-exports.sendOtp = async (req, res) => {
+exports.sendOtp = asyncHandler(async (req, res) => {
   let { email } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required" });
 

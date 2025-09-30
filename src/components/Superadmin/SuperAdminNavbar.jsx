@@ -26,7 +26,7 @@ const SuperAdminNavbar = () => {
     const adminId = localStorage.getItem("superadminId");
 
     // Send logout log to backend
-    await axios.post("http://localhost:5000/api/superadmin/logout", { adminId });
+    await axios.post("/api/superadmin/logout", { adminId });
 
     // ✅ Clear ALL stored session data
     localStorage.removeItem("superadminToken");

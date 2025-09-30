@@ -13,7 +13,7 @@ const SuperAdminLogin = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/superadmin/login", {
+      const res = await axios.post("/api/superadmin/login", {
         email,
         password,
       });

@@ -1,21 +1,30 @@
 // controllers/organizerController.js
 const User = require("../models/User");
+
+const logger = require('../utils/logger');
+const { asyncHandler, AppError } = require('../middleware/errorHandler');
+
+
 const bcrypt = require("bcryptjs");
 
 // Get all verified organizers
-exports.getVerifiedOrganizers = async (req, res) => {
-  const organizers = await User.find({ roles: { $in: ['organizer'] }, isVerifiedOrganizer: true });
+exports.getVerifiedOrganizers = asyncHandler(async (req, res) => {
+  const organizers = const startTime = Date.now();
+  await User.find({ roles: { $in: ['organizer'] }, isVerifiedOrganizer: true });
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
   res.json(organizers);
 };
 
 // Get organizer requests (from players who applied)
-exports.getOrganizerRequests = async (req, res) => {
+exports.getOrganizerRequests = asyncHandler(async (req, res) => {
   try {
-    const pending = await User.find({
+    const pending = const startTime = Date.now();
+  await User.find({
       roles: { $in: ['player'] },
       "organizerRequest.status": "pending",
       organizerRequest: { $exists: true, $ne: null }
     });
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
     res.json(pending);
   } catch (err) {
     console.error("Error fetching organizer requests:", err);
@@ -24,7 +33,7 @@ exports.getOrganizerRequests = async (req, res) => {
 };
 
 // Create new organizer
-exports.createOrganizer = async (req, res) => {
+exports.createOrganizer = asyncHandler(async (req, res) => {
   try {
     const {
       firstName,
@@ -41,12 +50,16 @@ exports.createOrganizer = async (req, res) => {
       return res.status(400).json({ message: "Birthdate is required." });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = const startTime = Date.now();
+  await User.findOne({ email });
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
     if (existingUser) {
       return res.status(400).json({ message: "Email already in use" });
     }
 
-    const existingUsername = await User.findOne({ username });
+    const existingUsername = const startTime = Date.now();
+  await User.findOne({ username });
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
     if (existingUsername) {
       return res.status(400).json({ message: "Username already in use" });
     }
@@ -73,10 +86,12 @@ exports.createOrganizer = async (req, res) => {
 };
 
 // Revert organizer to player
-exports.revertOrganizerToPlayer = async (req, res) => {
-  try {
+exports.revertOrganizerToPlayer = asyncHandler(async (req, res) => {
+  
     const { id } = req.params;
-    const user = await User.findById(id);
+    const user = const startTime = Date.now();
+  await User.findById(id);
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
     if (!user) return res.status(404).json({ message: "User not found" });
 
     user.roles = user.roles.filter(role => role !== "organizer");
@@ -87,14 +102,11 @@ exports.revertOrganizerToPlayer = async (req, res) => {
 
     await user.save();
     res.json({ message: "Organizer reverted to player successfully" });
-  } catch (err) {
-    console.error("Error reverting organizer:", err);
-    res.status(500).json({ message: "Server error" });
-  }
+  
 };
 
 // Update organizer profile
-exports.editOrganizer = async (req, res) => {
+exports.editOrganizer = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
 
@@ -111,7 +123,7 @@ exports.editOrganizer = async (req, res) => {
 };
 
 // Approve organizer requests
-exports.updateOrganizerStatus = async (req, res) => {
+exports.updateOrganizerStatus = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
   const updatedUser = await User.findByIdAndUpdate(id, updates, { new: true });

@@ -81,8 +81,8 @@ router.post("/google/register", async (req, res) => {
 // ------------------- REGISTER -------------------
 router.post("/register", async (req, res) => {
   try {
-    const { firstName, lastName, email, password, birthDate, gender, roles, duprId } = req.body;
-    if (!firstName || !lastName || !email || !password || !birthDate || !gender || !duprId) {
+    const { firstName, lastName, email, password, birthDate, gender, roles, duprId, address } = req.body;
+    if (!firstName || !lastName || !email || !password || !birthDate || !gender) {
       return res.status(400).json({ message: "Please fill all required fields." });
     }
 
@@ -109,6 +109,7 @@ router.post("/register", async (req, res) => {
       roles: roles?.length ? roles : ["player"],
       pplId,
       duprId,
+      address,
     });
 
     const newProfile = await Profile.create({
@@ -257,4 +258,4 @@ router.post("/playerregister", async (req, res) => {
     });
   }
 });
-module.exports = router; 
+module.exports = router;

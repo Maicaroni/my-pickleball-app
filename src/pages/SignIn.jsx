@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import axios from "axios"; // ✅ Added axios import
 import { useAuth } from "../contexts/AuthContext"; // ✅ Make sure path is correct
+import { validateFormData, createRateLimiter } from '../utils/validation';
 import viteLogo from "/vite.svg";
 
 
@@ -374,15 +375,20 @@ import viteLogo from "/vite.svg";
 
   const SignIn = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
+    
+    // Rate limiter: max 5 attempts per 15 minutes
+    const rateLimiter = createRateLimiter(5, 15 * 60 * 1000);
+
     const [formData, setFormData] = useState({
       email: '',
-      password: ''
+      password: '',
+      rememberMe: false,
     });
-    const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
+
     const [errors, setErrors] = useState({});
-    const [loading, setLoading] = useState(false);
-     const { login, showNotification } = useAuth(); // ✅ From context
+    const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const validateEmailDomain = (email) => {
       const allowedDomains = [
@@ -403,24 +409,19 @@ import viteLogo from "/vite.svg";
     };
 
     const validateForm = () => {
-      const newErrors = {};
-      
-      if (!formData.email) {
-        newErrors.email = 'Email is required';
-      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-        newErrors.email = 'Please enter a valid email';
-      } else if (!validateEmailDomain(formData.email)) {
-        newErrors.email = 'Please use a valid email provider (Gmail, Yahoo, Outlook, etc.)';
-      }
-      
-      if (!formData.password) {
-        newErrors.password = 'Password is required';
-      } else if (formData.password.length < 6) {
-        newErrors.password = 'Password must be at least 6 characters';
-      }
-      
-      setErrors(newErrors);
-      return Object.keys(newErrors).length === 0;
+      const rules = {
+        email: {
+          required: true,
+          type: 'email',
+          sanitize: true
+        },
+        password: {
+          required: true,
+          minLength: 6
+        }
+      };
+
+      return validateFormData(formData, rules);
     };
 
     const handleChange = (e) => {
@@ -439,21 +440,35 @@ import viteLogo from "/vite.svg";
     };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    
+    // Rate limiting check
+    if (!rateLimiter()) {
+      setErrors({ submit: 'Too many login attempts. Please wait before trying again.' });
+      return;
+    }
 
-    setLoading(true);
+    const validation = validateForm();
+    if (!validation.isValid) {
+      setErrors(validation.errors);
+      return;
+    }
+
+    setIsLoading(true);
+    setErrors({});
+
     try {
-      const res = await login(formData.email, formData.password);
-      if (res.success) {
-        navigate("/"); // ✅ Navigate to profile page
+      const result = await login(formData.email, formData.password);
+      
+      if (result.success) {
+        navigate('/');
       } else {
-        showNotification(res.error, "error");
+        setErrors({ submit: result.error });
       }
-    } catch (err) {
-      console.error(err);
-      showNotification("Something went wrong.", "error");
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors({ submit: 'An unexpected error occurred. Please try again.' });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
     
@@ -550,14 +565,14 @@ import viteLogo from "/vite.svg";
               <Checkbox
                 type="checkbox"
                 id="rememberMe"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
+                checked={formData.rememberMe}
+                onChange={(e) => setFormData(prev => ({ ...prev, rememberMe: e.target.checked }))}
               />
               <CheckboxLabel htmlFor="rememberMe">Remember me</CheckboxLabel>
             </RememberMeContainer>
 
-            <SubmitButton type="submit" disabled={loading} $loading={loading}>
-              {loading ? 'Signing in...' : 'Sign in'}
+            <SubmitButton type="submit" disabled={isLoading} $loading={isLoading}>
+              {isLoading ? 'Signing in...' : 'Sign in'}
             </SubmitButton>
 
             {errors.submit && (
@@ -587,4 +602,4 @@ import viteLogo from "/vite.svg";
     );
   };
 
-  export default SignIn; 
+  export default SignIn;

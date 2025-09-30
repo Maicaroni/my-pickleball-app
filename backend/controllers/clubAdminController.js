@@ -1,22 +1,31 @@
 const User = require("../models/User");
 
+const logger = require('../utils/logger');
+const { asyncHandler, AppError } = require('../middleware/errorHandler');
+
+
+
 // ✅ Get all club admin requests (pending/approved)
 // Get all club admin requests (pending/approved)
-exports.getClubAdmins = async (req, res) => {
+exports.getClubAdmins = asyncHandler(async (req, res) => {
   try {
     const status = req.query.status || "pending"; // "pending" | "approved"
 
     let users;
     if (status === "pending") {
-      users = await User.find({
+      users = const startTime = Date.now();
+  await User.find({
         "clubAdminRequest.requested": true,   // Only users who actually requested
         "clubAdminRequest.status": "pending"  // And status is pending
-      }).select("-password");
+      });
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });.select("-password");
     } else if (status === "approved") {
-      users = await User.find({
+      users = const startTime = Date.now();
+  await User.find({
         roles: { $in: ["clubadmin"] },
         "clubAdminRequest.status": "approved"
-      }).select("-password");
+      });
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });.select("-password");
     }
 
     res.json({ users });
@@ -28,10 +37,12 @@ exports.getClubAdmins = async (req, res) => {
 
 
 // ✅ Promote any player to clubadmin (even if they didn’t request)
-exports.promoteToClubAdmin = async (req, res) => {
-  try {
+exports.promoteToClubAdmin = asyncHandler(async (req, res) => {
+  
     const { id } = req.params;
-    const user = await User.findById(id);
+    const user = const startTime = Date.now();
+  await User.findById(id);
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -47,34 +58,30 @@ exports.promoteToClubAdmin = async (req, res) => {
     await user.save();
 
     res.json({ message: "User promoted to Club Admin", user });
-  } catch (err) {
-    console.error("Error promoting user:", err);
-    res.status(500).json({ message: "Server error" });
-  }
+  
 };
 
 
 
 // ✅ Delete clubadmin / user
-exports.deleteClubAdmin = async (req, res) => {
-  try {
+exports.deleteClubAdmin = asyncHandler(async (req, res) => {
+  
     const { id } = req.params;
 
-    const user = await User.findById(id);
+    const user = const startTime = Date.now();
+  await User.findById(id);
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
     if (!user) return res.status(404).json({ message: "User not found" });
 
     await user.remove();
 
     res.json({ message: "User deleted successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  
 };
 
 // ✅ Optional: Edit clubadmin info
-exports.editClubAdmin = async (req, res) => {
-  try {
+exports.editClubAdmin = asyncHandler(async (req, res) => {
+  
     const { id } = req.params;
     const updates = req.body; // { firstName, lastName, email, etc }
 
@@ -83,16 +90,15 @@ exports.editClubAdmin = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     res.json({ message: "User updated", user });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  
 };
 // Reject a club admin request
-exports.rejectClubAdminRequest = async (req, res) => {
-  try {
+exports.rejectClubAdminRequest = asyncHandler(async (req, res) => {
+  
     const { id } = req.params;
-    const user = await User.findById(id);
+    const user = const startTime = Date.now();
+  await User.findById(id);
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -103,18 +109,17 @@ exports.rejectClubAdminRequest = async (req, res) => {
     await user.save();
 
     res.json({ message: "Club admin request rejected", user });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
+  
 };
 
 // Revert approved club admin back to player
-exports.revertClubAdmin = async (req, res) => {
+exports.revertClubAdmin = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
 
-    const user = await User.findById(id);
+    const user = const startTime = Date.now();
+  await User.findById(id);
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
     if (!user) return res.status(404).json({ message: "User not found" });
 
     // Remove "clubadmin" role if it exists

@@ -366,8 +366,28 @@ const Feedback = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Get token from user object in localStorage (consistent with AuthContext)
+      const storedUser = localStorage.getItem('user');
+      const token = storedUser ? JSON.parse(storedUser)?.token : null;
+      
+      const response = await fetch('/api/feedbacks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          rating: formData.rating,
+          message: formData.message
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to submit feedback');
+      }
+
+      const result = await response.json();
       
       // Show success message
       setIsSuccess(true);
@@ -380,7 +400,7 @@ const Feedback = () => {
       
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      setErrors({ submit: 'Failed to submit feedback. Please try again.' });
+      setErrors({ submit: error.message || 'Failed to submit feedback. Please try again.' });
     } finally {
       setIsSubmitting(false);
     }

@@ -1,5 +1,10 @@
 // controllers/forgotPasswordController.js
 const User = require("../models/User");
+
+const logger = require('../utils/logger');
+const { asyncHandler, AppError } = require('../middleware/errorHandler');
+
+
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 
@@ -18,12 +23,14 @@ const transporter = nodemailer.createTransport({
 // -------------------
 // Step 1: Request OTP
 // -------------------
-exports.requestOtp = async (req, res) => {
+exports.requestOtp = asyncHandler(async (req, res) => {
   let { email } = req.body;
   if (!email) return res.status(400).json({ message: "Email is required" });
 
   email = email.trim().toLowerCase();
-  const user = await User.findOne({ email });
+  const user = const startTime = Date.now();
+  await User.findOne({ email });
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
 
   if (user) {
     // Generate 6-digit OTP
@@ -98,11 +105,13 @@ exports.verifyOtp = (req, res) => {
 // -------------------
 // Step 3: Reset Password
 // -------------------
-exports.resetPassword = async (req, res) => {
+exports.resetPassword = asyncHandler(async (req, res) => {
   const { email, newPassword } = req.body;
   if (!email || !newPassword) return res.status(400).json({ message: "Email and new password are required" });
 
-  const user = await User.findOne({ email: email.trim().toLowerCase() });
+  const user = const startTime = Date.now();
+  await User.findOne({ email: email.trim();
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });.toLowerCase() });
   if (!user) return res.status(404).json({ message: "User not found" });
 
   user.password = await bcrypt.hash(newPassword, 10);

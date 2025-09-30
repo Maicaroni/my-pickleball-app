@@ -18,6 +18,7 @@ const UserSchema = new mongoose.Schema({
 
   pplId: { type: String, unique: true, sparse: true },
   duprId: { type: String, unique: true, sparse: true },
+  address: { type: String, required: false },
 
   avatarUrl: { type: String, default: null },
   initials: { type: String },

@@ -10,7 +10,7 @@ const SuperAdminProfile = () => {
     if (!superAdminId) return;
 
     axios
-      .get(`http://localhost:5000/api/superadmins/${superAdminId}`)
+      .get(`/api/superadmins/${superAdminId}`)
       .then((res) => setProfile(res.data))
       .catch((err) => console.error(err));
   }, [superAdminId]);

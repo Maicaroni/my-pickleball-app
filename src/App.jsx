@@ -1,10 +1,12 @@
 
+import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import SuperAdminRoute from './components/SuperAdminRoute';
 import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import Notification from './components/Notification';
 
 import Home from './pages/Home';
 import Forum from './pages/Forum';
@@ -44,8 +46,6 @@ import 'antd/dist/reset.css'; // Ant Design v5 and up
 
 
 function AppContent() {
-  const { notification, hideNotification } = useAuth();
-
   return (
     <div className="app">
       <Routes>
@@ -57,7 +57,11 @@ function AppContent() {
         <Route path="/clubs-courts" element={<><Navbar /><ClubsCourts /><Footer /></>} />
         <Route path="/signin" element={<><Navbar /><SignIn /><Footer /></>} />
         <Route path="/register" element={<><Navbar /><Register /><Footer /></>} />
-        <Route path="/profile" element={<><Navbar /><Profile /><Footer /></>} />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <><Navbar /><Profile /><Footer /></>
+          </ProtectedRoute>
+        } />
         <Route path="/host-tournament" element={<><Navbar /><HostTournament /><Footer /></>} />
         <Route path="/feedback" element={<><Navbar /><Feedback /><Footer /></>} />
         <Route path="/forgot-password" element={<><Navbar /><ForgotPassword /><Footer /></>} />
@@ -68,7 +72,11 @@ function AppContent() {
         <Route path="/superadmin/login" element={<SuperAdminLogin />} />
 
         {/* SuperAdmin Layout with Nested Routes */}
-       <Route path="/superadmin" element={<SuperAdminLayout />}>
+       <Route path="/superadmin" element={
+         <SuperAdminRoute>
+           <SuperAdminLayout />
+         </SuperAdminRoute>
+       }>
         <Route path="dashboard" element={<SuperAdminDashboard />} />
         <Route path="admintournament" element={<AdminTournament />} />
         <Route path="forumanalytics" element={<ForumAnalytics />} />
@@ -86,12 +94,7 @@ function AppContent() {
         </Route>
       </Routes>
 
-      <Notification
-        message={notification.message}
-        type={notification.type}
-        isVisible={notification.isVisible}
-        onClose={hideNotification}
-      />
+      <Toaster />
     </div>
   );
 }

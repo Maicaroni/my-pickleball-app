@@ -8,12 +8,15 @@ const authMiddleware = (roles = []) => {
     console.log("🔹 authMiddleware triggered");
 
     const authHeader = req.headers.authorization;
+    console.log("🔹 Auth header:", authHeader);
+    
     if (!authHeader?.startsWith('Bearer ')) {
       console.log("❌ Missing or invalid header");
       return res.status(401).json({ message: "Authorization token missing" });
     }
 
     const token = authHeader.split(" ")[1];
+    console.log("🔹 Extracted token:", token ? `${token.substring(0, 20)}...` : 'null');
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || "pickleballSecret");

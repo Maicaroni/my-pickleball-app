@@ -23,7 +23,7 @@ const Reports = () => {
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/reports'); 
+      const res = await axios.get('/api/reports'); 
       // Make sure backend populates post.author
       setReports(res.data);
     } catch (err) {
@@ -46,7 +46,7 @@ const Reports = () => {
       await Promise.all(
         reportIds.map((id) =>
           axios.put(
-            `http://localhost:5000/api/reports/${id}/resolve`,
+            `/api/reports/${id}/resolve`,
             {},
             { headers: { Authorization: `Bearer ${token}` } }
           )
@@ -68,7 +68,7 @@ const Reports = () => {
       if (!token) return message.error('No token found');
 
       await axios.delete(
-        `http://localhost:5000/api/reports/${selectedReport._id}`,
+        `/api/reports/${selectedReport._id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

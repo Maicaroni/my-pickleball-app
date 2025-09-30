@@ -556,6 +556,7 @@ const Register = () => {
     birthDate: '',
     gender: '',
     duprId: '',
+    address: '',
     otp: ''
   });
 
@@ -861,6 +862,26 @@ const handleGoogleSignup = useGoogleLogin({
     value={formData.duprId}
     onChange={handleChange}
   />
+</InputGroup>
+
+{/* Address Field */}
+<InputGroup>
+  <Label htmlFor="address">Address</Label>
+  <Input
+    type="text"
+    id="address"
+    name="address"
+    placeholder="Enter your address"
+    value={formData.address}
+    onChange={handleChange}
+    $hasError={!!errors.address}
+  />
+  {errors.address && (
+    <ErrorMessage>
+      <WarningIcon />
+      {errors.address}
+    </ErrorMessage>
+  )}
 </InputGroup>
           <InputGroup>
             <Label htmlFor="email">Email</Label>

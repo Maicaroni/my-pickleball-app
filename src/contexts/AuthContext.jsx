@@ -1,124 +1,143 @@
 
-import React, { createContext, useState, useContext, useEffect } from "react";
-import axios from "axios";
-
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
+import { validateToken, sanitizeInput } from '../utils/validation';
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within AuthProvider");
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
   return context;
 };
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [notification, setNotification] = useState({
-    isVisible: false,
 
-    message: "",
-    type: "success",
-  });
+  useEffect(() => {
+    const initializeAuth = () => {
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const userData = JSON.parse(storedUser);
+          
+          // Validate token before setting user
+          if (userData.token && validateToken(userData.token)) {
+            setUser(userData);
+            // Set axios default header
+            axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+          } else {
+            // Invalid or expired token, clear storage
+            localStorage.removeItem('user');
+            delete axios.defaults.headers.common['Authorization'];
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        localStorage.removeItem('user');
+        delete axios.defaults.headers.common['Authorization'];
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Load user/token from localStorage on mount
-useEffect(() => {
-  const storedUser = localStorage.getItem("user");
-  if (storedUser) {
-    const parsedUser = JSON.parse(storedUser);
-    if (parsedUser?.token) {
-      setUser(parsedUser);
-      axios.defaults.headers.common["Authorization"] = `Bearer ${parsedUser.token}`;
-    } else {
-      console.warn("⚠ No token found in localStorage user data");
-    }
-  }
-  setLoading(false);
-}, []);
+    initializeAuth();
+  }, []);
 
-
-
-  // Central function to set user + token + localStorage + axios header
-  const setAuth = (userData, token) => {
-    const combinedData = { ...userData, token };
-    setUser(combinedData);
-    localStorage.setItem("user", JSON.stringify(combinedData));
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  };
-
-  const showNotification = (message, type = "success") => {
-
-    setNotification({ isVisible: true, message, type });
-  };
-
-  const hideNotification = () => {
-    setNotification((prev) => ({ ...prev, isVisible: false }));
-  };
-
-  // ✅ Login function
   const login = async (email, password) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
-      const { token, user: userData } = res.data;
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeInput(email);
+      const sanitizedPassword = sanitizeInput(password);
 
-      if (!token) {
-        return { success: false, error: "Login failed: no token returned" };
+      const response = await axios.post('/api/auth/login', {
+        email: sanitizedEmail,
+        password: sanitizedPassword,
+      });
+
+      const userData = response.data;
+      
+      // Validate token before storing
+      if (userData.token && validateToken(userData.token)) {
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+        return { success: true, data: userData };
+      } else {
+        throw new Error('Invalid token received');
       }
-
-      setAuth(userData, token);
-      return { success: true };
-    } catch (err) {
-      console.error("Login error:", err.response?.data || err.message);
-      return {
-        success: false,
-        error: err.response?.data?.message || "Login failed. Please try again.",
-
+    } catch (error) {
+      console.error('Login error:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Login failed' 
       };
     }
   };
-  // ✅ Register function
-  const register = async (formData) => {
+
+  const register = async (userData) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/register", formData);
-      const { token, user: userData } = res.data;
+      // Sanitize all input data
+      const sanitizedData = {};
+      Object.keys(userData).forEach(key => {
+        if (key !== 'password') {
+          sanitizedData[key] = sanitizeInput(userData[key]);
+        } else {
+          sanitizedData[key] = userData[key]; // Don't sanitize password
+        }
+      });
 
-      setAuth(userData, token);
-      showNotification(`Welcome, ${userData.firstName}! Your account has been created.`, "success");
-
-      return { success: true };
-    } catch (err) {
-      console.error("Registration error:", err.response?.data || err.message);
-      return {
-        success: false,
-        error: err.response?.data?.message || "Registration failed. Please try again.",
+      const response = await axios.post('/api/auth/register', sanitizedData);
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('Registration error:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Registration failed' 
       };
     }
   };
 
-  // ✅ Logout function
   const logout = () => {
-    localStorage.removeItem("user");
-    delete axios.defaults.headers.common["Authorization"];
     setUser(null);
-    showNotification("You have been logged out", "info");
+    localStorage.removeItem('user');
+    delete axios.defaults.headers.common['Authorization'];
+  };
+
+  // Token refresh function
+  const refreshToken = async () => {
+    try {
+      const response = await axios.post('/api/auth/refresh');
+      const userData = response.data;
+      
+      if (userData.token && validateToken(userData.token)) {
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      logout();
+      return false;
+    }
+  };
+
+  const value = {
+    user,
+    loading,
+    login,
+    register,
+    logout,
+    refreshToken,
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        login,
-        register,
-        logout,
-        loading,
-        isAuthenticated: !!user,
-        notification,
-        showNotification,
-        hideNotification,
-        setAuth, // <-- expose setAuth here
-
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

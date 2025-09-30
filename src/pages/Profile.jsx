@@ -4774,7 +4774,7 @@ setRegistrationForm({
   // Primary player info
   primaryPlayer: {
     pplId: user.pplId || `PPL${Math.floor(Math.random() * 10000)}`, // fallback ID
-    name: `${user.firstName} ${user.lastName}`,
+    name: `${user?.firstName || 'User'} ${user?.lastName || ''}`,
     gender: user.gender || 'male',
     age: user.birthDate
       ? Math.floor((new Date() - new Date(user.birthDate)) / (1000 * 60 * 60 * 24 * 365))
@@ -4799,7 +4799,7 @@ setRegistrationForm({
   ],
 
   // Registration info
-  name: `${user.firstName} ${user.lastName}`,
+  name: `${user?.firstName || 'User'} ${user?.lastName || ''}`,
   email: user.email || '',
   contactNumber: '', // if you collect phone separately
   proofOfPayment: null,
@@ -4855,6 +4855,88 @@ const handleDeletePlayer = async (registrationId) => {
   } catch (err) {
     console.error("Delete player error:", err);
     alert("Something went wrong while removing player.");
+  }
+};
+
+const exportApprovedPlayersToCSV = () => {
+  if (!selectedTournament || !selectedTournament.registrations) {
+    alert('No tournament data available for export');
+    return;
+  }
+
+  // Filter approved players based on selected category
+  const approvedPlayers = selectedTournament.registrations
+    .filter(reg => reg.status === 'approved')
+    .filter(reg => selectedPlayerCategory === 'all' || reg.category === selectedPlayerCategory);
+
+  if (approvedPlayers.length === 0) {
+    alert('No approved players found for the selected category');
+    return;
+  }
+
+  // Define CSV headers
+  const headers = [
+    'PPL ID',
+    'First Name',
+    'Last Name',
+    'Email',
+    'Contact Number',
+    'Gender',
+    'Age',
+    'Category',
+    'DUPR Singles',
+    'DUPR Doubles',
+    'Registration Date'
+  ];
+
+  // Convert player data to CSV format
+  const csvData = approvedPlayers.map(reg => {
+    const player = reg.player || {};
+    const registrationDate = reg.createdAt ? new Date(reg.createdAt).toLocaleDateString() : 'N/A';
+    
+    return [
+      player.pplId || 'N/A',
+      player.firstName || 'N/A',
+      player.lastName || 'N/A',
+      reg.email || 'N/A',
+      reg.contactNumber || 'N/A',
+      player.gender || 'N/A',
+      player.age || 'N/A',
+      reg.category || 'N/A',
+      player.duprRatings?.singles || 'N/A',
+      player.duprRatings?.doubles || 'N/A',
+      registrationDate
+    ];
+  });
+
+  // Create CSV content
+  const csvContent = [headers, ...csvData]
+    .map(row => row.map(field => `"${field}"`).join(','))
+    .join('\n');
+
+  // Create and download the file
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  
+  if (link.download !== undefined) {
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    
+    // Generate filename with tournament name and category
+    const tournamentName = selectedTournament.name || 'Tournament';
+    const categoryName = selectedPlayerCategory === 'all' ? 'All-Categories' : selectedPlayerCategory;
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `${tournamentName.replace(/[^a-z0-9]/gi, '_')}_${categoryName.replace(/[^a-z0-9]/gi, '_')}_Approved_Players_${timestamp}.csv`;
+    
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    alert(`CSV exported successfully! ${approvedPlayers.length} players exported.`);
+  } else {
+    alert('CSV export is not supported in this browser');
   }
 };
 
@@ -6475,34 +6557,66 @@ const duprRatings = userProfile?.duprRatings
                             </svg>
                             Players
                           </div>
-                          <button
-                            onClick={() => {
-                              if (isPublished) {
-                                setShowUnpublishModal(true);
-                              } else {
-                                setShowPublishModal(true);
-                              } {/*DASTIN PART NEW*/}
-                            }}
-                            style={{
-                              padding: '8px 16px',
-                              backgroundColor: isPublished ? '#ef4444' : '#059669',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '6px',
-                              fontSize: '14px',
-                              fontWeight: '500',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.backgroundColor = isPublished ? '#dc2626' : '#047857';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.backgroundColor = isPublished ? '#ef4444' : '#059669';
-                            }}
-                          >
-                            {isPublished ? 'Unpublish' : 'Publish'}
-                          </button>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <button
+                              onClick={exportApprovedPlayersToCSV}
+                              style={{
+                                padding: '8px 16px',
+                                backgroundColor: '#2563eb',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = '#1d4ed8';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = '#2563eb';
+                              }}
+                            >
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: '16px', height: '16px' }}>
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" strokeLinecap="round" strokeLinejoin="round" />
+                                <polyline points="7,10 12,15 17,10" strokeLinecap="round" strokeLinejoin="round" />
+                                <line x1="12" y1="15" x2="12" y2="3" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                              Export CSV
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (isPublished) {
+                                  setShowUnpublishModal(true);
+                                } else {
+                                  setShowPublishModal(true);
+                                } {/*DASTIN PART NEW*/}
+                              }}
+                              style={{
+                                padding: '8px 16px',
+                                backgroundColor: isPublished ? '#ef4444' : '#059669',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = isPublished ? '#dc2626' : '#047857';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = isPublished ? '#ef4444' : '#059669';
+                              }}
+                            >
+                              {isPublished ? 'Unpublish' : 'Publish'}
+                            </button>
+                          </div>
                         </TournamentDetailSectionTitle>
                         
                         {/* Category Selection Dropdown */}
@@ -10102,11 +10216,11 @@ const EditBioButton = styled.button`
               {userProfile?.avatar ? (
                 <Avatar
                   src={`http://localhost:5000${userProfile.avatar}`}
-                  alt={`${user.firstName} ${user.lastName}`}
+                  alt={`${user?.firstName || 'User'} ${user?.lastName || ''}`}
                 />
               ) : (
                 <>
-                  {user.firstName ? (
+                  {user?.firstName ? (
                     <InitialsFallback>
                       {user.firstName.charAt(0).toUpperCase()}
                     </InitialsFallback>
@@ -10122,7 +10236,7 @@ const EditBioButton = styled.button`
                 onChange={handleFileChange}
               />
             </AvatarContainer>
-            <UserName>{`${user.firstName} ${user.lastName}`}</UserName>
+            <UserName>{`${user?.firstName || 'User'} ${user?.lastName || ''}`}</UserName>
             
             {/* Mobile Info Grid - moved under name */}
             <PlayerInfoGrid>
@@ -10198,11 +10312,11 @@ const EditBioButton = styled.button`
               {userProfile?.avatar ? (
                 <Avatar
                   src={`http://localhost:5000${userProfile.avatar}`}
-                  alt={`${user.firstName} ${user.lastName}`}
+                  alt={`${user?.firstName || 'User'} ${user?.lastName || ''}`}
                 />
               ) : (
                 <>
-                  {user.firstName ? (
+                  {user?.firstName ? (
                     <InitialsFallback>
                       {user.firstName.charAt(0).toUpperCase()}
                     </InitialsFallback>
@@ -10221,7 +10335,7 @@ const EditBioButton = styled.button`
 
             <NameAndDetailsSection>
               <NameAndRanksRow>
-                <UserName>{`${user.firstName} ${user.lastName}`}</UserName>
+                <UserName>{`${user?.firstName || 'User'} ${user?.lastName || ''}`}</UserName>
 
                 <StatsContainer>
                   {rankData.map((item, index) => (

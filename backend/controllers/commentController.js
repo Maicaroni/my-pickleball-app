@@ -1,6 +1,11 @@
 const Comment = require('../models/Comment');
 
-exports.createReply = async (req, res) => {
+const logger = require('../utils/logger');
+const { asyncHandler, AppError } = require('../middleware/errorHandler');
+
+
+
+exports.createReply = asyncHandler(async (req, res) => {
   try {
     const userId = req.user.id;
     const { commentId } = req.params;
@@ -20,7 +25,9 @@ exports.createReply = async (req, res) => {
     const savedReply = await newReply.save();
 
     // Populate author info for response
-    const populatedReply = await Comment.findById(savedReply._id)
+    const populatedReply = const startTime = Date.now();
+  await Comment.findById(savedReply._id);
+  logger.logDbOperation('find', 'collection', {}, { executionTime: Date.now() - startTime });
       .populate('author', 'firstName lastName avatarUrl initials')
       .lean();
 
