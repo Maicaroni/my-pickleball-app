@@ -9,28 +9,28 @@ const bcrypt = require("bcryptjs");
 
 // Get all verified organizers
 exports.getVerifiedOrganizers = asyncHandler(async (req, res) => {
-  const organizers = const startTime = Date.now();
-  await User.find({ roles: { $in: ['organizer'] }, isVerifiedOrganizer: true });
-  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
+  const startTime = Date.now();
+  const organizers = await User.find({ roles: { $in: ['organizer'] }, isVerifiedOrganizer: true });
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });
   res.json(organizers);
-};
+});
 
 // Get organizer requests (from players who applied)
 exports.getOrganizerRequests = asyncHandler(async (req, res) => {
   try {
-    const pending = const startTime = Date.now();
-  await User.find({
+    const startTime = Date.now();
+    const pending = await User.find({
       roles: { $in: ['player'] },
       "organizerRequest.status": "pending",
       organizerRequest: { $exists: true, $ne: null }
     });
-  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
+    logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });
     res.json(pending);
   } catch (err) {
     console.error("Error fetching organizer requests:", err);
     res.status(500).json({ message: "Server error" });
   }
-};
+});
 
 // Create new organizer
 exports.createOrganizer = asyncHandler(async (req, res) => {
@@ -50,16 +50,16 @@ exports.createOrganizer = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Birthdate is required." });
     }
 
-    const existingUser = const startTime = Date.now();
-  await User.findOne({ email });
-  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
+    const startTime1 = Date.now();
+    const existingUser = await User.findOne({ email });
+    logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime1 });
     if (existingUser) {
       return res.status(400).json({ message: "Email already in use" });
     }
 
-    const existingUsername = const startTime = Date.now();
-  await User.findOne({ username });
-  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
+    const startTime2 = Date.now();
+    const existingUsername = await User.findOne({ username });
+    logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime2 });
     if (existingUsername) {
       return res.status(400).json({ message: "Username already in use" });
     }
@@ -83,15 +83,15 @@ exports.createOrganizer = asyncHandler(async (req, res) => {
     console.error("Error creating organizer:", err);
     res.status(500).json({ message: "Server error" });
   }
-};
+});
 
 // Revert organizer to player
 exports.revertOrganizerToPlayer = asyncHandler(async (req, res) => {
   
     const { id } = req.params;
-    const user = const startTime = Date.now();
-  await User.findById(id);
-  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
+    const startTime = Date.now();
+    const user = await User.findById(id);
+    logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     user.roles = user.roles.filter(role => role !== "organizer");
@@ -103,7 +103,7 @@ exports.revertOrganizerToPlayer = asyncHandler(async (req, res) => {
     await user.save();
     res.json({ message: "Organizer reverted to player successfully" });
   
-};
+});
 
 // Update organizer profile
 exports.editOrganizer = asyncHandler(async (req, res) => {
@@ -120,7 +120,7 @@ exports.editOrganizer = asyncHandler(async (req, res) => {
     console.error("Error editing organizer:", err);
     res.status(500).json({ message: "Server error" });
   }
-};
+});
 
 // Approve organizer requests
 exports.updateOrganizerStatus = asyncHandler(async (req, res) => {
@@ -128,4 +128,4 @@ exports.updateOrganizerStatus = asyncHandler(async (req, res) => {
   const updates = req.body;
   const updatedUser = await User.findByIdAndUpdate(id, updates, { new: true });
   res.json(updatedUser);
-};
+});

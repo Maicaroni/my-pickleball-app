@@ -143,7 +143,7 @@ const ForumContainer = styled.div`
   padding-top: 0px;
 
   @media (max-width: 768px) {
-    padding: 0 1.5rem;
+    padding: 0 1rem;
     width: 100%;
     max-width: 100%;
   }
@@ -1113,8 +1113,8 @@ const CloseButton = styled.button`
   }
 
   svg {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     stroke: currentColor;
     stroke-width: 2;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
@@ -1125,8 +1125,8 @@ const CloseButton = styled.button`
     right: 16px;
     
     svg {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
     }
   }
 `;
@@ -1868,16 +1868,18 @@ const CarouselModal = styled.div`
 
 const CarouselContent = styled.div`
   position: relative;
-  width: 90%;
-  max-width: 1200px;
-  height: 80vh;
+  width: 95%;
+  max-width: none;
+  height: 95vh;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 
   @media (max-width: 768px) {
-    touch-action: none;
+    touch-action: pan-x pinch-zoom;
+    width: 90%;
+    height: 80vh;
   }
 `;
 
@@ -1899,8 +1901,8 @@ const CarouselSlide = styled.div`
 `;
 
 const CarouselImage = styled.img`
-  max-width: 95%;
-  max-height: 85vh;
+  max-width: 100%;
+  max-height: 90vh;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -2169,7 +2171,7 @@ function ImageIcon() {
 function CloseIcon() {
   return (
     <div style={{
-      fontSize: '20px',
+      fontSize: '28px',
       fontWeight: 'bold',
       color: 'inherit',
       lineHeight: 1,
@@ -2305,6 +2307,11 @@ function Forum() {
   const containerRef = useRef(null);
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
+  // Image zoom state
+  const [imageScale, setImageScale] = useState(1);
+  const [imageTranslate, setImageTranslate] = useState({ x: 0, y: 0 });
+  const [lastTouches, setLastTouches] = useState([]);
+  const imageRef = useRef(null);
   // Show notification function
   const showNotification = (title, message) => {
     setNotification({
@@ -2827,10 +2834,73 @@ const handleSubmitPost = async (e) => {
     return 'single-image';
   };
 
+  // Distance between two touches
+  const getDistance = (touch1, touch2) => {
+    return Math.sqrt(
+      Math.pow(touch2.clientX - touch1.clientX, 2) + 
+      Math.pow(touch2.clientY - touch1.clientY, 2)
+    );
+  };
+
+  // Handle image pinch-to-zoom
+  const handleImageTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      setLastTouches([
+        { x: touch1.clientX, y: touch1.clientY },
+        { x: touch2.clientX, y: touch2.clientY }
+      ]);
+    } else if (e.touches.length === 1 && imageScale > 1) {
+      e.preventDefault();
+      setLastTouches([{ x: e.touches[0].clientX, y: e.touches[0].clientY }]);
+    }
+  };
+
+  const handleImageTouchMove = (e) => {
+    if (e.touches.length === 2 && lastTouches.length === 2) {
+      e.preventDefault();
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      
+      const currentDistance = getDistance(touch1, touch2);
+      const lastDistance = getDistance(lastTouches[0], lastTouches[1]);
+      
+      const scale = currentDistance / lastDistance;
+      const newScale = Math.min(Math.max(imageScale * scale, 1), 4);
+      
+      setImageScale(newScale);
+      setLastTouches([
+        { x: touch1.clientX, y: touch1.clientY },
+        { x: touch2.clientX, y: touch2.clientY }
+      ]);
+    } else if (e.touches.length === 1 && imageScale > 1 && lastTouches.length === 1) {
+      e.preventDefault();
+      const deltaX = e.touches[0].clientX - lastTouches[0].x;
+      const deltaY = e.touches[0].clientY - lastTouches[0].y;
+      
+      setImageTranslate(prev => ({
+        x: prev.x + deltaX,
+        y: prev.y + deltaY
+      }));
+      
+      setLastTouches([{ x: e.touches[0].clientX, y: e.touches[0].clientY }]);
+    }
+  };
+
+  const handleImageTouchEnd = (e) => {
+    if (e.touches.length === 0) {
+      setLastTouches([]);
+    }
+  };
+
   const openCarousel = (images, startIndex) => {
     setCurrentImages(images);
     setCurrentImageIndex(startIndex);
     setCarouselOpen(true);
+    setImageScale(1);
+    setImageTranslate({ x: 0, y: 0 });
     // Prevent body scroll when carousel is open
     document.body.style.overflow = 'hidden';
   };
@@ -2839,6 +2909,8 @@ const handleSubmitPost = async (e) => {
     setCarouselOpen(false);
     setCurrentImages([]);
     setCurrentImageIndex(0);
+    setImageScale(1);
+    setImageTranslate({ x: 0, y: 0 });
     // Restore body scroll
     document.body.style.overflow = 'auto';
   };
@@ -2902,6 +2974,8 @@ const handleSubmitPost = async (e) => {
 
   const nextImage = () => {
     setIsAnimating(true);
+    setImageScale(1);
+    setImageTranslate({ x: 0, y: 0 });
     setCurrentImageIndex((prev) => {
       const next = prev === currentImages.length - 1 ? prev : prev + 1;
       setOffset(-next * getContainerWidth());
@@ -2911,6 +2985,8 @@ const handleSubmitPost = async (e) => {
 
   const prevImage = () => {
     setIsAnimating(true);
+    setImageScale(1);
+    setImageTranslate({ x: 0, y: 0 });
     setCurrentImageIndex((prev) => {
       const next = prev === 0 ? prev : prev - 1;
       setOffset(-next * getContainerWidth());
@@ -3753,13 +3829,22 @@ const handleReportCancel = () => {
                 {currentImages.map((image, index) => (
                   <CarouselSlide 
                     key={image.id || image._id}
-                  >
-                    <CarouselImage
-                      src={image.url}
-                      alt={image.alt}
-                      draggable={false}
-                    />
-                  </CarouselSlide>
+                    >
+                      <CarouselImage
+                        ref={imageRef}
+                        src={image.url}
+                        alt={image.alt}
+                        draggable={false}
+                        onTouchStart={handleImageTouchStart}
+                        onTouchMove={handleImageTouchMove}
+                        onTouchEnd={handleImageTouchEnd}
+                        style={{
+                          transform: `scale(${imageScale}) translate(${imageTranslate.x}px, ${imageTranslate.y}px)`,
+                          transformOrigin: 'center',
+                          transition: lastTouches.length === 0 ? 'transform 0.3s ease' : 'none'
+                        }}
+                      />
+                    </CarouselSlide>
                 ))}
               </CarouselTrack>
               <CarouselButton

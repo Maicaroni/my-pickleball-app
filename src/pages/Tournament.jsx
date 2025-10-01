@@ -192,11 +192,49 @@ const TournamentDetailBody = styled.div`
     grid-template-columns: 2fr 1fr;
     gap: 48px;
   }
+  
+  @media (max-width: 768px) {
+    gap: 16px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
 `;
 
-const TournamentDetailLeft = styled.div``;
+const TournamentDetailLeft = styled.div`
+  @media (max-width: 768px) {
+    order: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .desktop-tabs {
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+`;
 
-const TournamentDetailRight = styled.div``;
+const TournamentDetailRight = styled.div`
+  @media (max-width: 768px) {
+    order: 2;
+    margin-top: 24px;
+    width: 100%;
+  }
+`;
+
+const TournamentDetailTabs = styled.div`
+  @media (max-width: 768px) {
+    order: 3;
+    margin-top: 24px;
+    width: 100%;
+  }
+  
+  @media (min-width: 769px) {
+    display: none;
+  }
+`;
 
 const TournamentDetailTitle = styled.div`
   margin-bottom: 32px;
@@ -221,6 +259,7 @@ const TournamentDetailType = styled.div`
   padding: 8px 16px;
   background: ${props => {
     switch (props.type) {
+      case 'novice': return '#fefce8';
       case 'beginner': return '#f0fdf4';
       case 'intermediate': return '#fef3c7';
       case 'advanced': return '#fef2f2';
@@ -231,6 +270,7 @@ const TournamentDetailType = styled.div`
   border-radius: 25px;
   color: ${props => {
     switch (props.type) {
+      case 'novice': return '#a16207';
       case 'beginner': return '#15803d';
       case 'intermediate': return '#d97706';
       case 'advanced': return '#dc2626';
@@ -243,6 +283,7 @@ const TournamentDetailType = styled.div`
   margin-bottom: 24px;
   border: 1px solid ${props => {
     switch (props.type) {
+      case 'novice': return '#fef08a';
       case 'beginner': return '#bbf7d0';
       case 'intermediate': return '#fde68a';
       case 'advanced': return '#fecaca';
@@ -264,8 +305,11 @@ const TournamentDetailDescription = styled.p`
   margin-bottom: 32px;
 
   @media (max-width: 768px) {
-    font-size: 1rem;
-    margin-bottom: 24px;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    line-height: 1.5;
+    padding: 0 4px;
+    order: 1;
   }
 `;
 
@@ -319,10 +363,10 @@ const TournamentDetailsItem = styled.div`
   }
 
   @media (max-width: 768px) {
-    padding: 16px 20px;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    padding: 14px 16px;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
   }
 `;
 
@@ -344,8 +388,14 @@ const DetailItemIcon = styled.div`
   }
 
   @media (max-width: 768px) {
-    margin-right: 0;
-    margin-bottom: 4px;
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
   }
 `;
 
@@ -357,9 +407,9 @@ const DetailItemContent = styled.div`
 
   @media (max-width: 768px) {
     width: 100%;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 `;
 
@@ -368,6 +418,11 @@ const DetailItemLabel = styled.div`
   font-weight: 600;
   color: #334155;
   margin-bottom: 2px;
+  
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+  }
 `;
 
 const DetailItemValue = styled.div`
@@ -386,11 +441,12 @@ const DetailItemValue = styled.div`
   }
 
   @media (max-width: 768px) {
-    text-align: left;
-    font-size: 1.1rem;
+    text-align: right;
+    font-size: 0.95rem;
     
     &.price {
-      font-size: 1.1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
     }
   }
 `;
@@ -620,6 +676,7 @@ const TabNavigation = styled.div`
   @media (max-width: 768px) {
     margin-bottom: 24px;
     padding: 4px;
+    order: 3;
   }
 `;
 
@@ -667,6 +724,10 @@ const TabContent = styled.div`
       opacity: 1;
       transform: translateY(0);
     }
+  }
+  
+  @media (max-width: 768px) {
+    order: 4;
   }
 `;
 
@@ -1499,14 +1560,14 @@ const StandingsRow = styled.div`
 
 const MatchTable = styled.div`
   margin-top: 20px;
-  max-width: 100%;
+  width: 100%;
+  overflow-x: auto;
   
   
   .match-schedule-header {
     display: grid;
-    grid-template-columns: 45px 5fr 55px 60px 75px 85px 85px;
-    gap: 12px;
-    padding: 18px 16px;
+    grid-template-columns: 60px 5fr 70px 70px 90px 70px 70px 70px 90px;
+    gap: 0;
     background: linear-gradient(135deg, #234255 0%, #29ba9b 100%);
     border-radius: 8px;
     font-size: 0.75rem;
@@ -1515,28 +1576,47 @@ const MatchTable = styled.div`
     margin-bottom: 16px;
     text-align: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-width: 820px;
+    overflow: hidden;
+    
+    > div {
+      padding: 18px 8px;
+      border-right: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      &:last-child {
+        border-right: none;
+      }
+    }
     
     @media (max-width: 1200px) {
-      grid-template-columns: 40px 4fr 50px 50px 65px 70px 70px;
+      grid-template-columns: 50px 4fr 60px 60px 80px 60px 60px 60px 80px;
       font-size: 0.7rem;
-      gap: 6px;
-      padding: 14px 14px;
+      min-width: 720px;
+      
+      > div {
+        padding: 14px 6px;
+      }
     }
     
     @media (max-width: 768px) {
-      grid-template-columns: 35px 3fr 45px 40px 55px 60px 60px;
+      grid-template-columns: 40px 3fr 50px 50px 65px 50px 50px 50px 65px;
       font-size: 0.65rem;
-      gap: 4px;
-      padding: 12px 12px;
+      min-width: 620px;
+      
+      > div {
+        padding: 12px 4px;
+      }
     }
   }
 `;
 
 const MatchRow = styled.div`
   display: grid;
-  grid-template-columns: 45px 5fr 55px 60px 75px 85px 85px;
-  gap: 12px;
-  padding: 20px 16px;
+  grid-template-columns: 60px 5fr 70px 70px 90px 70px 70px 70px 90px;
+  gap: 0;
   border-radius: 8px;
   font-size: 0.8rem;
   margin-bottom: 16px;
@@ -1544,6 +1624,20 @@ const MatchRow = styled.div`
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-width: 820px;
+  overflow: hidden;
+  
+  > div {
+    padding: 20px 8px;
+    border-right: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:last-child {
+      border-right: none;
+    }
+  }
   
   &:hover {
     background: #f8fafc;
@@ -1553,31 +1647,35 @@ const MatchRow = styled.div`
   }
   
   @media (max-width: 1200px) {
-    grid-template-columns: 40px 4fr 50px 50px 65px 70px 70px;
+    grid-template-columns: 50px 4fr 60px 60px 80px 60px 60px 60px 80px;
     font-size: 0.75rem;
-    gap: 6px;
-    padding: 16px 14px;
     margin-bottom: 12px;
+    min-width: 720px;
+    
+    > div {
+      padding: 16px 6px;
+    }
   }
   
   @media (max-width: 768px) {
-    grid-template-columns: 35px 3fr 45px 40px 55px 60px 60px;
+    grid-template-columns: 40px 3fr 50px 50px 65px 50px 50px 50px 65px;
     font-size: 0.7rem;
-    gap: 4px;
-    padding: 14px 12px;
     margin-bottom: 10px;
+    min-width: 620px;
+    
+    > div {
+      padding: 14px 4px;
+    }
   }
   
   .match-number {
-    background: linear-gradient(135deg, #234255, #29ba9b);
-    color: white;
+    background: linear-gradient(135deg, #234255, #29ba9b) !important;
+    color: white !important;
     border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-weight: 600;
     font-size: 0.7rem;
     box-shadow: 0 1px 2px rgba(59, 130, 246, 0.3);
+    margin: 4px;
     
     @media (max-width: 768px) {
       font-size: 0.6rem;
@@ -1598,6 +1696,20 @@ const MatchRow = styled.div`
       gap: 6px;
       align-items: center;
       min-width: 0;
+      
+      span {
+        font-weight: 500;
+        color: #374151;
+        font-size: 0.8rem;
+        line-height: 1.4;
+        display: block;
+        width: 100%;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+      }
       
       .team-name {
         font-weight: 500;
@@ -1641,6 +1753,12 @@ const StickyActionBar = styled.div`
   @media (max-width: 1023px) {
     margin-top: 32px;
   }
+  
+  @media (max-width: 768px) {
+    padding: 16px;
+    border-radius: 12px;
+    margin-top: 20px;
+  }
 `;
 
 
@@ -1648,36 +1766,36 @@ const StickyActionBar = styled.div`
 // Category Card Components
 const CategoryCard = styled.div`
   background: white;
-  border-radius: 16px;
   border: 1px solid #e2e8f0;
-  margin-bottom: 16px;
-  overflow: hidden;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  margin-bottom: 20px;
+  overflow: visible; /* Changed from hidden to visible for floating content */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+  position: relative; /* Added for positioning context */
 
   &:hover {
-    border-color: #cbd5e1;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
   @media (max-width: 768px) {
-    margin-bottom: 12px;
+    margin-bottom: 16px;
   }
 `;
 
 const CategoryHeader = styled.div`
-  padding: 16px 20px;
+  padding: 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
   cursor: pointer;
-  user-select: none;
-  transition: all 0.2s ease;
-  border-bottom: ${props => props.$expanded ? '1px solid #e2e8f0' : 'none'};
+  transition: all 0.2s;
 
   &:hover {
-    background: #f8fafc;
+    background: #f1f5f9;
   }
 
   @media (max-width: 768px) {
-    padding: 12px 16px;
+    padding: 16px;
   }
 `;
 
@@ -1806,35 +1924,27 @@ const CategoryExpandIcon = styled.div`
 `;
 
 const CategoryBracketContent = styled.div`
-  padding: 16px;
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-  animation: ${props => props.$expanded ? 'slideDown 0.3s ease' : 'slideUp 0.3s ease'};
-  
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  @keyframes slideUp {
-    from {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    to {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-  }
+  padding: ${props => props.$expanded ? '20px' : '0'};
+  background: white;
+  border: ${props => props.$expanded ? '1px solid #e2e8f0' : 'none'};
+  border-top: none;
+  border-radius: ${props => props.$expanded ? '0 0 12px 12px' : '0'};
+  overflow: ${props => props.$expanded ? 'auto' : 'hidden'};
+  max-height: ${props => props.$expanded ? '80vh' : '0'};
+  opacity: ${props => props.$expanded ? '1' : '0'};
+  transition: all 0.3s ease;
+  transform-origin: top;
+  position: ${props => props.$expanded ? 'absolute' : 'static'};
+  top: ${props => props.$expanded ? '100%' : 'auto'};
+  left: ${props => props.$expanded ? '0' : 'auto'};
+  right: ${props => props.$expanded ? '0' : 'auto'};
+  z-index: ${props => props.$expanded ? (props.$zIndex || 1000) : 'auto'};
+  box-shadow: ${props => props.$expanded ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none'};
+  width: ${props => props.$expanded ? '100%' : 'auto'};
 
   @media (max-width: 768px) {
-    padding: 12px;
+    padding: ${props => props.$expanded ? '16px' : '0'};
+    max-height: ${props => props.$expanded ? '70vh' : '0'};
   }
 `;
 
@@ -2142,6 +2252,7 @@ const TournamentTypeDisplay = styled.div`
   margin-bottom: 16px;
   border: 1px solid ${props => {
     switch (props.type) {
+      case 'novice': return '#fef08a';
       case 'beginner': return '#bbf7d0';
       case 'intermediate': return '#fde68a';
       case 'advanced': return '#fecaca';
@@ -2175,6 +2286,8 @@ const TournamentSkillLevels = styled(TournamentDate)`
   margin-bottom: 8px;
   color: #64748b;
   font-size: 0.9rem;
+  text-align: left;
+  justify-content: flex-start;
   
   svg {
     width: 16px;
@@ -2360,9 +2473,15 @@ const FiltersContainer = styled.div`
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  width: 100%;
+
+  @media (max-width: 767px) {
+    justify-content: space-between;
+  }
 
   @media (min-width: 768px) {
     flex-wrap: nowrap;
+    width: auto;
   }
 `;
 
@@ -2376,6 +2495,11 @@ const Select = styled.select`
   cursor: pointer;
   min-width: 140px;
   transition: all 0.2s ease;
+
+  @media (max-width: 767px) {
+    flex: 1;
+    min-width: 0;
+  }
 
   &:focus {
     outline: none;
@@ -3234,7 +3358,7 @@ const [selectedTournament, setSelectedTournament] = useState(null);
   const [roundRobinCategories, setRoundRobinCategories] = useState({});
   const [eliminationCategories, setEliminationCategories] = useState({});
   const [availableBrackets, setAvailableBrackets] = useState({});
-  const [bracketMode, setBracketMode] = useState({}); // 4 or 8 brackets per category
+  const [bracketMode, setBracketMode] = useState({}); // 1, 2, 4, or 8 brackets per category (set from Profile view)
   const [selectedBrackets, setSelectedBrackets] = useState({}); // Selected bracket per category
   const [showBracketModal, setShowBracketModal] = useState(false);
   const [pendingBracketChange, setPendingBracketChange] = useState({ categoryId: null, newMode: null });
@@ -3462,8 +3586,24 @@ const filteredTournaments = tournaments.filter((tournament) => {
       setSelectedTournament(tournament);
       setShowDetailedView(true);
       
-      // Optionally expand first category by default
+      // Load bracket mode from tournament data
       if (tournament.tournamentCategories) {
+        const bracketModeState = {};
+        tournament.tournamentCategories.forEach(category => {
+          bracketModeState[category.id || category._id] = category.bracketMode || 4;
+        });
+        setBracketMode(bracketModeState);
+        console.log('🎯 Tournament.jsx - Loaded bracket modes from navigation:', bracketModeState);
+        console.log('🎯 Tournament.jsx - Navigation tournament data:', {
+          tournamentId: tournament._id,
+          categoriesWithBracketMode: tournament.tournamentCategories?.map(cat => ({
+            id: cat._id || cat.id,
+            division: cat.division,
+            bracketMode: cat.bracketMode
+          }))
+        });
+        
+        // Optionally expand first category by default
         const firstCategory = Object.keys(tournament.tournamentCategories)[0];
         if (firstCategory) {
           setExpandedCategories({ [firstCategory]: true });
@@ -3523,10 +3663,14 @@ useEffect(() => {
 
   // Toggle category expansion
   const toggleCategoryExpansion = (categoryId) => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [categoryId]: !prev[categoryId]
-    }));
+    setExpandedCategories(prev => {
+      // If clicking on already expanded category, collapse it
+      if (prev[categoryId]) {
+        return {};
+      }
+      // Otherwise, expand only this category (close all others)
+      return { [categoryId]: true };
+    });
   };
 
   // Bracket editing functions
@@ -3631,10 +3775,69 @@ const handleRegister = async (tournamentId) => {
     setViewFormTournament(null);
   };
 // Inside your Tournament.jsx component
-const handleTournamentClick = (tournament) => {
-  setSelectedTournament(tournament);       // Set the clicked tournament
+const handleTournamentClick = async (tournament) => {
+  setSelectedTournament(tournament);       // Set the clicked tournament initially
   setShowDetailedView(true);               // Open tournament details view
   setExpandedCategories({});               // Optional: collapse all categories initially
+  
+  // Fetch full tournament details to get latest bracketMode data
+  try {
+    console.log('🔄 Fetching full tournament details for bracketMode...');
+    const response = await fetch(`/api/tournaments/${tournament._id}`);
+    if (response.ok) {
+      const fullTournamentData = await response.json();
+      setSelectedTournament(fullTournamentData); // Update with full data
+      
+      // Load bracket mode from full tournament data
+      if (fullTournamentData.tournamentCategories) {
+        const bracketModeState = {};
+        fullTournamentData.tournamentCategories.forEach(category => {
+          bracketModeState[category.id || category._id] = category.bracketMode || 4;
+        });
+        setBracketMode(bracketModeState);
+        console.log('🎯 Tournament.jsx - Loaded bracket modes from API:', JSON.stringify(bracketModeState, null, 2));
+        console.log('🎯 Tournament.jsx - Full tournament data from API:', {
+          tournamentId: fullTournamentData._id,
+          categoriesWithBracketMode: fullTournamentData.tournamentCategories?.map(cat => ({
+            id: cat._id || cat.id,
+            division: cat.division,
+            bracketMode: cat.bracketMode
+          }))
+        });
+        
+        // Debug each category individually
+        fullTournamentData.tournamentCategories?.forEach((cat, index) => {
+          console.log(`🔍 Category ${index} (${cat.division}):`, {
+            id: cat._id || cat.id,
+            bracketMode: cat.bracketMode,
+            bracketModeType: typeof cat.bracketMode
+          });
+        });
+      }
+    } else {
+      console.error('Failed to fetch full tournament details');
+      // Fallback to original logic with tournament list data
+      if (tournament.tournamentCategories) {
+        const bracketModeState = {};
+        tournament.tournamentCategories.forEach(category => {
+          bracketModeState[category.id || category._id] = category.bracketMode || 4;
+        });
+        setBracketMode(bracketModeState);
+        console.log('🎯 Tournament.jsx - Loaded bracket modes (fallback):', bracketModeState);
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching tournament details:', error);
+    // Fallback to original logic
+    if (tournament.tournamentCategories) {
+      const bracketModeState = {};
+      tournament.tournamentCategories.forEach(category => {
+        bracketModeState[category.id || category._id] = category.bracketMode || 4;
+      });
+      setBracketMode(bracketModeState);
+      console.log('🎯 Tournament.jsx - Loaded bracket modes (error fallback):', bracketModeState);
+    }
+  }
 };
 
   // Registration form handlers
@@ -3911,6 +4114,9 @@ const handleTournamentClick = (tournament) => {
     const rating = duprRating ? parseFloat(duprRating) : null;
     
     switch (skillLevel.toLowerCase()) {
+      case 'novice':
+        // Novice: no DUPR to 2.5
+        return rating === null || rating <= 2.5;
       case 'beginner':
         // Beginner: no DUPR to 3.0
         return rating === null || rating <= 3.0;
@@ -4098,6 +4304,7 @@ const handleTournamentClick = (tournament) => {
   // Helper function to get tournament type icon
   const getTournamentTypeIcon = (type) => {
     switch (type) {
+      case 'novice': return '🌟';
       case 'beginner': return '🌱';
       case 'intermediate': return '⚡';
       case 'advanced': return '🔥';
@@ -4439,10 +4646,18 @@ const handleTournamentClick = (tournament) => {
 <DetailItemLabel>Registration Fee</DetailItemLabel>
 </div>
 <DetailItemValue className="price">
-  ₱
-  {selectedTournament.entryFeeMin != null
-    ? selectedTournament.entryFeeMin.toLocaleString()
-    : "0"}
+  {(() => {
+    const min = selectedTournament.entryFeeMin ?? 0;
+    const max = selectedTournament.entryFeeMax;
+
+    if (min === 0 && (!max || max === 0)) return "FREE";
+
+    if (max != null && max !== min) {
+      return `₱${min.toLocaleString()} – ₱${max.toLocaleString()}`;
+    }
+
+    return `₱${min.toLocaleString()}`;
+  })()}
 </DetailItemValue>
 </DetailItemContent>
 </TournamentDetailsItem>
@@ -4551,7 +4766,7 @@ const handleTournamentClick = (tournament) => {
 
           if (level === 'open') {
             skillLevels.add(`Open - Tier ${category.tier || 1}`);
-          } else if (['beginner', 'intermediate', 'advanced'].includes(level)) {
+          } else if (['novice', 'beginner', 'intermediate', 'advanced'].includes(level)) {
             // capitalize first letter
             skillLevels.add(category.skillLevel.charAt(0).toUpperCase() + category.skillLevel.slice(1));
           }
@@ -4642,7 +4857,7 @@ const handleTournamentClick = (tournament) => {
                         {selectedTournament.tournamentCategories ? (
                           Object.values(selectedTournament.tournamentCategories).map((category) => (
                             <div 
-                              key={category.id}
+                              key={category.id || category._id}
                               style={{
                                 background: 'white',
                                 border: '1px solid #e2e8f0',
@@ -4956,7 +5171,7 @@ if (skillLevel === 'Open' && category?.tier) {
   <div>
     {selectedTournament.tournamentCategories
       .filter(category => selectedPlayerCategory === 'all' || category.division === selectedPlayerCategory)
-      .map((category) => (
+      .map((category, categoryIndex) => (
         <CategoryCard key={category.division}>
           <CategoryHeader 
             $expanded={!!expandedCategories[category.division]}
@@ -5011,7 +5226,10 @@ if (skillLevel === 'Open' && category?.tier) {
           </CategoryHeader>
           
           {expandedCategories[category.division] && (
-            <CategoryBracketContent $expanded={expandedCategories[category.division]}>
+            <CategoryBracketContent 
+              $expanded={expandedCategories[category.division]}
+              $zIndex={500 + categoryIndex}
+            >
               {category.groupStage && (
                                   <GroupStageSection>
                                     {/* Tournament Format Selection */}
@@ -5057,16 +5275,19 @@ if (skillLevel === 'Open' && category?.tier) {
                                           // Always enable Round Robin and reset elimination when clicked
                                           setRoundRobinCategories(prev => ({
                                             ...prev,
-                                            [category.id]: true
+                                            [category.id || category._id]: true
                                           }));
                                           setEliminationCategories(prev => ({
                                             ...prev,
-                                            [category.id]: false
+                                            [category.id || category._id]: false
                                           }));
-                                          // Initialize available brackets with default A, B, C, D
+                                          // Initialize available brackets based on bracket mode
+                                          const currentMode = bracketMode[category.id || category._id] || 4;
+                                          const allBrackets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                                          const targetBrackets = allBrackets.slice(0, currentMode);
                                           setAvailableBrackets(prev => ({
                                             ...prev,
-                                            [category.id]: ['A', 'B', 'C', 'D']
+                                            [category.id || category._id]: targetBrackets
                                           }));
                                         }}
                                       >
@@ -5110,11 +5331,11 @@ if (skillLevel === 'Open' && category?.tier) {
                                           // Always enable Elimination and reset round robin when clicked
                                           setEliminationCategories(prev => ({ 
                                             ...prev, 
-                                            [category.id]: true 
+                                            [category.id || category._id]: true 
                                           })); 
                                           setRoundRobinCategories(prev => ({ 
                                             ...prev, 
-                                            [category.id]: false 
+                                            [category.id || category._id]: false 
                                           })); 
                                         }} 
                                       > 
@@ -5131,7 +5352,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                     </div>
 
                                     {/* Round Robin Bracket Buttons */}
-                                    {roundRobinCategories[category.id] && !eliminationCategories[category.id] && (
+                                    {roundRobinCategories[category.id || category._id] && !eliminationCategories[category.id || category._id] && (
                                       <div style={{
                                         display: 'flex',
                                         gap: '8px',
@@ -5140,70 +5361,8 @@ if (skillLevel === 'Open' && category?.tier) {
                                         alignItems: 'center'
                                       }}>
                                                                                 
-                                        {/* 4/8 Bracket Toggle Switch */}
-                                        <div style={{
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '12px',
-                                          marginRight: '20px'
-                                        }}>
-                                          <span style={{
-                                            fontSize: '0.875rem',
-                                            fontWeight: '600',
-                                            color: '#64748b'
-                                          }}>Brackets:</span>
-                                          <div 
-                                            onClick={() => {
-                                              const currentMode = bracketMode[category.id] || 4;
-                                              const newMode = currentMode === 4 ? 8 : 4;
-                                              setShowBracketModal(true);
-                                              setPendingBracketChange({ categoryId: category.id, newMode });
-                                            }}
-                                            style={{
-                                              position: 'relative',
-                                              width: '60px',
-                                              height: '30px',
-                                              backgroundColor: '#e2e8f0',
-                                              borderRadius: '15px',
-                                              cursor: 'pointer',
-                                              transition: 'all 0.3s ease',
-                                              border: '2px solid #cbd5e1'
-                                            }}
-                                          >
-                                            <div style={{
-                                              position: 'absolute',
-                                              top: '2px',
-                                              left: (bracketMode[category.id] || 4) === 8 ? '32px' : '2px',
-                                              width: '24px',
-                                              height: '24px',
-                                              backgroundColor: '#3b82f6',
-                                              borderRadius: '50%',
-                                              transition: 'all 0.3s ease'
-                                            }}></div>
-                                            <div style={{
-                                              position: 'absolute',
-                                              top: '50%',
-                                              left: '10px',
-                                              transform: 'translateY(-50%)',
-                                              fontSize: '0.75rem',
-                                              fontWeight: '600',
-                                              color: (bracketMode[category.id] || 4) === 4 ? 'white' : '#64748b',
-                                              zIndex: 2
-                                            }}>4</div>
-                                            <div style={{
-                                              position: 'absolute',
-                                              top: '50%',
-                                              right: '10px',
-                                              transform: 'translateY(-50%)',
-                                              fontSize: '0.75rem',
-                                              fontWeight: '600',
-                                              color: (bracketMode[category.id] || 4) === 8 ? 'white' : '#64748b',
-                                              zIndex: 2
-                                            }}>8</div>
-                                          </div>
-                                        </div>
                                         {/* Bracket Buttons */}
-                                        {(availableBrackets[category.id] || ['A', 'B', 'C', 'D'])
+                                        {(availableBrackets[category.id || category._id] || ['A', 'B', 'C', 'D'])
                                           .map((bracket) => (
                                             <button
                                               key={bracket}
@@ -5231,7 +5390,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                                 console.log(`Generate Bracket ${bracket} for category:`, category.name);
                                                 setSelectedBrackets(prev => ({
                                                   ...prev,
-                                                  [category.id]: bracket
+                                                  [category.id || category._id]: bracket
                                                 }));
                                               }}
                                             >
@@ -5241,19 +5400,31 @@ if (skillLevel === 'Open' && category?.tier) {
                                         
                                         {/* Auto-set brackets based on bracket mode */}
                                         {(() => {
-                                          const currentMode = bracketMode[category.id] || 4;
-                                          const targetBrackets = currentMode === 8 
-                                            ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-                                            : ['A', 'B', 'C', 'D'];
-                                          const currentBrackets = availableBrackets[category.id] || ['A', 'B', 'C', 'D'];
+                                          const categoryId = category.id || category._id;
+                                          const currentMode = bracketMode[categoryId] || 4;
+                                          const allBrackets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                                          const targetBrackets = allBrackets.slice(0, currentMode);
+                                          const currentBrackets = availableBrackets[categoryId] || ['A', 'B', 'C', 'D'];
                                           
                                           // Auto-update brackets if they don't match the required count
                                           if (JSON.stringify(currentBrackets) !== JSON.stringify(targetBrackets)) {
+                                            console.log(`🔄 Updating brackets for ${category.name}:`, {
+                                              categoryId: categoryId,
+                                              currentMode: currentMode,
+                                              currentBrackets: currentBrackets,
+                                              targetBrackets: targetBrackets,
+                                              bracketModeFromState: bracketMode[categoryId]
+                                            });
                                             setAvailableBrackets(prev => ({
                                               ...prev,
-                                              [category.id]: targetBrackets
+                                              [categoryId]: targetBrackets
                                             }));
-                                            console.log(`Auto-set to ${targetBrackets.length} brackets for category ${category.name} (mode: ${currentMode})`);
+                                            console.log(`✅ Auto-set to ${targetBrackets.length} brackets for category ${category.name} (mode: ${currentMode})`);
+                                          } else {
+                                            console.log(`ℹ️ Brackets already match for ${category.name}:`, {
+                                              currentMode: currentMode,
+                                              brackets: currentBrackets
+                                            });
                                           }
                                           
                                           return null; // No button needed - automatic behavior
@@ -5262,9 +5433,9 @@ if (skillLevel === 'Open' && category?.tier) {
                                     )}
 
                                     {/* Round Robin Content - Show when Round Robin is selected */}
-                                    {roundRobinCategories[category.id] && (
+                                    {roundRobinCategories[category.id || category._id] && (
                                       <div style={{
-                                        marginTop: '24px',
+                                        marginTop: '0px',
                                         padding: '20px',
                                         background: '#f8fafc',
                                         
@@ -5284,24 +5455,24 @@ if (skillLevel === 'Open' && category?.tier) {
                                         
                                         {(() => {
                                           // Use real tournament data from category.groupStage.groups
-                                          const expectedGroupId = selectedBrackets[category.id] ? `group-${selectedBrackets[category.id].toLowerCase()}` : null;
+                                          const expectedGroupId = selectedBrackets[category.id || category._id] ? `group-${selectedBrackets[category.id || category._id].toLowerCase()}` : null;
                                           const selectedGroup = expectedGroupId ? category.groupStage?.groups?.find(group => group.id === expectedGroupId) : null;
 
                                           // Get real match data from selected group
                                           const groupMatches = selectedGroup?.matches ? Object.values(selectedGroup.matches) : [];
 
                                           // Auto-select first available bracket if none is selected
-                                          if (!selectedBrackets[category.id] && availableBrackets[category.id]?.length > 0) {
-                                            const firstBracket = availableBrackets[category.id][0];
+                                          if (!selectedBrackets[category.id || category._id] && availableBrackets[category.id || category._id]?.length > 0) {
+                                            const firstBracket = availableBrackets[category.id || category._id][0];
                                             setSelectedBrackets(prev => ({
                                               ...prev,
-                                              [category.id]: firstBracket
+                                              [category.id || category._id]: firstBracket
                                             }));
                                             return null; // Will re-render with bracket selected
                                           }
                                           
                                           // If no bracket is selected and no available brackets, show instruction message
-                                          if (!selectedBrackets[category.id]) {
+                                          if (!selectedBrackets[category.id || category._id]) {
                                             return (
                                               <div style={{ 
                                                 textAlign: 'center', 
@@ -5325,9 +5496,9 @@ if (skillLevel === 'Open' && category?.tier) {
                                           return (
                                             <>
                                               {/* Bracket Cards - Only show selected bracket */}
-                                              {selectedBrackets[category.id] && selectedGroup ? (
+                                              {selectedBrackets[category.id || category._id] && selectedGroup ? (
                                                 (() => {
-                                                    const groupName = selectedBrackets[category.id];
+                                                    const groupName = selectedBrackets[category.id || category._id];
                                                     const players = selectedGroup?.standings ? selectedGroup.standings.map(s => s.player) : [];
                                                     
                                                     // Create enhanced matches with player names
@@ -5369,7 +5540,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                                             gap: '8px'
                                                           }}>
                                                             
-                                                            Bracket {selectedBrackets[category.id]}
+                                                            Bracket {selectedBrackets[category.id || category._id]}
                                                           </h5>
                                                           <StandingsTable>
                                                             <div className="standings-header">
@@ -5435,7 +5606,9 @@ if (skillLevel === 'Open' && category?.tier) {
                                                               <div>Time</div>
                                                               <div>Court</div>
                                                               <div>Date</div>
-                                                              <div>Score</div>
+                                                              <div>Set 1</div>
+                                                              <div>Set 2</div>
+                                                              <div>Set 3</div>
                                                               <div>Standing</div>
                                                             </div>
                                                             {selectedGroup?.standings?.map((player, playerIndex) =>
@@ -5448,19 +5621,31 @@ if (skillLevel === 'Open' && category?.tier) {
                                                                 const timeValue = matchData.time || "08:00";
                                                                 const courtValue = matchData.court || "1";
                                                                 const dateValue = matchData.date || "2024-05-30";
-                                                                const player1Score = matchData.game1Player1 || "0";
-                                                                const player2Score = matchData.game1Player2 || "0";
+                                                                // Get scores for all 3 sets
+                                                                const set1Player1 = matchData.game1Player1 || "0";
+                                                                const set1Player2 = matchData.game1Player2 || "0";
+                                                                const set2Player1 = matchData.game2Player1 || "0";
+                                                                const set2Player2 = matchData.game2Player2 || "0";
+                                                                const set3Player1 = matchData.game3Player1 || "0";
+                                                                const set3Player2 = matchData.game3Player2 || "0";
                                                                 
-                                                                // Determine standing based on scores
+                                                                // Determine standing based on sets won
+                                                                let player1SetsWon = 0;
+                                                                let player2SetsWon = 0;
+                                                                
+                                                                // Count sets won for each player
+                                                                if (parseInt(set1Player1) > parseInt(set1Player2)) player1SetsWon++;
+                                                                else if (parseInt(set1Player2) > parseInt(set1Player1)) player2SetsWon++;
+                                                                
+                                                                if (parseInt(set2Player1) > parseInt(set2Player2)) player1SetsWon++;
+                                                                else if (parseInt(set2Player2) > parseInt(set2Player1)) player2SetsWon++;
+                                                                
+                                                                if (parseInt(set3Player1) > parseInt(set3Player2)) player1SetsWon++;
+                                                                else if (parseInt(set3Player2) > parseInt(set3Player1)) player2SetsWon++;
+                                                                
                                                                 let standing = 'TBD';
-                                                                if (player1Score !== "0" || player2Score !== "0") {
-                                                                  if (parseInt(player1Score) > parseInt(player2Score)) {
-                                                                    standing = '1-0';
-                                                                  } else if (parseInt(player2Score) > parseInt(player1Score)) {
-                                                                    standing = '0-1';
-                                                                  } else {
-                                                                    standing = '0-0';
-                                                                  }
+                                                                if (player1SetsWon > 0 || player2SetsWon > 0) {
+                                                                  standing = `${player1SetsWon}-${player2SetsWon}`;
                                                                 }
                                                                 
                                                                 return (
@@ -5474,11 +5659,13 @@ if (skillLevel === 'Open' && category?.tier) {
                                                                     <div className="match-time">{timeValue}</div>
                                                                     <div className="court-number">{courtValue}</div>
                                                                     <div className="match-date">{new Date(dateValue).toLocaleDateString()}</div>
-                                                                    <div className="game-score">{player1Score}-{player2Score}</div>
+                                                                    <div className="game-score">{set1Player1}-{set1Player2}</div>
+                                                                    <div className="game-score">{set2Player1}-{set2Player2}</div>
+                                                                    <div className="game-score">{set3Player1}-{set3Player2}</div>
                                                                     <div className="match-standing" style={{
                                                                       fontWeight: '600',
-                                                                      color: standing.includes('1-0') ? '#059669' : standing.includes('0-1') ? '#dc2626' : '#64748b',
-                                                                      backgroundColor: standing.includes('1-0') ? '#d1fae5' : standing.includes('0-1') ? '#fee2e2' : 'transparent',
+                                                                      color: player1SetsWon > player2SetsWon ? '#059669' : player2SetsWon > player1SetsWon ? '#dc2626' : '#64748b',
+                                                                      backgroundColor: player1SetsWon > player2SetsWon ? '#d1fae5' : player2SetsWon > player1SetsWon ? '#fee2e2' : 'transparent',
                                                                       padding: '4px 8px',
                                                                       borderRadius: '4px',
                                                                       fontSize: '0.8rem'
@@ -5527,9 +5714,9 @@ if (skillLevel === 'Open' && category?.tier) {
                                     )}
 
                                     {/* Elimination Draw Content - Show when Elimination Draw is selected */}
-                                    {eliminationCategories[category.id] && (
+                                    {eliminationCategories[category.id || category._id] && (
                                       <div style={{
-                                        marginTop: '24px',
+                                        marginTop: '12px',
                                         padding: '20px',
                                         background: '#f8fafc',
                                         borderRadius: '12px',
@@ -5556,8 +5743,49 @@ if (skillLevel === 'Open' && category?.tier) {
                                         </h4>
 
                                         {(() => {
+                                          // Check if we have enough players from group stage for elimination
+                                          const hasGroupStage = category.groupStage && category.groupStage.groups;
+                                          let hasEnoughPlayers = false;
+                                          
+                                          if (hasGroupStage) {
+                                            const totalPlayers = category.groupStage.groups.reduce((total, group) => {
+                                              return total + (group.standings ? group.standings.length : 0);
+                                            }, 0);
+                                            hasEnoughPlayers = totalPlayers >= 8; // Need at least 8 players for elimination
+                                          }
+                                          
+                                          // Show waiting message if not enough players
+                                          if (!hasEnoughPlayers) {
+                                            return (
+                                              <div style={{ 
+                                                textAlign: 'center', 
+                                                padding: '48px 24px',
+                                                background: 'white',
+                                                borderRadius: '12px',
+                                                border: '1px solid #e2e8f0',
+                                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                                              }}>
+                                                <div style={{ fontSize: '3rem', marginBottom: '16px', textAlign: 'center' }}>⏳</div>
+                                                <h3 style={{ 
+                                                  color: '#334155', 
+                                                  marginBottom: '8px', 
+                                                  fontSize: '1.1rem', 
+                                                  textAlign: 'center',
+                                                  margin: '0 0 8px 0',
+                                                  width: '100%',
+                                                  display: 'block'
+                                                }}>
+                                                  Waiting for Group Stage Results
+                                                </h3>
+                                                <p style={{ color: '#64748b', fontSize: '0.9rem', textAlign: 'center' }}>
+                                                  Complete all group stage matches to generate elimination brackets
+                                                </p>
+                                              </div>
+                                            );
+                                          }
+                                          
                                           // Create elimination matches based on cross-bracket pairing
-                                          const currentMode = bracketMode[category.id] || 4;
+                                          const currentMode = bracketMode[category.id || category._id] || 4;
                                           const persistedElimination = Array.isArray(category?.eliminationMatches?.matches)
                                             ? category.eliminationMatches.matches
                                             : (Array.isArray(category.eliminationMatches) ? category.eliminationMatches : []);
@@ -6334,7 +6562,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                   </div>
                                 ) : (
                                   // Show bracket logic for determining top players
-                                  <div style={{ padding: '24px' }}>
+                                  <div style={{ padding: '12px' }}>
                                     {(() => {
                                       // Reusable Match Card Component
                                       const MatchCard = ({ match, matchNumber }) => (
@@ -6523,10 +6751,9 @@ if (skillLevel === 'Open' && category?.tier) {
                                       
                                       // Get top 2 players from each bracket
                                       const getTopPlayersFromBrackets = () => {
-                                        const currentMode = 4; // Default to 4 brackets since no switch button
-                                        const brackets = currentMode === 8 
-                                          ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-                                          : ['A', 'B', 'C', 'D'];
+                                        const currentMode = bracketMode[category.id || category._id] || 4;
+                                        const allBrackets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                                        const brackets = allBrackets.slice(0, currentMode);
                                         const topPlayers = {};
                                         
                                         brackets.forEach(bracket => {
@@ -6758,9 +6985,60 @@ if (skillLevel === 'Open' && category?.tier) {
                                         ];
                                       }
                                       
-                                      if (currentMode === 4) {
+                                      // Check if bracket selection buttons are available and if any bracket has been selected
+                                      const hasRoundRobin = roundRobinCategories[category.id || category._id];
+                                      const hasElimination = eliminationCategories[category.id || category._id];
+                                      const hasAnyBracket = hasRoundRobin || hasElimination;
+                                      const hasBracketButtons = Boolean(category.groupStage); // Buttons are available when groupStage exists
+                                      
+                                      if (currentMode === 4 && !hasAnyBracket) {
                                         
-                                        // Show placeholder if no knockout stage yet
+                                        // Show different message based on whether bracket selection buttons are available
+                                        if (hasBracketButtons) {
+                                          // Auto-select Round Robin and Bracket A when buttons are available
+                                          if (!hasRoundRobin && !hasElimination) {
+                                            // Auto-select Round Robin and set up default brackets
+                                            setRoundRobinCategories(prev => ({
+                                              ...prev,
+                                              [category.id || category._id]: true
+                                            }));
+                                            setEliminationCategories(prev => ({
+                                              ...prev,
+                                              [category.id || category._id]: false
+                                            }));
+                                            const currentMode = bracketMode[category.id || category._id] || 4;
+                                            const allBrackets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                                            const targetBrackets = allBrackets.slice(0, currentMode);
+                                            setAvailableBrackets(prev => ({
+                                              ...prev,
+                                              [category.id || category._id]: targetBrackets
+                                            }));
+                                            setSelectedBrackets(prev => ({
+                                              ...prev,
+                                              [category.id || category._id]: 'A'
+                                            }));
+                                            return null; // Will re-render with bracket selected
+                                          }
+                                          
+                                          // Fallback message if something went wrong
+                                          return (
+                                            <div style={{ 
+                                              textAlign: 'center', 
+                                              padding: '32px 24px',
+                                              background: 'white',
+                                              borderRadius: '12px',
+                                              border: '1px solid #e2e8f0',
+                                              marginTop: '16px'
+                                            }}>
+                                              <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>👆</div>
+                                              <h3 style={{ color: '#334155', marginBottom: '8px', fontSize: '1.1rem' }}>Select Bracket</h3>
+                                              <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '16px' }}>
+                                                Choose a bracket type above to view or generate the tournament bracket.
+                                              </p>
+                                            </div>
+                                          );
+                                        } else {
+                                          // Show "Coming Soon" when no buttons are available
                                         return (
                                           <div style={{ 
                                             textAlign: 'center', 
@@ -6787,6 +7065,7 @@ if (skillLevel === 'Open' && category?.tier) {
 )}
                                           </div>
                                         );
+                                        }
                                       }
                                       
                                       return null;
@@ -7624,9 +7903,18 @@ if (skillLevel === 'Open' && category?.tier) {
                 <StickyActionTitle>Tournament Registration</StickyActionTitle>
   <PriceDisplay>
   <div className="price">
-    ₱{selectedTournament?.entryFee != null 
-        ? selectedTournament.entryFee.toLocaleString() 
-        : "0"}
+    {(() => {
+      const min = selectedTournament?.entryFeeMin ?? 0;
+      const max = selectedTournament?.entryFeeMax;
+
+      if (min === 0 && (!max || max === 0)) return "FREE";
+
+      if (max != null && max !== min) {
+        return `₱${min.toLocaleString()} – ₱${max.toLocaleString()}`;
+      }
+
+      return `₱${min.toLocaleString()}`;
+    })()}
   </div>
 </PriceDisplay>
 
@@ -8062,7 +8350,22 @@ if (skillLevel === 'Open' && category?.tier) {
                     
                     <FeeInfoBox>
                       <FeeInfoTitle>Tournament Entry Fee</FeeInfoTitle>
-                      <FeeInfoText>₱{registrationTournament.entryFee} - Registration fee is required to secure your spot in the tournament.</FeeInfoText>
+                      <FeeInfoText>
+                        {(() => {
+                          const min = registrationTournament.entryFeeMin ?? 0;
+                          const max = registrationTournament.entryFeeMax;
+
+                          if (min === 0 && (!max || max === 0)) {
+                            return "FREE - No registration fee required for this tournament.";
+                          }
+
+                          if (max != null && max !== min) {
+                            return `₱${min.toLocaleString()} – ₱${max.toLocaleString()} - Registration fee varies by category. Fee is required to secure your spot in the tournament.`;
+                          }
+
+                          return `₱${min.toLocaleString()} - Registration fee is required to secure your spot in the tournament.`;
+                        })()}
+                      </FeeInfoText>
                     </FeeInfoBox>
                   </RegistrationFormSection>
 
@@ -8237,6 +8540,7 @@ if (skillLevel === 'Open' && category?.tier) {
             onChange={(e) => setSelectedTier(e.target.value)}
           >
             <option value="">All Tiers</option>
+            <option value="novice">Novice</option>
             <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
             <option value="advanced">Advanced</option>
@@ -8264,20 +8568,20 @@ if (skillLevel === 'Open' && category?.tier) {
         onClick={() => handleTournamentClick(tournament)}
         style={{ cursor: 'pointer' }}
       >
-<TournamentBanner>
-  {tournament.tournamentPicture ? (
-    <img 
-      src={`http://localhost:5000${tournament.tournamentPicture}`} 
-      alt={tournament.tournamentName} 
-      style={{ width: "100%", height: "150px", objectFit: "cover" }}
-    />
-  ) : (
-    <div style={{padding: "40px", textAlign: "center", color: "#888"}}>No Image</div>
-  )}
-  <StatusBadge $status={tournament.status}>
-    {tournament.status}
-  </StatusBadge>
-</TournamentBanner>
+        <TournamentBanner>
+          {tournament.tournamentPicture ? (
+            <img 
+              src={`http://localhost:5000${tournament.tournamentPicture}`} 
+              alt={tournament.tournamentName} 
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <div style={{padding: "40px", textAlign: "center", color: "#888"}}>No Image</div>
+          )}
+          <StatusBadge $status={tournament.status}>
+            {tournament.status}
+          </StatusBadge>
+        </TournamentBanner>
 
         <TournamentInfo>
           <TournamentName>{tournament.tournamentName}</TournamentName>

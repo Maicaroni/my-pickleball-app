@@ -5,6 +5,7 @@ const auth = require("../middleware/authMiddleware");
 const Profile = require("../models/Profile");
 const User = require("../models/User");
 const sharp = require("sharp");
+const { getProfile, updateProfile } = require("../controllers/profileController");
 
 // Configure multer (store uploads in /uploads folder)
 const storage = multer.diskStorage({
@@ -18,7 +19,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // ✅ GET current user profile
-router.get("/me", auth, async (req, res) => {
+router.get("/me", auth(), async (req, res) => {
   try {
     // Fetch profile and populate user info including pplId and duprId
     let profile = await Profile.findOne({ user: req.user._id }).populate("user", [
@@ -62,26 +63,12 @@ router.get("/me", auth, async (req, res) => {
 
 
 
-// ✅ PUT update current user profile (e.g., bio)
-router.put("/me", auth, async (req, res) => {
-  try {
-    const { bio } = req.body;
-    const profile = await Profile.findOne({ user: req.user._id });
-    if (!profile) return res.status(404).json({ message: "Profile not found" });
-
-    if (bio !== undefined) profile.bio = bio;
-
-    await profile.save();
-    res.json({ bio: profile.bio });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to update profile" });
-  }
-});
+// ✅ PUT update current user profile (User model fields)
+router.put("/me", auth(), updateProfile);
 
 // ✅ POST avatar upload with resizing
 // ✅ POST avatar upload with resizing
-router.post("/avatar", auth, upload.single("avatar"), async (req, res) => {
+router.post("/avatar", auth(), upload.single("avatar"), async (req, res) => {
   try {
     const profile = await Profile.findOne({ user: req.user._id });
     if (!profile) return res.status(404).json({ message: "Profile not found" });

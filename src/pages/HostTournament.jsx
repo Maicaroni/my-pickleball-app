@@ -1252,6 +1252,7 @@ useEffect(() => {
   ];
 
   const skillLevels = [
+    { value: 'novice', label: 'Novice', isOpen: false },
     { value: 'beginner', label: 'Beginner', isOpen: false },
     { value: 'intermediate', label: 'Intermediate', isOpen: false },
     { value: 'advanced', label: 'Advanced', isOpen: false },
@@ -2298,109 +2299,130 @@ const handleCancel = () => {
 <FormSection>
   <SectionTitle>Venue Location</SectionTitle>
 
-  {/* Google Map (always visible) */}
+  {/* Location Input Options */}
   <FormGroup>
-    <LoadScript googleMapsApiKey="AIzaSyDTLYs6fgEmKxspHDNzTrKNwQiv5EI4AU8
-">
-      <GoogleMap
-        mapContainerStyle={{ width: "100%", height: "400px" }}
-        center={selectedLocation || mapCenter || { lat: 14.5995, lng: 120.9842 }} // default Manila
-        zoom={15}
-        onClick={(e) => {
-          const lat = e.latLng.lat();
-          const lng = e.latLng.lng();
-
-          const geocoder = new window.google.maps.Geocoder();
-          geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-            if (status === "OK" && results[0]) {
-              const result = results[0];
-              const components = result.address_components;
-
-              const city = components.find((c) => c.types.includes("locality"))?.long_name || "";
-              const state = components.find((c) =>
-                c.types.includes("administrative_area_level_1")
-              )?.short_name || "";
-              const zip = components.find((c) => c.types.includes("postal_code"))?.long_name || "";
-
-              const locationData = {
-                name: result.formatted_address,
-                address: result.formatted_address,
-                lat,
-                lng,
-              };
-
-              setSelectedLocation(locationData);
-              setFormData((prev) => ({
-                ...prev,
-                venueName: locationData.name,
-                venueAddress: locationData.address,
-                venueCity: city,
-                venueState: state,
-                venueZip: zip,
-              }));
-              setMapCenter({ lat, lng });
-            } else {
-              alert("Could not fetch location. Try again.");
-            }
-          });
-        }}
+    <Label>Choose how to enter venue location:</Label>
+    <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
+      <LocationButton 
+        type="button"
+        variant={showMap ? 'primary' : 'secondary'}
+        onClick={() => setShowMap(true)}
       >
-        {selectedLocation && <Marker position={selectedLocation} />}
-      </GoogleMap>
-    </LoadScript>
+        📍 Use Map
+      </LocationButton>
+      <LocationButton 
+        type="button"
+        variant={!showMap ? 'primary' : 'secondary'}
+        onClick={() => setShowMap(false)}
+      >
+        ✏️ Enter Manually
+      </LocationButton>
+    </div>
   </FormGroup>
 
-  {/* Show selected location info */}
-  {selectedLocation && (
+  {showMap ? (
+    /* Google Map */
+    <FormGroup>
+      <LoadScript googleMapsApiKey="AIzaSyDTLYs6fgEmKxspHDNzTrKNwQiv5EI4AU8
+">
+        <GoogleMap
+          mapContainerStyle={{ width: "100%", height: "400px" }}
+          center={selectedLocation || mapCenter || { lat: 14.5995, lng: 120.9842 }} // default Manila
+          zoom={15}
+          onClick={(e) => {
+            const lat = e.latLng.lat();
+            const lng = e.latLng.lng();
+
+            const geocoder = new window.google.maps.Geocoder();
+            geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+              if (status === "OK" && results[0]) {
+                const result = results[0];
+                const components = result.address_components;
+
+                const city = components.find((c) => c.types.includes("locality"))?.long_name || "";
+                const state = components.find((c) =>
+                  c.types.includes("administrative_area_level_1")
+                )?.short_name || "";
+                const zip = components.find((c) => c.types.includes("postal_code"))?.long_name || "";
+
+                const locationData = {
+                  name: result.formatted_address,
+                  address: result.formatted_address,
+                  lat,
+                  lng,
+                };
+
+                setSelectedLocation(locationData);
+                setFormData((prev) => ({
+                  ...prev,
+                  venueName: locationData.name,
+                  venueAddress: locationData.address,
+                  venueCity: city,
+                  venueState: state,
+                  venueZip: zip,
+                }));
+                setMapCenter({ lat, lng });
+              } else {
+                alert("Could not fetch location. Try again.");
+              }
+            });
+          }}
+        >
+          {selectedLocation && <Marker position={selectedLocation} />}
+        </GoogleMap>
+      </LoadScript>
+    </FormGroup>
+  ) : (
+    /* Manual Entry Fields */
     <>
       <FormGroup>
-        <Label>Selected Location</Label>
-        <LocationInfo>
-          <LocationTitle>{selectedLocation.name || "Custom Location"}</LocationTitle>
-          <LocationAddress>
-            {selectedLocation.address || `${selectedLocation.lat}, ${selectedLocation.lng}`}
-          </LocationAddress>
-          <LocationActions>
-            <LocationButton variant="primary" onClick={openInGoogleMaps}>
-              View in Google Maps
-            </LocationButton>
-            <LocationButton onClick={clearLocation}>Change Location</LocationButton>
-          </LocationActions>
-        </LocationInfo>
-      </FormGroup>
-
-      <FormGroup>
-        <Label>Venue Name (Edit if needed)</Label>
+        <Label>Venue Name *</Label>
         <Input
           type="text"
           name="venueName"
           value={formData.venueName}
           onChange={handleInputChange}
-          placeholder="Enter venue name"
+          placeholder="Enter venue name (e.g., Central Park Tennis Courts)"
+          required
         />
       </FormGroup>
 
       <FormGroup>
-        <Label>City</Label>
+        <Label>Venue Address *</Label>
         <Input
           type="text"
-          name="venueCity"
-          value={formData.venueCity}
+          name="venueAddress"
+          value={formData.venueAddress}
           onChange={handleInputChange}
-          placeholder="City"
+          placeholder="Enter full address (e.g., 123 Main St, City, State 12345)"
+          required
         />
       </FormGroup>
 
-      <FormGroup>
-        <Label>State</Label>
-        <Input
-          type="text"
-          name="venueState"
-          value={formData.venueState}
-          onChange={handleInputChange}
-          placeholder="State"
-        />
-      </FormGroup>
+      <FormRow>
+        <FormGroup>
+          <Label>City *</Label>
+          <Input
+            type="text"
+            name="venueCity"
+            value={formData.venueCity}
+            onChange={handleInputChange}
+            placeholder="City"
+            required
+          />
+        </FormGroup>
+        <FormGroup>
+          <Label>State *</Label>
+          <Input
+            type="text"
+            name="venueState"
+            value={formData.venueState}
+            onChange={handleInputChange}
+            placeholder="State"
+            required
+          />
+        </FormGroup>
+      </FormRow>
 
       <FormGroup>
         <Label>ZIP Code</Label>
@@ -2409,10 +2431,29 @@ const handleCancel = () => {
           name="venueZip"
           value={formData.venueZip}
           onChange={handleInputChange}
-          placeholder="ZIP"
+          placeholder="ZIP Code"
         />
       </FormGroup>
     </>
+  )}
+
+  {/* Show selected location info only when using map */}
+  {showMap && selectedLocation && (
+    <FormGroup>
+      <Label>Selected Location</Label>
+      <LocationInfo>
+        <LocationTitle>{selectedLocation.name || "Custom Location"}</LocationTitle>
+        <LocationAddress>
+          {selectedLocation.address || `${selectedLocation.lat}, ${selectedLocation.lng}`}
+        </LocationAddress>
+        <LocationActions>
+          <LocationButton variant="primary" onClick={openInGoogleMaps}>
+            View in Google Maps
+          </LocationButton>
+          <LocationButton onClick={clearLocation}>Change Location</LocationButton>
+        </LocationActions>
+      </LocationInfo>
+    </FormGroup>
   )}
 </FormSection>
 

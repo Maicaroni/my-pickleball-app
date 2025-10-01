@@ -8,7 +8,7 @@ import getCroppedImg from "../../backend/utils/cropImage";
 import { Modal, Button } from "@mui/material";
 import axios from 'axios';
 import { message } from "antd";
-import Footer from '../components/Footer';
+// Footer is rendered in App.jsx route, not needed here
 
 
 
@@ -596,7 +596,6 @@ const PlayerListMeta = styled.div`
 const ProfileContainer = styled.div`
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
   background: #ffffff;
 `;
 
@@ -608,11 +607,11 @@ const ProfileContent = styled.div`
   width: 100%;
   
   @media (max-width: 768px) {
-    padding: 20px 15px 180px 15px; /* Increased to account for mobile bottom nav + footer */
+    padding: 20px 15px 80px 15px; /* Extra bottom padding for mobile nav clearance since no footer */
   }
   
   @media (max-width: 480px) {
-    padding: 15px 10px 180px 10px; /* Increased to account for mobile bottom nav + footer */
+    padding: 15px 10px 80px 10px; /* Extra bottom padding for mobile nav clearance since no footer */
   }
 `;
 
@@ -644,15 +643,15 @@ const AvatarContainer = styled.div`
   border: 4px solid #FFFFFF;
   
   @media (max-width: 768px) {
-    width: 140px;
-    height: 140px;
+    width: 180px;
+    height: 180px;
     margin-top: 50px;
     margin-left: 0;
   }
   
   @media (max-width: 480px) {
-    width: 120px;
-    height: 120px;
+    width: 160px;
+    height: 160px;
     margin-top: 30px;
   }
 `;
@@ -664,13 +663,13 @@ const Avatar = styled.img`
   object-fit: cover;
   
   @media (max-width: 768px) {
-    width: 132px;
-    height: 132px;
+    width: 172px;
+    height: 172px;
   }
   
   @media (max-width: 480px) {
-    width: 112px;
-    height: 112px;
+    width: 152px;
+    height: 152px;
   }
 `;
 
@@ -714,15 +713,15 @@ const InitialsFallback = styled.div`
   font-weight: bold;
   
   @media (max-width: 768px) {
-    width: 132px;
-    height: 132px;
-    font-size: 54px;
+    width: 172px;
+    height: 172px;
+    font-size: 70px;
   }
   
   @media (max-width: 480px) {
-    width: 112px;
-    height: 112px;
-    font-size: 48px;
+    width: 152px;
+    height: 152px;
+    font-size: 64px;
   }
 `;
 const UserInfo = styled.div`
@@ -733,22 +732,36 @@ const UserInfo = styled.div`
 `;
 
 const UserName = styled.h1`
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #234255;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important;
+  font-size: 2.2rem !important;
+  font-weight: 700 !important;
+  color: #234255 !important;
   margin-top: 200px;
   margin-left: 30px;
   letter-spacing: -0.2px;
   flex-shrink: 0;
   min-width: 0;
   word-wrap: break-word;
+  line-height: 1.2 !important;
   
   @media (max-width: 768px) {
-    font-size: 1.8rem;
-    margin-top: 0;
-    margin-left: 0;
-    text-align: center;
+    font-size: 2.2rem !important;
+    font-weight: 900 !important;
+    margin-top: 0 !important;
+    margin-left: 0 !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+    text-shadow: 
+      0.5px 0 0 #234255,
+      -0.5px 0 0 #234255,
+      0 0.5px 0 #234255,
+      0 -0.5px 0 #234255,
+      0.5px 0.5px 0 #234255,
+      -0.5px -0.5px 0 #234255,
+      0.5px -0.5px 0 #234255,
+      -0.5px 0.5px 0 #234255 !important;
+    -webkit-text-stroke: 0.5px #234255 !important;
+    font-stretch: expanded !important;
   }
 `;
 
@@ -969,6 +982,16 @@ const EditTournamentButton = styled.button`
     width: 20px;
     height: 20px;
   }
+  
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
 `;
 
 const ApplyCoachButton = styled.button`
@@ -1026,12 +1049,114 @@ const TabContainer = styled.div`
 const MobileTabContainer = styled.div`
   width: 100%;
   padding: 20px 0;
-  margin-top: 20px;
+  margin-top: 30px;
   position: relative;
   z-index: 1001; /* Higher than MobileBottomNav (z-index: 1000) */
+  overflow: visible; /* Allow tabs to extend to edges */
+  
+  /* Subtle separator effect */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+    border-radius: 1px;
+  }
   
   @media (min-width: 769px) {
     display: none;
+  }
+`;
+
+const MobileTabNavigation = styled.div`
+  display: flex;
+  background: #ffffff;
+  border-radius: 4px; /* Sharper corners */
+  padding: 4px;
+  margin: 15px -20px 25px -20px; /* Extend to match parent container padding */
+  gap: 2px;
+  
+  @media (max-width: 480px) {
+    margin: 10px -20px 20px -20px; /* Match parent padding on mobile */
+    padding: 3px;
+    gap: 1px;
+    border-radius: 3px; /* Even sharper on mobile */
+  }
+`;
+
+const MobileTabButton = styled.button`
+  flex: 1;
+  padding: 18px 14px;
+  border: none;
+  background: transparent;
+  color: ${props => props.active ? '#29ba9b' : '#64748b'};
+  font-weight: ${props => props.active ? '700' : '600'};
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  position: relative;
+  outline: none;
+  text-align: center;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Bottom line indicator */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: ${props => props.active ? '#29ba9b' : '#e2e8f0'};
+    transition: all 0.2s ease;
+  }
+  
+  /* Hover effect */
+  &:hover:not(:disabled) {
+    color: ${props => props.active ? '#29ba9b' : '#475569'};
+    
+    &::after {
+      background: ${props => props.active ? '#29ba9b' : '#cbd5e1'};
+    }
+  }
+  
+  /* Focus state for accessibility */
+  &:focus {
+    outline: none;
+    color: ${props => props.active ? '#29ba9b' : '#475569'};
+    
+    &::after {
+      background: ${props => props.active ? '#29ba9b' : '#cbd5e1'};
+      box-shadow: 0 0 0 2px rgba(41, 186, 155, 0.2);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    padding: 16px 12px;
+    font-size: 1.05rem;
+    min-height: 52px;
+    
+    &::after {
+      height: 2px;
+    }
+  }
+  
+  @media (max-width: 360px) {
+    padding: 14px 10px;
+    font-size: 1rem;
+    min-height: 48px;
+    
+    &::after {
+      height: 2px;
+    }
   }
 `;
 
@@ -1043,6 +1168,19 @@ const TabHeader = styled.div`
   border-top: 1px solid #e5e7eb;
   position: relative;
   gap: 20px;
+  
+  @media (max-width: 768px) {
+    gap: 6px; /* Small gap for mobile */
+    padding: 15px 10px; /* Reduced horizontal padding for more space */
+    margin: 0 -15px 30px -15px; /* Extend to screen edges */
+    justify-content: space-around; /* Better distribution on mobile */
+  }
+  
+  @media (max-width: 480px) {
+    gap: 4px; /* Very small gap for very small screens */
+    padding: 15px 5px; /* Minimal horizontal padding */
+    margin: 0 -15px 30px -15px;
+  }
 `;
 
 const TabNavigation = styled.div`
@@ -1055,8 +1193,183 @@ const TabNavigation = styled.div`
   width: 100%;
   
   @media (max-width: 768px) {
-    margin-bottom: 24px;
-    padding: 4px;
+    display: none; /* Hide tabs on mobile */
+  }
+`;
+
+// Mobile Dropdown Components
+const MobileTabDropdown = styled.div`
+  display: none;
+  position: relative;
+  margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    display: block;
+  }
+`;
+
+const DropdownButton = styled.button`
+  width: 100%;
+  padding: 12px 16px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  color: #234255;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  
+  &:hover {
+    border-color: #29ba9b;
+    background: #f8fafc;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: #29ba9b;
+    box-shadow: 0 0 0 3px rgba(41, 186, 155, 0.1);
+  }
+  
+  svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s;
+    transform: ${props => props.$isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
+  }
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  margin-top: 4px;
+  overflow: hidden;
+  opacity: ${props => props.$isOpen ? '1' : '0'};
+  visibility: ${props => props.$isOpen ? 'visible' : 'hidden'};
+  transform: ${props => props.$isOpen ? 'translateY(0)' : 'translateY(-10px)'};
+  transition: all 0.2s ease;
+`;
+
+const DropdownItem = styled.button`
+  width: 100%;
+  padding: 12px 16px;
+  background: ${props => props.$active ? '#f0f9ff' : 'white'};
+  border: none;
+  color: ${props => props.$active ? '#29ba9b' : '#234255'};
+  font-weight: ${props => props.$active ? '600' : '500'};
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:hover {
+    background: #f8fafc;
+    color: #29ba9b;
+  }
+  
+  &:focus {
+    outline: none;
+    background: #f0f9ff;
+    color: #29ba9b;
+  }
+`;
+
+// Registration Container Components (mobile under description, desktop on right side)
+const RegistrationContainer = styled.div`
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  @media (max-width: 768px) {
+    display: block;
+    margin: 20px 0;
+  }
+  
+  @media (min-width: 769px) {
+    display: none; /* Hide on desktop - will be shown in right sidebar */
+  }
+`;
+
+const DesktopRegistrationContainer = styled.div`
+  display: none;
+  
+  @media (min-width: 769px) {
+    display: block;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const RegistrationTitle = styled.h3`
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 12px;
+  text-align: center;
+`;
+
+const RegistrationPrice = styled.div`
+  text-align: center;
+  margin-bottom: 16px;
+  
+  .price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #29ba9b;
+  }
+`;
+
+const RegistrationButton = styled.button`
+  width: 100%;
+  background: linear-gradient(135deg, #29ba9b 0%, #20a085 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:hover {
+    background: linear-gradient(135deg, #20a085 0%, #1a8a73 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(41, 186, 155, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
   }
 `;
 
@@ -1097,6 +1410,24 @@ const TabButton = styled.button`
   outline: none;
   text-align: center;
   
+  @media (max-width: 768px) {
+    flex: 1 1 0%; /* Default flex for equal distribution */
+    max-width: calc(100% / 3); /* Default max width */
+    white-space: nowrap; /* Keep text on one line for clean look */
+    
+    /* Make About and Clubs tabs narrower to give more space to Tournaments */
+    &:nth-child(1), /* About tab */
+    &:nth-child(2)  /* Clubs tab */ {
+      flex: 0.8 1 0%; /* Smaller flex for shorter tabs */
+      max-width: 25%; /* Narrower width */
+    }
+    
+    &:nth-child(3) { /* Tournaments tab */
+      flex: 1.4 1 0%; /* Larger flex for longer text */
+      max-width: 50%; /* More width for "Tournaments" */
+    }
+  }
+  
   /* Legacy styling for profile tabs (only when $active is undefined) */
   ${props => props.$active === undefined && `
     border-bottom: 3px solid ${props.active ? '#29ba9b' : 'transparent'};
@@ -1135,8 +1466,16 @@ const TabButton = styled.button`
   }
   
   @media (max-width: 768px) {
-    padding: ${props => props.$active !== undefined ? '10px 16px' : '10px 20px'};
-    font-size: ${props => props.$active !== undefined ? '0.85rem' : '1rem'};
+    padding: ${props => props.$active !== undefined ? '12px 6px' : '12px 8px'}; /* Reduced horizontal padding to fit text */
+    font-size: ${props => props.$active !== undefined ? '0.9rem' : '1rem'}; /* Good readable size */
+    min-width: 0; /* Allow flex shrinking */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Add ... if text still doesn't fit */
+  }
+  
+  @media (max-width: 480px) {
+    padding: ${props => props.$active !== undefined ? '10px 4px' : '10px 6px'}; /* Minimal padding for max text space */
+    font-size: ${props => props.$active !== undefined ? '0.85rem' : '0.95rem'}; /* Slightly smaller but still readable */
   }
 `;
 
@@ -1145,7 +1484,8 @@ const TabContent = styled.div`
   min-height: 250px;
   
   @media (max-width: 768px) {
-    margin-bottom: 100px; /* Add space for MobileBottomNav */
+    margin-bottom: 20px; /* Reduced margin to prevent excessive spacing */
+    padding: 10px 0 20px 0; /* Reduced top padding from 20px to 10px */
   }
 `;
 
@@ -1155,6 +1495,20 @@ const TabSection = styled.div`
   
   &:last-child {
     margin-bottom: 0;
+  }
+`;
+
+const MobileOnlyTabSection = styled.div`
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  display: none;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+  
+  @media (max-width: 768px) {
+    display: block;
   }
 `;
 
@@ -1659,6 +2013,12 @@ const ClubSearchSection = styled.div`
     align-items: center;
     gap: 20px;
   }
+  
+  @media (max-width: 767px) {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
 `;
 
 const ClubSearchInputContainer = styled.div`
@@ -1731,6 +2091,24 @@ const CreateClubButton = styled.button`
   svg {
     width: 16px;
     height: 16px;
+  }
+  
+  @media (max-width: 767px) {
+    min-width: 48px;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 12px;
+    justify-content: center;
+    
+    span {
+      display: none;
+    }
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
   }
 `;
 
@@ -1918,6 +2296,12 @@ const TournamentSearchSection = styled.div`
   flex-direction: column;
   gap: 16px;
 
+  @media (max-width: 767px) {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
   @media (min-width: 768px) {
     flex-direction: row;
     align-items: center;
@@ -1996,6 +2380,19 @@ const HostTournamentButton = styled.button`
     width: 16px;
     height: 16px;
   }
+
+  @media (max-width: 767px) {
+    min-width: auto;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 12px;
+    justify-content: center;
+    
+    span {
+      display: none;
+    }
+  }
 `;
 
 // Tournament Detail View Components
@@ -2004,7 +2401,7 @@ const TournamentDetailContainer = styled.div`
   margin-top: 24px;
   
   @media (max-width: 768px) {
-    margin-top: 16px;
+    margin-top: 0px;
     padding: 0 5px;
   }
 
@@ -2029,8 +2426,9 @@ const TournamentDetailHeader = styled.div`
   border-bottom: 2px solid #e2e8f0;
   
   @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     gap: 12px;
     margin-bottom: 16px;
     padding-bottom: 12px;
@@ -2060,6 +2458,16 @@ const BackToListButton = styled.button`
   svg {
     width: 16px;
     height: 16px;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
   }
 `;
 
@@ -3287,14 +3695,14 @@ const PlayerInfoContainer = styled.div`
 
 const MatchTable = styled.div`
   margin-top: 20px;
-  max-width: 100%;
+  width: 100%;
+  overflow-x: auto;
   
   
   .match-schedule-header {
     display: grid;
-    grid-template-columns: 45px 5fr 55px 60px 75px 85px 85px;
-    gap: 12px;
-    padding: 18px 16px;
+    grid-template-columns: 60px 5fr 70px 70px 90px 70px 70px 70px 90px;
+    gap: 0;
     background: linear-gradient(135deg, #234255 0%, #29ba9b 100%);
     border-radius: 8px;
     font-size: 0.75rem;
@@ -3303,28 +3711,47 @@ const MatchTable = styled.div`
     margin-bottom: 16px;
     text-align: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-width: 820px;
+    overflow: hidden;
+    
+    > div {
+      padding: 18px 8px;
+      border-right: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      &:last-child {
+        border-right: none;
+      }
+    }
     
     @media (max-width: 1200px) {
-      grid-template-columns: 40px 4fr 50px 50px 65px 70px 70px;
+      grid-template-columns: 50px 4fr 60px 60px 80px 60px 60px 60px 80px;
       font-size: 0.7rem;
-      gap: 6px;
-      padding: 14px 14px;
+      min-width: 720px;
+      
+      > div {
+        padding: 14px 6px;
+      }
     }
     
     @media (max-width: 768px) {
-      grid-template-columns: 35px 3fr 45px 40px 55px 60px 60px;
+      grid-template-columns: 40px 3fr 50px 50px 65px 50px 50px 50px 65px;
       font-size: 0.65rem;
-      gap: 4px;
-      padding: 12px 12px;
+      min-width: 620px;
+      
+      > div {
+        padding: 12px 4px;
+      }
     }
   }
 `;
 
 const MatchRow = styled.div`
   display: grid;
-  grid-template-columns: 45px 5fr 55px 60px 75px 85px 85px;
-  gap: 12px;
-  padding: 20px 16px;
+  grid-template-columns: 60px 5fr 70px 70px 90px 70px 70px 70px 90px;
+  gap: 0;
   border-radius: 8px;
   font-size: 0.8rem;
   margin-bottom: 16px;
@@ -3332,6 +3759,20 @@ const MatchRow = styled.div`
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-width: 820px;
+  overflow: hidden;
+  
+  > div {
+    padding: 20px 8px;
+    border-right: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:last-child {
+      border-right: none;
+    }
+  }
   
   &:hover {
     background: #f8fafc;
@@ -3341,31 +3782,35 @@ const MatchRow = styled.div`
   }
   
   @media (max-width: 1200px) {
-    grid-template-columns: 40px 4fr 50px 50px 65px 70px 70px;
+    grid-template-columns: 50px 4fr 60px 60px 80px 60px 60px 60px 80px;
     font-size: 0.75rem;
-    gap: 6px;
-    padding: 16px 14px;
     margin-bottom: 12px;
+    min-width: 720px;
+    
+    > div {
+      padding: 16px 6px;
+    }
   }
   
   @media (max-width: 768px) {
-    grid-template-columns: 35px 3fr 45px 40px 55px 60px 60px;
+    grid-template-columns: 40px 3fr 50px 50px 65px 50px 50px 50px 65px;
     font-size: 0.7rem;
-    gap: 4px;
-    padding: 14px 12px;
     margin-bottom: 10px;
+    min-width: 620px;
+    
+    > div {
+      padding: 14px 4px;
+    }
   }
   
   .match-number {
-    background: linear-gradient(135deg, #234255, #29ba9b);
-    color: white;
+    background: linear-gradient(135deg, #234255, #29ba9b) !important;
+    color: white !important;
     border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-weight: 600;
     font-size: 0.7rem;
     box-shadow: 0 1px 2px rgba(59, 130, 246, 0.3);
+    margin: 4px;
     
     @media (max-width: 768px) {
       font-size: 0.6rem;
@@ -3382,9 +3827,10 @@ const MatchRow = styled.div`
     .team-column {
       flex: 1;
       display: flex;
-      flex-direction: column;
-      gap: 6px;
+      flex-direction: row;
+      gap: 2px;
       align-items: center;
+      justify-content: center;
       min-width: 0;
       
       .team-name {
@@ -3542,9 +3988,10 @@ const CategoryCard = styled.div`
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   margin-bottom: 20px;
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible for floating content */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
+  position: relative; /* Added for positioning context */
 
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -3662,16 +4109,27 @@ const CategoryExpandIcon = styled.div`
 `;
 
 const CategoryBracketContent = styled.div`
-  padding: ${props => props.$expanded ? '20px' : '0 20px'};
+  padding: ${props => props.$expanded ? '20px' : '0'};
   background: white;
-  overflow: hidden;
-  max-height: ${props => props.$expanded ? 'none' : '0'};
+  border: ${props => props.$expanded ? '1px solid #e2e8f0' : 'none'};
+  border-top: none;
+  border-radius: ${props => props.$expanded ? '0 0 12px 12px' : '0'};
+  overflow: ${props => props.$expanded ? 'auto' : 'hidden'};
+  max-height: ${props => props.$expanded ? '80vh' : '0'};
   opacity: ${props => props.$expanded ? '1' : '0'};
   transition: all 0.3s ease;
   transform-origin: top;
+  position: ${props => props.$expanded ? 'absolute' : 'static'};
+  top: ${props => props.$expanded ? '100%' : 'auto'};
+  left: ${props => props.$expanded ? '0' : 'auto'};
+  right: ${props => props.$expanded ? '0' : 'auto'};
+  z-index: ${props => props.$expanded ? (props.$zIndex || 1000) : 'auto'};
+  box-shadow: ${props => props.$expanded ? '0 4px 12px rgba(0, 0, 0, 0.15)' : 'none'};
+  width: ${props => props.$expanded ? '100%' : 'auto'};
 
   @media (max-width: 768px) {
-    padding: ${props => props.$expanded ? '16px' : '0 16px'};
+    padding: ${props => props.$expanded ? '16px' : '0'};
+    max-height: ${props => props.$expanded ? '70vh' : '0'};
   }
 `;
 
@@ -3776,7 +4234,8 @@ const token = user?.token;
   }, [isEditingBio]);
   const [clubSearchTerm, setClubSearchTerm] = useState('');
   const [tournamentSearchTerm, setTournamentSearchTerm] = useState('');
-  const [tournamentDetailTab, setTournamentDetailTab] = useState('list'); 
+  const [tournamentDetailTab, setTournamentDetailTab] = useState('list');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); 
   const [showAttachmentModal, setShowAttachmentModal] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
@@ -3791,7 +4250,7 @@ const token = user?.token;
   const [roundRobinCategories, setRoundRobinCategories] = useState({});
   const [eliminationCategories, setEliminationCategories] = useState({});
   const [selectedBrackets, setSelectedBrackets] = useState({}); // Format: { categoryId: 'A' | 'B' | 'C' | 'D' }
-  const [bracketMode, setBracketMode] = useState({}); // Format: { categoryId: 4 | 8 }
+  const [bracketMode, setBracketMode] = useState({}); // Format: { categoryId: 1 | 2 | 4 | 8 }
   const [showBracketModal, setShowBracketModal] = useState(false);
   const [pendingBracketChange, setPendingBracketChange] = useState({ categoryId: null, newMode: null });
   const [availableBrackets, setAvailableBrackets] = useState({}); // Format: { categoryId: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] }
@@ -3933,21 +4392,21 @@ useEffect(() => {
 useEffect(() => {
   const restoreSelectedTournament = async () => {
     try {
-      console.log('=== TOURNAMENT RESTORATION DEBUG ===');
-      console.log('🔍 Checking localStorage for selectedTournamentId...');
+      // console.log('=== TOURNAMENT RESTORATION DEBUG ===');
+      // console.log('🔍 Checking localStorage for selectedTournamentId...');
       
-      // Check all localStorage items for debugging
-      console.log('📦 All localStorage items:');
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        const value = localStorage.getItem(key);
-        console.log(`  ${key}: ${value}`);
-      }
+      // Check all localStorage items for debugging (commented for performance)
+      // console.log('📦 All localStorage items:');
+      // for (let i = 0; i < localStorage.length; i++) {
+      //   const key = localStorage.key(i);
+      //   const value = localStorage.getItem(key);
+      //   console.log(`  ${key}: ${value}`);
+      // }
       
       const storedTournamentId = localStorage.getItem('selectedTournamentId');
-      console.log('🎯 Stored tournament ID:', storedTournamentId);
-      console.log('📊 Tournaments loaded:', tournaments.length);
-      console.log('🏆 Available tournament IDs:', tournaments.map(t => t._id));
+      // console.log('🎯 Stored tournament ID:', storedTournamentId);
+      // console.log('📊 Tournaments loaded:', tournaments.length);
+      // console.log('🏆 Available tournament IDs:', tournaments.map(t => t._id));
       
       // Only proceed if we have both a stored ID and tournaments are loaded
       if (storedTournamentId && tournaments.length > 0) {
@@ -4005,9 +4464,10 @@ useEffect(() => {
           });
         }
         
-        // ✅ Initialize Round Robin state for categories with groupStage data
+        // ✅ Initialize Round Robin state and bracket mode for categories
         const roundRobinState = {};
         const eliminationState = {};
+        const bracketModeState = {};
         
         tournamentData.tournamentCategories?.forEach(category => {
           if (category.groupStage && category.groupStage.groups && category.groupStage.groups.length > 0) {
@@ -4015,10 +4475,15 @@ useEffect(() => {
             eliminationState[category._id] = false;
             console.log(`🎯 Auto-enabled Round Robin for category: ${category.division}`);
           }
+          
+          // Load saved bracket mode or default to 4
+          bracketModeState[category._id] = category.bracketMode || 4;
+          console.log(`🎯 Loaded bracket mode for ${category.division}: ${bracketModeState[category._id]}`);
         });
         
         setRoundRobinCategories(prev => ({ ...prev, ...roundRobinState }));
         setEliminationCategories(prev => ({ ...prev, ...eliminationState }));
+        setBracketMode(prev => ({ ...prev, ...bracketModeState }));
         
         setSelectedTournament(tournamentData);
         setTournamentDetailTab('details'); // Show tournament details view
@@ -4133,11 +4598,26 @@ const handleCreateClub = () => {
     registrationForm.teamMembers
   ]);
 
-  // Calculate standings when tournament data loads or changes
+  // Calculate standings when tournament data loads or changes - OPTIMIZED
   useEffect(() => {
-    if (selectedTournament?.tournamentCategories) {
-      console.log('🔄 Recalculating standings for loaded tournament data');
-      
+    if (!selectedTournament?.tournamentCategories) return;
+    
+    // Only recalculate if we don't have standings or if matches have changed
+    let needsUpdate = false;
+    selectedTournament.tournamentCategories.forEach(cat => {
+      if (cat.groupStage?.groups) {
+        cat.groupStage.groups.forEach(g => {
+          if (g.matches && Object.keys(g.matches).length > 0 && (!g.standings || g.standings.length === 0)) {
+            needsUpdate = true;
+          }
+        });
+      }
+    });
+    
+    if (!needsUpdate) return;
+    
+    // Use a timeout to debounce this expensive operation
+    const timeoutId = setTimeout(() => {
       setSelectedTournament(prev => {
         if (!prev) return prev;
         
@@ -4152,30 +4632,30 @@ const handleCreateClub = () => {
                 ...cat.groupStage,
                 groups: cat.groupStage.groups.map(g => {
                   const matches = g.matches || {};
-                  const allPlayers = g.originalPlayers || g.standings?.map(s => s.player) || [];
+                  if (Object.keys(matches).length === 0) return g; // Skip if no matches
                   
-                  // Enhanced matches with player names
+                  const allPlayers = g.originalPlayers || g.standings?.map(s => s.player) || [];
+                  if (allPlayers.length === 0) return g; // Skip if no players
+                  
+                  // Pre-calculate player pairs once (memoized)
+                  const playerPairs = [];
+                  for (let i = 0; i < allPlayers.length; i++) {
+                    for (let j = i + 1; j < allPlayers.length; j++) {
+                      playerPairs.push([i, j]);
+                    }
+                  }
+                  
+                  // Enhanced matches with player names - optimized
                   const enhancedMatches = {};
                   Object.entries(matches).forEach(([matchKey, match]) => {
-                    // For simple numeric keys like '0', '1', '2', generate player pairs
                     const matchIndex = parseInt(matchKey);
-                    if (!isNaN(matchIndex)) {
-                      // Generate all possible player pairs and find the match at this index
-                      const playerPairs = [];
-                      for (let i = 0; i < allPlayers.length; i++) {
-                        for (let j = i + 1; j < allPlayers.length; j++) {
-                          playerPairs.push([i, j]);
-                        }
-                      }
-                      
-                      if (playerPairs[matchIndex]) {
-                        const [player1Index, player2Index] = playerPairs[matchIndex];
-                        enhancedMatches[matchKey] = {
-                          ...match,
-                          player1: allPlayers[player1Index],
-                          player2: allPlayers[player2Index]
-                        };
-                      }
+                    if (!isNaN(matchIndex) && playerPairs[matchIndex]) {
+                      const [player1Index, player2Index] = playerPairs[matchIndex];
+                      enhancedMatches[matchKey] = {
+                        ...match,
+                        player1: allPlayers[player1Index],
+                        player2: allPlayers[player2Index]
+                      };
                     }
                   });
                   
@@ -4191,7 +4671,9 @@ const handleCreateClub = () => {
           })
         };
       });
-    }
+    }, 100); // Debounce expensive calculation
+    
+    return () => clearTimeout(timeoutId);
   }, [selectedTournament?._id]); // Trigger when tournament changes
 
   const handleAvatarClick = () => {
@@ -4285,107 +4767,74 @@ const handleSaveBio = async () => {
 
 // Function to calculate standings from match results
 const calculateStandings = (matches, players) => {
-  const standings = {};
+  console.log('🔢 calculateStandings called with:', { matches, players });
   
-  // Initialize standings for all players
-  players.forEach(player => {
-    standings[player] = {
-      player,
-      wins: 0,
-      losses: 0,
-      pointsFor: 0,
-      pointsAgainst: 0,
-      pointDifferential: 0
-    };
-  });
+  // Initialize standings for all players (array-based approach like Tournament.jsx)
+  const standings = players.map(player => ({
+    player,
+    wins: 0,
+    losses: 0,
+    pointsFor: 0,
+    pointsAgainst: 0,
+    pointDifferential: 0
+  }));
   
   // Process each match
-  Object.values(matches || {}).forEach(match => {
-    // Use game1 scores for points calculation (actual game scores)
+  Object.entries(matches || {}).forEach(([matchKey, match]) => {
+    const player1 = match.player1;
+    const player2 = match.player2;
     const score1 = parseInt(match.game1Player1) || 0;
     const score2 = parseInt(match.game1Player2) || 0;
     
-    console.log('🔍 CALCULATE STANDINGS - Processing match:', {
-      match: match,
-      score1: score1,
-      score2: score2,
-      player1: match.player1,
-      player2: match.player2,
-      hasScores: score1 > 0 || score2 > 0,
-      finalScorePlayer1: match.finalScorePlayer1,
-      finalScorePlayer2: match.finalScorePlayer2,
-      game1Player1: match.game1Player1,
-      game1Player2: match.game1Player2
-    });
-    
-    // Only process matches with actual scores (not 0-0)
-    if (score1 > 0 || score2 > 0) {
-      const player1Name = match.player1 || 'Unknown';
-      const player2Name = match.player2 || 'Unknown';
+    if (player1 && player2) {
+      const p1Standing = standings.find(s => s.player === player1);
+      const p2Standing = standings.find(s => s.player === player2);
       
-      // Initialize players if they don't exist in standings
-      if (!standings[player1Name]) {
-        standings[player1Name] = {
-          player: player1Name,
-          wins: 0,
-          losses: 0,
-          pointsFor: 0,
-          pointsAgainst: 0,
-          pointDifferential: 0
-        };
+      if (p1Standing && p2Standing) {
+        // Update points
+        p1Standing.pointsFor += score1;
+        p1Standing.pointsAgainst += score2;
+        p2Standing.pointsFor += score2;
+        p2Standing.pointsAgainst += score1;
+        
+        // Update wins/losses
+        if (score1 > score2) {
+          p1Standing.wins++;
+          p2Standing.losses++;
+        } else if (score2 > score1) {
+          p2Standing.wins++;
+          p1Standing.losses++;
+        }
       }
-      if (!standings[player2Name]) {
-        standings[player2Name] = {
-          player: player2Name,
-          wins: 0,
-          losses: 0,
-          pointsFor: 0,
-          pointsAgainst: 0,
-          pointDifferential: 0
-        };
-      }
-      
-      // Update points
-      standings[player1Name].pointsFor += score1;
-      standings[player1Name].pointsAgainst += score2;
-      standings[player2Name].pointsFor += score2;
-      standings[player2Name].pointsAgainst += score1;
-      
-      // Update wins/losses based on game1 scores (automatically determine winner)
-      if (score1 > score2) {
-        standings[player1Name].wins += 1;
-        standings[player2Name].losses += 1;
-      } else if (score2 > score1) {
-        standings[player2Name].wins += 1;
-        standings[player1Name].losses += 1;
-      }
-      // Ties don't count as wins or losses
-      
-      // Update point differential
-      standings[player1Name].pointDifferential = standings[player1Name].pointsFor - standings[player1Name].pointsAgainst;
-      standings[player2Name].pointDifferential = standings[player2Name].pointsFor - standings[player2Name].pointsAgainst;
     }
   });
   
-  // Convert to array and sort by wins (descending), then by point differential (descending)
-  const finalStandings = Object.values(standings).sort((a, b) => {
+  // Calculate point differentials and sort
+  standings.forEach(standing => {
+    standing.pointDifferential = standing.pointsFor - standing.pointsAgainst;
+  });
+  
+  // Sort by wins (descending), then by point differential (descending)
+  standings.sort((a, b) => {
     if (b.wins !== a.wins) return b.wins - a.wins;
     return b.pointDifferential - a.pointDifferential;
   });
   
-  return finalStandings;
+  console.log('📊 Calculated standings:', standings);
+  return standings;
 };
 
 const handleMatchChange = (categoryId, bracket, matchIndex, field, value) => {
-  console.log("🚨 HANDLE MATCH CHANGE CALLED!", { categoryId, bracket, matchIndex, field, value });
-  console.log("🔄 MATCH CHANGE DEBUG:", {
-    categoryId,
-    bracket,
-    matchIndex,
-    field,
-    value,
-    timestamp: new Date().toISOString(),
-  });
+  // Performance optimization: removed console.log statements
+  // console.log("🚨 HANDLE MATCH CHANGE CALLED!", { categoryId, bracket, matchIndex, field, value });
+  // console.log("🔄 MATCH CHANGE DEBUG:", {
+  //   categoryId,
+  //   bracket,
+  //   matchIndex,
+  //   field,
+  //   value,
+  //   timestamp: new Date().toISOString(),
+  // });
 
   setSelectedTournament((prev) => {
     if (!prev) return prev;
@@ -4406,36 +4855,36 @@ const handleMatchChange = (categoryId, bracket, matchIndex, field, value) => {
 
           if (field === 'time' || field === 'date' || field === 'court') {
             updated[field] = value;
-          } else if (field === 'game1Player1') {
-            updated.score1 = Number(value);
-            // Auto-calculate final score for elimination bracket
-            const player1Score = Number(value);
-            const player2Score = updated.score2 || 0;
-            if (player1Score > player2Score) {
-              updated.finalScorePlayer1 = 1;
-              updated.finalScorePlayer2 = 0;
-            } else if (player2Score > player1Score) {
-              updated.finalScorePlayer1 = 0;
-              updated.finalScorePlayer2 = 1;
-            } else {
-              updated.finalScorePlayer1 = 0;
-              updated.finalScorePlayer2 = 0;
-            }
-          } else if (field === 'game1Player2') {
-            updated.score2 = Number(value);
-            // Auto-calculate final score for elimination bracket
-            const player1Score = updated.score1 || 0;
-            const player2Score = Number(value);
-            if (player1Score > player2Score) {
-              updated.finalScorePlayer1 = 1;
-              updated.finalScorePlayer2 = 0;
-            } else if (player2Score > player1Score) {
-              updated.finalScorePlayer1 = 0;
-              updated.finalScorePlayer2 = 1;
-            } else {
-              updated.finalScorePlayer1 = 0;
-              updated.finalScorePlayer2 = 0;
-            }
+          } else if (field === 'game1Player1' || field === 'game1Player2' || 
+                    field === 'game2Player1' || field === 'game2Player2' || 
+                    field === 'game3Player1' || field === 'game3Player2') {
+            // Update the specific field
+            updated[field] = Number(value);
+            
+            // Auto-calculate final score for elimination bracket based on sets won
+            const game1P1 = Number(updated.game1Player1) || 0;
+            const game1P2 = Number(updated.game1Player2) || 0;
+            const game2P1 = Number(updated.game2Player1) || 0;
+            const game2P2 = Number(updated.game2Player2) || 0;
+            const game3P1 = Number(updated.game3Player1) || 0;
+            const game3P2 = Number(updated.game3Player2) || 0;
+            
+            // Count sets won by each player
+            let player1SetsWon = 0;
+            let player2SetsWon = 0;
+            
+            if (game1P1 > game1P2) player1SetsWon++;
+            else if (game1P2 > game1P1) player2SetsWon++;
+            
+            if (game2P1 > game2P2) player1SetsWon++;
+            else if (game2P2 > game2P1) player2SetsWon++;
+            
+            if (game3P1 > game3P2) player1SetsWon++;
+            else if (game3P2 > game3P1) player2SetsWon++;
+            
+            // Set final scores based on sets won
+            updated.finalScorePlayer1 = player1SetsWon;
+            updated.finalScorePlayer2 = player2SetsWon;
           } else if (field === 'finalScorePlayer1') {
             updated.score1 = Number(value);
           } else if (field === 'finalScorePlayer2') {
@@ -4472,6 +4921,10 @@ const handleMatchChange = (categoryId, bracket, matchIndex, field, value) => {
                   date: "2024-05-30",
                   game1Player1: "0",
                   game1Player2: "0",
+                  game2Player1: "0",
+                  game2Player2: "0",
+                  game3Player1: "0",
+                  game3Player2: "0",
                   finalScorePlayer1: "0",
                   finalScorePlayer2: "0",
                 };
@@ -4480,27 +4933,40 @@ const handleMatchChange = (categoryId, bracket, matchIndex, field, value) => {
               // ✅ update field
               matches[key][field] = value;
 
-              // ✅ Auto-calculate final scores based on game scores
-              if (field === 'game1Player1' || field === 'game1Player2') {
-                const player1Score = parseInt(matches[key].game1Player1) || 0;
-                const player2Score = parseInt(matches[key].game1Player2) || 0;
+              // ✅ Auto-calculate final scores based on all three game scores
+              if (field === 'game1Player1' || field === 'game1Player2' || 
+                  field === 'game2Player1' || field === 'game2Player2' || 
+                  field === 'game3Player1' || field === 'game3Player2') {
+                const game1P1 = parseInt(matches[key].game1Player1) || 0;
+                const game1P2 = parseInt(matches[key].game1Player2) || 0;
+                const game2P1 = parseInt(matches[key].game2Player1) || 0;
+                const game2P2 = parseInt(matches[key].game2Player2) || 0;
+                const game3P1 = parseInt(matches[key].game3Player1) || 0;
+                const game3P2 = parseInt(matches[key].game3Player2) || 0;
                 
-                // Automatically set final scores based on who won the game
-                if (player1Score > player2Score) {
-                  matches[key].finalScorePlayer1 = "1";
-                  matches[key].finalScorePlayer2 = "0";
-                } else if (player2Score > player1Score) {
-                  matches[key].finalScorePlayer1 = "0";
-                  matches[key].finalScorePlayer2 = "1";
-                } else {
-                  // Tie or both scores are 0
-                  matches[key].finalScorePlayer1 = "0";
-                  matches[key].finalScorePlayer2 = "0";
-                }
+                // Count sets won by each player
+                let player1SetsWon = 0;
+                let player2SetsWon = 0;
+                
+                if (game1P1 > game1P2) player1SetsWon++;
+                else if (game1P2 > game1P1) player2SetsWon++;
+                
+                if (game2P1 > game2P2) player1SetsWon++;
+                else if (game2P2 > game2P1) player2SetsWon++;
+                
+                if (game3P1 > game3P2) player1SetsWon++;
+                else if (game3P2 > game3P1) player2SetsWon++;
+                
+                // Set final scores based on sets won
+                matches[key].finalScorePlayer1 = String(player1SetsWon);
+                matches[key].finalScorePlayer2 = String(player2SetsWon);
                 
                 console.log("🏆 Final scores auto-calculated:", {
-                  gameScores: `${player1Score}-${player2Score}`,
-                  finalScores: `${matches[key].finalScorePlayer1}-${matches[key].finalScorePlayer2}`
+                  game1: `${game1P1}-${game1P2}`,
+                  game2: `${game2P1}-${game2P2}`,
+                  game3: `${game3P1}-${game3P2}`,
+                  finalScores: `${matches[key].finalScorePlayer1}-${matches[key].finalScorePlayer2}`,
+                  setsWon: `Player1: ${player1SetsWon}, Player2: ${player2SetsWon}`
                 });
               }
 
@@ -4518,7 +4984,10 @@ const handleMatchChange = (categoryId, bracket, matchIndex, field, value) => {
               const isInEditMode = isEditingBracket[editKey];
               console.log('🔧 Edit mode check:', { editKey, isInEditMode });
               
-              if ((field === 'finalScorePlayer1' || field === 'finalScorePlayer2' || field === 'game1Player1' || field === 'game1Player2') && !isInEditMode) {
+              if ((field === 'finalScorePlayer1' || field === 'finalScorePlayer2' || 
+                   field === 'game1Player1' || field === 'game1Player2' || 
+                   field === 'game2Player1' || field === 'game2Player2' || 
+                   field === 'game3Player1' || field === 'game3Player2') && !isInEditMode) {
                 console.log('📊 Score field detected and not in edit mode, recalculating standings...');
                 
                 // Get all players from the original player order (not sorted standings)
@@ -4723,17 +5192,12 @@ const handleBracketChange = (categoryId, groupId, updatedGroup) => {
   console.log('🏆 Tournament name:', tournament.tournamentName);
   console.log('📊 Tournament categories:', tournament.tournamentCategories?.length);
   
+  // Show tournament details within Profile.jsx instead of navigating away
   setSelectedTournament(tournament);
-  setTournamentDetailTab('details'); // Switch to details view
-  
-  // Store tournament ID in localStorage for persistence across page reloads
+  setTournamentDetailTab('details');
+  // Store tournament ID for persistence
   localStorage.setItem('selectedTournamentId', tournament._id);
-  console.log('💾 Tournament ID stored in localStorage:', tournament._id);
-  
-  // Verify storage
-  const storedId = localStorage.getItem('selectedTournamentId');
-  console.log('✅ Verification - stored ID:', storedId);
-  console.log('✅ Match check:', storedId === tournament._id);
+  console.log('✅ Tournament selected for detailed view in Profile');
 };
 
 
@@ -4741,17 +5205,21 @@ const handleBracketChange = (categoryId, groupId, updatedGroup) => {
     console.log('🔙 BACK TO TOURNAMENT LIST DEBUG');
     console.log('🗑️ Clearing selectedTournament and localStorage');
     setSelectedTournament(null);
-    setTournamentDetailTab('details');
+    setTournamentDetailTab('list'); // Set to 'list' to show tournament containers
     // Clear stored tournament ID when going back to list
     localStorage.removeItem('selectedTournamentId');
-    console.log('✅ localStorage cleared');
+    console.log('✅ localStorage cleared and tab set to list');
   };
 
   const toggleCategoryExpansion = (categoryId) => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [categoryId]: !prev[categoryId]
-    }));
+    setExpandedCategories(prev => {
+      // If clicking on already expanded category, collapse it
+      if (prev[categoryId]) {
+        return {};
+      }
+      // Otherwise, expand only this category (close all others)
+      return { [categoryId]: true };
+    });
   };
 
   // Registration handling functions
@@ -4774,7 +5242,7 @@ setRegistrationForm({
   // Primary player info
   primaryPlayer: {
     pplId: user.pplId || `PPL${Math.floor(Math.random() * 10000)}`, // fallback ID
-    name: `${user?.firstName || 'User'} ${user?.lastName || ''}`,
+    name: `${user.firstName} ${user.lastName}`,
     gender: user.gender || 'male',
     age: user.birthDate
       ? Math.floor((new Date() - new Date(user.birthDate)) / (1000 * 60 * 60 * 24 * 365))
@@ -4799,7 +5267,7 @@ setRegistrationForm({
   ],
 
   // Registration info
-  name: `${user?.firstName || 'User'} ${user?.lastName || ''}`,
+  name: `${user.firstName} ${user.lastName}`,
   email: user.email || '',
   contactNumber: '', // if you collect phone separately
   proofOfPayment: null,
@@ -5800,7 +6268,7 @@ const duprRatings = userProfile?.duprRatings
           <TabContent>
             <TabSection>
             <TabSectionTitle>Bio</TabSectionTitle>
- {/*             <BioContainer>
+              <BioContainer>
                 {!isEditingBio && (
                   <EditBioButton onClick={handleEditBio}>
                     ✏️ Edit
@@ -5830,8 +6298,55 @@ const duprRatings = userProfile?.duprRatings
                 ) : (
                   <TabText>{aboutData.bio || "Click 'Edit' to add your bio..."}</TabText>
                 )}
-              </BioContainer>*/}
+              </BioContainer>
             </TabSection>
+            
+            {/* Profile Info Section in Bio Tab */}
+            <MobileOnlyTabSection>
+              <TabSectionTitle>Profile Information</TabSectionTitle>
+              <PlayerInfoGrid>
+                {/* Column 1: PPL ID, AGE, GENDER */}
+                <InfoColumn>
+                  <InfoItem>
+                    <InfoLabel>PPL ID</InfoLabel>
+                    <InfoValue>{user?.pplId || 'N/A'}</InfoValue>
+                  </InfoItem>
+                  <InfoItem>
+                    <InfoLabel>AGE</InfoLabel>
+                    <InfoValue>
+                      {user.birthDate
+                        ? new Date().getFullYear() - new Date(user.birthDate).getFullYear()
+                        : "23"}{" "}
+                      Years
+                    </InfoValue>
+                  </InfoItem>
+                  <InfoItem>
+                    <InfoLabel>GENDER</InfoLabel>
+                    <InfoValue>
+                      {user.gender
+                        ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1)
+                        : "Female"}
+                    </InfoValue>
+                  </InfoItem>
+                </InfoColumn>
+                
+                {/* Column 2: DUPR ID, DUPR Singles, DUPR Doubles */}
+                <InfoColumn>
+                  <InfoItem>
+                    <InfoLabel>DUPR ID</InfoLabel>
+                    <InfoValue>{user?.duprId || 'N/A'}</InfoValue>
+                  </InfoItem>
+                  <InfoItem>
+                    <InfoLabel>DUPR Singles</InfoLabel>
+                    <InfoValue>N/A</InfoValue>
+                  </InfoItem>
+                  <InfoItem>
+                    <InfoLabel>DUPR Doubles</InfoLabel>
+                    <InfoValue>N/A</InfoValue>
+                  </InfoItem>
+                </InfoColumn>
+              </PlayerInfoGrid>
+            </MobileOnlyTabSection>
           </TabContent>
         );
       case 'club':
@@ -5849,7 +6364,7 @@ const duprRatings = userProfile?.duprRatings
               </ClubSearchInputContainer>
               <CreateClubButton onClick={handleCreateClub}>
                 <PlusIcon />
-                Create Club
+                <span>Create Club</span>
               </CreateClubButton>
             </ClubSearchSection>
             
@@ -5875,7 +6390,7 @@ const duprRatings = userProfile?.duprRatings
                       <path d="M19 12H5" strokeLinecap="round" strokeLinejoin="round" />
                       <path d="M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    Back to Tournaments
+                    Back
                   </BackToListButton>
                   
                   <EditTournamentButton onClick={() => navigate('/host-tournament', { state: { editTournament: selectedTournament } })}>
@@ -5883,7 +6398,7 @@ const duprRatings = userProfile?.duprRatings
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" strokeLinecap="round" strokeLinejoin="round"/>
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    Edit Tournament
+                    Edit
                   </EditTournamentButton>
                 </TournamentDetailHeader>
 
@@ -5911,6 +6426,39 @@ const duprRatings = userProfile?.duprRatings
                     <TournamentDetailDescription>
                       {selectedTournament.description || 'No description available for this tournament.'}
                     </TournamentDetailDescription>
+
+                    {/* Registration Container - appears under description for both mobile and desktop */}
+                    <RegistrationContainer>
+                      <RegistrationTitle>Tournament Registration</RegistrationTitle>
+                      <RegistrationPrice>
+                        <span className="price">
+                          {selectedTournament
+                            ? (() => {
+                                const min = selectedTournament.entryFeeMin ?? 0;
+                                const max = selectedTournament.entryFeeMax;
+
+                                if (min === 0 && (!max || max === 0)) return "FREE";
+
+                                if (max != null && max !== min) {
+                                  return `₱${min.toLocaleString()} – ₱${max.toLocaleString()}`;
+                                }
+
+                                return `₱${min.toLocaleString()}`;
+                              })()
+                            : "Loading..."}
+                        </span>
+                      </RegistrationPrice>
+                      <RegistrationButton
+                        onClick={() => {
+                          handleRegister(selectedTournament.id);
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Register Now
+                      </RegistrationButton>
+                    </RegistrationContainer>
 
                     {/* Tournament Tabs */}
                     <TabNavigation style={{ marginTop: '24px', marginBottom: '24px' }}>
@@ -5945,6 +6493,70 @@ const duprRatings = userProfile?.duprRatings
                         Brackets
                       </TabButton>
                     </TabNavigation>
+
+                    {/* Mobile Dropdown for Tournament Tabs */}
+                    <MobileTabDropdown>
+                      <DropdownButton 
+                        $isOpen={isDropdownOpen}
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      >
+                        {tournamentDetailTab === 'details' && 'Details'}
+                        {tournamentDetailTab === 'guidelines' && 'Guidelines'}
+                        {tournamentDetailTab === 'events' && 'Events'}
+                        {tournamentDetailTab === 'players' && 'Players'}
+                        {tournamentDetailTab === 'brackets' && 'Brackets'}
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="6,9 12,15 18,9"></polyline>
+                        </svg>
+                      </DropdownButton>
+                      <DropdownMenu $isOpen={isDropdownOpen}>
+                        <DropdownItem 
+                          $active={tournamentDetailTab === 'details'}
+                          onClick={() => {
+                            setTournamentDetailTab('details');
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          Details
+                        </DropdownItem>
+                        <DropdownItem 
+                          $active={tournamentDetailTab === 'guidelines'}
+                          onClick={() => {
+                            setTournamentDetailTab('guidelines');
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          Guidelines
+                        </DropdownItem>
+                        <DropdownItem 
+                          $active={tournamentDetailTab === 'events'}
+                          onClick={() => {
+                            setTournamentDetailTab('events');
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          Events
+                        </DropdownItem>
+                        <DropdownItem 
+                          $active={tournamentDetailTab === 'players'}
+                          onClick={() => {
+                            setTournamentDetailTab('players');
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          Players
+                        </DropdownItem>
+                        <DropdownItem 
+                          $active={tournamentDetailTab === 'brackets'}
+                          onClick={() => {
+                            setTournamentDetailTab('brackets');
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          Brackets
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </MobileTabDropdown>
 
                     {/* Tournament Tab Content */}
                     {tournamentDetailTab === 'details' && (
@@ -6643,6 +7255,7 @@ const duprRatings = userProfile?.duprRatings
                             onFocus={(e) => e.target.style.borderColor = '#29ba9b'}
                             onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                           >
+                            <option value="all">All Categories</option>
 {selectedTournament?.tournamentCategories &&
   selectedTournament.tournamentCategories
     .filter(category => category && category.division) // safety check
@@ -6810,7 +7423,7 @@ const duprRatings = userProfile?.duprRatings
     return true; // Show all genders if 'all' is selected
   })
   .map(player => (
-    <label key={player.id} style={{ display: "block", marginBottom: "8px" }}>
+    <label key={player._id} style={{ display: "block", marginBottom: "8px" }}>
       <input
         type="checkbox"
         checked={selectedPlayers.includes(player._id)}
@@ -7024,7 +7637,7 @@ const duprRatings = userProfile?.duprRatings
 })
 
                                  .map((player, index) => (
-                                   <div key={player.id} style={{
+                                   <div key={player._id} style={{
                                      background: 'white',
                                      border: '1px solid #e2e8f0',
                                      borderRadius: '12px',
@@ -7371,7 +7984,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
   return cleanNameA.localeCompare(cleanNameB);
 })
                                  .map((player, index) => (
-                                   <div key={player.id} style={{
+                                   <div key={player._id} style={{
                                      background: 'white',
                                      border: '1px solid #f59e0b',
                                      borderRadius: '12px',
@@ -7758,7 +8371,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
 {/* Display all categories as expandable cards */}
 {selectedTournament.tournamentCategories && selectedTournament.tournamentCategories.length > 0 ? (
   <div>
-    {selectedTournament.tournamentCategories.map((category) => (
+    {selectedTournament.tournamentCategories.map((category, categoryIndex) => (
       <CategoryCard key={category._id}>
         <CategoryHeader 
           $expanded={expandedCategories[category._id]}
@@ -7794,7 +8407,10 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
         </CategoryHeader>
                                 
                                 {expandedCategories[category._id] && (
-                                  <CategoryBracketContent $expanded={expandedCategories[category._id]}>
+                                  <CategoryBracketContent 
+                                    $expanded={expandedCategories[category._id]}
+                                    $zIndex={500 + categoryIndex}
+                                  >
                                     {/* Tournament Format Selection */}
                                     <div style={{
                                       display: 'flex',
@@ -7978,7 +8594,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                         justifyContent: 'center',
                                         alignItems: 'center'
                                       }}>
-                                        {/* 4/8 Bracket Toggle Switch */}
+                                        {/* Bracket Count Dropdown */}
                                         <div style={{
                                           display: 'flex',
                                           alignItems: 'center',
@@ -7990,55 +8606,45 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                             fontWeight: '600',
                                             color: '#64748b'
                                           }}>Brackets:</span>
-                                          <div 
-                                            onClick={() => {
-                                              const currentMode = bracketMode[category._id] || 4;
-                                              const newMode = currentMode === 4 ? 8 : 4;
+                                          <select
+                                            value={bracketMode[category._id] || 4}
+                                            onChange={(e) => {
+                                              const newMode = parseInt(e.target.value);
+                                              console.log('🎯 Bracket dropdown changed:', {
+                                                categoryId: category._id,
+                                                categoryName: category.division,
+                                                oldMode: bracketMode[category._id] || 4,
+                                                newMode: newMode
+                                              });
                                               setShowBracketModal(true);
                                               setPendingBracketChange({ categoryId: category._id, newMode });
                                             }}
                                             style={{
-                                              position: 'relative',
-                                              width: '60px',
-                                              height: '30px',
-                                              backgroundColor: '#e2e8f0',
-                                              borderRadius: '15px',
+                                              padding: '6px 12px',
+                                              border: '2px solid #cbd5e1',
+                                              borderRadius: '8px',
+                                              fontSize: '0.875rem',
+                                              fontWeight: '600',
+                                              color: '#374151',
+                                              backgroundColor: 'white',
                                               cursor: 'pointer',
-                                              transition: 'all 0.3s ease',
-                                              border: '2px solid #cbd5e1'
+                                              outline: 'none',
+                                              transition: 'all 0.2s ease'
+                                            }}
+                                            onFocus={(e) => {
+                                              e.target.style.borderColor = '#3b82f6';
+                                              e.target.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                              e.target.style.borderColor = '#cbd5e1';
+                                              e.target.style.boxShadow = 'none';
                                             }}
                                           >
-                                            <div style={{
-                                              position: 'absolute',
-                                              top: '2px',
-                                              left: (bracketMode[category._id] || 4) === 8 ? '32px' : '2px',
-                                              width: '24px',
-                                              height: '24px',
-                                              backgroundColor: '#3b82f6',
-                                              borderRadius: '50%',
-                                              transition: 'all 0.3s ease'
-                                            }}></div>
-                                            <div style={{
-                                              position: 'absolute',
-                                              top: '50%',
-                                              left: '10px',
-                                              transform: 'translateY(-50%)',
-                                              fontSize: '0.75rem',
-                                              fontWeight: '600',
-                                              color: (bracketMode[category._id] || 4) === 4 ? 'white' : '#64748b',
-                                              zIndex: 2
-                                            }}>4</div>
-                                            <div style={{
-                                              position: 'absolute',
-                                              top: '50%',
-                                              right: '10px',
-                                              transform: 'translateY(-50%)',
-                                              fontSize: '0.75rem',
-                                              fontWeight: '600',
-                                              color: (bracketMode[category._id] || 4) === 8 ? 'white' : '#64748b',
-                                              zIndex: 2
-                                            }}>8</div>
-                                          </div>
+                                            <option value={1}>1</option>
+                                            <option value={2}>2</option>
+                                            <option value={4}>4</option>
+                                            <option value={8}>8</option>
+                                          </select>
                                         </div>
                                         {/* Bracket Buttons */}
                                         {(availableBrackets[category._id] || ['A', 'B', 'C', 'D'])
@@ -8080,9 +8686,8 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                         {/* Auto-set brackets based on bracket mode */}
                                         {(() => {
                                           const currentMode = bracketMode[category._id] || 4;
-                                          const targetBrackets = currentMode === 8 
-                                            ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-                                            : ['A', 'B', 'C', 'D'];
+                                          const allBrackets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                                          const targetBrackets = allBrackets.slice(0, currentMode);
                                           const currentBrackets = availableBrackets[category._id] || ['A', 'B', 'C', 'D'];
                                           
                                           // Auto-update brackets if they don't match the required count
@@ -8126,12 +8731,20 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
               boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
             }}>
               <div style={{ fontSize: '3rem', marginBottom: '16px' }}>👆</div>
-              <h3 style={{ color: '#334155', marginBottom: '8px', fontSize: '1.1rem' }}>
+              <h3 style={{ 
+                color: '#334155', 
+                marginBottom: '8px', 
+                fontSize: '1.1rem', 
+                textAlign: 'center',
+                margin: '0 auto 8px auto',
+                display: 'block',
+                width: '100%'
+              }}>
                 Select a Bracket
               </h3>
               <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: '1.5' }}>
                 Click on any bracket button above to view the standings.<br/>
-                Players are automatically distributed based on the participant limit ({category.maxParticipants} per bracket).
+                Players are automatically distributed based on the participant limit ({category.maxParticipants} per category).
               </p>
             </div>
           );
@@ -8283,7 +8896,9 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
     <div>Time</div>
     <div>Court</div>
     <div>Date</div>
-    <div>Score</div>
+    <div>Game 1</div>
+    <div>Game 2</div>
+    <div>Game 3</div>
     <div>Standing</div>
   </div>
 
@@ -8300,8 +8915,13 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
     const timeValue = matchData.time || "08:00";
     const courtValue = matchData.court || "1";
     const dateValue = matchData.date || "2024-05-30";
-    const player1Score = matchData.game1Player1 || "0";
-    const player2Score = matchData.game1Player2 || "0";
+    // Get scores for all 3 sets
+    const set1Player1 = matchData.game1Player1 || "0";
+    const set1Player2 = matchData.game1Player2 || "0";
+    const set2Player1 = matchData.game2Player1 || "0";
+    const set2Player2 = matchData.game2Player2 || "0";
+    const set3Player1 = matchData.game3Player1 || "0";
+    const set3Player2 = matchData.game3Player2 || "0";
     const finalPlayer1 = matchData.finalScorePlayer1 || "0";
     const finalPlayer2 = matchData.finalScorePlayer2 || "0";
 
@@ -8309,9 +8929,17 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
       <MatchRow key={`${selectedTournament._id}-${key}-${matchData.game1Player1}-${matchData.game1Player2}`}>
         <div className="match-number">{matchNumber}</div>
         <div className="teams-horizontal">
-          <div className="team-column"><span>{playerName}</span></div>
+          <div className="team-column">
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {playerName}
+            </span>
+          </div>
           <span className="vs-divider">vs</span>
-          <div className="team-column"><span>{opponentName}</span></div>
+          <div className="team-column">
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {opponentName}
+            </span>
+          </div>
         </div>
 
         {/* Time */}
@@ -8353,31 +8981,85 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
           ) : new Date(dateValue).toLocaleDateString("en-US")}
         </div>
 
-        {/* Score */}
+        {/* Game 1 Score */}
         <div className="game-score">
           {isEditing ? (
             <div style={{ display: "flex", gap: "2px", alignItems: "center" }}>
               <input
                 type="number"
-                value={player1Score}
+                value={set1Player1}
                 style={{ width: "40px", textAlign: "center" }}
                 onChange={(e) => {
-                  console.log('🎯 Score input changed!', { key, field: 'game1Player1', value: e.target.value });
+                  console.log('🎯 Game 1 Score input changed!', { key, field: 'game1Player1', value: e.target.value });
                   handleMatchChange(category._id, selectedBrackets[category._id], key, "game1Player1", e.target.value);
                 }}
               />
               <span>-</span>
               <input
                 type="number"
-                value={player2Score}
+                value={set1Player2}
                 style={{ width: "40px", textAlign: "center" }}
                 onChange={(e) => {
-                  console.log('🎯 Score input changed!', { key, field: 'game1Player2', value: e.target.value });
+                  console.log('🎯 Game 1 Score input changed!', { key, field: 'game1Player2', value: e.target.value });
                   handleMatchChange(category._id, selectedBrackets[category._id], key, "game1Player2", e.target.value);
                 }}
               />
             </div>
-          ) : `${player1Score}-${player2Score}`}
+          ) : `${set1Player1}-${set1Player2}`}
+        </div>
+        
+        {/* Game 2 Score */}
+        <div className="game-score">
+          {isEditing ? (
+            <div style={{ display: "flex", gap: "2px", alignItems: "center" }}>
+              <input
+                type="number"
+                value={set2Player1}
+                style={{ width: "40px", textAlign: "center" }}
+                onChange={(e) => {
+                  console.log('🎯 Game 2 Score input changed!', { key, field: 'game2Player1', value: e.target.value });
+                  handleMatchChange(category._id, selectedBrackets[category._id], key, "game2Player1", e.target.value);
+                }}
+              />
+              <span>-</span>
+              <input
+                type="number"
+                value={set2Player2}
+                style={{ width: "40px", textAlign: "center" }}
+                onChange={(e) => {
+                  console.log('🎯 Game 2 Score input changed!', { key, field: 'game2Player2', value: e.target.value });
+                  handleMatchChange(category._id, selectedBrackets[category._id], key, "game2Player2", e.target.value);
+                }}
+              />
+            </div>
+          ) : `${set2Player1}-${set2Player2}`}
+        </div>
+        
+        {/* Game 3 Score */}
+        <div className="game-score">
+          {isEditing ? (
+            <div style={{ display: "flex", gap: "2px", alignItems: "center" }}>
+              <input
+                type="number"
+                value={set3Player1}
+                style={{ width: "40px", textAlign: "center" }}
+                onChange={(e) => {
+                  console.log('🎯 Game 3 Score input changed!', { key, field: 'game3Player1', value: e.target.value });
+                  handleMatchChange(category._id, selectedBrackets[category._id], key, "game3Player1", e.target.value);
+                }}
+              />
+              <span>-</span>
+              <input
+                type="number"
+                value={set3Player2}
+                style={{ width: "40px", textAlign: "center" }}
+                onChange={(e) => {
+                  console.log('🎯 Game 3 Score input changed!', { key, field: 'game3Player2', value: e.target.value });
+                  handleMatchChange(category._id, selectedBrackets[category._id], key, "game3Player2", e.target.value);
+                }}
+              />
+            </div>
+          ) : `${set3Player1}-${set3Player2}`}
         </div>
 {/* Final Score - Auto-calculated */}
         <div className="final-score">
@@ -8445,9 +9127,8 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                             // Get top 2 players from each bracket
                                             const getTopPlayersFromBrackets = () => {
                                               const currentMode = bracketMode[category._id] || 4;
-                                              const brackets = currentMode === 8 
-                                                ? ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-                                                : ['A', 'B', 'C', 'D'];
+                                              const allBrackets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                                              const brackets = allBrackets.slice(0, currentMode);
                                               const topPlayers = {};
                                               
                                               brackets.forEach(bracket => {
@@ -8604,8 +9285,9 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                 }
                                               ];
                                             } else if (eliminationMatches.length === 0) {
-                                              // 8 bracket elimination - Round of 16 matches
-                                              const brackets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                                              // Dynamic bracket elimination - Round of 16 matches for 8 brackets (and similar logic for other modes)
+                                              const allBrackets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+                                              const brackets = allBrackets.slice(0, currentMode);
                                               
                                               // Generate Round of 16 matches: A1 vs E2, B1 vs F2, C1 vs G2, D1 vs H2, E1 vs A2, F1 vs B2, G1 vs C2, H1 vs D2
                                               const round16Matches = [
@@ -9559,61 +10241,38 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                   </TournamentDetailLeft>
                   
                   <TournamentDetailRight>
-                    <StickyActionBar>
-                      <StickyActionTitle>Tournament Registration</StickyActionTitle>
-                     <DetailItemValue className="price">
- <span>
-  {selectedTournament
-    ? (() => {
-        const min = selectedTournament.entryFeeMin ?? 0;
-        const max = selectedTournament.entryFeeMax;
+                    {/* Desktop Registration Container */}
+                    <DesktopRegistrationContainer>
+                      <RegistrationTitle>Tournament Registration</RegistrationTitle>
+                      <RegistrationPrice>
+                        <span className="price">
+                          {selectedTournament
+                            ? (() => {
+                                const min = selectedTournament.entryFeeMin ?? 0;
+                                const max = selectedTournament.entryFeeMax;
 
-        if (min === 0 && (!max || max === 0)) return "FREE";
+                                if (min === 0 && (!max || max === 0)) return "FREE";
 
-        if (max != null && max !== min) {
-          return `₱${min.toLocaleString()} – ₱${max.toLocaleString()}`;
-        }
+                                if (max != null && max !== min) {
+                                  return `₱${min.toLocaleString()} – ₱${max.toLocaleString()}`;
+                                }
 
-        return `₱${min.toLocaleString()}`;
-      })()
-    : "Loading..."}
-</span>
-</DetailItemValue>
-
-
-                      {/* Action Buttons */}
-                      <TournamentActionButtons>
-                        <ActionButton variant="primary" 
-                          onClick={() => {
-                            // Call handleRegister to open registration modal
-                            handleRegister(selectedTournament.id);
-                          }}
-                        >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                          View Form
-                        </ActionButton>
-                        
-                        {/*<ActionButton variant="secondary" onClick={() => {
-                          if (navigator.share) {
-                            navigator.share({
-                              title: selectedTournament.name,
-                              text: `Check out this tournament: ${selectedTournament.name}`,
-                              url: window.location.href
-                            });
-                          } else {
-                            navigator.clipboard.writeText(window.location.href);
-                            // You could add a notification here
-                          }
-                        }}>
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                          Share
-                        </ActionButton>*/}
-                      </TournamentActionButtons>
-                    </StickyActionBar>
+                                return `₱${min.toLocaleString()}`;
+                              })()
+                            : "Loading..."}
+                        </span>
+                      </RegistrationPrice>
+                      <RegistrationButton
+                        onClick={() => {
+                          handleRegister(selectedTournament.id);
+                        }}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Register Now
+                      </RegistrationButton>
+                    </DesktopRegistrationContainer>
 
                     {/* Tournament Sponsors Section */}
                     <StickyActionBar style={{ marginTop: '16px' }}>
@@ -9696,8 +10355,8 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                     />
                   </TournamentSearchInputContainer>
                   <HostTournamentButton onClick={handleHostTournament}>
-                    <TrophyIcon />
-                    Host a Tournament
+                    <PlusIcon />
+                    <span>Host a Tournament</span>
                   </HostTournamentButton>
                 </TournamentSearchSection>
 {tournamentDetailTab === 'list' && (
@@ -9720,14 +10379,13 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
           >
             <ProfileTournamentBanner>
               {tournament.tournamentPicture ? (
-    <img 
-      src={`http://localhost:5000${tournament.tournamentPicture}`} 
-      alt={tournament.tournamentName} 
-      style={{ width: "100%", height: "150px", objectFit: "cover" }}
-    />
-  ) : (
-    <div style={{padding: "40px", textAlign: "center", color: "#888"}}>No Image</div>
-  )}
+                <img 
+                  src={`http://localhost:5000${tournament.tournamentPicture}`} 
+                  alt={tournament.tournamentName} 
+                />
+              ) : (
+                <div style={{padding: "40px", textAlign: "center", color: "#888"}}>No Image</div>
+              )}
               <ProfileStatusBadge status={tournament.status}>
                 {tournament.status.toUpperCase()}
               </ProfileStatusBadge>
@@ -9918,7 +10576,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
   const NameAndRanksRow = styled.div`
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     width: 100%;
     margin-top: -20px;
     gap: 20px;
@@ -9993,17 +10651,27 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
     border: 1px solid #e2e8f0;
     backdrop-filter: none;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-    margin-top: -80px;
     flex-shrink: 0;
     min-width: 300px;
+    margin-top: -80px;
+    
+    @media (min-width: 769px) {
+      margin-top: 0;
+      align-self: flex-start;
+    }
     
     @media (max-width: 768px) {
-      flex-wrap: wrap;
-      gap: 15px;
-      justify-content: center;
-      margin-top: 0;
+      flex-wrap: nowrap;
+      gap: 12px;
+      justify-content: space-between;
+      margin-top: -45px;
       min-width: auto;
-      margin-bottom: 20px;
+      margin-bottom: -70px;
+      padding: 18px 15px;
+      overflow-x: auto;
+      border: none;
+      box-shadow: none;
+      background-color: transparent;
     }
   `;
 
@@ -10018,54 +10686,98 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
     &:hover {
       transform: translateY(-2px);
     }
+    
+    @media (max-width: 768px) {
+      padding: 12px 10px;
+      min-width: 80px;
+      flex: 1;
+    }
   `;
 
   const StatCategory = styled.div`
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     color: #64748b;
     margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 500;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    @media (max-width: 768px) {
+      font-size: 0.75rem;
+      margin-bottom: 6px;
+      letter-spacing: 0.8px;
+    }
   `;
 
   const StatValue = styled.div`
     font-weight: 800;
     color: #1e293b;
-    font-size: 1.5rem;
+    font-size: 1.7rem;
     margin-bottom: 4px;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: linear-gradient(135deg, #29ba9b, #1e7a6b);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    
+    @media (max-width: 768px) {
+      font-size: 1.6rem;
+      margin-bottom: 4px;
+    }
   `;
 
   const StatLabel = styled.div`
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.8px;
     font-weight: 500;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    @media (max-width: 768px) {
+      font-size: 0.7rem;
+      letter-spacing: 0.6px;
+    }
   `;
 
   const PlayerInfoGrid = styled.div`
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
     gap: 20px;
-    margin-top: -25px;
+    margin-top: -45px;
     padding: 15px 20px;
     
     @media (max-width: 768px) {
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 10px;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+    }
+  `;
+
+  const InfoRow = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    
+    @media (max-width: 768px) {
+      display: contents;
+    }
+  `;
+
+  const InfoColumn = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    
+    @media (max-width: 768px) {
       gap: 10px;
-      justify-content: center;
-      margin-top: 0;
-      padding: 10px 15px;
-      margin-bottom: 10px;
     }
   `;
 
@@ -10074,6 +10786,14 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
     padding: 5px 10px;
     min-width: 80px;
     flex-shrink: 0;
+    
+    @media (max-width: 768px) {
+      text-align: left;
+      padding: 12px 15px;
+      min-width: unset;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 8px;
+    }
   `;
 
   const InfoLabel = styled.div`
@@ -10083,6 +10803,12 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
     text-transform: uppercase;
     letter-spacing: 0.5px;
     text-align: left;
+    
+    @media (max-width: 768px) {
+      font-size: 0.7rem;
+      margin-bottom: 3px;
+      font-weight: 500;
+    }
   `;
 
   const InfoValue = styled.div`
@@ -10090,6 +10816,11 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
     color: #234255;
     font-size: 0.9rem;
     text-align: left;
+    
+    @media (max-width: 768px) {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
   `;
 
 const BioContainer = styled.div`
@@ -10216,11 +10947,11 @@ const EditBioButton = styled.button`
               {userProfile?.avatar ? (
                 <Avatar
                   src={`http://localhost:5000${userProfile.avatar}`}
-                  alt={`${user?.firstName || 'User'} ${user?.lastName || ''}`}
+                  alt={`${user.firstName} ${user.lastName}`}
                 />
               ) : (
                 <>
-                  {user?.firstName ? (
+                  {user.firstName ? (
                     <InitialsFallback>
                       {user.firstName.charAt(0).toUpperCase()}
                     </InitialsFallback>
@@ -10236,38 +10967,9 @@ const EditBioButton = styled.button`
                 onChange={handleFileChange}
               />
             </AvatarContainer>
-            <UserName>{`${user?.firstName || 'User'} ${user?.lastName || ''}`}</UserName>
+            <UserName>{`${user.firstName} ${user.lastName}`}</UserName>
             
-            {/* Mobile Info Grid - moved under name */}
-            <PlayerInfoGrid>
-              <InfoItem>
-                <InfoLabel>PPL ID</InfoLabel>
-                <InfoValue>{user?.pplId || 'N/A'}</InfoValue>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>DUPR ID</InfoLabel>
-                <InfoValue>{user?.duprId || 'N/A'}</InfoValue>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>AGE</InfoLabel>
-                <InfoValue>
-                  {user.birthDate
-                    ? new Date().getFullYear() - new Date(user.birthDate).getFullYear()
-                    : "N/A"}{" "}
-                  Years
-                </InfoValue>
-              </InfoItem>
-              <InfoItem>
-                <InfoLabel>GENDER</InfoLabel>
-                <InfoValue>
-                  {user.gender
-                    ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1)
-                    : "Not specified"}
-                </InfoValue>
-              </InfoItem>
-            </PlayerInfoGrid>
-            
-            {/* Mobile Stats - moved after info grid */}
+            {/* Mobile Stats - moved directly under name */}
             <StatsContainer>
               {rankData.map((item, index) => (
                 <StatBox key={index}>
@@ -10280,28 +10982,31 @@ const EditBioButton = styled.button`
             
             {/* Mobile Tabs - moved under RANK */}
             <MobileTabContainer>
-              <TabHeader>
-                <TabButton 
+              <MobileTabNavigation>
+                <MobileTabButton 
                   active={activeTab === 'about'} 
                   onClick={() => setActiveTab('about')}
+                  title="About"
                 >
                   About
-                </TabButton>
-                <TabButton 
+                </MobileTabButton>
+                <MobileTabButton 
                   active={activeTab === 'club'} 
                   onClick={() => setActiveTab('club')}
+                  title="Clubs"
                 >
-                  My Club
-                </TabButton>
+                  Clubs
+                </MobileTabButton>
                 {user?.roles?.includes("clubadmin") && (
-                  <TabButton 
+                  <MobileTabButton 
                     active={activeTab === 'tournaments'} 
                     onClick={() => setActiveTab('tournaments')}
+                    title="Tournaments"
                   >
                     Tournaments
-                  </TabButton>
+                  </MobileTabButton>
                 )}
-              </TabHeader>
+              </MobileTabNavigation>
               {renderTabContent()}
             </MobileTabContainer>
           </MobileAvatarSection>
@@ -10312,11 +11017,11 @@ const EditBioButton = styled.button`
               {userProfile?.avatar ? (
                 <Avatar
                   src={`http://localhost:5000${userProfile.avatar}`}
-                  alt={`${user?.firstName || 'User'} ${user?.lastName || ''}`}
+                  alt={`${user.firstName} ${user.lastName}`}
                 />
               ) : (
                 <>
-                  {user?.firstName ? (
+                  {user.firstName ? (
                     <InitialsFallback>
                       {user.firstName.charAt(0).toUpperCase()}
                     </InitialsFallback>
@@ -10335,50 +11040,47 @@ const EditBioButton = styled.button`
 
             <NameAndDetailsSection>
               <NameAndRanksRow>
-                <UserName>{`${user?.firstName || 'User'} ${user?.lastName || ''}`}</UserName>
-
-                <StatsContainer>
-                  {rankData.map((item, index) => (
-                    <StatBox key={index}>
-                      <StatCategory>{item.category}</StatCategory>
-                      <StatValue>#{item.rank}</StatValue>
-                      <StatLabel>Rank</StatLabel>
-                    </StatBox>
-                  ))}
-                </StatsContainer>
+                <UserName>{`${user.firstName} ${user.lastName}`}</UserName>
               </NameAndRanksRow>
 
              <PlayerInfoGrid>
-
-  <InfoItem>
-    <InfoLabel>PPL ID</InfoLabel>
-    <InfoValue>{user?.pplId || 'N/A'}</InfoValue>
-  </InfoItem>
-  <InfoItem>
-    <InfoLabel>DUPR ID</InfoLabel>
-    <InfoValue>{user?.duprId || 'N/A'}</InfoValue>
-  </InfoItem>
-
-                <InfoItem>
-                  <InfoLabel>AGE</InfoLabel>
-                  <InfoValue>
-                    {user.birthDate
-                      ? new Date().getFullYear() - new Date(user.birthDate).getFullYear()
-                      : "N/A"}{" "}
-                    Years
-                  </InfoValue>
-                </InfoItem>
-
-                <InfoItem>
-                  <InfoLabel>GENDER</InfoLabel>
-                  <InfoValue>
-                    {user.gender
-                      ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1)
-                      : "Not specified"}
-                  </InfoValue>
+               <InfoItem>
+                 <InfoLabel>PPL ID</InfoLabel>
+                 <InfoValue>{user?.pplId || 'N/A'}</InfoValue>
+               </InfoItem>
+               <InfoItem>
+                 <InfoLabel>DUPR ID</InfoLabel>
+                 <InfoValue>{user?.duprId || 'N/A'}</InfoValue>
+               </InfoItem>
+               <InfoItem>
+                 <InfoLabel>AGE</InfoLabel>
+                 <InfoValue>
+                   {user.birthDate
+                     ? new Date().getFullYear() - new Date(user.birthDate).getFullYear()
+                     : "N/A"}{" "}
+                   Years
+                 </InfoValue>
+               </InfoItem>
+               <InfoItem>
+                 <InfoLabel>GENDER</InfoLabel>
+                 <InfoValue>
+                   {user.gender
+                     ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1)
+                     : "Not specified"}
+                 </InfoValue>
                </InfoItem>
                </PlayerInfoGrid>
             </NameAndDetailsSection>
+
+            <StatsContainer>
+              {rankData.map((item, index) => (
+                <StatBox key={index}>
+                  <StatCategory>{item.category}</StatCategory>
+                  <StatValue>#{item.rank}</StatValue>
+                  <StatLabel>Rank</StatLabel>
+                </StatBox>
+              ))}
+            </StatsContainer>
           </DesktopLayout>
 
 
@@ -10502,12 +11204,90 @@ const EditBioButton = styled.button`
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  // Update bracket mode
-                  setBracketMode(prev => ({
-                    ...prev,
-                    [pendingBracketChange.categoryId]: pendingBracketChange.newMode
-                  }));
+                onClick={async () => {
+                  try {
+                    // Update bracket mode locally
+                    setBracketMode(prev => ({
+                      ...prev,
+                      [pendingBracketChange.categoryId]: pendingBracketChange.newMode
+                    }));
+                    
+                    // Save bracket mode to tournament data
+                    if (selectedTournament) {
+                      const updatedTournament = {
+                        ...selectedTournament,
+                        tournamentCategories: selectedTournament.tournamentCategories.map(cat => {
+                          if (cat._id === pendingBracketChange.categoryId) {
+                            return {
+                              ...cat,
+                              bracketMode: pendingBracketChange.newMode
+                            };
+                          }
+                          return cat;
+                        })
+                      };
+                      
+                      // Update local tournament state
+                      setSelectedTournament(updatedTournament);
+                      
+                      // Save to database
+                      const token = user?.token || localStorage.getItem('token');
+                      if (token) {
+                        console.log('🔄 Saving bracket mode to database...', {
+                          tournamentId: selectedTournament._id,
+                          categoryId: pendingBracketChange.categoryId,
+                          newMode: pendingBracketChange.newMode,
+                          updatedCategory: updatedTournament.tournamentCategories.find(cat => cat._id === pendingBracketChange.categoryId)
+                        });
+                        
+                        const response = await axios.put(
+                          `/api/tournaments/${selectedTournament._id}`,
+                          updatedTournament,
+                          { headers: { Authorization: `Bearer ${token}` } }
+                        );
+                        
+                        console.log('✅ Bracket mode saved to database successfully!', {
+                          status: response.status,
+                          data: response.data
+                        });
+                        
+                        // Refresh tournament data to verify save
+                        if (response.data?.tournament) {
+                          setSelectedTournament(response.data.tournament);
+                          console.log('🔄 Tournament data refreshed from server');
+                          
+                          // Verify the bracketMode was actually saved
+                          const savedCategory = response.data.tournament.tournamentCategories?.find(cat => cat._id === pendingBracketChange.categoryId);
+                          if (savedCategory) {
+                            console.log('✅ Verification - Saved bracketMode:', savedCategory.bracketMode);
+                            if (savedCategory.bracketMode === pendingBracketChange.newMode) {
+                              console.log('✅ SUCCESS: Bracket mode properly saved and verified!');
+                            } else {
+                              console.error('❌ WARNING: Bracket mode not saved properly!', {
+                                expected: pendingBracketChange.newMode,
+                                actual: savedCategory.bracketMode
+                              });
+                            }
+                          } else {
+                            console.error('❌ Category not found in response');
+                          }
+                        } else {
+                          console.log('⚠️ No tournament data in response, manually refetching...');
+                          
+                          // Manual refetch to verify
+                          const refetchResponse = await axios.get(`/api/tournaments/${selectedTournament._id}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                          });
+                          setSelectedTournament(refetchResponse.data);
+                          console.log('🔄 Manual refetch completed');
+                        }
+                      } else {
+                        console.error('❌ No authentication token found');
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error saving bracket mode:', error);
+                  }
                   
                   // Close modal
                   setShowBracketModal(false);
@@ -11745,7 +12525,6 @@ const EditBioButton = styled.button`
         </div>
       )}
       </ProfileContent>
-      <Footer />
     </ProfileContainer>
   );
 };

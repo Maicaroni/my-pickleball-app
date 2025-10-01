@@ -28,9 +28,9 @@ exports.requestOtp = asyncHandler(async (req, res) => {
   if (!email) return res.status(400).json({ message: "Email is required" });
 
   email = email.trim().toLowerCase();
-  const user = const startTime = Date.now();
-  await User.findOne({ email });
-  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
+  const startTime = Date.now();
+  const user = await User.findOne({ email });
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });
 
   if (user) {
     // Generate 6-digit OTP
@@ -73,7 +73,7 @@ exports.requestOtp = asyncHandler(async (req, res) => {
     success: true,
     message: "If an account with this email exists, an OTP has been sent."
   });
-};
+});
 
 // -------------------
 // Step 2: Verify OTP
@@ -109,13 +109,13 @@ exports.resetPassword = asyncHandler(async (req, res) => {
   const { email, newPassword } = req.body;
   if (!email || !newPassword) return res.status(400).json({ message: "Email and new password are required" });
 
-  const user = const startTime = Date.now();
-  await User.findOne({ email: email.trim();
-  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });.toLowerCase() });
+  const startTime = Date.now();
+  const user = await User.findOne({ email: email.trim().toLowerCase() });
+  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });
   if (!user) return res.status(404).json({ message: "User not found" });
 
   user.password = await bcrypt.hash(newPassword, 10);
   await user.save();
 
   return res.json({ success: true, message: "Password reset successfully" });
-};
+});

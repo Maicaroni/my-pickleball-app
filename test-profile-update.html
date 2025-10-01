@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile Update Test</title>
+</head>
+<body>
+    <h1>Profile Update Test</h1>
+    <button onclick="showToken()">Show Token</button>
+    <button onclick="testProfileUpdate()">Test Profile Update</button>
+    <div id="token-display"></div>
+    <div id="result"></div>
+
+    <script>
+        function showToken() {
+            const tokenDiv = document.getElementById('token-display');
+            
+            try {
+                // Get token from localStorage (if available)
+                const storedUser = localStorage.getItem('user');
+                let token = null;
+                
+                if (storedUser) {
+                    const userData = JSON.parse(storedUser);
+                    token = userData.token;
+                }
+                
+                if (token) {
+                    tokenDiv.innerHTML = `<h3>Token found:</h3><pre style="word-break: break-all; white-space: pre-wrap;">${token}</pre>`;
+                } else {
+                    tokenDiv.innerHTML = '<h3>No token found in localStorage. Please login first.</h3>';
+                }
+            } catch (error) {
+                tokenDiv.innerHTML = `<h3>Error getting token:</h3><pre>${error.message}</pre>`;
+            }
+        }
+
+        async function testProfileUpdate() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                // Get token from localStorage (if available)
+                const storedUser = localStorage.getItem('user');
+                let token = null;
+                
+                if (storedUser) {
+                    const userData = JSON.parse(storedUser);
+                    token = userData.token;
+                }
+                
+                if (!token) {
+                    resultDiv.innerHTML = 'No token found in localStorage. Please login first.';
+                    return;
+                }
+                
+                console.log('Using token:', token);
+                
+                const response = await fetch('http://localhost:5000/api/profiles/me', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        firstName: 'Test',
+                        lastName: 'User Updated'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<h3>Success:</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<h3>Error ${response.status}:</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<h3>Request failed:</h3><pre>${error.message}</pre>`;
+            }
+        }
+        
+        // Auto-show token on page load
+        window.onload = showToken;
+    </script>
+</body>
+</html>

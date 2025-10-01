@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import { useSuperAdminAuth } from "../../contexts/SuperAdminAuthContext";
 
 const SuperAdminLogin = () => {
-  const { setAuth } = useAuth();
+  const { login } = useSuperAdminAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -12,18 +11,14 @@ const SuperAdminLogin = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    try {
-      const res = await axios.post("/api/superadmin/login", {
-        email,
-        password,
-      });
-
-      const { token, admin } = res.data;
-      setAuth({ ...admin, role: "superadmin" }, token);
-
+    setError("");
+    
+    const result = await login(email, password);
+    
+    if (result.success) {
       navigate("/superadmin/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+    } else {
+      setError(result.message);
     }
   };
 

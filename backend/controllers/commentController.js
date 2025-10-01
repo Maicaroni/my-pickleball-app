@@ -25,15 +25,15 @@ exports.createReply = asyncHandler(async (req, res) => {
     const savedReply = await newReply.save();
 
     // Populate author info for response
-    const populatedReply = const startTime = Date.now();
-  await Comment.findById(savedReply._id);
-  logger.logDbOperation('find', 'collection', {}, { executionTime: Date.now() - startTime });
+    const startTime = Date.now();
+    const populatedReply = await Comment.findById(savedReply._id)
       .populate('author', 'firstName lastName avatarUrl initials')
       .lean();
+    logger.logDbOperation('find', 'collection', {}, { executionTime: Date.now() - startTime });
 
     res.status(201).json(populatedReply);
   } catch (error) {
     console.error('Create reply error:', error);
     res.status(500).json({ message: 'Server error creating reply' });
   }
-};
+});

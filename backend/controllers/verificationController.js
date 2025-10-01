@@ -59,7 +59,7 @@ exports.sendOtp = asyncHandler(async (req, res) => {
     console.error("Error sending OTP:", err);
     res.status(500).json({ message: "Failed to send OTP" });
   }
-};
+});
 
 // Verify OTP
 exports.verifyOtp = (req, res) => {

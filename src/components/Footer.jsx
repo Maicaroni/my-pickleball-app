@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import logoImg from '../../ppl-logo.svg';
 
@@ -7,6 +7,16 @@ const FooterContainer = styled.footer`
   padding: 40px 24px 20px;
   color: #333;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
+  
+  @media (max-width: 768px) {
+    padding: 30px 20px 80px; /* Add bottom padding for mobile nav clearance */
+    margin-top: 20px; /* Ensure some space from content above */
+    
+    /* Hide footer on mobile for profile page */
+    ${props => props.$hideOnMobileProfile && `
+      display: none;
+    `}
+  }
 `;
 
 const FooterContent = styled.div`
@@ -96,8 +106,11 @@ const Copyright = styled.div`
 `;
 
 function Footer() {
+  const location = useLocation();
+  const isProfilePage = location.pathname === '/profile';
+  
   return (
-    <FooterContainer>
+    <FooterContainer $hideOnMobileProfile={isProfilePage}>
       <FooterContent>
         <LogoSection>
           <img src={logoImg} alt="Philippine Pickleball League" />

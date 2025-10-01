@@ -288,7 +288,8 @@ exports.updateTournament = async (req, res) => {
     if (body.tournamentCategories) {
       console.log('🔄 BACKEND DEBUG - Received tournamentCategories:', {
         count: body.tournamentCategories.length,
-        firstCategory: JSON.stringify(body.tournamentCategories[0], null, 2)
+        firstCategory: JSON.stringify(body.tournamentCategories[0], null, 2),
+        bracketModeData: body.tournamentCategories.map(cat => ({ id: cat._id, division: cat.division, bracketMode: cat.bracketMode }))
       });
       
       tournament.tournamentCategories = body.tournamentCategories.map((updatedCat, i) => {
@@ -349,12 +350,26 @@ exports.updateTournament = async (req, res) => {
       tournament.tournamentPicture = `/uploads/tournaments/${req.files.tournamentPicture[0].filename}`;
     }
 
+    // Debug what's being saved
+    console.log('💾 BACKEND DEBUG - About to save tournament with bracketMode:', {
+      tournamentId: tournament._id,
+      categoriesWithBracketMode: tournament.tournamentCategories.map(cat => ({ 
+        id: cat._id, 
+        division: cat.division, 
+        bracketMode: cat.bracketMode 
+      }))
+    });
+
     await tournament.save();
 
     console.log('✅ BACKEND: Tournament updated with brackets:', {
       tournamentId: tournament._id,
       categoriesCount: tournament.tournamentCategories?.length || 0,
-      sampleGroup: JSON.stringify(tournament.tournamentCategories?.[0]?.groupStage, null, 2)
+      savedBracketModes: tournament.tournamentCategories.map(cat => ({ 
+        id: cat._id, 
+        division: cat.division, 
+        bracketMode: cat.bracketMode 
+      }))
     });
 
     res.json({ message: "Tournament updated successfully", tournament });

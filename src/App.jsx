@@ -1,7 +1,9 @@
 
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AuthProvider } from './contexts/AuthContext';
+import { SuperAdminAuthProvider } from './contexts/SuperAdminAuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import SuperAdminRoute from './components/SuperAdminRoute';
 import { Toaster } from 'react-hot-toast';
@@ -19,7 +21,7 @@ import Profile from './pages/Profile';
 import HostTournament from './pages/HostTournament';
 import Feedback from './pages/Feedback';
 import ForgotPassword from './pages/ForgotPassword';
-//import Settings from './pages/ForgotPassword';
+import Settings from './pages/Settings';
 
 import SuperAdminLogin from "./pages/SuperAdmin/SuperAdminLogin";
 import SuperAdminRegister from "./pages/SuperAdmin/SuperAdminRegister";
@@ -46,6 +48,52 @@ import 'antd/dist/reset.css'; // Ant Design v5 and up
 
 
 function AppContent() {
+  // Global scroll handler for mobile scrollbar
+  useEffect(() => {
+    let scrollTimer = null;
+    
+    const handleScroll = () => {
+      // Add scrolling class when scrolling starts
+      document.body.classList.add('scrolling');
+      
+      // Clear existing timer
+      if (scrollTimer) {
+        clearTimeout(scrollTimer);
+      }
+      
+      // Remove scrolling class after scrolling stops
+      scrollTimer = setTimeout(() => {
+        document.body.classList.remove('scrolling');
+      }, 1000); // Hide scrollbar 1 second after scrolling stops
+    };
+
+    // Only add scroll listener on mobile
+    if (window.innerWidth <= 768) {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    }
+
+    // Handle window resize to check mobile state
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+      } else {
+        window.removeEventListener('scroll', handleScroll);
+        document.body.classList.remove('scrolling');
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      if (scrollTimer) {
+        clearTimeout(scrollTimer);
+      }
+      document.body.classList.remove('scrolling');
+    };
+  }, []);
+
   return (
     <div className="app">
       <Routes>
@@ -53,6 +101,7 @@ function AppContent() {
         <Route path="/" element={<><Navbar /><Home /><Footer /></>} />
         <Route path="/forum" element={<><Navbar /><Forum /><Footer /></>} />
         <Route path="/tournament" element={<><Navbar /><Tournament /><Footer /></>} />
+        <Route path="/tournament/:tournamentId" element={<><Navbar /><Tournament /><Footer /></>} />
         <Route path="/ranks" element={<><Navbar /><Ranks /><Footer /></>} />
         <Route path="/clubs-courts" element={<><Navbar /><ClubsCourts /><Footer /></>} />
         <Route path="/signin" element={<><Navbar /><SignIn /><Footer /></>} />
@@ -65,11 +114,23 @@ function AppContent() {
         <Route path="/host-tournament" element={<><Navbar /><HostTournament /><Footer /></>} />
         <Route path="/feedback" element={<><Navbar /><Feedback /><Footer /></>} />
         <Route path="/forgot-password" element={<><Navbar /><ForgotPassword /><Footer /></>} />
-       {/*  <Route path="/settings" element={<><Navbar /><Settings /><Footer /></>} />*/}
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <><Navbar /><Settings /><Footer /></>
+          </ProtectedRoute>
+        } />
 
         {/* SuperAdmin Auth Pages */}
-        <Route path="/superadmin/register" element={<SuperAdminRegister />} />
-        <Route path="/superadmin/login" element={<SuperAdminLogin />} />
+        <Route path="/superadmin/register" element={
+          <SuperAdminAuthProvider>
+            <SuperAdminRegister />
+          </SuperAdminAuthProvider>
+        } />
+        <Route path="/superadmin/login" element={
+          <SuperAdminAuthProvider>
+            <SuperAdminLogin />
+          </SuperAdminAuthProvider>
+        } />
 
         {/* SuperAdmin Layout with Nested Routes */}
        <Route path="/superadmin" element={
@@ -102,7 +163,9 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <SuperAdminAuthProvider>
+        <AppContent />
+      </SuperAdminAuthProvider>
     </AuthProvider>
   );
 }

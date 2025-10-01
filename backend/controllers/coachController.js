@@ -1,64 +1,52 @@
 const User = require("../models/User");
-
-const logger = require('../utils/logger');
-const { asyncHandler, AppError } = require('../middleware/errorHandler');
-
-
+const logger = require("../utils/logger");
+const { asyncHandler, AppError } = require("../middleware/errorHandler");
 const bcrypt = require("bcryptjs");
 
 // Get all verified coaches
 exports.getVerifiedCoaches = asyncHandler(async (req, res) => {
-  const coaches = const startTime = Date.now();
-  await User.find({ roles: { $in: ['coach'] }, isVerifiedCoach: true });
-  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
+  const startTime = Date.now();
+  const coaches = await User.find({ roles: { $in: ["coach"] }, isVerifiedCoach: true });
+  logger.logDbOperation("find", "users", {}, { executionTime: Date.now() - startTime });
   res.json(coaches);
-};
+});
 
 // Get coach requests (from players who applied)
 exports.getCoachRequests = asyncHandler(async (req, res) => {
   try {
-    const pending = const startTime = Date.now();
-  await User.find({
-      roles: { $in: ['player'] },
+    const startTime = Date.now();
+    const pending = await User.find({
+      roles: { $in: ["player"] },
       "coachRequest.status": "pending",
-      coachRequest: { $exists: true, $ne: null }
+      coachRequest: { $exists: true, $ne: null },
     });
-  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
+    logger.logDbOperation("find", "users", {}, { executionTime: Date.now() - startTime });
     res.json(pending);
   } catch (err) {
     console.error("Error fetching coach requests:", err);
     res.status(500).json({ message: "Server error" });
   }
-};
+});
 
 // Create new coach
 exports.createUser = asyncHandler(async (req, res) => {
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      username,
-      birthDate,
-      roles,
-      isVerifiedCoach
-    } = req.body;
+    const { firstName, lastName, email, password, username, birthDate, roles, isVerifiedCoach } = req.body;
 
     if (!birthDate) {
       return res.status(400).json({ message: "Birthdate is required." });
     }
 
-    const existingUser = const startTime = Date.now();
-  await User.findOne({ email });
-  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
+    let startTime = Date.now();
+    const existingUser = await User.findOne({ email });
+    logger.logDbOperation("find", "users", {}, { executionTime: Date.now() - startTime });
     if (existingUser) {
       return res.status(400).json({ message: "Email already in use" });
     }
 
-    const existingUsername = const startTime = Date.now();
-  await User.findOne({ username });
-  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
+    startTime = Date.now();
+    const existingUsername = await User.findOne({ username });
+    logger.logDbOperation("find", "users", {}, { executionTime: Date.now() - startTime });
     if (existingUsername) {
       return res.status(400).json({ message: "Username already in use" });
     }
@@ -72,8 +60,8 @@ exports.createUser = asyncHandler(async (req, res) => {
       username,
       password: hashedPassword,
       birthDate,
-      roles: roles || ['coach'],
-      isVerifiedCoach: typeof isVerifiedCoach === 'boolean' ? isVerifiedCoach : true
+      roles: roles || ["coach"],
+      isVerifiedCoach: typeof isVerifiedCoach === "boolean" ? isVerifiedCoach : true,
     });
 
     await newUser.save();
@@ -82,26 +70,26 @@ exports.createUser = asyncHandler(async (req, res) => {
     console.error("Error creating coach:", err);
     res.status(500).json({ message: "Server error" });
   }
-};
+});
 
+// Revert coach to player
 exports.revertCoachToPlayer = asyncHandler(async (req, res) => {
-  
-    const { id } = req.params;
-    const user = const startTime = Date.now();
-  await User.findById(id);
-  logger.logDbOperation('find', 'users', {}, { executionTime: Date.now() - startTime });;
-    if (!user) return res.status(404).json({ message: "User not found" });
+  const { id } = req.params;
+  const startTime = Date.now();
+  const user = await User.findById(id);
+  logger.logDbOperation("find", "users", {}, { executionTime: Date.now() - startTime });
 
-    user.roles = user.roles.filter(role => role !== "coach");
-    if (!user.roles.includes("player")) {
-      user.roles.push("player");
-    }
-    user.isVerifiedCoach = false;
+  if (!user) return res.status(404).json({ message: "User not found" });
 
-    await user.save();
-    res.json({ message: "Coach reverted to player successfully" });
-  
-};
+  user.roles = user.roles.filter((role) => role !== "coach");
+  if (!user.roles.includes("player")) {
+    user.roles.push("player");
+  }
+  user.isVerifiedCoach = false;
+
+  await user.save();
+  res.json({ message: "Coach reverted to player successfully" });
+});
 
 // Update coach profile (for edit functionality)
 exports.editCoach = asyncHandler(async (req, res) => {
@@ -118,9 +106,7 @@ exports.editCoach = asyncHandler(async (req, res) => {
     console.error("Error editing coach:", err);
     res.status(500).json({ message: "Server error" });
   }
-};
-
-
+});
 
 // For approving coach requests
 exports.updateCoachStatus = asyncHandler(async (req, res) => {
@@ -128,4 +114,4 @@ exports.updateCoachStatus = asyncHandler(async (req, res) => {
   const updates = req.body;
   const updatedUser = await User.findByIdAndUpdate(id, updates, { new: true });
   res.json(updatedUser);
-};
+});

@@ -14,9 +14,9 @@ exports.reportPost = asyncHandler(async (req, res) => {
     const { postId } = req.params;
     const userId = req.user.id; // ✅ authMiddleware ensures this exists
 
-    const post = const startTime = Date.now();
-  await Post.findById(postId);
-  logger.logDbOperation('find', 'collection', {}, { executionTime: Date.now() - startTime });;
+    const startTime = Date.now();
+    const post = await Post.findById(postId);
+    logger.logDbOperation('find', 'collection', {}, { executionTime: Date.now() - startTime });
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
     const report = await Report.create({
@@ -28,22 +28,22 @@ exports.reportPost = asyncHandler(async (req, res) => {
 
     res.status(201).json({ message: 'Report submitted successfully', report });
   
-};
+});
 
 // Superadmin: get all reports
 exports.getAllReports = asyncHandler(async (req, res) => {
   console.log('Fetching reports for user:', req.user);
   
-    const reports = const startTime = Date.now();
-  await Report.find();
-  logger.logDbOperation('find', 'collection', {}, { executionTime: Date.now() - startTime });
+    const startTime2 = Date.now();
+    const reports = await Report.find()
       .populate('reportedBy', 'firstName lastName email')
       .populate('post', 'content');
+    logger.logDbOperation('find', 'collection', {}, { executionTime: Date.now() - startTime2 });
 
     console.log('Reports fetched:', reports);
     res.status(200).json(reports);
   
-};
+});
 
 
 
@@ -58,7 +58,7 @@ exports.resolveReport = asyncHandler(async (req, res) => {
     if (!report) return res.status(404).json({ message: 'Report not found' });
     res.status(200).json(report);
   
-};
+});
 
 // Superadmin: delete report
 exports.deleteReport = asyncHandler(async (req, res) => {
@@ -67,4 +67,4 @@ exports.deleteReport = asyncHandler(async (req, res) => {
     if (!report) return res.status(404).json({ message: 'Report not found' });
     res.status(200).json({ message: 'Report deleted successfully' });
   
-};
+});

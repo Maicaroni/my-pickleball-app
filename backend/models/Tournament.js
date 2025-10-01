@@ -58,6 +58,7 @@ const tournamentCategorySchema = new mongoose.Schema({
   ageCategory: { type: String },
   skillLevel: { type: String, required: true },
   maxParticipants: { type: Number, required: true },
+  bracketMode: { type: Number, default: 4 }, // Number of brackets (1, 2, 4, 8)
   groupStage: { type: groupStageSchema, default: null },
   eliminationMatches: { type: eliminationMatchesSchema, default: null }
 });

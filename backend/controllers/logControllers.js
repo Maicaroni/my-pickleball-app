@@ -7,12 +7,14 @@ const { asyncHandler, AppError } = require('../middleware/errorHandler');
 
 exports.getAllLogs = asyncHandler(async (req, res) => {
   
-    const logs = const startTime = Date.now();
-  await Log.find();
-  logger.logDbOperation('find', 'collection', {}, { executionTime: Date.now() - startTime });.populate("user", "firstName lastName email roles").sort({ timestamp: -1 });
+    const startTime = Date.now();
+    const logs = await Log.find()
+      .populate("user", "firstName lastName email roles")
+      .sort({ timestamp: -1 });
+    logger.logDbOperation('find', 'collection', {}, { executionTime: Date.now() - startTime });
     res.json(logs);
-  
-};
+
+});
 
 exports.createLog = async (userId, action, description) => {
   try {
@@ -20,6 +22,6 @@ exports.createLog = async (userId, action, description) => {
       user: userId,
       action,
       description,
-    });
+    }
     await log.save();
   });

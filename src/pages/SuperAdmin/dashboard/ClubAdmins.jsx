@@ -4,12 +4,12 @@ import Sidebar from "../../../components/Superadmin/SuperAdminSidebar";
 import Navbar from "../../../components/Superadmin/SuperAdminNavbar";
 import { Button, Modal, message, Input } from "antd";
 import { FaTrash, FaUserPlus} from "react-icons/fa";
-import { useAuth } from "../../../contexts/AuthContext";
+import { useSuperAdminAuth } from "../../../contexts/SuperAdminAuthContext";
 
 
 const SuperAdminClubAdmins = () => {
-  const { user, isAuthenticated } = useAuth();
-  const token = user?.token;
+  const { getToken, isAuthenticated } = useSuperAdminAuth();
+  const token = getToken();
 
   const [activeTab, setActiveTab] = useState("pending");
   const [clubAdmins, setClubAdmins] = useState({ pending: [], approved: [] });

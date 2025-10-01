@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios from '../../../utils/axiosConfig';
 import Sidebar from '../../../components/Superadmin/SuperAdminSidebar';
 import Navbar from '../../../components/Superadmin/SuperAdminNavbar';
 import { Button, Modal, message, Input, Spin } from 'antd';
 import { FaCheck, FaTimes, FaEye, FaTrash } from 'react-icons/fa';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useSuperAdminAuth } from '../../../contexts/SuperAdminAuthContext';
 
 const SuperAdminPosts = () => {
-  const { user } = useAuth();
-  const token = user?.token;
+  const { admin } = useSuperAdminAuth();
+  const token = localStorage.getItem('superadminToken');
 
   const [activeTab, setActiveTab] = useState('pending'); 
   const [postsData, setPostsData] = useState({ pending: [], approved: [], rejected: [] });
@@ -27,7 +27,7 @@ const SuperAdminPosts = () => {
     if (!token) return;
     try {
       setLoading(true);
-      const res = await axios.get(`/api/posts?status=${status}`, axiosConfig);
+      const res = await axios.get(`/posts?status=${status}`, axiosConfig);
       setPostsData(prev => ({ ...prev, [status]: res.data.posts || [] }));
     } catch (err) {
       console.error('Get posts error:', err.response || err);
@@ -67,7 +67,7 @@ const SuperAdminPosts = () => {
     if (!token) return message.error("No token found");
     setLoadingPostId(postId);
     try {
-      await axios.patch(`/api/posts/${postId}/approve`, {}, axiosConfig);
+      await axios.patch(`/posts/${postId}/approve`, {}, axiosConfig);
       message.success('Post approved ✅');
       movePost(postId, 'approved');
     } catch (err) {
@@ -80,7 +80,7 @@ const SuperAdminPosts = () => {
     if (!token) return message.error("No token found");
     setLoadingPostId(postId);
     try {
-      await axios.patch(`/api/posts/${postId}/reject`, {}, axiosConfig);
+      await axios.patch(`/posts/${postId}/reject`, {}, axiosConfig);
       message.success('Post rejected ❌');
       movePost(postId, 'rejected');
     } catch (err) {
@@ -95,7 +95,7 @@ const SuperAdminPosts = () => {
     if (!postToDelete) return;
     setLoadingPostId(postToDelete._id);
     try {
-      await axios.delete(`/api/posts/superadmin/${postToDelete._id}`, axiosConfig);
+      await axios.delete(`/posts/superadmin/${postToDelete._id}`, axiosConfig);
       message.success('Post deleted.');
       removePost(postToDelete._id);
     } catch (err) {

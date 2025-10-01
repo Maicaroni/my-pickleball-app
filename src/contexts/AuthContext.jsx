@@ -47,6 +47,15 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
+  // Add a function to update user profile data
+  const updateUserProfile = (profileData) => {
+    if (user) {
+      const updatedUser = { ...user, ...profileData };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+  };
+
   const login = async (email, password) => {
     try {
       // Sanitize inputs
@@ -58,14 +67,21 @@ export const AuthProvider = ({ children }) => {
         password: sanitizedPassword,
       });
 
-      const userData = response.data;
+      const { token, user: userInfo, profile } = response.data;
       
       // Validate token before storing
-      if (userData.token && validateToken(userData.token)) {
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
-        return { success: true, data: userData };
+      if (token && validateToken(token)) {
+        // Merge user and profile data
+        const mergedUserData = {
+          token,
+          ...userInfo,
+          ...(profile || {}), // Merge profile data if it exists
+        };
+        
+        setUser(mergedUserData);
+        localStorage.setItem('user', JSON.stringify(mergedUserData));
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        return { success: true, data: mergedUserData };
       } else {
         throw new Error('Invalid token received');
       }
@@ -107,16 +123,22 @@ export const AuthProvider = ({ children }) => {
     delete axios.defaults.headers.common['Authorization'];
   };
 
-  // Token refresh function
   const refreshToken = async () => {
     try {
       const response = await axios.post('/api/auth/refresh');
-      const userData = response.data;
+      const { token, user: userInfo, profile } = response.data;
       
-      if (userData.token && validateToken(userData.token)) {
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+      if (token && validateToken(token)) {
+        // Merge user and profile data
+        const mergedUserData = {
+          token,
+          ...userInfo,
+          ...(profile || {}), // Merge profile data if it exists
+        };
+        
+        setUser(mergedUserData);
+        localStorage.setItem('user', JSON.stringify(mergedUserData));
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         return true;
       }
       return false;
@@ -134,6 +156,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     refreshToken,
+    updateUserProfile,
   };
 
   return (
