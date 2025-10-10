@@ -8187,14 +8187,37 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                          fontSize: '16px',
                                          flexShrink: 0
                                        }}>
-{(player?.playerName || "")
-  .replace(/["'].*?["']/g, "")
-  .trim()
-  .split(" ")
-  .filter(Boolean)            // remove empty pieces
-  .map(n => n[0] || "")       // first letter safely
-  .join("")
-  .toUpperCase() || "?"}      
+{(() => {
+  // Check if this is a team category
+  const categoryData = selectedTournament.tournamentCategories && 
+    Object.values(selectedTournament.tournamentCategories).find(cat => 
+      cat._id === player.category || 
+      cat._id.toString() === player.category || 
+      cat.division === player.category
+    );
+  
+  const isTeamCategory = categoryData?.division?.toLowerCase().includes('team');
+  
+  if (isTeamCategory) {
+    // Show team name initials for team categories
+    return (player.teamName || "Team")
+      .split(" ")
+      .filter(Boolean)
+      .map(n => n[0] || "")
+      .join("")
+      .toUpperCase() || "T";
+  } else {
+    // Show player name initials for individual categories
+    return (player?.playerName || "")
+      .replace(/["'].*?["']/g, "")
+      .trim()
+      .split(" ")
+      .filter(Boolean)
+      .map(n => n[0] || "")
+      .join("")
+      .toUpperCase() || "?";
+  }
+})()}
                                        </div>
                                        <div style={{ flex: 1 }}>
                                      {/* Player Name - Left Aligned */}
@@ -8205,7 +8228,25 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                         marginBottom: '12px',
                                         textAlign: 'left'
                                       }}>
-                                        {(player?.playerName || "").replace(/["'].*?["']/g, "").trim()}
+                                        {(() => {
+                                          // Check if this is a team category
+                                          const categoryData = selectedTournament.tournamentCategories && 
+                                            Object.values(selectedTournament.tournamentCategories).find(cat => 
+                                              cat._id === player.category || 
+                                              cat._id.toString() === player.category || 
+                                              cat.division === player.category
+                                            );
+                                          
+                                          const isTeamCategory = categoryData?.division?.toLowerCase().includes('team');
+                                          
+                                          if (isTeamCategory) {
+                                            // Show team name for team categories
+                                            return player.teamName || 'Team Name Not Available';
+                                          } else {
+                                            // Show player name for individual categories
+                                            return (player?.playerName || "").replace(/["'].*?["']/g, "").trim();
+                                          }
+                                        })()}
                                       </div>
                                       
                                       {/* Player Details - Show team name for team categories, individual details for others */}
@@ -8237,32 +8278,8 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                         const isDoublesCategory = categoryData?.division?.toLowerCase().includes('doubles');
                                         
                                         if (isTeamCategory) {
-                                          // Show only team name for team categories
-                                          return (
-                                            <div style={{
-                                              background: '#fef3c7',
-                                              padding: '12px',
-                                              borderRadius: '8px',
-                                              marginBottom: '16px',
-                                              textAlign: 'center'
-                                            }}>
-                                              <div style={{
-                                                fontSize: '0.8rem',
-                                                color: '#92400e',
-                                                fontWeight: '500',
-                                                marginBottom: '4px'
-                                              }}>
-                                                TEAM NAME
-                                              </div>
-                                              <div style={{
-                                                fontSize: '1rem',
-                                                fontWeight: '700',
-                                                color: '#f59e0b'
-                                              }}>
-                                                {player.teamName || 'Team Name Not Available'}
-                                              </div>
-                                            </div>
-                                          );
+                                          // For team categories, don't show additional details since team name is already displayed above
+                                          return null;
                                         } else {
                                           // Show individual player details for non-team categories
                                           return (
@@ -8603,7 +8620,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                             e.target.style.transform = 'translateY(0)';
                                             e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.2)';
                                           }}
-                                          onClick={() => {
+                                          onClick={async () => {
                                             // Check if this is a team category
                                             const category = selectedTournament.tournamentCategories &&
                                               Object.values(selectedTournament.tournamentCategories).find(cat => cat._id.toString() === player.category);
@@ -8612,18 +8629,89 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                             
                                             if (isTeamCategory) {
                                               // Find the full registration data for team members
-                                              const registration = selectedTournament.registrations?.find(reg => 
-                                                reg.player?._id === player.playerId && 
-                                                reg.category === player.category &&
-                                                reg.status === 'pending'
-                                              );
+                                              // The player object IS the registration, so we can use it directly
+                                              const registration = player;
+                                              
+                                              // Debug logging for team registration
+                                              console.log('🔍 TEAM DEBUG - Registration lookup:', {
+                                                playerData: player,
+                                                playerId: player.playerId,
+                                                category: player.category,
+                                                foundRegistration: registration,
+                                                registrationTeamMembers: registration?.teamMembers,
+                                                registrationTeamName: registration?.teamName,
+                                                allRegistrations: selectedTournament.registrations?.map(r => ({
+                                                  regPlayerId: r.player?._id || r.player,
+                                                  category: r.category,
+                                                  status: r.status,
+                                                  teamName: r.teamName,
+                                                  teamMembers: r.teamMembers,
+                                                  hasTeamMembers: !!r.teamMembers && r.teamMembers.length > 0
+                                                }))
+                                              });
+                                              
+                                              // Fetch detailed team member information
+                                              let teamMembersData = [];
+                                              if (registration?.teamMembers && registration.teamMembers.length > 0) {
+                                                console.log('🔍 Fetching team members:', registration.teamMembers);
+                                                try {
+                                                  const teamMemberPromises = registration.teamMembers.map(async (memberId) => {
+                                                    try {
+                                                      console.log('🔍 Fetching member:', memberId);
+                                                      const storedUser = localStorage.getItem('user');
+                                                      const token = storedUser ? JSON.parse(storedUser).token : null;
+                                                      const response = await fetch(`http://localhost:5000/api/users/${memberId}`, {
+                                                        headers: {
+                                                          'Authorization': `Bearer ${token}`
+                                                        }
+                                                      });
+                                                      if (response.ok) {
+                                                        const memberData = await response.json();
+                                                        console.log('✅ Member data received:', memberData);
+                                                        return memberData;
+                                                      } else {
+                                                        console.error('❌ Failed to fetch member:', memberId, response.status);
+                                                      }
+                                                      return null;
+                                                    } catch (error) {
+                                                      console.error('❌ Error fetching team member:', memberId, error);
+                                                      return null;
+                                                    }
+                                                  });
+                                                  
+                                                  teamMembersData = await Promise.all(teamMemberPromises);
+                                                  teamMembersData = teamMembersData.filter(member => member !== null);
+                                                  console.log('🔍 Final team members data:', teamMembersData);
+                                                } catch (error) {
+                                                  console.error('❌ Error fetching team members:', error);
+                                                }
+                                              } else {
+                                                console.log('⚠️ No team members found in registration:', {
+                                                  hasRegistration: !!registration,
+                                                  hasTeamMembers: !!registration?.teamMembers,
+                                                  teamMembersLength: registration?.teamMembers?.length || 0,
+                                                  teamMembers: registration?.teamMembers
+                                                });
+                                                
+                                                // For registrations with empty team members, show a helpful message
+                                                teamMembersData = [{
+                                                  _id: 'placeholder',
+                                                  firstName: 'No team members',
+                                                  lastName: 'were saved with this registration',
+                                                  email: 'This may be an older registration created before team functionality was fully implemented.',
+                                                  gender: 'unknown',
+                                                  duprRatings: { singles: 0, doubles: 0 },
+                                                  isPlaceholder: true
+                                                }];
+                                              }
                                               
                                               setSelectedTeamRegistration({
                                                 playerName: player.playerName,
                                                 playerId: player.playerId,
                                                 teamName: registration?.teamName || 'Unknown Team',
-                                                teamMembers: registration?.teamMembers || [],
-                                                category: category?.division + ' - ' + category?.skillLevel
+                                                teamMembers: teamMembersData, // Use the fetched detailed data
+                                                category: category?.division + ' - ' + category?.skillLevel,
+                                                registration: registration // Include full registration data
                                               });
                                               setShowTeamMembersModal(true);
                                             } else {
@@ -8679,6 +8767,43 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                               // Show payment proof for individual categories
                                               // Use player.playerObject which contains the actual registration data
                                               const regData = player.playerObject || registration;
+                                              
+                                              // Check if this is a team category
+                                              const isTeamCategory = player.category && 
+                                                selectedTournament?.tournamentCategories?.find(cat => 
+                                                  cat._id === player.category
+                                                )?.division?.toLowerCase().includes('team');
+
+                                              let teamMembersData = [];
+                                              
+                                              // If it's a team category, fetch team member details
+                                              if (isTeamCategory && regData?.teamMembers && regData.teamMembers.length > 0) {
+                                                try {
+                                                  // Fetch detailed team member information
+                                                  const teamMemberPromises = regData.teamMembers.map(async (memberId) => {
+                                                    try {
+                                                      const response = await fetch(`http://localhost:5000/api/users/${memberId}`, {
+                                                        headers: {
+                                                          'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                                        }
+                                                      });
+                                                      if (response.ok) {
+                                                        return await response.json();
+                                                      }
+                                                      return null;
+                                                    } catch (error) {
+                                                      console.error('Error fetching team member:', error);
+                                                      return null;
+                                                    }
+                                                  });
+                                                  
+                                                  teamMembersData = await Promise.all(teamMemberPromises);
+                                                  teamMembersData = teamMembersData.filter(member => member !== null);
+                                                } catch (error) {
+                                                  console.error('Error fetching team members:', error);
+                                                }
+                                              }
+                                              
                                               setSelectedPlayerAttachment({
                                                 playerName: player.playerName,
                                                 // Only show PPLID for security, prioritize registration data structure
@@ -8686,6 +8811,12 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                 // Use registration data structure - try both new and old field names
                                                 email: regData?.playerEmail || regData?.email || 'Not provided',
                                                 phoneNumber: regData?.playerPhone || regData?.contactNumber || 'Not provided',
+                                                emergencyContact: regData?.emergencyContact || 'Not provided',
+                                                emergencyPhone: regData?.emergencyPhone || 'Not provided',
+                                                // Team-specific data
+                                                isTeamCategory,
+                                                teamName: regData?.teamName || 'Not provided',
+                                                teamMembers: teamMembersData,
                                                 // Use proof of payment from registration data - construct full URL if needed
                                                 attachmentUrl: regData?.proofOfPayment ? 
                                                   (regData.proofOfPayment.startsWith('http') ? 
@@ -9267,7 +9398,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                               e.target.style.backgroundColor = '#3b82f6';
                                               e.target.style.transform = 'translateY(0)';
                                             }}
-                                            onClick={() => {
+                                            onClick={async () => {
                                               console.log(`Generate Bracket ${bracket} for category:`, category.division);
                                               setSelectedBrackets(prev => ({
                                                 ...prev,
@@ -12722,8 +12853,264 @@ const EditBioButton = styled.button`
                       {selectedPlayerAttachment.playerId}
                     </div>
                   </div>
+                  {selectedPlayerAttachment.emergencyContact && selectedPlayerAttachment.emergencyContact !== 'Not provided' && (
+                    <div>
+                      <div style={{
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        color: '#64748b',
+                        marginBottom: '4px'
+                      }}>
+                        Emergency Contact
+                      </div>
+                      <div style={{
+                        fontSize: '0.875rem',
+                        color: '#334155',
+                        fontFamily: 'monospace',
+                        backgroundColor: 'white',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        {selectedPlayerAttachment.emergencyContact}
+                      </div>
+                    </div>
+                  )}
+                  {selectedPlayerAttachment.emergencyPhone && selectedPlayerAttachment.emergencyPhone !== 'Not provided' && (
+                    <div>
+                      <div style={{
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        color: '#64748b',
+                        marginBottom: '4px'
+                      }}>
+                        Emergency Phone
+                      </div>
+                      <div style={{
+                        fontSize: '0.875rem',
+                        color: '#334155',
+                        fontFamily: 'monospace',
+                        backgroundColor: 'white',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        {selectedPlayerAttachment.emergencyPhone}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Team Information Section - Only show for team categories */}
+              {selectedPlayerAttachment.isTeamCategory && (
+                <>
+                  <div style={{
+                    backgroundColor: '#f0f9ff',
+                    padding: '20px',
+                    borderRadius: '12px',
+                    border: '1px solid #0ea5e9'
+                  }}>
+                    <h3 style={{
+                      fontSize: '1.125rem',
+                      fontWeight: '600',
+                      color: '#234255',
+                      margin: '0 0 16px 0'
+                    }}>
+                      Team Information
+                    </h3>
+                    <div style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: '#64748b',
+                      marginBottom: '4px'
+                    }}>
+                      Team Name
+                    </div>
+                    <div style={{
+                      fontSize: '1rem',
+                      color: '#334155',
+                      fontWeight: '600',
+                      backgroundColor: 'white',
+                      padding: '12px 16px',
+                      borderRadius: '8px',
+                      border: '1px solid #e2e8f0',
+                      marginBottom: '16px'
+                    }}>
+                      {selectedPlayerAttachment.teamName}
+                    </div>
+                  </div>
+
+                  {/* Team Members Section */}
+                  {selectedPlayerAttachment.teamMembers && selectedPlayerAttachment.teamMembers.length > 0 && (
+                    <div style={{
+                      backgroundColor: '#f0fdf4',
+                      padding: '20px',
+                      borderRadius: '12px',
+                      border: '1px solid #22c55e'
+                    }}>
+                      <h3 style={{
+                        fontSize: '1.125rem',
+                        fontWeight: '600',
+                        color: '#234255',
+                        margin: '0 0 16px 0'
+                      }}>
+                        Team Members
+                      </h3>
+                      
+                      {/* Separate male and female members */}
+                      {(() => {
+                        const maleMembers = selectedPlayerAttachment.teamMembers.filter(member => 
+                          member.gender?.toLowerCase() === 'male'
+                        );
+                        const femaleMembers = selectedPlayerAttachment.teamMembers.filter(member => 
+                          member.gender?.toLowerCase() === 'female'
+                        );
+                        
+                        return (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            {/* Male Members */}
+                            <div>
+                              <h4 style={{
+                                fontSize: '1rem',
+                                fontWeight: '600',
+                                color: '#1e40af',
+                                margin: '0 0 12px 0'
+                              }}>
+                                Male Players ({maleMembers.length}/2 required)
+                              </h4>
+                              {maleMembers.map((member, index) => (
+                                <div key={`male-${index}`} style={{
+                                  backgroundColor: 'white',
+                                  padding: '12px',
+                                  borderRadius: '8px',
+                                  border: '1px solid #e2e8f0',
+                                  marginBottom: '8px'
+                                }}>
+                                  <div style={{
+                                    fontSize: '0.875rem',
+                                    fontWeight: '600',
+                                    color: '#334155'
+                                  }}>
+                                    {member.firstName} {member.lastName}
+                                    {index >= 2 && (
+                                      <span style={{
+                                        fontSize: '0.75rem',
+                                        color: '#6b7280',
+                                        fontWeight: '400',
+                                        marginLeft: '8px'
+                                      }}>
+                                        (Substitute)
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div style={{
+                                    fontSize: '0.75rem',
+                                    color: '#6b7280',
+                                    marginTop: '4px'
+                                  }}>
+                                    {member.email}
+                                  </div>
+                                  {member.duprId && (
+                                    <div style={{
+                                      fontSize: '0.75rem',
+                                      color: '#6b7280',
+                                      marginTop: '2px'
+                                    }}>
+                                      DUPR: {member.duprId}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                              {maleMembers.length < 2 && (
+                                <div style={{
+                                  fontSize: '0.875rem',
+                                  color: '#ef4444',
+                                  fontStyle: 'italic',
+                                  padding: '8px',
+                                  backgroundColor: '#fef2f2',
+                                  borderRadius: '6px',
+                                  border: '1px solid #fecaca'
+                                }}>
+                                  Missing {2 - maleMembers.length} required male player(s)
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Female Members */}
+                            <div>
+                              <h4 style={{
+                                fontSize: '1rem',
+                                fontWeight: '600',
+                                color: '#be185d',
+                                margin: '0 0 12px 0'
+                              }}>
+                                Female Players ({femaleMembers.length}/2 required)
+                              </h4>
+                              {femaleMembers.map((member, index) => (
+                                <div key={`female-${index}`} style={{
+                                  backgroundColor: 'white',
+                                  padding: '12px',
+                                  borderRadius: '8px',
+                                  border: '1px solid #e2e8f0',
+                                  marginBottom: '8px'
+                                }}>
+                                  <div style={{
+                                    fontSize: '0.875rem',
+                                    fontWeight: '600',
+                                    color: '#334155'
+                                  }}>
+                                    {member.firstName} {member.lastName}
+                                    {index >= 2 && (
+                                      <span style={{
+                                        fontSize: '0.75rem',
+                                        color: '#6b7280',
+                                        fontWeight: '400',
+                                        marginLeft: '8px'
+                                      }}>
+                                        (Substitute)
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div style={{
+                                    fontSize: '0.75rem',
+                                    color: '#6b7280',
+                                    marginTop: '4px'
+                                  }}>
+                                    {member.email}
+                                  </div>
+                                  {member.duprId && (
+                                    <div style={{
+                                      fontSize: '0.75rem',
+                                      color: '#6b7280',
+                                      marginTop: '2px'
+                                    }}>
+                                      DUPR: {member.duprId}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                              {femaleMembers.length < 2 && (
+                                <div style={{
+                                  fontSize: '0.875rem',
+                                  color: '#ef4444',
+                                  fontStyle: 'italic',
+                                  padding: '8px',
+                                  backgroundColor: '#fef2f2',
+                                  borderRadius: '6px',
+                                  border: '1px solid #fecaca'
+                                }}>
+                                  Missing {2 - femaleMembers.length} required female player(s)
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </>
+              )}
 
               {/* Payment Proof Section */}
               <div style={{
@@ -13304,73 +13691,162 @@ const EditBioButton = styled.button`
               overflow: 'auto'
             }}>
               {selectedTeamRegistration.teamMembers && selectedTeamRegistration.teamMembers.length > 0 ? (
-                <div style={{
-                  display: 'grid',
-                  gap: '16px'
-                }}>
-                  {selectedTeamRegistration.teamMembers.map((member, index) => (
-                    <div key={member._id || index} style={{
+                <div>
+                  {/* Registration Details */}
+                  {selectedTeamRegistration.registration && (
+                    <div style={{
+                      marginBottom: '24px',
+                      padding: '20px',
                       background: '#f8fafc',
                       border: '1px solid #e2e8f0',
-                      borderRadius: '12px',
-                      padding: '20px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '16px'
+                      borderRadius: '12px'
                     }}>
-                      {/* Member Avatar */}
-                      <div style={{
-                        width: '50px',
-                        height: '50px',
-                        borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontSize: '1.2rem',
-                        fontWeight: '600'
+                      <h3 style={{
+                        fontSize: '1.1rem',
+                        fontWeight: '600',
+                        color: '#1e293b',
+                        marginBottom: '12px'
                       }}>
-                        {(member.firstName?.[0] || 'M') + (member.lastName?.[0] || '')}
-                      </div>
-                      
-                      {/* Member Info */}
-                      <div style={{ flex: 1 }}>
-                        <div style={{
-                          fontSize: '1.1rem',
-                          fontWeight: '600',
-                          color: '#1e293b',
-                          marginBottom: '4px'
-                        }}>
-                          {member.firstName} {member.lastName}
-                        </div>
-                        <div style={{
-                          display: 'flex',
-                          gap: '16px',
-                          fontSize: '0.875rem',
-                          color: '#64748b'
-                        }}>
-                          <span>PPL ID: {member.pplId || 'N/A'}</span>
-                          <span>Gender: {member.gender || 'N/A'}</span>
-                          {member.duprRatings && (
-                            <span>DUPR: {member.duprRatings.doubles || member.duprRatings.singles || 'N/A'}</span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Member Role Badge */}
+                        Registration Details
+                      </h3>
                       <div style={{
-                        background: index === 0 ? '#fef3c7' : '#e0f2fe',
-                        color: index === 0 ? '#92400e' : '#0369a1',
-                        padding: '4px 12px',
-                        borderRadius: '20px',
-                        fontSize: '0.75rem',
-                        fontWeight: '600'
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '12px',
+                        fontSize: '0.875rem'
                       }}>
-                        {index === 0 ? 'Captain' : `Member ${index + 1}`}
+                        <div>
+                          <span style={{ color: '#64748b' }}>Captain Email:</span>
+                          <div style={{ fontWeight: '500', color: '#1e293b' }}>
+                            {selectedTeamRegistration.registration.playerEmail || 'Not provided'}
+                          </div>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748b' }}>Captain Phone:</span>
+                          <div style={{ fontWeight: '500', color: '#1e293b' }}>
+                            {selectedTeamRegistration.registration.playerPhone || 'Not provided'}
+                          </div>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748b' }}>Emergency Contact:</span>
+                          <div style={{ fontWeight: '500', color: '#1e293b' }}>
+                            {selectedTeamRegistration.registration.emergencyContact || 'Not provided'}
+                          </div>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748b' }}>Emergency Phone:</span>
+                          <div style={{ fontWeight: '500', color: '#1e293b' }}>
+                            {selectedTeamRegistration.registration.emergencyPhone || 'Not provided'}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  )}
+                  
+                  {/* Team Members List */}
+                  <div style={{
+                    display: 'grid',
+                    gap: '16px'
+                  }}>
+                    {selectedTeamRegistration.teamMembers.map((member, index) => (
+                      <div key={member._id || index} style={{
+                        background: member.isPlaceholder ? '#fff3cd' : '#f8fafc',
+                        border: member.isPlaceholder ? '1px solid #ffeaa7' : '1px solid #e2e8f0',
+                        borderRadius: '12px',
+                        padding: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '16px'
+                      }}>
+                        {/* Member Avatar */}
+                        {!member.isPlaceholder && (
+                          <div style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: '1.2rem',
+                            fontWeight: '600'
+                          }}>
+                            {(member.firstName?.[0] || 'M') + (member.lastName?.[0] || '')}
+                          </div>
+                        )}
+                        
+                        {member.isPlaceholder && (
+                          <div style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '50%',
+                            background: '#ffc107',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontSize: '1.5rem'
+                          }}>
+                            ⚠️
+                          </div>
+                        )}
+                        
+                        {/* Member Info */}
+                        <div style={{ flex: 1 }}>
+                          <div style={{
+                            fontSize: '1.1rem',
+                            fontWeight: '600',
+                            color: member.isPlaceholder ? '#856404' : '#1e293b',
+                            marginBottom: '4px'
+                          }}>
+                            {member.firstName} {member.lastName}
+                          </div>
+                          
+                          {!member.isPlaceholder && (
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                              gap: '8px',
+                              fontSize: '0.875rem',
+                              color: '#64748b'
+                            }}>
+                              <span>PPL ID: {member.pplId || 'N/A'}</span>
+                              <span>Gender: {member.gender || 'N/A'}</span>
+                              <span>Email: {member.email || 'N/A'}</span>
+                              {member.duprRatings && (
+                                <span>DUPR: {member.duprRatings.doubles || member.duprRatings.singles || 'N/A'}</span>
+                              )}
+                            </div>
+                          )}
+                          
+                          {member.isPlaceholder && (
+                            <div style={{
+                              fontSize: '0.875rem',
+                              color: '#856404',
+                              fontStyle: 'italic'
+                            }}>
+                              {member.email}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Member Role Badge */}
+                        {!member.isPlaceholder && (
+                          <div style={{
+                            background: index === 0 ? '#fef3c7' : '#e0f2fe',
+                            color: index === 0 ? '#92400e' : '#0369a1',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '0.75rem',
+                            fontWeight: '600'
+                          }}>
+                            {index === 0 ? 'Captain' : `Member ${index + 1}`}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <div style={{

@@ -878,11 +878,13 @@ const registerForTournament = async (req, res) => {
       allTeamMemberKeys: Object.keys(req.body).filter(key => key.includes('teamMember'))
     });
 
-    // Handle teamMembers - can come as individual array items from FormData
+    // Handle teamMembers - can come as individual array items from FormData or as an object
     if (req.body.teamMembers || Object.keys(req.body).some(key => key.startsWith('teamMembers['))) {
       let teamMemberIds = [];
       
       console.log('🔍 TEAM MEMBERS PROCESSING - Starting team member processing');
+      console.log('🔍 TEAM MEMBERS - teamMembers type:', typeof req.body.teamMembers);
+      console.log('🔍 TEAM MEMBERS - teamMembers value:', req.body.teamMembers);
       
       // Check if teamMembers is sent as a JSON string (old format)
       if (req.body.teamMembers && typeof req.body.teamMembers === 'string') {
@@ -895,7 +897,14 @@ const registerForTournament = async (req, res) => {
           return res.status(400).json({ message: "Invalid team members data format" });
         }
       }
-      // Check if teamMembers is sent as individual array items (new format)
+      // Check if teamMembers is sent as an object with numeric keys (FormData format)
+      else if (req.body.teamMembers && typeof req.body.teamMembers === 'object' && !Array.isArray(req.body.teamMembers)) {
+        console.log('🔍 TEAM MEMBERS - Processing as FormData object:', req.body.teamMembers);
+        // Extract values from the object, filtering out empty strings
+        teamMemberIds = Object.values(req.body.teamMembers).filter(id => id && id !== '');
+        console.log('🔍 TEAM MEMBERS - Extracted from object:', teamMemberIds);
+      }
+      // Check if teamMembers is sent as individual array items (legacy format)
       else {
         const teamMemberKeys = Object.keys(req.body).filter(key => key.startsWith('teamMembers['));
         console.log('🔍 TEAM MEMBERS - Processing as FormData array:', teamMemberKeys);

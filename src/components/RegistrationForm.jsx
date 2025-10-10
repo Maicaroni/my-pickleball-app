@@ -363,6 +363,13 @@ const RegistrationForm = ({ tournament, onClose }) => {
   };
 
   const handleTeamMemberSelect = (gender, index, player) => {
+    console.log('🔍 TEAM MEMBER SELECT DEBUG:', {
+      gender,
+      index,
+      player,
+      currentTeamMembers: teamMembers
+    });
+
     // Check if player is already selected
     const allSelected = [...teamMembers.males, ...teamMembers.females];
     const isAlreadySelected = allSelected.some(member => 
@@ -377,10 +384,15 @@ const RegistrationForm = ({ tournament, onClose }) => {
     // Clear any previous error
     setError('');
 
-    setTeamMembers(prev => ({
-      ...prev,
-      [gender]: prev[gender].map((member, i) => i === index ? player : member)
-    }));
+    setTeamMembers(prev => {
+      const newTeamMembers = {
+        ...prev,
+        [gender]: prev[gender].map((member, i) => i === index ? player : member)
+      };
+      
+      console.log('🔍 UPDATED TEAM MEMBERS:', newTeamMembers);
+      return newTeamMembers;
+    });
   };
 
   // Get all selected players to exclude from search
@@ -438,6 +450,15 @@ const RegistrationForm = ({ tournament, onClose }) => {
         setError('Please enter a team name');
         return;
       }
+
+      // Debug logging for team members
+      console.log('🔍 TEAM VALIDATION DEBUG:', {
+        teamMembers,
+        males: teamMembers.males,
+        females: teamMembers.females,
+        malesCount: teamMembers.males.filter(member => member !== null).length,
+        femalesCount: teamMembers.females.filter(member => member !== null).length
+      });
 
       // Check minimum required team members (2 males + 2 females)
       const filledMales = teamMembers.males.filter(member => member !== null).length;
@@ -508,10 +529,28 @@ const RegistrationForm = ({ tournament, onClose }) => {
           ...teamMembers.females.filter(member => member !== null && member !== '').map(member => member._id)
         ].filter(id => id && id !== ''); // Additional filter to remove any empty strings
         
+        // Debug logging for team member submission
+        console.log('🔍 TEAM SUBMISSION DEBUG:', {
+          teamMembers,
+          teamMemberIds,
+          teamMemberIdsLength: teamMemberIds.length,
+          isTeamCategory,
+          formDataTeamName: formData.teamName
+        });
+        
         // Send each team member ID individually to FormData
         teamMemberIds.forEach((id, index) => {
+          console.log(`🔍 Adding team member ${index}:`, id);
           formDataToSubmit.append(`teamMembers[${index}]`, id);
         });
+        
+        // Also log the final FormData entries for team members
+        console.log('🔍 FormData entries for team members:');
+        for (let [key, value] of formDataToSubmit.entries()) {
+          if (key.startsWith('teamMembers')) {
+            console.log(`${key}: ${value}`);
+          }
+        }
       }
 
       // Add partner if it's a doubles category
