@@ -7263,18 +7263,18 @@ const duprRatings = userProfile?.duprRatings
                             <option value="all">All Categories</option>
 {selectedTournament?.tournamentCategories &&
   selectedTournament.tournamentCategories
-    .filter(category => category && category.division) // safety check
-    .map((category, index) => (
-<option 
-  key={category._id || category.division} 
-  value={category.division}
->
-  {category.division}
-  {category.skillLevel ? ` - ${category.skillLevel}` : ""}
-  {category.ageCategory ? ` - ${category.ageCategory}` : ""}
-</option>
-
-    ))}
+    .filter(category => category && category._id) // safety check for _id
+    .map((category, index) => {
+      const displayName = [category.division, category.skillLevel, category.ageCategory].filter(Boolean).join(' - ') || 'Unknown Category';
+      return (
+        <option 
+          key={category._id} 
+          value={category._id}
+        >
+          {displayName}
+        </option>
+      );
+    })}
                           </select>
 </div>
 <div>

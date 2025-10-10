@@ -7237,6 +7237,11 @@ if (skillLevel === 'Open' && category?.tier) {
                       <select
                         value={selectedPlayerCategory}
                         onChange={(e) => {
+                          console.log('🔍 DROPDOWN DEBUG - Category selection changed:', {
+                            oldValue: selectedPlayerCategory,
+                            newValue: e.target.value,
+                            newValueType: typeof e.target.value
+                          });
                           setSelectedPlayerCategory(e.target.value);
                           setPlayersSearchTerm(''); // Reset search when category changes
                         }}
@@ -7258,11 +7263,22 @@ if (skillLevel === 'Open' && category?.tier) {
                       >
                         <option value="all">All Categories</option>
                        {selectedTournament.tournamentCategories &&
-  selectedTournament.tournamentCategories.map((category, index) => (
-    <option key={index} value={category.division}>
-      {category.division} {category.skillLevel ? `- ${category.skillLevel}` : ''}
-    </option>
-  ))}
+  selectedTournament.tournamentCategories.map((category, index) => {
+    const displayName = [category.division, category.skillLevel, category.ageCategory].filter(Boolean).join(' - ') || 'Unknown Category';
+    console.log('🔍 DROPDOWN DEBUG - Category option:', {
+      categoryId: category._id,
+      categoryIdType: typeof category._id,
+      division: category.division,
+      skillLevel: category.skillLevel,
+      ageCategory: category.ageCategory,
+      displayName: displayName
+    });
+    return (
+      <option key={category._id || index} value={category._id}>
+        {displayName}
+      </option>
+    );
+  })}
 
                       </select>
                     </div>
@@ -7286,11 +7302,27 @@ if (skillLevel === 'Open' && category?.tier) {
                     {/* Approved Players Tab Content */}
                     {activePlayerTab === 'approved' && (
                       selectedTournament.registrations && selectedTournament.registrations.filter(reg => {
-                        console.log('Approved player filter - Player:', reg.player?.firstName, reg.player?.lastName, 'Category:', reg.category, 'Selected:', selectedPlayerCategory, 'Status:', reg.status);
+                        console.log('🔍 DROPDOWN DEBUG - Approved player filter:', {
+                          playerName: `${reg.player?.firstName} ${reg.player?.lastName}`,
+                          regCategory: reg.category,
+                          regCategoryType: typeof reg.category,
+                          selectedPlayerCategory: selectedPlayerCategory,
+                          selectedPlayerCategoryType: typeof selectedPlayerCategory,
+                          status: reg.status,
+                          isApproved: reg.status === 'approved'
+                        });
                         return reg && reg.status === 'approved';
                       }).filter(reg => {
                         const shouldShow = selectedPlayerCategory === 'all' || reg.category === selectedPlayerCategory;
-                        console.log('Category filter - Player:', reg.player?.firstName, reg.player?.lastName, 'Category:', reg.category, 'Selected:', selectedPlayerCategory, 'Should show:', shouldShow);
+                        console.log('🔍 DROPDOWN DEBUG - Category filter:', {
+                          playerName: `${reg.player?.firstName} ${reg.player?.lastName}`,
+                          regCategory: reg.category,
+                          regCategoryType: typeof reg.category,
+                          selectedPlayerCategory: selectedPlayerCategory,
+                          selectedPlayerCategoryType: typeof selectedPlayerCategory,
+                          exactMatch: reg.category === selectedPlayerCategory,
+                          shouldShow: shouldShow
+                        });
                         return reg && shouldShow;
                       }).length > 0 ? (
                       <div>
