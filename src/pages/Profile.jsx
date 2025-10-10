@@ -5810,7 +5810,10 @@ const getAge = (birthDate) => {
       }
       
       // Allow men's categories (now safe to check after excluding women's)
-      if (categoryLower.includes("men's") || categoryLower.includes("men") || categoryLower.includes("male")) {
+      // Use more specific checks to avoid "male" matching "female"
+      if (categoryLower.includes("men's") || 
+          (categoryLower.includes("men") && !categoryLower.includes("women")) ||
+          (categoryLower.includes("male") && !categoryLower.includes("female"))) {
         console.log(`✅ Male: Men's category allowed`);
         return true;
       }
@@ -7978,7 +7981,13 @@ const duprRatings = userProfile?.duprRatings
                                          {(() => {
                                            const category = selectedTournament.tournamentCategories && 
                                              Object.values(selectedTournament.tournamentCategories).find(cat => cat._id.toString() === player.category);
-                                           return category ? category.division : 'Category N/A';
+                                           if (!category) return 'Category N/A';
+                                           
+                                           const parts = [category.division];
+                                           if (category.skillLevel) parts.push(category.skillLevel);
+                                           if (category.ageCategory) parts.push(category.ageCategory);
+                                           
+                                           return parts.join(' - ');
                                          })()}
                                        </div>
                                      )}
@@ -8541,12 +8550,21 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                             fontWeight: '600',
                                             color: '#f59e0b'
                                           }}>
-                                            {selectedTournament.tournamentCategories && 
-                                              Object.values(selectedTournament.tournamentCategories).find(cat => 
-                                                cat._id === player.category || 
-                                                cat._id.toString() === player.category || 
-                                                cat.division === player.category
-                                              )?.division || 'Unknown Category'}
+                                            {(() => {
+                                              const category = selectedTournament.tournamentCategories && 
+                                                Object.values(selectedTournament.tournamentCategories).find(cat => 
+                                                  cat._id === player.category || 
+                                                  cat._id.toString() === player.category || 
+                                                  cat.division === player.category
+                                                );
+                                              if (!category) return 'Unknown Category';
+                                              
+                                              const parts = [category.division];
+                                              if (category.skillLevel) parts.push(category.skillLevel);
+                                              if (category.ageCategory) parts.push(category.ageCategory);
+                                              
+                                              return parts.join(' - ');
+                                            })()}
                                           </div>
                                         </div>
                                       )}

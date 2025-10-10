@@ -3776,11 +3776,23 @@ const handleRegister = async (tournamentId) => {
   // Wait for auth loading to complete
   if (authLoading) return;
 
+  // Add comprehensive debugging for auth state
+  console.log(`🔥 REGISTER BUTTON DEBUG:`, {
+    authLoading,
+    isAuthenticated,
+    user,
+    userGender: user?.gender,
+    tournamentId
+  });
+
   // Check auth state
   if (!isAuthenticated) {
+    console.log(`❌ User not authenticated - showing auth modal`);
     setShowAuthModal(true);
     return;
   }
+
+  console.log(`✅ User authenticated - proceeding with registration modal`);
 
   // Find the tournament
   let tournament = tournaments.find(t => t.id === tournamentId);
@@ -4257,12 +4269,22 @@ const handleTournamentClick = async (tournament) => {
     }
     
     const categoryLower = categoryName.toLowerCase();
-    const userGenderLower = userGender.toLowerCase().trim();
     
-    console.log(`🔍 Processing: categoryLower="${categoryLower}", userGenderLower="${userGenderLower}"`);
+    // Normalize user gender to single character codes
+    let userGenderCode = '';
+    if (userGender) {
+      const genderStr = userGender.toString().toLowerCase().trim();
+      if (genderStr === 'male' || genderStr === 'm') {
+        userGenderCode = 'm';
+      } else if (genderStr === 'female' || genderStr === 'f') {
+        userGenderCode = 'f';
+      }
+    }
     
-    // For male users: only allow men's, mixed, and team categories
-    if (userGenderLower === 'male') {
+    console.log(`🔍 Processing: categoryLower="${categoryLower}", userGenderCode="${userGenderCode}"`);
+    
+    // For male users (M/m): only allow men's, mixed, and team categories
+    if (userGenderCode === 'm') {
       console.log(`👨 Male user detected - checking category: "${categoryLower}"`);
       
       // Allow team categories
@@ -4284,7 +4306,10 @@ const handleTournamentClick = async (tournament) => {
       }
       
       // Allow men's categories (now safe to check after excluding women's)
-      if (categoryLower.includes("men's") || categoryLower.includes("men") || categoryLower.includes("male")) {
+      // Use more specific checks to avoid "male" matching "female"
+      if (categoryLower.includes("men's") || 
+          (categoryLower.includes("men") && !categoryLower.includes("women")) ||
+          (categoryLower.includes("male") && !categoryLower.includes("female"))) {
         console.log(`✅ Male: Men's category allowed`);
         return true;
       }
@@ -4294,8 +4319,8 @@ const handleTournamentClick = async (tournament) => {
       return false;
     }
     
-    // For female users: only allow women's, mixed, and team categories
-    if (userGenderLower === 'female') {
+    // For female users (F/f): only allow women's, mixed, and team categories
+    if (userGenderCode === 'f') {
       console.log(`👩 Female user detected - checking category: "${categoryLower}"`);
       
       // Allow team categories
@@ -4322,16 +4347,28 @@ const handleTournamentClick = async (tournament) => {
     }
     
     // Default: allow if no specific gender provided (for safety)
-    console.log(`⚠️ Unknown gender "${userGenderLower}" - returning true by default`);
+    console.log(`⚠️ Unknown gender "${userGender}" -> "${userGenderCode}" - returning true by default`);
     return true;
   };
 
   // Enhanced function to check if a category is allowed based on both gender and age
   const isCategoryAllowed = (category, userGender) => {
+    console.log(`🚀 isCategoryAllowed CALLED with:`, {
+      category: category,
+      categoryDivision: category?.division,
+      userGender: userGender,
+      userGenderType: typeof userGender
+    });
+    
+    // Construct the category name from its components
+    const categoryName = category.division || '';
+    
     // First check gender eligibility
-    const genderAllowed = isCategoryAllowedForGender(category.name, userGender);
+    const genderAllowed = isCategoryAllowedForGender(categoryName, userGender);
+    console.log(`🎯 Gender check result for "${categoryName}": ${genderAllowed}`);
+    
     if (!genderAllowed) {
-      console.log(`❌ Category "${category.name}" denied due to gender restriction`);
+      console.log(`❌ Category "${categoryName}" denied due to gender restriction`);
       return false;
     }
     
@@ -4343,7 +4380,7 @@ const handleTournamentClick = async (tournament) => {
     if (categoryAgeRequirement && playerAges.length > 0) {
       const allPlayersAgeEligible = playerAges.every(age => isAgeEligibleForCategory(age, categoryAgeRequirement));
       if (!allPlayersAgeEligible) {
-        console.log(`❌ Category "${category.name}" denied - some players don't meet age requirement (${categoryAgeRequirement}). Player ages: [${playerAges.join(', ')}]`);
+        console.log(`❌ Category "${categoryName}" denied - some players don't meet age requirement (${categoryAgeRequirement}). Player ages: [${playerAges.join(', ')}]`);
         return false;
       }
     }
@@ -4351,19 +4388,19 @@ const handleTournamentClick = async (tournament) => {
     // Check DUPR eligibility for all players based on skill level
     const skillLevel = category.skillLevel;
     if (skillLevel) {
-      const playerDuprRatings = getAllPlayerDuprRatings(category.name);
+      const playerDuprRatings = getAllPlayerDuprRatings(categoryName);
       
       // If players have DUPR ratings, check eligibility
       if (playerDuprRatings.length > 0) {
         const allPlayersDuprEligible = playerDuprRatings.every(rating => isDuprEligibleForSkillLevel(rating, skillLevel));
         if (!allPlayersDuprEligible) {
-          console.log(`❌ Category "${category.name}" denied - some players don't meet DUPR requirement for ${skillLevel} level. Player DUPR ratings: [${playerDuprRatings.join(', ')}]`);
+          console.log(`❌ Category "${categoryName}" denied - some players don't meet DUPR requirement for ${skillLevel} level. Player DUPR ratings: [${playerDuprRatings.join(', ')}]`);
           return false;
         }
       }
     }
     
-    console.log(`✅ Category "${category.name}" allowed - all eligibility checks passed`);
+    console.log(`✅ Category "${categoryName}" allowed - all eligibility checks passed`);
     return true;
   };
 
@@ -8243,6 +8280,22 @@ if (skillLevel === 'Open' && category?.tier) {
       </RegistrationModalHeader>
 
       <RegistrationModalBody>
+        {(() => {
+          console.log(`🔥 REGISTRATION MODAL OPENED:`, {
+            user,
+            userGender: user?.gender,
+            userGenderType: typeof user?.gender,
+            isAuthenticated,
+            registrationTournament: registrationTournament?.tournamentName,
+            categories: registrationTournament?.tournamentCategories?.length
+          });
+          
+          // Force test with hardcoded gender to isolate the issue
+          console.log(`🧪 TESTING WITH HARDCODED MALE GENDER`);
+          
+          return null;
+        })()}
+        
         <form onSubmit={handleRegistrationSubmit}>
           {/* Category/Division/Level Selection */}
           <RegistrationFormSection>
@@ -8266,13 +8319,33 @@ if (skillLevel === 'Open' && category?.tier) {
     const ageCategory = category.ageCategory || '';
     const displayName = [division, skillLevel, ageCategory].filter(Boolean).join(' | ') || 'Unknown Category';
 
-    // Use logged-in user info
+    // Use logged-in user info with normalized gender
+    // TEMPORARY: Force male gender for testing
+    const userGender = 'M'; // Force male to test filtering
     const primaryPlayer = {
-      gender: user?.gender || 'male',
+      gender: userGender,
       age: user?.birthDate ? new Date().getFullYear() - new Date(user.birthDate).getFullYear() : 25,
     };
 
-    const isAllowed = isCategoryAllowed(category, primaryPlayer);
+    console.log(`🔍 Tournament Registration Debug:`, {
+      userObject: user,
+      originalUserGender: user?.gender,
+      forcedGender: userGender,
+      normalizedGender: userGender,
+      primaryPlayerGender: primaryPlayer.gender,
+      categoryDivision: category.division,
+      displayName: displayName
+    });
+
+    console.log(`🚀 About to call isCategoryAllowed with:`, {
+      category: category,
+      categoryDivision: category.division,
+      userGender: primaryPlayer.gender
+    });
+
+    const isAllowed = isCategoryAllowed(category, primaryPlayer.gender);
+
+    console.log(`🎯 isCategoryAllowed result for "${displayName}":`, isAllowed);
 
     return (
       <option
@@ -8886,7 +8959,35 @@ if (skillLevel === 'Open' && category?.tier) {
         {/* Tournament Categories */}
         <RegistrationFormSection>
           <RegistrationSectionTitle>Available Tournament Categories</RegistrationSectionTitle>
-          {viewFormTournament.tournamentCategories.map(category => (
+          {(() => {
+            console.log(`🔥 PREVIEW MODAL DEBUG - Starting category filtering`);
+            console.log(`🔥 User object:`, user);
+            console.log(`🔥 User gender:`, user?.gender);
+            console.log(`🔥 All categories:`, viewFormTournament.tournamentCategories);
+            
+            // Use normalized gender
+            const userGender = user?.gender || 'M'; // Default to Male if no gender specified
+            const primaryPlayer = {
+              gender: userGender,
+              age: user?.birthDate ? new Date().getFullYear() - new Date(user.birthDate).getFullYear() : 25,
+            };
+            
+            console.log(`🔥 Primary player object:`, primaryPlayer);
+            console.log(`🔥 Normalized gender:`, userGender);
+            
+            const filteredCategories = viewFormTournament.tournamentCategories.filter(category => {
+              console.log(`🔥 Processing category:`, category);
+              console.log(`🔥 Category division:`, category.division);
+              
+              const isAllowed = isCategoryAllowed(category, primaryPlayer.gender);
+              console.log(`🔥 Category "${category.division}" allowed:`, isAllowed);
+              
+              return isAllowed;
+            });
+            
+            console.log(`🔥 Final filtered categories:`, filteredCategories);
+            
+            return filteredCategories.map(category => (
             <div key={category._id} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '16px', marginBottom: '12px', background: '#fafafa' }}>
               <div style={{ fontWeight: '600', color: '#1e293b', marginBottom: '8px' }}>{category.division}</div>
               <div style={{ fontSize: '14px', color: '#64748b', marginBottom: '8px' }}>
@@ -8901,7 +9002,8 @@ if (skillLevel === 'Open' && category?.tier) {
                 <strong>Max Participants:</strong> {category.maxParticipants}
               </div>
             </div>
-          ))}
+          ));
+          })()}
         </RegistrationFormSection>
 
         {/* Required Information */}

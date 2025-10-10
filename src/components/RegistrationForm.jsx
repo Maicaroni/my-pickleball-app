@@ -560,23 +560,59 @@ const RegistrationForm = ({ tournament, onClose }) => {
             <FormSection>
               <SectionTitle>Select Tournament Category</SectionTitle>
               {tournament.tournamentCategories?.filter(category => {
-                // Filter categories based on user gender
-                if (!user?.gender) return true; // Show all if gender not specified
+                // 🎯 REGISTRATION FORM: Filter categories based on user gender
+                const originalGender = user?.gender || 'male';
+                console.log('🎯 REGISTRATION FORM - Original Gender:', originalGender);
                 
-                const userGender = user.gender.toLowerCase();
-                const division = category.division.toLowerCase();
-                
-                if (userGender === 'female') {
-                  // Women can only join Women's Singles, Women's Doubles, Mixed Doubles, and Team
-                  return division.includes("women's") || 
-                         division.includes("mixed") || 
-                         division === "team";
-                } else if (userGender === 'male') {
-                  // Men can join any category
-                  return true;
+                // Normalize gender to single character codes
+                let normalizedGender = 'm'; // default to male
+                if (originalGender) {
+                  const genderLower = originalGender.toLowerCase();
+                  if (genderLower === 'female' || genderLower === 'f') {
+                    normalizedGender = 'f';
+                  } else if (genderLower === 'male' || genderLower === 'm') {
+                    normalizedGender = 'm';
+                  }
                 }
                 
-                return true; // Default: show all categories
+                console.log('🎯 REGISTRATION FORM - Normalized Gender:', normalizedGender);
+                console.log('🎯 REGISTRATION FORM - Category Division:', category.division);
+                
+                const division = category.division.toLowerCase();
+                let isAllowed = false;
+                
+                if (normalizedGender === 'f') {
+                  // Female users: Allow women's, mixed, and team categories
+                  if (division.includes("team")) {
+                    isAllowed = true;
+                    console.log('🎯 REGISTRATION FORM - Female allowed: Team category');
+                  } else if (division.includes("mixed")) {
+                    isAllowed = true;
+                    console.log('🎯 REGISTRATION FORM - Female allowed: Mixed category');
+                  } else if (division.includes("women's")) {
+                    isAllowed = true;
+                    console.log('🎯 REGISTRATION FORM - Female allowed: Women\'s category');
+                  } else if (division.includes("men's")) {
+                    isAllowed = false;
+                    console.log('🎯 REGISTRATION FORM - Female denied: Men\'s category');
+                  } else {
+                    // For other categories, check if they contain "female" keyword
+                    isAllowed = division.includes("female");
+                    console.log('🎯 REGISTRATION FORM - Female other category:', isAllowed);
+                  }
+                } else {
+                  // Male users: Allow all categories except women's only
+                  if (division.includes("women's") && !division.includes("mixed")) {
+                    isAllowed = false;
+                    console.log('🎯 REGISTRATION FORM - Male denied: Women\'s only category');
+                  } else {
+                    isAllowed = true;
+                    console.log('🎯 REGISTRATION FORM - Male allowed: Category');
+                  }
+                }
+                
+                console.log('🎯 REGISTRATION FORM - Final decision for', category.division, ':', isAllowed);
+                return isAllowed;
               }).map(category => (
                 <CategoryCard
                   key={category._id}
@@ -667,6 +703,12 @@ const RegistrationForm = ({ tournament, onClose }) => {
                     value={formData.duprId}
                     onChange={handleInputChange}
                     placeholder="Your DUPR ID (optional)"
+                    disabled={!!user?.duprId}
+                    style={{
+                      background: user?.duprId ? '#f8fafc' : 'white',
+                      color: user?.duprId ? '#64748b' : '#1e293b',
+                      cursor: user?.duprId ? 'not-allowed' : 'text'
+                    }}
                   />
                 </FormGroup>
               </div>
@@ -692,9 +734,47 @@ const RegistrationForm = ({ tournament, onClose }) => {
                 <FormGroup>
                   <Label>Select Your Partner *</Label>
                   <PlayerSearchDropdown
-                    gender={selectedCategoryDetails?.division?.toLowerCase().includes("women's") ? 'female' : 
-                           selectedCategoryDetails?.division?.toLowerCase().includes("men's") ? 'male' : 
-                           'any'}
+                    gender={(() => {
+                      const division = selectedCategoryDetails?.division?.toLowerCase() || '';
+                      const originalGender = user?.gender || 'male';
+                      
+                      // Normalize user gender to single character codes
+                      let normalizedUserGender = 'm'; // default to male
+                      if (originalGender) {
+                        const genderLower = originalGender.toLowerCase();
+                        if (genderLower === 'female' || genderLower === 'f') {
+                          normalizedUserGender = 'f';
+                        } else if (genderLower === 'male' || genderLower === 'm') {
+                          normalizedUserGender = 'm';
+                        }
+                      }
+                      
+                      console.log('🎯 PARTNER SELECTION - User Gender:', normalizedUserGender);
+                      console.log('🎯 PARTNER SELECTION - Division:', division);
+                      
+                      // For mixed categories, partner should be opposite gender
+                      if (division.includes("mixed")) {
+                        const oppositeGender = normalizedUserGender === 'f' ? 'male' : 'female';
+                        console.log('🎯 PARTNER SELECTION - Mixed category, opposite gender:', oppositeGender);
+                        return oppositeGender;
+                      }
+                      
+                      // For women's categories, partner should be female
+                      if (division.includes("women's")) {
+                        console.log('🎯 PARTNER SELECTION - Women\'s category, female partner');
+                        return 'female';
+                      }
+                      
+                      // For men's categories, partner should be male
+                      if (division.includes("men's")) {
+                        console.log('🎯 PARTNER SELECTION - Men\'s category, male partner');
+                        return 'male';
+                      }
+                      
+                      // Default: any gender
+                      console.log('🎯 PARTNER SELECTION - Default: any gender');
+                      return 'any';
+                    })()}
                     placeholder="Search and select your partner"
                     selectedPlayer={partner}
                     onPlayerSelect={setPartner}
