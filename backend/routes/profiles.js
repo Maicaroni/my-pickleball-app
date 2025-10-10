@@ -37,7 +37,6 @@ router.get("/me", auth(), async (req, res) => {
     if (!profile) {
       profile = new Profile({
         user: req.user._id,
-        duprRatings: { singles: 0, doubles: 0, mixedDoubles: 0 },
       });
       await profile.save();
 

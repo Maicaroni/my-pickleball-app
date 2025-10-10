@@ -6,9 +6,11 @@ const {
   getTournamentById,
   getUserTournaments,
   updateTournament,
-   deleteTournament,
+  deleteTournament,
   deleteRegistration,
-   addApprovedPlayer,
+  addApprovedPlayer,
+  rejectPlayerRegistration,
+  registerForTournament,
 } = require("../controllers/tournamentController");
 const authMiddleware = require("../middleware/authMiddleware");
 const multer = require("multer");
@@ -65,20 +67,38 @@ router.put(
   ]),
   updateTournament
 );
+// ✅ Register for tournament (players only)
+router.post(
+  "/register",
+  authMiddleware(["player"]),
+  upload.single("proofOfPayment"),
+  registerForTournament
+);
+
 // Delete Tournament
 router.delete(
   "/:id",
   authMiddleware(["clubadmin"]),
   deleteTournament
 );
-module.exports = router;
+
 // ✅ Add approved player to a tournament category
 router.post(
   "/:id/registrations/approve",
   authMiddleware(["clubadmin"]),
   addApprovedPlayer
 );
+
+// ✅ Reject player registration
+router.post(
+  "/:id/registrations/reject",
+  authMiddleware(["clubadmin"]),
+  rejectPlayerRegistration
+);
+
 // DELETE player registration
 router.delete("/:tournamentId/registrations/:registrationId", deleteRegistration);
+
+module.exports = router;
 
 

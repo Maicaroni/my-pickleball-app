@@ -20,6 +20,41 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
+// Get players by gender for team member selection
+exports.getPlayersByGender = async (req, res) => {
+  try {
+    const { gender, search } = req.query;
+    
+    // Build query
+    let query = { roles: { $in: ["player"] } };
+    
+    // Add gender filter if provided
+    if (gender && gender !== 'all') {
+      query.gender = { $regex: new RegExp(`^${gender}$`, 'i') };
+    }
+    
+    // Add search filter if provided
+    if (search && search.trim()) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      query.$or = [
+        { firstName: searchRegex },
+        { lastName: searchRegex },
+        { $expr: { $regexMatch: { input: { $concat: ["$firstName", " ", "$lastName"] }, regex: searchRegex } } }
+      ];
+    }
+
+    const players = await User.find(query)
+      .select('_id firstName lastName email gender pplId duprId')
+      .sort({ firstName: 1, lastName: 1 })
+      .limit(50); // Limit results for performance
+
+    res.json(players);
+  } catch (err) {
+    console.error("Error fetching players by gender:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Create a new user
 exports.createUser = async (req, res) => {
   try {

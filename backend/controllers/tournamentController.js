@@ -74,6 +74,85 @@ exports.getTournamentById = async (req, res) => {
       fetchedBracketData: JSON.stringify(tournament.tournamentCategories, null, 2)
     });
 
+    // 🔍 DEBUG: Check team member data in all registrations
+    console.log('🔍 TEAM MEMBERS DEBUG - All registrations:');
+    tournament.registrations.forEach((reg, index) => {
+      console.log(`Registration ${index + 1}:`, {
+        playerId: reg.player,
+        status: reg.status,
+        category: reg.category,
+        hasPartner: !!reg.partner,
+        partnerValue: reg.partner,
+        partnerType: typeof reg.partner,
+        playerName: reg.playerName,
+        teamName: reg.teamName,
+        hasTeamMembers: !!reg.teamMembers,
+        teamMembersValue: reg.teamMembers,
+        teamMembersType: typeof reg.teamMembers,
+        teamMembersLength: reg.teamMembers?.length || 0,
+        teamMembersArray: Array.isArray(reg.teamMembers),
+        fullRegistration: JSON.stringify(reg, null, 2)
+      });
+    });
+
+    // 🔍 DEBUG: Check partner data AFTER population
+    console.log('🔍 AFTER POPULATION DEBUG - All registrations:');
+    tournament.registrations.forEach((reg, index) => {
+      console.log(`Registration ${index + 1} AFTER POPULATION:`, {
+        playerId: reg.player?._id || reg.player,
+        playerName: reg.player?.firstName + ' ' + reg.player?.lastName,
+        status: reg.status,
+        category: reg.category,
+        hasPartner: !!reg.partner,
+        partnerValue: reg.partner,
+        partnerType: typeof reg.partner,
+        partnerIsPopulated: reg.partner && typeof reg.partner === 'object' && reg.partner.firstName,
+        partnerName: reg.partner?.firstName + ' ' + reg.partner?.lastName,
+        teamName: reg.teamName,
+        hasTeamMembers: !!reg.teamMembers,
+        teamMembersValue: reg.teamMembers,
+        teamMembersType: typeof reg.teamMembers,
+        teamMembersLength: reg.teamMembers?.length || 0,
+        teamMembersArray: Array.isArray(reg.teamMembers),
+        teamMembersPopulated: reg.teamMembers?.map(member => ({
+          id: member._id || member,
+          name: member.firstName ? `${member.firstName} ${member.lastName}` : 'Not populated',
+          isPopulated: !!member.firstName
+        }))
+      });
+    });
+
+    // 🔍 DEBUG: Check partner data in all registrations
+    console.log('🔍 REGISTRATION DEBUG - All registrations:');
+    tournament.registrations.forEach((reg, index) => {
+      console.log(`Registration ${index + 1}:`, {
+        playerId: reg.player,
+        status: reg.status,
+        category: reg.category,
+        hasPartner: !!reg.partner,
+        partnerValue: reg.partner,
+        partnerType: typeof reg.partner,
+        playerName: reg.playerName,
+        fullRegistration: JSON.stringify(reg, null, 2)
+      });
+    });
+
+    // 🔍 DEBUG: Check partner data AFTER population
+    console.log('🔍 AFTER POPULATION DEBUG - All registrations:');
+    tournament.registrations.forEach((reg, index) => {
+      console.log(`Registration ${index + 1} AFTER POPULATION:`, {
+        playerId: reg.player?._id || reg.player,
+        playerName: reg.player?.firstName + ' ' + reg.player?.lastName,
+        status: reg.status,
+        category: reg.category,
+        hasPartner: !!reg.partner,
+        partnerValue: reg.partner,
+        partnerType: typeof reg.partner,
+        partnerIsPopulated: reg.partner && typeof reg.partner === 'object' && reg.partner.firstName,
+        partnerName: reg.partner?.firstName + ' ' + reg.partner?.lastName
+      });
+    });
+
     // ✅ Compute age for each registered player
     tournament.registrations = tournament.registrations.map(r => {
       if (r.player && r.player.birthDate) {
@@ -399,6 +478,14 @@ exports.deleteTournament = async (req, res) => {
 // ✅ Approve & Add Player (with age)
 exports.addApprovedPlayer = async (req, res) => {
   const { playerId, category } = req.body;
+  
+  // Validate required fields
+  if (!playerId || !category) {
+    return res.status(400).json({ 
+      message: "Missing required fields: playerId and category are required" 
+    });
+  }
+  
   try {
     const tournament = await Tournament.findById(req.params.id);
     if (!tournament) return res.status(404).json({ message: "Tournament not found" });
@@ -407,21 +494,184 @@ exports.addApprovedPlayer = async (req, res) => {
     if (tournament.createdBy.toString() !== req.user._id.toString())
       return res.status(403).json({ message: "You can only manage your own tournaments" });
 
-    // Check if player is already registered in this category
-    const alreadyRegistered = tournament.registrations.some(
-      r => r.player.toString() === playerId && r.category === category
-    );
-    if (alreadyRegistered) 
-      return res.status(400).json({ message: "Player already registered in this category" });
-
-    // Add player to registrations
-    tournament.registrations.push({
-      player: playerId,
-      category,
-      status: "approved"
+    // 🔍 COMPREHENSIVE DEBUG: Log all registrations in the tournament
+    console.log('🔍 COMPREHENSIVE DEBUG - All tournament registrations:');
+    tournament.registrations.forEach((reg, index) => {
+      console.log(`Registration ${index + 1}:`, {
+        _id: reg._id,
+        player: reg.player.toString(),
+        category: reg.category,
+        status: reg.status,
+        hasPartner: !!reg.partner,
+        partnerValue: reg.partner
+      });
     });
 
+    console.log('🔍 SEARCH CRITERIA:', {
+      searchingForPlayerId: playerId,
+      searchingForCategory: category,
+      searchingForStatus: 'pending'
+    });
+
+    // Find the specific pending registration for this player and category
+    const pendingRegistration = tournament.registrations.find(
+      r => r.player.toString() === playerId && r.category === category && r.status === "pending"
+    );
+
+    // Check if there's already an approved registration for this player and category
+    const existingApprovedRegistration = tournament.registrations.find(
+      r => r.player.toString() === playerId && r.category === category && r.status === "approved"
+    );
+
+    // 🔍 DETAILED SEARCH RESULTS
+    console.log('🔍 SEARCH RESULTS:', {
+      foundPending: !!pendingRegistration,
+      foundApproved: !!existingApprovedRegistration,
+      pendingRegistrationId: pendingRegistration?._id,
+      approvedRegistrationId: existingApprovedRegistration?._id
+    });
+
+    // 🔍 Check for any registration with this player (regardless of status/category)
+    const anyPlayerRegistration = tournament.registrations.filter(
+      r => r.player.toString() === playerId
+    );
+    console.log('🔍 ALL REGISTRATIONS FOR THIS PLAYER:', anyPlayerRegistration.map(reg => ({
+      _id: reg._id,
+      category: reg.category,
+      status: reg.status
+    })));
+
+    // 🔍 Check for any registration with this category (regardless of player/status)
+    const anyCategoryRegistration = tournament.registrations.filter(
+      r => r.category === category
+    );
+    console.log('🔍 ALL REGISTRATIONS FOR THIS CATEGORY:', anyCategoryRegistration.map(reg => ({
+      _id: reg._id,
+      player: reg.player.toString(),
+      status: reg.status
+    })));
+
+    console.log('🔍 BACKEND DEBUG - Looking for registrations:', {
+      playerId,
+      category,
+      foundPending: !!pendingRegistration,
+      foundApproved: !!existingApprovedRegistration,
+      pendingPartner: pendingRegistration?.partner,
+      pendingPartnerType: typeof pendingRegistration?.partner
+    });
+
+    // If already approved, return success message instead of error
+    if (existingApprovedRegistration) {
+      console.log('✅ Player already has approved registration for this category - returning success');
+      
+      // Get the populated tournament to return consistent data
+      const populatedTournament = await Tournament.findById(req.params.id)
+        .populate({
+          path: "registrations.player",
+          select: "firstName lastName birthDate gender duprRatings pplId duprId"
+        })
+        .populate({
+          path: "registrations.partner",
+          select: "firstName lastName birthDate gender duprRatings pplId duprId"
+        })
+        .populate({
+          path: "registrations.teamMembers",
+          select: "firstName lastName birthDate gender duprRatings pplId duprId"
+        });
+
+      // Compute age for all registered players
+      populatedTournament.registrations = populatedTournament.registrations.map(r => {
+        if (r.player && r.player.birthDate) {
+          const today = new Date();
+          const birth = new Date(r.player.birthDate);
+          let age = today.getFullYear() - birth.getFullYear();
+          const monthDiff = today.getMonth() - birth.getMonth();
+          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
+          }
+          r.player.age = age;
+        } else {
+          r.player.age = null;
+        }
+        return r;
+      });
+
+      return res.json({ 
+        message: "Player is already approved for this category", 
+        tournament: populatedTournament 
+      });
+    }
+
+    if (pendingRegistration) {
+      console.log('🔍 BACKEND DEBUG - Pending Registration Found:', {
+        hasPartner: !!pendingRegistration.partner,
+        partnerValue: pendingRegistration.partner,
+        partnerType: typeof pendingRegistration.partner,
+        fullRegistration: JSON.stringify(pendingRegistration, null, 2)
+      });
+      
+      // Remove the pending registration
+      tournament.registrations = tournament.registrations.filter(
+        r => r._id.toString() !== pendingRegistration._id.toString()
+      );
+      
+      // Create approved registration preserving all original data
+      const approvedRegistration = {
+        player: playerId,
+        category,
+        status: "approved",
+        // Preserve all original registration data
+        teamMembers: pendingRegistration.teamMembers,
+        proofOfPayment: pendingRegistration.proofOfPayment,
+        contactNumber: pendingRegistration.contactNumber,
+        email: pendingRegistration.email,
+        playerName: pendingRegistration.playerName,
+        playerEmail: pendingRegistration.playerEmail,
+        playerPhone: pendingRegistration.playerPhone,
+        emergencyContact: pendingRegistration.emergencyContact,
+        emergencyPhone: pendingRegistration.emergencyPhone,
+        registrationDate: pendingRegistration.registrationDate
+      };
+
+      // Preserve partner data if it exists
+      if (pendingRegistration.partner) {
+        approvedRegistration.partner = pendingRegistration.partner;
+        console.log('✅ PARTNER PRESERVED:', pendingRegistration.partner);
+      } else {
+        console.log('❌ NO PARTNER TO PRESERVE - partner value:', pendingRegistration.partner);
+      }
+      
+      tournament.registrations.push(approvedRegistration);
+      
+      console.log('🔍 APPROVED REGISTRATION CREATED:', {
+        hasPartner: !!approvedRegistration.partner,
+        partnerValue: approvedRegistration.partner,
+        partnerType: typeof approvedRegistration.partner,
+        fullApprovedReg: JSON.stringify(approvedRegistration, null, 2)
+      });
+      
+      console.log('✅ Converted pending registration to approved with preserved partner data');
+    } else {
+      console.log('❌ No pending registration found - cannot approve non-existent registration');
+      return res.status(404).json({ 
+        message: "No pending registration found for this player and category" 
+      });
+    }
+
     await tournament.save();
+
+    console.log('🔍 AFTER SAVE DEBUG - Tournament registrations:');
+    tournament.registrations.forEach((reg, index) => {
+      if (reg.player.toString() === playerId) {
+        console.log(`Registration ${index + 1} for player ${playerId}:`, {
+          status: reg.status,
+          category: reg.category,
+          hasPartner: !!reg.partner,
+          partnerValue: reg.partner,
+          partnerType: typeof reg.partner
+        });
+      }
+    });
 
     // Populate registrations.player with required fields
     const populatedTournament = await Tournament.findById(tournament._id)
@@ -429,7 +679,31 @@ exports.addApprovedPlayer = async (req, res) => {
         path: "registrations.player",
         select: "firstName lastName birthDate gender duprRatings pplId duprId",
         options: { lean: true }
+      })
+      .populate({
+        path: "registrations.partner",
+        select: "firstName lastName birthDate gender duprRatings pplId duprId",
+        options: { lean: true }
+      })
+      .populate({
+        path: "registrations.teamMembers",
+        select: "firstName lastName birthDate gender duprRatings pplId duprId",
+        options: { lean: true }
       });
+
+    console.log('🔍 AFTER POPULATION DEBUG - Populated registrations:');
+    populatedTournament.registrations.forEach((reg, index) => {
+      if (reg.player._id.toString() === playerId) {
+        console.log(`Populated Registration ${index + 1} for player ${playerId}:`, {
+          status: reg.status,
+          category: reg.category,
+          hasPartner: !!reg.partner,
+          partnerValue: reg.partner,
+          partnerType: typeof reg.partner,
+          partnerName: reg.partner ? `${reg.partner.firstName} ${reg.partner.lastName}` : 'No partner'
+        });
+      }
+    });
 
     // ✅ Compute age for all registered players
     populatedTournament.registrations = populatedTournament.registrations.map(r => {
@@ -451,6 +725,41 @@ exports.addApprovedPlayer = async (req, res) => {
     res.json({ message: "Player approved successfully", tournament: populatedTournament });
   } catch (error) {
     console.error("Error approving player:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ✅ Reject Player Registration
+exports.rejectPlayerRegistration = async (req, res) => {
+  const { playerId, category, reason } = req.body;
+  try {
+    const tournament = await Tournament.findById(req.params.id);
+    if (!tournament) return res.status(404).json({ message: "Tournament not found" });
+
+    // Only the creator can reject players
+    if (tournament.createdBy.toString() !== req.user._id.toString())
+      return res.status(403).json({ message: "You can only manage your own tournaments" });
+
+    // Find and remove the pending registration
+    const registrationIndex = tournament.registrations.findIndex(
+      r => r.player.toString() === playerId && r.category === category && r.status === "pending"
+    );
+
+    if (registrationIndex === -1) {
+      return res.status(404).json({ message: "Pending registration not found" });
+    }
+
+    // Remove the registration from the tournament
+    tournament.registrations.splice(registrationIndex, 1);
+
+    await tournament.save();
+
+    res.json({ 
+      message: "Player registration rejected successfully",
+      rejectionReason: reason
+    });
+  } catch (error) {
+    console.error("Error rejecting player:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -479,3 +788,161 @@ exports.deleteRegistration = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+// ✅ Register for tournament
+const registerForTournament = async (req, res) => {
+  try {
+    console.log('🔹 Tournament registration request received');
+    console.log('🔹 Request body:', req.body);
+    console.log('🔹 Request user:', req.user);
+    console.log('🔹 Request file:', req.file);
+    
+    const { 
+      tournamentId, 
+      category, 
+      partnerId, 
+      playerName, 
+      playerEmail, 
+      playerPhone, 
+      emergencyContact, 
+      emergencyPhone,
+      teamName,
+      teamMembers
+    } = req.body;
+
+    // Validate required fields
+    if (!tournamentId || !category || !playerName || !playerEmail) {
+      console.log('❌ Missing required fields:', { tournamentId, category, playerName, playerEmail });
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      console.log('❌ User not authenticated');
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    // Find the tournament
+    const tournament = await Tournament.findById(tournamentId);
+    if (!tournament) {
+      return res.status(404).json({ message: "Tournament not found" });
+    }
+
+    // Check if player is already registered in this category
+    const alreadyRegistered = tournament.registrations.some(
+      r => r.player.toString() === req.user._id.toString() && r.category === category
+    );
+    if (alreadyRegistered) {
+      return res.status(400).json({ message: "You are already registered in this category" });
+    }
+
+    // Handle proof of payment file
+    let proofOfPaymentPath = null;
+    if (req.file) {
+      proofOfPaymentPath = `/uploads/tournaments/${req.file.filename}`;
+    }
+
+    // Create registration object
+    const registration = {
+      player: req.user._id,
+      category,
+      status: "pending",
+      playerName,
+      playerEmail,
+      playerPhone,
+      emergencyContact,
+      emergencyPhone,
+      proofOfPayment: proofOfPaymentPath,
+      registrationDate: new Date()
+    };
+
+    // Add partner if provided (for doubles categories)
+    if (partnerId) {
+      registration.partner = partnerId;
+    }
+
+    // Add team data if provided (for team categories)
+    if (teamName) {
+      registration.teamName = teamName;
+    }
+    
+    // 🔍 DEBUG: Log all request body data for team registration debugging
+    console.log('🔍 REGISTRATION DEBUG - Full request body:', JSON.stringify(req.body, null, 2));
+    console.log('🔍 REGISTRATION DEBUG - Request body keys:', Object.keys(req.body));
+    console.log('🔍 REGISTRATION DEBUG - Team-related data:', {
+      teamName,
+      hasTeamMembers: !!req.body.teamMembers,
+      teamMembersValue: req.body.teamMembers,
+      teamMembersType: typeof req.body.teamMembers,
+      teamMemberKeys: Object.keys(req.body).filter(key => key.startsWith('teamMembers[')),
+      allTeamMemberKeys: Object.keys(req.body).filter(key => key.includes('teamMember'))
+    });
+
+    // Handle teamMembers - can come as individual array items from FormData
+    if (req.body.teamMembers || Object.keys(req.body).some(key => key.startsWith('teamMembers['))) {
+      let teamMemberIds = [];
+      
+      console.log('🔍 TEAM MEMBERS PROCESSING - Starting team member processing');
+      
+      // Check if teamMembers is sent as a JSON string (old format)
+      if (req.body.teamMembers && typeof req.body.teamMembers === 'string') {
+        console.log('🔍 TEAM MEMBERS - Processing as JSON string:', req.body.teamMembers);
+        try {
+          teamMemberIds = JSON.parse(req.body.teamMembers);
+          console.log('🔍 TEAM MEMBERS - Parsed JSON result:', teamMemberIds);
+        } catch (error) {
+          console.error('❌ Error parsing teamMembers JSON:', error);
+          return res.status(400).json({ message: "Invalid team members data format" });
+        }
+      }
+      // Check if teamMembers is sent as individual array items (new format)
+      else {
+        const teamMemberKeys = Object.keys(req.body).filter(key => key.startsWith('teamMembers['));
+        console.log('🔍 TEAM MEMBERS - Processing as FormData array:', teamMemberKeys);
+        teamMemberIds = teamMemberKeys.map(key => req.body[key]).filter(id => id && id !== '');
+        console.log('🔍 TEAM MEMBERS - Extracted IDs:', teamMemberIds);
+      }
+      
+      console.log('🔍 TEAM MEMBERS - Final team member IDs before validation:', teamMemberIds);
+      
+      // Validate that all team member IDs are valid ObjectIds
+      if (Array.isArray(teamMemberIds) && teamMemberIds.length > 0) {
+        const mongoose = require('mongoose');
+        const validIds = teamMemberIds.filter(id => mongoose.Types.ObjectId.isValid(id));
+        console.log('🔍 TEAM MEMBERS - Validation results:', {
+          originalCount: teamMemberIds.length,
+          validCount: validIds.length,
+          originalIds: teamMemberIds,
+          validIds: validIds
+        });
+        
+        if (validIds.length !== teamMemberIds.length) {
+          console.log('❌ TEAM MEMBERS - Invalid IDs detected');
+          return res.status(400).json({ message: "Invalid team member IDs provided" });
+        }
+        registration.teamMembers = validIds;
+        console.log('✅ TEAM MEMBERS - Successfully added to registration:', validIds);
+      } else {
+        console.log('⚠️ TEAM MEMBERS - No valid team member IDs found');
+      }
+    } else {
+      console.log('⚠️ TEAM MEMBERS - No team member data found in request');
+    }
+
+    // Add registration to tournament
+    tournament.registrations.push(registration);
+    await tournament.save();
+
+    res.status(201).json({ 
+      message: "Registration submitted successfully. Awaiting club admin approval.",
+      registration 
+    });
+
+  } catch (error) {
+    console.error("Tournament registration error:", error);
+    res.status(500).json({ message: "Server error during registration" });
+  }
+};
+
+// Export the new function
+exports.registerForTournament = registerForTournament;

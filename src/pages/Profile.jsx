@@ -4244,6 +4244,11 @@ const token = user?.token;
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedPlayerToReject, setSelectedPlayerToReject] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  
+  // Team member modal states
+  const [showTeamMembersModal, setShowTeamMembersModal] = useState(false);
+  const [selectedTeamRegistration, setSelectedTeamRegistration] = useState(null);
+  
   const [activePlayerTab, setActivePlayerTab] = useState('approved');
   const [selectedPlayerCategory, setSelectedPlayerCategory] = useState('all');
   const [expandedCategories, setExpandedCategories] = useState({});
@@ -5241,7 +5246,7 @@ setRegistrationForm({
 
   // Primary player info
   primaryPlayer: {
-    pplId: user.pplId || `PPL${Math.floor(Math.random() * 10000)}`, // fallback ID
+    pplId: user.pplId || '', // use actual PPL ID or empty string
     name: `${user.firstName} ${user.lastName}`,
     gender: user.gender || 'male',
     age: user.birthDate
@@ -7793,6 +7798,168 @@ const duprRatings = userProfile?.duprRatings
                                          </div>
                                        </div>
                                      </div>
+                                     
+                                     {/* Partner Information for Doubles Categories */}
+                                     {(() => {
+                                       const categoryData = selectedTournament.tournamentCategories && 
+                                         Object.values(selectedTournament.tournamentCategories).find(cat => cat._id.toString() === player.category);
+                                       const isDoublesCategory = categoryData?.division?.toLowerCase().includes('doubles');
+                                       
+                                       return isDoublesCategory && player.partner && (
+                                         <>
+                                     <div style={{
+                                       fontSize: '0.8rem',
+                                       color: '#64748b',
+                                       fontWeight: '600',
+                                       marginBottom: '12px',
+                                       marginTop: '16px',
+                                       textAlign: 'left'
+                                     }}>
+                                       Partner Information
+                                     </div>
+                                     <div style={{
+                                       display: 'flex',
+                                       alignItems: 'flex-start',
+                                       gap: '12px',
+                                       marginBottom: '16px'
+                                     }}>
+                                       <div style={{
+                                         width: '50px',
+                                         height: '50px',
+                                         borderRadius: '50%',
+                                         background: 'linear-gradient(135deg, #29ba9b, #1e40af)',
+                                         display: 'flex',
+                                         alignItems: 'center',
+                                         justifyContent: 'center',
+                                         color: 'white',
+                                         fontWeight: '600',
+                                         fontSize: '16px',
+                                         flexShrink: 0
+                                       }}>
+                                         {(() => {
+                                           const partnerName = player.partner.firstName && player.partner.lastName 
+                                             ? `${player.partner.firstName} ${player.partner.lastName}` 
+                                             : player.partner.name || 'Partner Name Not Available';
+                                           return partnerName
+                                             .split(" ")
+                                             .filter(Boolean)
+                                             .map(n => n[0] || "")
+                                             .join("")
+                                             .toUpperCase() || "P";
+                                         })()}
+                                       </div>
+                                       <div style={{ flex: 1 }}>
+                                         <div style={{
+                                           fontSize: '1.1rem',
+                                           fontWeight: '700',
+                                           color: '#334155',
+                                           textAlign: 'left'
+                                         }}>
+                                           {player.partner.firstName && player.partner.lastName 
+                                             ? `${player.partner.firstName} ${player.partner.lastName}` 
+                                             : player.partner.name || 'Partner Name Not Available'}
+                                         </div>
+                                       </div>
+                                     </div>
+                                     <div style={{
+                                       display: 'grid',
+                                       gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                       gap: '12px',
+                                       marginBottom: '16px'
+                                     }}>
+                                       <div style={{
+                                         background: '#FFFFFF',
+                                         padding: '0px',
+                                         borderRadius: '6px',
+                                         textAlign: 'center'
+                                       }}>
+                                         <div style={{
+                                           fontSize: '0.7rem',
+                                           color: '#64748b',
+                                           fontWeight: '500',
+                                           marginBottom: '2px'
+                                         }}>
+                                           PPL ID
+                                         </div>
+                                         <div style={{
+                                           fontSize: '0.85rem',
+                                           fontWeight: '600',
+                                           color: '#29ba9b'
+                                         }}>
+                                           {player.partner.pplId || 'N/A'}
+                                         </div>
+                                       </div>
+                                       <div style={{
+                                         background: '#FFFFFF',
+                                         padding: '0px',
+                                         borderRadius: '6px',
+                                         textAlign: 'center'
+                                       }}>
+                                         <div style={{
+                                           fontSize: '0.7rem',
+                                           color: '#64748b',
+                                           fontWeight: '500',
+                                           marginBottom: '2px'
+                                         }}>
+                                           GENDER
+                                         </div>
+                                         <div style={{
+                                           fontSize: '0.85rem',
+                                           fontWeight: '500',
+                                           color: '#334155',
+                                           textTransform: 'capitalize'
+                                         }}>
+                                           {player.partner.gender || 'N/A'}
+                                         </div>
+                                       </div>
+                                       <div style={{
+                                         background: '#FFFFFF',
+                                         padding: '0px',
+                                         borderRadius: '6px',
+                                         textAlign: 'center'
+                                       }}>
+                                         <div style={{
+                                           fontSize: '0.7rem',
+                                           color: '#64748b',
+                                           fontWeight: '500',
+                                           marginBottom: '2px'
+                                         }}>
+                                           Age
+                                         </div>
+                                         <div style={{
+                                           fontSize: '0.85rem',
+                                           fontWeight: '500',
+                                           color: '#334155'
+                                         }}>
+                                           {player.partner.age || 'N/A'}
+                                         </div>
+                                       </div>
+                                       <div style={{
+                                         background: '#FFFFFF',
+                                         padding: '0px',
+                                         borderRadius: '6px',
+                                         textAlign: 'center'
+                                       }}>
+                                         <div style={{
+                                           fontSize: '0.7rem',
+                                           color: '#64748b',
+                                           fontWeight: '500',
+                                           marginBottom: '2px'
+                                         }}>
+                                           DUPR ID
+                                         </div>
+                                         <div style={{
+                                           fontSize: '0.85rem',
+                                           fontWeight: '700',
+                                           color: '#29ba9b'
+                                         }}>
+                                           {player.partner.duprRatings?.doubles || player.partner.duprRatings?.singles || 'N/A'}
+                                         </div>
+                                       </div>
+                                     </div>
+                                         </>
+                                       );
+                                     })()}
                                      </div>
                                      </div>
                                      
@@ -8032,106 +8199,325 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                         {(player?.playerName || "").replace(/["'].*?["']/g, "").trim()}
                                       </div>
                                       
-                                      {/* Player Details in One Row */}
-                                      <div style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                                        gap: '12px',
-                                        marginBottom: '16px'
-                                      }}>
-                                        <div style={{
-                                          background: '#FFFFFF',
-                                          padding: '0px',
-                                          borderRadius: '6px',
-                                          textAlign: 'center'
-                                        }}>
-                                          <div style={{
-                                            fontSize: '0.7rem',
-                                            color: '#64748b',
-                                            fontWeight: '500',
-                                            marginBottom: '2px'
-                                          }}>
-                                            PPL ID
-                                          </div>
-                                          <div style={{
-                                            fontSize: '0.85rem',
-                                            fontWeight: '600',
-                                            color: '#f59e0b'
-                                          }}>
-                                            {player.pplId || 'PPL' + String(Math.floor(Math.random() * 9000) + 1000)}
-                                          </div>
-                                        </div>
-                                        <div style={{
-                                          background: '#FFFFFF',
-                                          padding: '0px',
-                                          borderRadius: '6px',
-                                          textAlign: 'center'
-                                        }}>
-                                          <div style={{
-                                            fontSize: '0.7rem',
-                                            color: '#64748b',
-                                            fontWeight: '500',
-                                            marginBottom: '2px'
-                                          }}>
-                                            GENDER
-                                          </div>
-                                          <div style={{
-                                            fontSize: '0.85rem',
-                                            fontWeight: '500',
-                                            color: '#334155',
-                                            textTransform: 'capitalize'
-                                          }}>
-                                            {player.gender || 'Not specified'}
-                                          </div>
-                                        </div>
-                                        <div style={{
-                                          background: '#FFFFFF',
-                                          padding: '0px',
-                                          borderRadius: '6px',
-                                          textAlign: 'center'
-                                        }}>
-                                          <div style={{
-                                            fontSize: '0.7rem',
-                                            color: '#64748b',
-                                            fontWeight: '500',
-                                            marginBottom: '2px'
-                                          }}>
-                                           <div>
-  AGE
-</div>
-<div style={{
-  fontSize: '0.85rem',
-  fontWeight: '500',
-  color: '#334155'
-}}>
-{getAge(player.birthDate)}
-  </div>
-
-
-                                            DUPR 
-                                          </div>
-                                          <div style={{
-                                            fontSize: '0.85rem',
-                                            fontWeight: '700',
-                                            color: '#f59e0b'
-                                          }}>
-                                            {(() => {
-  const category = selectedTournament.tournamentCategories &&
-    Object.values(selectedTournament.tournamentCategories).find(cat => cat._id.toString() === player.category);
-
-  const categoryType = (category?.name || "").toLowerCase();
-
-  if (categoryType.includes("singles")) {
-    return player.duprRatings?.singles || "4.2";
-  } else if (categoryType.includes("doubles") || categoryType.includes("mixed")) {
-    return player.duprRatings?.doubles || "4.1";
-  }
-  return player.duprRatings?.doubles || "4.1";
-})()}
-
-                                          </div>
-                                        </div>
-                                      </div>
+                                      {/* Player Details - Show team name for team categories, individual details for others */}
+                                      {(() => {
+                                        // Check if this is a team category
+                                        const categoryData = selectedTournament.tournamentCategories && 
+                                          Object.values(selectedTournament.tournamentCategories).find(cat => 
+                                            cat._id === player.category || 
+                                            cat._id.toString() === player.category || 
+                                            cat.division === player.category
+                                          );
+                                        
+                                        // DEBUG: Log player data structure
+                                        console.log('🔍 PLAYER DATA DEBUG:', {
+                                          playerObject: player,
+                                          playerKeys: Object.keys(player),
+                                          nestedPlayerObject: player.player,
+                                          nestedPlayerKeys: player.player ? Object.keys(player.player) : null,
+                                          pplId: player.player?.pplId,
+                                          gender: player.player?.gender,
+                                          birthDate: player.player?.birthDate,
+                                          duprId: player.player?.duprId,
+                                          category: player.category,
+                                          categoryData: categoryData,
+                                          calculatedAge: getAge(player.player?.birthDate)
+                                        });
+                                        
+                                        const isTeamCategory = categoryData?.division?.toLowerCase().includes('team');
+                                        const isDoublesCategory = categoryData?.division?.toLowerCase().includes('doubles');
+                                        
+                                        if (isTeamCategory) {
+                                          // Show only team name for team categories
+                                          return (
+                                            <div style={{
+                                              background: '#fef3c7',
+                                              padding: '12px',
+                                              borderRadius: '8px',
+                                              marginBottom: '16px',
+                                              textAlign: 'center'
+                                            }}>
+                                              <div style={{
+                                                fontSize: '0.8rem',
+                                                color: '#92400e',
+                                                fontWeight: '500',
+                                                marginBottom: '4px'
+                                              }}>
+                                                TEAM NAME
+                                              </div>
+                                              <div style={{
+                                                fontSize: '1rem',
+                                                fontWeight: '700',
+                                                color: '#f59e0b'
+                                              }}>
+                                                {player.teamName || 'Team Name Not Available'}
+                                              </div>
+                                            </div>
+                                          );
+                                        } else {
+                                          // Show individual player details for non-team categories
+                                          return (
+                                            <div>
+                                              {/* Primary Player Details */}
+                                              <div style={{
+                                                display: 'grid',
+                                                gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                                gap: '12px',
+                                                marginBottom: '16px'
+                                              }}>
+                                                <div style={{
+                                                  background: '#FFFFFF',
+                                                  padding: '0px',
+                                                  borderRadius: '6px',
+                                                  textAlign: 'center'
+                                                }}>
+                                                  <div style={{
+                                                    fontSize: '0.7rem',
+                                                    color: '#64748b',
+                                                    fontWeight: '500',
+                                                    marginBottom: '2px'
+                                                  }}>
+                                                    PPL ID
+                                                  </div>
+                                                  <div style={{
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: '600',
+                                                    color: '#f59e0b'
+                                                  }}>
+                                                    {player.player?.pplId || 'N/A'}
+                                                  </div>
+                                                </div>
+                                                <div style={{
+                                                  background: '#FFFFFF',
+                                                  padding: '0px',
+                                                  borderRadius: '6px',
+                                                  textAlign: 'center'
+                                                }}>
+                                                  <div style={{
+                                                    fontSize: '0.7rem',
+                                                    color: '#64748b',
+                                                    fontWeight: '500',
+                                                    marginBottom: '2px'
+                                                  }}>
+                                                    GENDER
+                                                  </div>
+                                                  <div style={{
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: '500',
+                                                    color: '#334155',
+                                                    textTransform: 'capitalize'
+                                                  }}>
+                                                    {player.player?.gender || 'Not specified'}
+                                                  </div>
+                                                </div>
+                                                <div style={{
+                                                  background: '#FFFFFF',
+                                                  padding: '0px',
+                                                  borderRadius: '6px',
+                                                  textAlign: 'center'
+                                                }}>
+                                                  <div style={{
+                                                    fontSize: '0.7rem',
+                                                    color: '#64748b',
+                                                    fontWeight: '500',
+                                                    marginBottom: '2px'
+                                                  }}>
+                                                    AGE
+                                                  </div>
+                                                  <div style={{
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: '500',
+                                                    color: '#334155'
+                                                  }}>
+                                                    {getAge(player.player?.birthDate)}
+                                                  </div>
+                                                </div>
+                                                <div style={{
+                                                  background: '#FFFFFF',
+                                                  padding: '0px',
+                                                  borderRadius: '6px',
+                                                  textAlign: 'center'
+                                                }}>
+                                                  <div style={{
+                                                    fontSize: '0.7rem',
+                                                    color: '#64748b',
+                                                    fontWeight: '500',
+                                                    marginBottom: '2px'
+                                                  }}>
+                                                    DUPR ID
+                                                  </div>
+                                                  <div style={{
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: '600',
+                                                    color: '#f59e0b'
+                                                  }}>
+                                                    {player.player?.duprId || 'N/A'}
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              
+                                              {/* Partner Information for Doubles Categories */}
+                                              {isDoublesCategory && player.partner && (
+                                                <div style={{
+                                                  background: '#e0f2fe',
+                                                  padding: '12px',
+                                                  borderRadius: '8px',
+                                                  marginBottom: '16px',
+                                                  border: '1px solid #0284c7'
+                                                }}>
+                                                  <div style={{
+                                                    fontSize: '0.8rem',
+                                                    color: '#0369a1',
+                                                    fontWeight: '600',
+                                                    marginBottom: '8px',
+                                                    textAlign: 'center'
+                                                  }}>
+                                                    PARTNER INFORMATION
+                                                  </div>
+                                                  <div style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '12px',
+                                                    marginBottom: '8px',
+                                                    justifyContent: 'center'
+                                                  }}>
+                                                    <div style={{
+                                                      width: '40px',
+                                                      height: '40px',
+                                                      borderRadius: '50%',
+                                                      background: '#0284c7',
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      justifyContent: 'center',
+                                                      color: 'white',
+                                                      fontWeight: '600',
+                                                      fontSize: '14px',
+                                                      flexShrink: 0
+                                                    }}>
+                                                      {(() => {
+                                                        const partnerName = player.partner.firstName && player.partner.lastName 
+                                                          ? `${player.partner.firstName} ${player.partner.lastName}` 
+                                                          : player.partner.name || 'Partner Name Not Available';
+                                                        return partnerName
+                                                          .split(" ")
+                                                          .filter(Boolean)
+                                                          .map(n => n[0] || "")
+                                                          .join("")
+                                                          .toUpperCase() || "P";
+                                                      })()}
+                                                    </div>
+                                                    <div style={{
+                                                       fontSize: '0.9rem',
+                                                       fontWeight: '600',
+                                                       color: '#0f172a',
+                                                       textAlign: 'left'
+                                                     }}>
+                                                       {player.partner.firstName && player.partner.lastName 
+                                                         ? `${player.partner.firstName} ${player.partner.lastName}` 
+                                                         : player.partner.name || 'Partner Name Not Available'}
+                                                     </div>
+                                                  </div>
+                                                  <div style={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: '1fr 1fr 1fr 1fr',
+                                                    gap: '8px'
+                                                  }}>
+                                                    <div style={{
+                                                      background: '#FFFFFF',
+                                                      padding: '6px',
+                                                      borderRadius: '4px',
+                                                      textAlign: 'center'
+                                                    }}>
+                                                      <div style={{
+                                                        fontSize: '0.65rem',
+                                                        color: '#64748b',
+                                                        fontWeight: '500',
+                                                        marginBottom: '2px'
+                                                      }}>
+                                                        PPL ID
+                                                      </div>
+                                                      <div style={{
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        color: '#0284c7'
+                                                      }}>
+                                                        {player.partner.pplId || 'N/A'}
+                                                      </div>
+                                                    </div>
+                                                    <div style={{
+                                                      background: '#FFFFFF',
+                                                      padding: '6px',
+                                                      borderRadius: '4px',
+                                                      textAlign: 'center'
+                                                    }}>
+                                                      <div style={{
+                                                        fontSize: '0.65rem',
+                                                        color: '#64748b',
+                                                        fontWeight: '500',
+                                                        marginBottom: '2px'
+                                                      }}>
+                                                        GENDER
+                                                      </div>
+                                                      <div style={{
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '500',
+                                                        color: '#334155',
+                                                        textTransform: 'capitalize'
+                                                      }}>
+                                                        {player.partner.gender || 'N/A'}
+                                                      </div>
+                                                    </div>
+                                                    <div style={{
+                                                      background: '#FFFFFF',
+                                                      padding: '6px',
+                                                      borderRadius: '4px',
+                                                      textAlign: 'center'
+                                                    }}>
+                                                      <div style={{
+                                                        fontSize: '0.65rem',
+                                                        color: '#64748b',
+                                                        fontWeight: '500',
+                                                        marginBottom: '2px'
+                                                      }}>
+                                                        AGE
+                                                      </div>
+                                                      <div style={{
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '500',
+                                                        color: '#334155'
+                                                      }}>
+                                                        {player.partner.age || 'N/A'}
+                                                      </div>
+                                                    </div>
+                                                    <div style={{
+                                                      background: '#FFFFFF',
+                                                      padding: '6px',
+                                                      borderRadius: '4px',
+                                                      textAlign: 'center'
+                                                    }}>
+                                                      <div style={{
+                                                        fontSize: '0.65rem',
+                                                        color: '#64748b',
+                                                        fontWeight: '500',
+                                                        marginBottom: '2px'
+                                                      }}>
+                                                        DUPR
+                                                      </div>
+                                                      <div style={{
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: '600',
+                                                        color: '#0284c7'
+                                                      }}>
+                                                        {player.partner.duprRatings?.doubles || player.partner.duprRatings?.singles || 'N/A'}
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        }
+                                      })()}
                                       {/* Category Display */}
                                       {selectedPlayerCategory === 'all' && (
                                         <div style={{
@@ -8156,7 +8542,11 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                             color: '#f59e0b'
                                           }}>
                                             {selectedTournament.tournamentCategories && 
-                                              Object.values(selectedTournament.tournamentCategories).find(cat => cat._id.toString() === player.category)?.name || 'Unknown Category'}
+                                              Object.values(selectedTournament.tournamentCategories).find(cat => 
+                                                cat._id === player.category || 
+                                                cat._id.toString() === player.category || 
+                                                cat.division === player.category
+                                              )?.division || 'Unknown Category'}
                                           </div>
                                         </div>
                                       )}
@@ -8196,13 +8586,97 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                             e.target.style.boxShadow = '0 2px 4px rgba(59, 130, 246, 0.2)';
                                           }}
                                           onClick={() => {
-                                            setSelectedPlayerAttachment({
-                                              playerName: player.playerName,
-                                              playerId: player.playerId,
-                                              // Using a dummy image URL - replace with actual attachment URL from player data
-                                              attachmentUrl: 'https://via.placeholder.com/600x400/3b82f6/ffffff?text=Payment+Proof'
-                                            });
-                                            setShowAttachmentModal(true);
+                                            // Check if this is a team category
+                                            const category = selectedTournament.tournamentCategories &&
+                                              Object.values(selectedTournament.tournamentCategories).find(cat => cat._id.toString() === player.category);
+                                            
+                                            const isTeamCategory = category?.division?.toLowerCase().includes('team');
+                                            
+                                            if (isTeamCategory) {
+                                              // Find the full registration data for team members
+                                              const registration = selectedTournament.registrations?.find(reg => 
+                                                reg.player?._id === player.playerId && 
+                                                reg.category === player.category &&
+                                                reg.status === 'pending'
+                                              );
+                                              
+                                              setSelectedTeamRegistration({
+                                                playerName: player.playerName,
+                                                playerId: player.playerId,
+                                                teamName: registration?.teamName || 'Unknown Team',
+                                                teamMembers: registration?.teamMembers || [],
+                                                category: category?.division + ' - ' + category?.skillLevel
+                                              });
+                                              setShowTeamMembersModal(true);
+                                            } else {
+                                              // Find the full registration data for individual categories
+                                              // Try multiple matching strategies since player ID format may vary
+                                              const registration = selectedTournament.registrations?.find(reg => {
+                                                const regPlayerId = reg.player?._id || reg.player;
+                                                const playerIdToMatch = player.playerId || player.player?._id;
+                                                
+                                                return (
+                                                  (regPlayerId === playerIdToMatch || 
+                                                   regPlayerId?.toString() === playerIdToMatch?.toString()) &&
+                                                  reg.category === player.category &&
+                                                  reg.status === 'pending'
+                                                );
+                                              });
+                                              
+                                              // Debug logging to understand the data structure
+                                              console.log('🔍 DEBUG - Registration lookup:', {
+                                                playerData: player,
+                                                playerId: player.playerId,
+                                                playerObjectId: player.player?._id,
+                                                category: player.category,
+                                                foundRegistration: registration,
+                                                registrationKeys: registration ? Object.keys(registration) : 'No registration found',
+                                                playerEmail: registration?.playerEmail,
+                                                playerPhone: registration?.playerPhone,
+                                                proofOfPayment: registration?.proofOfPayment,
+                                                // Also check old field names
+                                                email: registration?.email,
+                                                contactNumber: registration?.contactNumber,
+                                                allRegistrations: selectedTournament.registrations?.map(r => ({
+                                                  regPlayerId: r.player?._id || r.player,
+                                                  regPlayerIdType: typeof (r.player?._id || r.player),
+                                                  category: r.category,
+                                                  status: r.status,
+                                                  playerName: r.playerName,
+                                                  hasPlayerEmail: !!r.playerEmail,
+                                                  hasPlayerPhone: !!r.playerPhone,
+                                                  hasEmail: !!r.email,
+                                                  hasContactNumber: !!r.contactNumber,
+                                                  hasProof: !!r.proofOfPayment
+                                                }))
+                                              });
+                                              
+                                              console.log('=== PROOF OF PAYMENT DEBUG ===');
+                                              console.log('Registration object:', registration);
+                                              console.log('Registration proofOfPayment:', registration?.proofOfPayment);
+                                              console.log('Registration proofOfPayment type:', typeof registration?.proofOfPayment);
+                                              console.log('Registration proofOfPayment length:', registration?.proofOfPayment?.length);
+                                              console.log('All registration keys:', registration ? Object.keys(registration) : 'No registration');
+                                              
+                                              // Show payment proof for individual categories
+                                              // Use player.playerObject which contains the actual registration data
+                                              const regData = player.playerObject || registration;
+                                              setSelectedPlayerAttachment({
+                                                playerName: player.playerName,
+                                                // Only show PPLID for security, prioritize registration data structure
+                                                playerId: regData?.playerName?.match(/PPLID:\s*(\S+)/)?.[1] || player.player?.pplId || 'N/A',
+                                                // Use registration data structure - try both new and old field names
+                                                email: regData?.playerEmail || regData?.email || 'Not provided',
+                                                phoneNumber: regData?.playerPhone || regData?.contactNumber || 'Not provided',
+                                                // Use proof of payment from registration data - construct full URL if needed
+                                                attachmentUrl: regData?.proofOfPayment ? 
+                                                  (regData.proofOfPayment.startsWith('http') ? 
+                                                    regData.proofOfPayment : 
+                                                    `http://localhost:5000${regData.proofOfPayment}`) :
+                                                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDYwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjM0I4MkY2Ii8+Cjx0ZXh0IHg9IjMwMCIgeT0iMjAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiPlBheW1lbnQgUHJvb2Y8L3RleHQ+Cjx0ZXh0IHg9IjMwMCIgeT0iMjMwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNiI+Tm90IFByb3ZpZGVkPC90ZXh0Pgo8L3N2Zz4K'
+                                              });
+                                              setShowAttachmentModal(true);
+                                            }
                                           }}
                                         >
                                           View
@@ -8268,9 +8742,113 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                             e.target.style.transform = 'translateY(0)';
                                             e.target.style.boxShadow = '0 2px 4px rgba(245, 158, 11, 0.2)';
                                           }}
-                                          onClick={() => {
-                                            // Handle approve logic here
-                                            console.log('Approve player:', player.playerName);
+                                          onClick={async () => {
+                                            try {
+                                              console.log('=== APPROVE PLAYER DEBUG ===');
+                                              console.log('Full player object:', player);
+                                              console.log('player.playerObject:', player.playerObject);
+                                              console.log('player.playerObject keys:', Object.keys(player.playerObject || {}));
+                                              
+                                              // The player object is actually a registration record
+                                              // player.player contains the actual player data
+                                              // player.category contains the category ID
+                                              console.log('Registration record:', player);
+                                              console.log('Player data:', player.player);
+                                              console.log('Category:', player.category);
+                                              
+                                              const playerId = player.player?._id || player.player;
+                                              const categoryId = player.category;
+                                              
+                                              console.log('Extracted values:', {
+                                                playerId,
+                                                categoryId,
+                                                playerName: player.playerName
+                                              });
+                                              
+                                              if (!playerId || !categoryId) {
+                                                console.error('Missing data - playerId:', playerId, 'categoryId:', categoryId);
+                                                alert('Error: Missing player or category information');
+                                                return;
+                                              }
+                                              
+                                              // Debug authentication
+                                              const token = localStorage.getItem('token');
+                                              const userFromStorage = JSON.parse(localStorage.getItem('user') || '{}');
+                                              console.log('=== AUTH DEBUG ===');
+                                              console.log('Token exists:', !!token);
+                                              console.log('Token length:', token ? token.length : 0);
+                                              console.log('Token preview:', token ? token.substring(0, 50) + '...' : 'null');
+                                              console.log('User from localStorage:', userFromStorage);
+                                              console.log('User token from user object:', userFromStorage.token);
+                                              console.log('User role:', userFromStorage.role);
+                                              
+                                              // Use token from user object if available, fallback to direct token
+                                              const authToken = userFromStorage.token || token;
+                                              
+                                              // Check if token is malformed
+                                              if (authToken && authToken.split('.').length !== 3) {
+                                                console.error('❌ JWT token is malformed - should have 3 parts separated by dots');
+                                                alert('Your session has expired or is invalid. Please sign in again.');
+                                                localStorage.removeItem('token');
+                                                localStorage.removeItem('user');
+                                                window.location.href = '/signin';
+                                                return;
+                                              }
+                                              
+                                              if (!authToken) {
+                                                console.error('❌ No authentication token found');
+                                                alert('Please sign in to approve players.');
+                                                window.location.href = '/signin';
+                                                return;
+                                              }
+                                              
+                                              console.log('Using token:', authToken ? authToken.substring(0, 50) + '...' : 'null');
+                                              console.log('==================');
+                                              
+                                              const response = await fetch(`/api/tournaments/${selectedTournament._id}/registrations/approve`, {
+                                                method: 'POST',
+                                                headers: {
+                                                  'Content-Type': 'application/json',
+                                                  'Authorization': `Bearer ${authToken}`
+                                                },
+                                                body: JSON.stringify({
+                                                  playerId: playerId,
+                                                  category: categoryId
+                                                })
+                                              });
+                                              
+                                              const result = await response.json();
+                                              
+                                              if (response.ok) {
+                                                alert(`Player ${player.playerName} has been approved successfully!`);
+                                                // Refresh the tournament data
+                                                try {
+                                                  const refreshResponse = await fetch(`/api/tournaments/${selectedTournament._id}`, {
+                                                    headers: { 
+                                                      'Authorization': `Bearer ${authToken}`,
+                                                      'Content-Type': 'application/json',
+                                                      'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                                      'Pragma': 'no-cache',
+                                                      'Expires': '0'
+                                                    },
+                                                  });
+                                                  
+                                                  if (refreshResponse.ok) {
+                                                    const updatedTournament = await refreshResponse.json();
+                                                    setSelectedTournament(updatedTournament);
+                                                    console.log('✅ Tournament data refreshed after approval');
+                                                  }
+                                                } catch (refreshError) {
+                                                  console.error('Error refreshing tournament data:', refreshError);
+                                                }
+                                              } else {
+                                                console.error('Approval failed:', result);
+                                                alert(`Failed to approve player: ${result.message || 'Unknown error'}`);
+                                              }
+                                            } catch (error) {
+                                              console.error('Error approving player:', error);
+                                              alert('Error approving player. Please try again.');
+                                            }
                                           }}
                                         >
                                           Approve
@@ -12007,7 +12585,7 @@ const EditBioButton = styled.button`
                 color: '#234255',
                 margin: 0
               }}>
-                Payment Proof - {selectedPlayerAttachment.playerName}
+                Registrant Details - {selectedPlayerAttachment.playerName}
               </h2>
               <button
                 style={{
@@ -12039,49 +12617,148 @@ const EditBioButton = styled.button`
               padding: '32px',
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'center',
-              gap: '20px',
+              gap: '24px',
               maxHeight: 'calc(90vh - 120px)',
               overflow: 'auto'
             }}>
-              <img
-                src={selectedPlayerAttachment.attachmentUrl}
-                alt={`Payment proof for ${selectedPlayerAttachment.playerName}`}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '500px',
-                  objectFit: 'contain',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'block';
-                }}
-              />
+              {/* Registrant Information Section */}
               <div style={{
-                display: 'none',
-                textAlign: 'center',
-                padding: '40px',
-                color: '#64748b',
                 backgroundColor: '#f8fafc',
-                borderRadius: '8px',
-                border: '2px dashed #cbd5e1'
+                padding: '20px',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0'
               }}>
-                <div style={{ fontSize: '2rem', marginBottom: '16px' }}>📄</div>
-                <div>Unable to load attachment</div>
-                <div style={{ fontSize: '0.875rem', marginTop: '8px' }}>
-                  The attachment file could not be displayed
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                  color: '#234255',
+                  margin: '0 0 16px 0'
+                }}>
+                  Contact Information
+                </h3>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '16px'
+                }}>
+                  <div>
+                    <div style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: '#64748b',
+                      marginBottom: '4px'
+                    }}>
+                      Email Address
+                    </div>
+                    <div style={{
+                      fontSize: '0.875rem',
+                      color: '#334155',
+                      fontFamily: 'monospace',
+                      backgroundColor: 'white',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      {selectedPlayerAttachment.email}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: '#64748b',
+                      marginBottom: '4px'
+                    }}>
+                      Phone Number
+                    </div>
+                    <div style={{
+                      fontSize: '0.875rem',
+                      color: '#334155',
+                      fontFamily: 'monospace',
+                      backgroundColor: 'white',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      {selectedPlayerAttachment.phoneNumber}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: '#64748b',
+                      marginBottom: '4px'
+                    }}>
+                      PPLID
+                    </div>
+                    <div style={{
+                      fontSize: '0.875rem',
+                      color: '#334155',
+                      fontFamily: 'monospace',
+                      backgroundColor: 'white',
+                      padding: '8px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      {selectedPlayerAttachment.playerId}
+                    </div>
+                  </div>
                 </div>
               </div>
-              
+
+              {/* Payment Proof Section */}
               <div style={{
-                textAlign: 'center',
-                color: '#64748b',
-                fontSize: '0.875rem'
+                backgroundColor: '#f8fafc',
+                padding: '20px',
+                borderRadius: '12px',
+                border: '1px solid #e2e8f0'
               }}>
-                Player ID: {selectedPlayerAttachment.playerId}
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                  color: '#234255',
+                  margin: '0 0 16px 0'
+                }}>
+                  Proof of Payment
+                </h3>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                  <img
+                    src={selectedPlayerAttachment.attachmentUrl}
+                    alt={`Payment proof for ${selectedPlayerAttachment.playerName}`}
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '400px',
+                      objectFit: 'contain',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'block';
+                    }}
+                  />
+                  <div style={{
+                    display: 'none',
+                    textAlign: 'center',
+                    padding: '40px',
+                    color: '#64748b',
+                    backgroundColor: 'white',
+                    borderRadius: '8px',
+                    border: '2px dashed #cbd5e1'
+                  }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '16px' }}>📄</div>
+                    <div>Unable to load payment proof</div>
+                    <div style={{ fontSize: '0.875rem', marginTop: '8px' }}>
+                      The payment proof file could not be displayed
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -12520,6 +13197,205 @@ const EditBioButton = styled.button`
               >
                 Add Sponsor
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Team Members Modal */}
+      {showTeamMembersModal && selectedTeamRegistration && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '16px',
+            padding: '0',
+            maxWidth: '700px',
+            width: '100%',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: '24px 32px',
+              borderBottom: '1px solid #e2e8f0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <h2 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  color: '#234255',
+                  margin: 0,
+                  marginBottom: '4px'
+                }}>
+                  Team Members - {selectedTeamRegistration.teamName}
+                </h2>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#64748b',
+                  margin: 0
+                }}>
+                  {selectedTeamRegistration.category} | Captain: {selectedTeamRegistration.playerName}
+                </p>
+              </div>
+              <button
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  padding: '4px',
+                  borderRadius: '4px'
+                }}
+                onClick={() => {
+                  setShowTeamMembersModal(false);
+                  setSelectedTeamRegistration(null);
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f1f5f9';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div style={{
+              padding: '32px',
+              maxHeight: 'calc(90vh - 120px)',
+              overflow: 'auto'
+            }}>
+              {selectedTeamRegistration.teamMembers && selectedTeamRegistration.teamMembers.length > 0 ? (
+                <div style={{
+                  display: 'grid',
+                  gap: '16px'
+                }}>
+                  {selectedTeamRegistration.teamMembers.map((member, index) => (
+                    <div key={member._id || index} style={{
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px'
+                    }}>
+                      {/* Member Avatar */}
+                      <div style={{
+                        width: '50px',
+                        height: '50px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '1.2rem',
+                        fontWeight: '600'
+                      }}>
+                        {(member.firstName?.[0] || 'M') + (member.lastName?.[0] || '')}
+                      </div>
+                      
+                      {/* Member Info */}
+                      <div style={{ flex: 1 }}>
+                        <div style={{
+                          fontSize: '1.1rem',
+                          fontWeight: '600',
+                          color: '#1e293b',
+                          marginBottom: '4px'
+                        }}>
+                          {member.firstName} {member.lastName}
+                        </div>
+                        <div style={{
+                          display: 'flex',
+                          gap: '16px',
+                          fontSize: '0.875rem',
+                          color: '#64748b'
+                        }}>
+                          <span>PPL ID: {member.pplId || 'N/A'}</span>
+                          <span>Gender: {member.gender || 'N/A'}</span>
+                          {member.duprRatings && (
+                            <span>DUPR: {member.duprRatings.doubles || member.duprRatings.singles || 'N/A'}</span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Member Role Badge */}
+                      <div style={{
+                        background: index === 0 ? '#fef3c7' : '#e0f2fe',
+                        color: index === 0 ? '#92400e' : '#0369a1',
+                        padding: '4px 12px',
+                        borderRadius: '20px',
+                        fontSize: '0.75rem',
+                        fontWeight: '600'
+                      }}>
+                        {index === 0 ? 'Captain' : `Member ${index + 1}`}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div style={{
+                  textAlign: 'center',
+                  padding: '40px',
+                  color: '#64748b'
+                }}>
+                  <div style={{
+                    fontSize: '3rem',
+                    marginBottom: '16px',
+                    opacity: 0.5
+                  }}>
+                    👥
+                  </div>
+                  <p style={{
+                    fontSize: '1.1rem',
+                    fontWeight: '500',
+                    marginBottom: '8px',
+                    color: '#334155'
+                  }}>
+                    No team members found
+                  </p>
+                  <p style={{
+                    fontSize: '0.9rem',
+                    color: '#64748b'
+                  }}>
+                    Team member data is not available for this registration
+                  </p>
+                </div>
+              )}
+              
+              {/* Team Summary */}
+              <div style={{
+                marginTop: '24px',
+                padding: '16px',
+                background: '#f0f9ff',
+                border: '1px solid #bae6fd',
+                borderRadius: '8px',
+                fontSize: '0.875rem',
+                color: '#0369a1'
+              }}>
+                <strong>Team Summary:</strong> {selectedTeamRegistration.teamMembers?.length || 0} members registered
+              </div>
             </div>
           </div>
         </div>

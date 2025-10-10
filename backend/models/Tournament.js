@@ -8,6 +8,14 @@ const registrationSchema = new mongoose.Schema({
   proofOfPayment: { type: String },
   contactNumber: { type: String },
   email: { type: String },
+  // Additional registration fields
+  playerName: { type: String },
+  playerEmail: { type: String },
+  playerPhone: { type: String },
+  emergencyContact: { type: String },
+  emergencyPhone: { type: String },
+  teamName: { type: String }, // Team name for team registrations
+  registrationDate: { type: Date, default: Date.now },
   status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" }
 }, { timestamps: true });
 

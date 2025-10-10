@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
 import AuthModal from '../components/AuthModal';
+import RegistrationForm from '../components/RegistrationForm';
+import axios from 'axios';
 
 // Helper function to compute age
 const getAge = (birthDate) => {
@@ -259,7 +261,6 @@ const TournamentDetailType = styled.div`
   padding: 8px 16px;
   background: ${props => {
     switch (props.type) {
-      case 'novice': return '#fefce8';
       case 'beginner': return '#f0fdf4';
       case 'intermediate': return '#fef3c7';
       case 'advanced': return '#fef2f2';
@@ -270,7 +271,6 @@ const TournamentDetailType = styled.div`
   border-radius: 25px;
   color: ${props => {
     switch (props.type) {
-      case 'novice': return '#a16207';
       case 'beginner': return '#15803d';
       case 'intermediate': return '#d97706';
       case 'advanced': return '#dc2626';
@@ -283,7 +283,6 @@ const TournamentDetailType = styled.div`
   margin-bottom: 24px;
   border: 1px solid ${props => {
     switch (props.type) {
-      case 'novice': return '#fef08a';
       case 'beginner': return '#bbf7d0';
       case 'intermediate': return '#fde68a';
       case 'advanced': return '#fecaca';
@@ -2252,7 +2251,6 @@ const TournamentTypeDisplay = styled.div`
   margin-bottom: 16px;
   border: 1px solid ${props => {
     switch (props.type) {
-      case 'novice': return '#fef08a';
       case 'beginner': return '#bbf7d0';
       case 'intermediate': return '#fde68a';
       case 'advanced': return '#fecaca';
@@ -2348,46 +2346,27 @@ const RegistrationFee = styled(ParticipantCount)`
 const RegisterButton = styled.div`
   width: 100%;
   padding: 16px 24px;
-  background: #e2e8f0;
-  color: #94a3b8;
+  background: #29ba9b;
+  color: white;
   border: none;
   border-radius: 10px;
   font-size: 1rem;
   font-weight: 500;
-  cursor: not-allowed;
+  cursor: pointer;
   transition: all 0.2s ease;
-  opacity: 0.6;
   margin-top: 20px;
-  position: relative;
   text-align: center;
 
   &:hover {
-    &::after {
-      content: 'Will be available in future implementation';
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      white-space: nowrap;
-      z-index: 1000;
-      margin-bottom: 8px;
-    }
-    
-    &::before {
-      content: '';
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      border: 4px solid transparent;
-      border-top-color: rgba(0, 0, 0, 0.8);
-      margin-bottom: 4px;
-    }
+    background: #239b83;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 `;
 
@@ -3401,6 +3380,81 @@ const feeRanges = [
   fetchTournaments();
 }, []);
 
+// Add useEffect to restore selected tournament from localStorage on page load
+useEffect(() => {
+  const restoreSelectedTournament = async () => {
+    try {
+      const storedTournamentId = localStorage.getItem('selectedTournamentId');
+      console.log('🔍 Checking localStorage for selectedTournamentId:', storedTournamentId);
+      
+      // Only proceed if we have both a stored ID and tournaments are loaded
+      if (storedTournamentId && tournaments.length > 0) {
+        console.log('✅ Prerequisites met - proceeding with tournament restoration');
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        const token = storedUser?.token;
+
+        if (!token) {
+          console.log('❌ No token found, cannot restore tournament');
+          return;
+        }
+
+        console.log('🔄 Fetching tournament data for ID:', storedTournamentId);
+        
+        // Fetch fresh tournament data from server with cache-busting headers
+        const response = await fetch(`/api/tournaments/${storedTournamentId}`, {
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          },
+        });
+
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response ok:', response.ok);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.log('❌ Response error text:', errorText);
+          // Clear invalid tournament ID from localStorage
+          localStorage.removeItem('selectedTournamentId');
+          console.log('🗑️ Cleared invalid tournament ID from localStorage');
+          return;
+        }
+
+        const tournamentData = await response.json();
+        console.log('✅ Tournament data restored successfully!');
+        console.log('📊 Tournament name:', tournamentData.tournamentName);
+        console.log('📊 Tournament categories count:', tournamentData.tournamentCategories?.length);
+        
+        // Set the tournament and show detailed view
+        setSelectedTournament(tournamentData);
+        setShowDetailedView(true);
+        
+        // Load bracket mode from restored tournament data
+        if (tournamentData.tournamentCategories) {
+          const bracketModeState = {};
+          tournamentData.tournamentCategories.forEach(category => {
+            bracketModeState[category.id || category._id] = category.bracketMode || 4;
+          });
+          setBracketMode(bracketModeState);
+          console.log('🎯 Tournament.jsx - Restored bracket modes from localStorage:', JSON.stringify(bracketModeState, null, 2));
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error restoring tournament from localStorage:', error);
+      // Clear invalid tournament ID from localStorage on error
+      localStorage.removeItem('selectedTournamentId');
+    }
+  };
+
+  // Only run restoration after tournaments are loaded
+  if (tournaments.length > 0) {
+    restoreSelectedTournament();
+  }
+}, [tournaments]); // Depend on tournaments array
+
 const fetchTournaments = async () => {
   try {
     setLoading(true);
@@ -3411,6 +3465,24 @@ const fetchTournaments = async () => {
 
     const data = await res.json();
     setTournaments(data);
+    
+    // Initialize bracket mode state for all tournaments to ensure consistency on page reload
+    const allBracketModes = {};
+    data.forEach(tournament => {
+      if (tournament.tournamentCategories) {
+        tournament.tournamentCategories.forEach(category => {
+          const categoryId = category.id || category._id;
+          if (categoryId && category.bracketMode) {
+            allBracketModes[categoryId] = category.bracketMode;
+          }
+        });
+      }
+    });
+    
+    if (Object.keys(allBracketModes).length > 0) {
+      setBracketMode(allBracketModes);
+      console.log('🎯 Tournament.jsx - Initialized bracket modes from fetchTournaments:', allBracketModes);
+    }
   } catch (err) {
     console.error("Error fetching tournaments:", err);
     setError("Unable to load tournaments.");
@@ -3622,10 +3694,6 @@ useEffect(() => {
 
   // Handle tournament card click to show detailed view
   const handleRegisterClick = (tournament) => {
-  // Registration temporarily disabled
-  console.log('Registration is temporarily disabled');
-  return;
-  
   // 1️⃣ Set the selected tournament
   setSelectedTournament(tournament);
 
@@ -3658,6 +3726,9 @@ useEffect(() => {
       setActiveTab('details'); // Reset to details tab
       setExpandedCategories({}); // Reset expanded categories
       setPlayersSearchTerm(''); // Reset players search
+      // Clear stored tournament ID when closing detailed view
+      localStorage.removeItem('selectedTournamentId');
+      console.log('✅ Tournament detailed view closed and localStorage cleared');
     }
   };
 
@@ -3702,10 +3773,6 @@ useEffect(() => {
    * @param {string} tournamentId - Tournament identifier
    */
 const handleRegister = async (tournamentId) => {
-  // Registration temporarily disabled
-  console.log('Registration is temporarily disabled');
-  return;
-  
   // Wait for auth loading to complete
   if (authLoading) return;
 
@@ -3779,6 +3846,10 @@ const handleTournamentClick = async (tournament) => {
   setSelectedTournament(tournament);       // Set the clicked tournament initially
   setShowDetailedView(true);               // Open tournament details view
   setExpandedCategories({});               // Optional: collapse all categories initially
+  
+  // Store tournament ID for persistence
+  localStorage.setItem('selectedTournamentId', tournament._id);
+  console.log('✅ Tournament selected and stored in localStorage:', tournament._id);
   
   // Fetch full tournament details to get latest bracketMode data
   try {
@@ -4114,9 +4185,6 @@ const handleTournamentClick = async (tournament) => {
     const rating = duprRating ? parseFloat(duprRating) : null;
     
     switch (skillLevel.toLowerCase()) {
-      case 'novice':
-        // Novice: no DUPR to 2.5
-        return rating === null || rating <= 2.5;
       case 'beginner':
         // Beginner: no DUPR to 3.0
         return rating === null || rating <= 3.0;
@@ -4304,7 +4372,6 @@ const handleTournamentClick = async (tournament) => {
   // Helper function to get tournament type icon
   const getTournamentTypeIcon = (type) => {
     switch (type) {
-      case 'novice': return '🌟';
       case 'beginner': return '🌱';
       case 'intermediate': return '⚡';
       case 'advanced': return '🔥';
@@ -4766,7 +4833,7 @@ const handleTournamentClick = async (tournament) => {
 
           if (level === 'open') {
             skillLevels.add(`Open - Tier ${category.tier || 1}`);
-          } else if (['novice', 'beginner', 'intermediate', 'advanced'].includes(level)) {
+          } else if (['beginner', 'intermediate', 'advanced'].includes(level)) {
             // capitalize first letter
             skillLevels.add(category.skillLevel.charAt(0).toUpperCase() + category.skillLevel.slice(1));
           }
@@ -5232,6 +5299,54 @@ if (skillLevel === 'Open' && category?.tier) {
             >
               {category.groupStage && (
                                   <GroupStageSection>
+                                    {/* Bracket Mode Selection - Only for Club Admins */}
+                                    {user && selectedTournament && user.name === selectedTournament.clubadmin && (
+                                      <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '12px',
+                                        marginBottom: '16px',
+                                        padding: '12px',
+                                        backgroundColor: '#f8fafc',
+                                        borderRadius: '8px',
+                                        border: '1px solid #e2e8f0'
+                                      }}>
+                                        <label style={{
+                                          fontSize: '0.875rem',
+                                          fontWeight: '600',
+                                          color: '#374151'
+                                        }}>
+                                          Bracket Mode:
+                                        </label>
+                                        <select
+                                          value={bracketMode[category.id || category._id] || 4}
+                                          onChange={(e) => {
+                                            const newMode = parseInt(e.target.value);
+                                            setPendingBracketChange({
+                                              categoryId: category.id || category._id,
+                                              newMode: newMode,
+                                              categoryName: category.name
+                                            });
+                                            setShowBracketModal(true);
+                                          }}
+                                          style={{
+                                            padding: '8px 12px',
+                                            borderRadius: '6px',
+                                            border: '1px solid #d1d5db',
+                                            fontSize: '0.875rem',
+                                            backgroundColor: 'white',
+                                            cursor: 'pointer'
+                                          }}
+                                        >
+                                          <option value={2}>2 Brackets</option>
+                                          <option value={4}>4 Brackets</option>
+                                          <option value={6}>6 Brackets</option>
+                                          <option value={8}>8 Brackets</option>
+                                        </select>
+                                      </div>
+                                    )}
+                                    
                                     {/* Tournament Format Selection */}
                                     <div style={{
                                       display: 'flex',
@@ -5795,49 +5910,17 @@ if (skillLevel === 'Open' && category?.tier) {
                                             console.log('Category groupStage:', category.groupStage);
                                             console.log('Top players:', topPlayers);
                                             
-                                            // 4 bracket elimination - Quarter Finals matchups: a1 vs b2, d1 vs c2, c1 vs d2, b1 vs a2
+                                            // 4 bracket elimination - Quarter Finals matchups: A1 vs D2, C1 vs B2, D1 vs A2, C2 vs B1
                                             eliminationMatches = [
                                               {
                                                 id: 'quarter1',
-                                                title: 'Quarter-Final 1: A1 vs B2',
+                                                title: 'Quarter-Final 1: A1 vs D2',
                                                 player1: topPlayers.A?.first ? { 
                                                   name: topPlayers.A.first.name, 
                                                   bracket: 'A', 
                                                   position: '1st', 
                                                   points: topPlayers.A.first.points || 0 
                                                 } : { name: 'TBD', bracket: 'A', position: '1st', points: '' },
-                                                player2: topPlayers.B?.second ? { 
-                                                  name: topPlayers.B.second.name, 
-                                                  bracket: 'B', 
-                                                  position: '2nd', 
-                                                  points: topPlayers.B.second.points || 0 
-                                                } : { name: 'TBD', bracket: 'B', position: '2nd', points: '' }
-                                              },
-                                              {
-                                                id: 'quarter2',
-                                                title: 'Quarter-Final 2: D1 vs C2',
-                                                player1: topPlayers.D?.first ? { 
-                                                  name: topPlayers.D.first.name, 
-                                                  bracket: 'D', 
-                                                  position: '1st', 
-                                                  points: topPlayers.D.first.points || 0 
-                                                } : { name: 'TBD', bracket: 'D', position: '1st', points: '' },
-                                                player2: topPlayers.C?.second ? { 
-                                                  name: topPlayers.C.second.name, 
-                                                  bracket: 'C', 
-                                                  position: '2nd', 
-                                                  points: topPlayers.C.second.points || 0 
-                                                } : { name: 'TBD', bracket: 'C', position: '2nd', points: '' }
-                                              },
-                                              {
-                                                id: 'quarter3',
-                                                title: 'Quarter-Final 3: C1 vs D2',
-                                                player1: topPlayers.C?.first ? { 
-                                                  name: topPlayers.C.first.name, 
-                                                  bracket: 'C', 
-                                                  position: '1st', 
-                                                  points: topPlayers.C.first.points || 0 
-                                                } : { name: 'TBD', bracket: 'C', position: '1st', points: '' },
                                                 player2: topPlayers.D?.second ? { 
                                                   name: topPlayers.D.second.name, 
                                                   bracket: 'D', 
@@ -5846,20 +5929,52 @@ if (skillLevel === 'Open' && category?.tier) {
                                                 } : { name: 'TBD', bracket: 'D', position: '2nd', points: '' }
                                               },
                                               {
-                                                id: 'quarter4',
-                                                title: 'Quarter-Final 4: B1 vs A2',
-                                                player1: topPlayers.B?.first ? { 
-                                                  name: topPlayers.B.first.name, 
-                                                  bracket: 'B', 
+                                                id: 'quarter2',
+                                                title: 'Quarter-Final 2: C1 vs B2',
+                                                player1: topPlayers.C?.first ? { 
+                                                  name: topPlayers.C.first.name, 
+                                                  bracket: 'C', 
                                                   position: '1st', 
-                                                  points: topPlayers.B.first.points || 0 
-                                                } : { name: 'TBD', bracket: 'B', position: '1st', points: '' },
+                                                  points: topPlayers.C.first.points || 0 
+                                                } : { name: 'TBD', bracket: 'C', position: '1st', points: '' },
+                                                player2: topPlayers.B?.second ? { 
+                                                  name: topPlayers.B.second.name, 
+                                                  bracket: 'B', 
+                                                  position: '2nd', 
+                                                  points: topPlayers.B.second.points || 0 
+                                                } : { name: 'TBD', bracket: 'B', position: '2nd', points: '' }
+                                              },
+                                              {
+                                                id: 'quarter3',
+                                                title: 'Quarter-Final 3: D1 vs A2',
+                                                player1: topPlayers.D?.first ? { 
+                                                  name: topPlayers.D.first.name, 
+                                                  bracket: 'D', 
+                                                  position: '1st', 
+                                                  points: topPlayers.D.first.points || 0 
+                                                } : { name: 'TBD', bracket: 'D', position: '1st', points: '' },
                                                 player2: topPlayers.A?.second ? { 
                                                   name: topPlayers.A.second.name, 
                                                   bracket: 'A', 
                                                   position: '2nd', 
                                                   points: topPlayers.A.second.points || 0 
                                                 } : { name: 'TBD', bracket: 'A', position: '2nd', points: '' }
+                                              },
+                                              {
+                                                id: 'quarter4',
+                                                title: 'Quarter-Final 4: C2 vs B1',
+                                                player1: topPlayers.C?.second ? { 
+                                                  name: topPlayers.C.second.name, 
+                                                  bracket: 'C', 
+                                                  position: '2nd', 
+                                                  points: topPlayers.C.second.points || 0 
+                                                } : { name: 'TBD', bracket: 'C', position: '2nd', points: '' },
+                                                player2: topPlayers.B?.first ? { 
+                                                  name: topPlayers.B.first.name, 
+                                                  bracket: 'B', 
+                                                  position: '1st', 
+                                                  points: topPlayers.B.first.points || 0 
+                                                } : { name: 'TBD', bracket: 'B', position: '1st', points: '' }
                                               },
                                               {
                                                 id: 'semi1',
@@ -5890,16 +6005,16 @@ if (skillLevel === 'Open' && category?.tier) {
                                             // 8 bracket elimination - Round of 16 matches
                                             const brackets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
                                             
-                                            // Generate Round of 16 matches: A1 vs E2, B1 vs F2, C1 vs G2, D1 vs H2, E1 vs A2, F1 vs B2, G1 vs C2, H1 vs D2
+                                            // Generate Round of 16 matches: A1 vs H2, E1 vs D2, C1 vs F2, G1 vs B2, H1 vs A2, D1 vs E2, F1 vs C2, B1 vs G2
                                             const round16Matches = [
-                                              { bracket1: 'A', pos1: 'first', bracket2: 'E', pos2: 'second', title: 'Round of 16 - Match 1: A1 vs E2' },
-                                              { bracket1: 'B', pos1: 'first', bracket2: 'F', pos2: 'second', title: 'Round of 16 - Match 2: B1 vs F2' },
-                                              { bracket1: 'C', pos1: 'first', bracket2: 'G', pos2: 'second', title: 'Round of 16 - Match 3: C1 vs G2' },
-                                              { bracket1: 'D', pos1: 'first', bracket2: 'H', pos2: 'second', title: 'Round of 16 - Match 4: D1 vs H2' },
-                                              { bracket1: 'E', pos1: 'first', bracket2: 'A', pos2: 'second', title: 'Round of 16 - Match 5: E1 vs A2' },
-                                              { bracket1: 'F', pos1: 'first', bracket2: 'B', pos2: 'second', title: 'Round of 16 - Match 6: F1 vs B2' },
-                                              { bracket1: 'G', pos1: 'first', bracket2: 'C', pos2: 'second', title: 'Round of 16 - Match 7: G1 vs C2' },
-                                              { bracket1: 'H', pos1: 'first', bracket2: 'D', pos2: 'second', title: 'Round of 16 - Match 8: H1 vs D2' }
+                                              { bracket1: 'A', pos1: 'first', bracket2: 'H', pos2: 'second', title: 'Round of 16 - Match 1: A1 vs H2' },
+                                              { bracket1: 'E', pos1: 'first', bracket2: 'D', pos2: 'second', title: 'Round of 16 - Match 2: E1 vs D2' },
+                                              { bracket1: 'C', pos1: 'first', bracket2: 'F', pos2: 'second', title: 'Round of 16 - Match 3: C1 vs F2' },
+                                              { bracket1: 'G', pos1: 'first', bracket2: 'B', pos2: 'second', title: 'Round of 16 - Match 4: G1 vs B2' },
+                                              { bracket1: 'H', pos1: 'first', bracket2: 'A', pos2: 'second', title: 'Round of 16 - Match 5: H1 vs A2' },
+                                              { bracket1: 'D', pos1: 'first', bracket2: 'E', pos2: 'second', title: 'Round of 16 - Match 6: D1 vs E2' },
+                                              { bracket1: 'F', pos1: 'first', bracket2: 'C', pos2: 'second', title: 'Round of 16 - Match 7: F1 vs C2' },
+                                              { bracket1: 'B', pos1: 'first', bracket2: 'G', pos2: 'second', title: 'Round of 16 - Match 8: B1 vs G2' }
                                             ];
                                             
                                             eliminationMatches = [
@@ -6788,49 +6903,17 @@ if (skillLevel === 'Open' && category?.tier) {
                                         console.log('Category groupStage:', category.groupStage);
                                         console.log('Top players:', topPlayers);
                                         
-                                        // 4 bracket elimination - Quarter Finals matchups: a1 vs b2, d1 vs c2, c1 vs d2, b1 vs a2
+                                        // 4 bracket elimination - Quarter Finals matchups: A1 vs D2, C1 vs B2, D1 vs A2, C2 vs B1
                                         eliminationMatches = [
                                           {
                                             id: 'quarter1',
-                                            title: 'Quarter-Final 1: A1 vs B2',
+                                            title: 'Quarter-Final 1: A1 vs D2',
                                             player1: topPlayers.A?.first ? { 
                                               name: topPlayers.A.first.name, 
                                               bracket: 'A', 
                                               position: '1st', 
                                               points: topPlayers.A.first.points || 0 
                                             } : { name: 'TBD', bracket: 'A', position: '1st', points: '' },
-                                            player2: topPlayers.B?.second ? { 
-                                              name: topPlayers.B.second.name, 
-                                              bracket: 'B', 
-                                              position: '2nd', 
-                                              points: topPlayers.B.second.points || 0 
-                                            } : { name: 'TBD', bracket: 'B', position: '2nd', points: '' }
-                                          },
-                                          {
-                                            id: 'quarter2',
-                                            title: 'Quarter-Final 2: D1 vs C2',
-                                            player1: topPlayers.D?.first ? { 
-                                              name: topPlayers.D.first.name, 
-                                              bracket: 'D', 
-                                              position: '1st', 
-                                              points: topPlayers.D.first.points || 0 
-                                            } : { name: 'TBD', bracket: 'D', position: '1st', points: '' },
-                                            player2: topPlayers.C?.second ? { 
-                                              name: topPlayers.C.second.name, 
-                                              bracket: 'C', 
-                                              position: '2nd', 
-                                              points: topPlayers.C.second.points || 0 
-                                            } : { name: 'TBD', bracket: 'C', position: '2nd', points: '' }
-                                          },
-                                          {
-                                            id: 'quarter3',
-                                            title: 'Quarter-Final 3: C1 vs D2',
-                                            player1: topPlayers.C?.first ? { 
-                                              name: topPlayers.C.first.name, 
-                                              bracket: 'C', 
-                                              position: '1st', 
-                                              points: topPlayers.C.first.points || 0 
-                                            } : { name: 'TBD', bracket: 'C', position: '1st', points: '' },
                                             player2: topPlayers.D?.second ? { 
                                               name: topPlayers.D.second.name, 
                                               bracket: 'D', 
@@ -6839,20 +6922,52 @@ if (skillLevel === 'Open' && category?.tier) {
                                             } : { name: 'TBD', bracket: 'D', position: '2nd', points: '' }
                                           },
                                           {
-                                            id: 'quarter4',
-                                            title: 'Quarter-Final 4: B1 vs A2',
-                                            player1: topPlayers.B?.first ? { 
-                                              name: topPlayers.B.first.name, 
-                                              bracket: 'B', 
+                                            id: 'quarter2',
+                                            title: 'Quarter-Final 2: C1 vs B2',
+                                            player1: topPlayers.C?.first ? { 
+                                              name: topPlayers.C.first.name, 
+                                              bracket: 'C', 
                                               position: '1st', 
-                                              points: topPlayers.B.first.points || 0 
-                                            } : { name: 'TBD', bracket: 'B', position: '1st', points: '' },
+                                              points: topPlayers.C.first.points || 0 
+                                            } : { name: 'TBD', bracket: 'C', position: '1st', points: '' },
+                                            player2: topPlayers.B?.second ? { 
+                                              name: topPlayers.B.second.name, 
+                                              bracket: 'B', 
+                                              position: '2nd', 
+                                              points: topPlayers.B.second.points || 0 
+                                            } : { name: 'TBD', bracket: 'B', position: '2nd', points: '' }
+                                          },
+                                          {
+                                            id: 'quarter3',
+                                            title: 'Quarter-Final 3: D1 vs A2',
+                                            player1: topPlayers.D?.first ? { 
+                                              name: topPlayers.D.first.name, 
+                                              bracket: 'D', 
+                                              position: '1st', 
+                                              points: topPlayers.D.first.points || 0 
+                                            } : { name: 'TBD', bracket: 'D', position: '1st', points: '' },
                                             player2: topPlayers.A?.second ? { 
                                               name: topPlayers.A.second.name, 
                                               bracket: 'A', 
                                               position: '2nd', 
                                               points: topPlayers.A.second.points || 0 
                                             } : { name: 'TBD', bracket: 'A', position: '2nd', points: '' }
+                                          },
+                                          {
+                                            id: 'quarter4',
+                                            title: 'Quarter-Final 4: C2 vs B1',
+                                            player1: topPlayers.C?.second ? { 
+                                              name: topPlayers.C.second.name, 
+                                              bracket: 'C', 
+                                              position: '2nd', 
+                                              points: topPlayers.C.second.points || 0 
+                                            } : { name: 'TBD', bracket: 'C', position: '2nd', points: '' },
+                                            player2: topPlayers.B?.first ? { 
+                                              name: topPlayers.B.first.name, 
+                                              bracket: 'B', 
+                                              position: '1st', 
+                                              points: topPlayers.B.first.points || 0 
+                                            } : { name: 'TBD', bracket: 'B', position: '1st', points: '' }
                                           },
                                           {
                                             id: 'semi1',
@@ -7671,7 +7786,7 @@ if (skillLevel === 'Open' && category?.tier) {
                                         fontWeight: '600',
                                         color: '#f59e0b'
                                       }}>
-                                        {player.pplId || 'PPL' + String(Math.floor(Math.random() * 9000) + 1000)}
+                                        {player.pplId || 'N/A'}
                                       </div>
                                     </div>
                                     <div style={{
@@ -8540,7 +8655,6 @@ if (skillLevel === 'Open' && category?.tier) {
             onChange={(e) => setSelectedTier(e.target.value)}
           >
             <option value="">All Tiers</option>
-            <option value="novice">Novice</option>
             <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
             <option value="advanced">Advanced</option>
@@ -8678,10 +8792,14 @@ if (skillLevel === 'Open' && category?.tier) {
 <RegisterButton
   onClick={(e) => {
     e.stopPropagation(); // Prevent card click
-    // Registration temporarily disabled
-    console.log('Registration is temporarily disabled');
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+    } else {
+      setSelectedTournament(tournament);
+      setShowRegistrationForm(true);
+    }
   }}
-  disabled={true}
+  disabled={tournament.currentParticipants >= tournament.maxParticipants}
 >
   {tournament.currentParticipants >= tournament.maxParticipants
     ? "Full"
@@ -8884,12 +9002,82 @@ if (skillLevel === 'Open' && category?.tier) {
                 Cancel
               </button>
               <button
-                onClick={() => {
-                  // Update bracket mode
-                  setBracketMode(prev => ({
-                    ...prev,
-                    [pendingBracketChange.categoryId]: pendingBracketChange.newMode
-                  }));
+                onClick={async () => {
+                  try {
+                    // Update local states FIRST, before API call
+                    setBracketMode(prev => ({
+                      ...prev,
+                      [pendingBracketChange.categoryId]: pendingBracketChange.newMode
+                    }));
+                    
+                    // Generate available bracket letters
+                    const availableBracketLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'].slice(0, pendingBracketChange.newMode);
+                    
+                    setAvailableBrackets(prev => ({
+                      ...prev,
+                      [pendingBracketChange.categoryId]: availableBracketLetters
+                    }));
+                    
+                    setSelectedBrackets(prev => ({
+                      ...prev,
+                      [pendingBracketChange.categoryId]: availableBracketLetters[0]
+                    }));
+                    
+                    console.log(`🎯 Updated bracket states locally - Mode: ${pendingBracketChange.newMode}, Selected: ${availableBracketLetters[0]}`);
+                    
+                    // Prepare updated tournament data for API call
+                    const updatedTournament = {
+                      ...selectedTournament,
+                      tournamentCategories: selectedTournament.tournamentCategories.map(cat => {
+                        if (cat._id === pendingBracketChange.categoryId) {
+                          return {
+                            ...cat,
+                            bracketMode: pendingBracketChange.newMode
+                          };
+                        }
+                        return cat;
+                      })
+                    };
+                    
+                    // Save to database
+                    const token = localStorage.getItem('token');
+                    if (token) {
+                      console.log('🔄 Saving bracket mode to database...', {
+                        tournamentId: selectedTournament._id,
+                        categoryId: pendingBracketChange.categoryId,
+                        newMode: pendingBracketChange.newMode
+                      });
+                      
+                      const response = await axios.put(
+                        `/api/tournaments/${selectedTournament._id}`,
+                        updatedTournament,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      );
+                      
+                      console.log('✅ Bracket mode saved to database successfully!', {
+                        status: response.status,
+                        data: response.data
+                      });
+                      
+                      // Refresh tournament data to verify save
+                      if (response.data?.tournament) {
+                        setSelectedTournament(response.data.tournament);
+                        console.log('🔄 Tournament data refreshed from server');
+                        
+                        // Verify the bracketMode was actually saved
+                        const savedCategory = response.data.tournament.tournamentCategories?.find(cat => cat._id === pendingBracketChange.categoryId);
+                        if (savedCategory && savedCategory.bracketMode === pendingBracketChange.newMode) {
+                          console.log('✅ SUCCESS: Bracket mode properly saved and verified!');
+                        } else {
+                          console.error('❌ WARNING: Bracket mode not saved properly!');
+                        }
+                      }
+                    } else {
+                      console.error('❌ No authentication token found');
+                    }
+                  } catch (error) {
+                    console.error('Error saving bracket mode:', error);
+                  }
                   
                   // Close modal
                   setShowBracketModal(false);

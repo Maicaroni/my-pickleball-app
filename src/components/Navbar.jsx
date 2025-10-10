@@ -1220,6 +1220,11 @@ useEffect(() => {
   }, [isProfileOpen, isNotificationOpen]);
 
   const handleNavigation = (path) => {
+    // Clear tournament state when navigating away from tournament page
+    if (location.pathname === '/tournament' && path !== '/tournament') {
+      localStorage.removeItem('selectedTournamentId');
+    }
+    
     navigate(path);
     setIsProfileOpen(false);
     setIsNotificationOpen(false);
