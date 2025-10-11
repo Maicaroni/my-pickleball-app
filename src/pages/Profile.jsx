@@ -8652,36 +8652,68 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                               
                                               // Fetch detailed team member information
                                               let teamMembersData = [];
+                                              console.log('🔍 TEAM MEMBER FETCH DEBUG:', {
+                                                hasRegistration: !!registration,
+                                                registrationTeamMembers: registration?.teamMembers,
+                                                teamMembersLength: registration?.teamMembers?.length || 0,
+                                                teamMembersType: typeof registration?.teamMembers,
+                                                isArray: Array.isArray(registration?.teamMembers)
+                                              });
+                                              
                                               if (registration?.teamMembers && registration.teamMembers.length > 0) {
                                                 console.log('🔍 Fetching team members:', registration.teamMembers);
                                                 try {
-                                                  const teamMemberPromises = registration.teamMembers.map(async (memberId) => {
+                                                  const teamMemberPromises = registration.teamMembers.map(async (member) => {
                                                     try {
-                                                      console.log('🔍 Fetching member:', memberId);
+                                                      // Extract the actual member ID - it could be a string or an object with _id
+                                                      const memberId = typeof member === 'string' ? member : (member._id || member.id || member);
+                                                      console.log('🔍 Fetching member:', {
+                                                        originalMember: member,
+                                                        extractedId: memberId,
+                                                        memberType: typeof member,
+                                                        idType: typeof memberId
+                                                      });
+                                                      
+                                                      if (!memberId || typeof memberId !== 'string') {
+                                                        console.error('❌ Invalid member ID:', member);
+                                                        return null;
+                                                      }
+                                                      
                                                       const storedUser = localStorage.getItem('user');
                                                       const token = storedUser ? JSON.parse(storedUser).token : null;
+                                                      console.log('🔍 Token available:', !!token);
+                                                      console.log('🔍 Making API call to:', `http://localhost:5000/api/users/${memberId}`);
+                                                      
                                                       const response = await fetch(`http://localhost:5000/api/users/${memberId}`, {
                                                         headers: {
                                                           'Authorization': `Bearer ${token}`
                                                         }
                                                       });
+                                                      
+                                                      console.log('🔍 Response status:', response.status, 'OK:', response.ok);
+                                                      console.log('🔍 Response headers:', Object.fromEntries(response.headers.entries()));
+                                                      
                                                       if (response.ok) {
                                                         const memberData = await response.json();
                                                         console.log('✅ Member data received:', memberData);
                                                         return memberData;
                                                       } else {
                                                         console.error('❌ Failed to fetch member:', memberId, response.status);
+                                                        const errorText = await response.text();
+                                                        console.error('❌ Error response:', errorText);
+                                                        return null;
                                                       }
                                                       return null;
                                                     } catch (error) {
-                                                      console.error('❌ Error fetching team member:', memberId, error);
+                                                      console.error('❌ Error fetching team member:', member, error);
                                                       return null;
                                                     }
                                                   });
                                                   
                                                   teamMembersData = await Promise.all(teamMemberPromises);
+                                                  console.log('🔍 Raw Promise.all results:', teamMembersData);
                                                   teamMembersData = teamMembersData.filter(member => member !== null);
-                                                  console.log('🔍 Final team members data:', teamMembersData);
+                                                  console.log('🔍 Final team members data after filtering:', teamMembersData);
                                                 } catch (error) {
                                                   console.error('❌ Error fetching team members:', error);
                                                 }
@@ -8704,6 +8736,16 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                   isPlaceholder: true
                                                 }];
                                               }
+                                              
+                                              console.log('🔍 Setting selectedTeamRegistration with:', {
+                                                playerName: player.playerName,
+                                                playerId: player.playerId,
+                                                teamName: registration?.teamName || 'Unknown Team',
+                                                teamMembersCount: teamMembersData?.length || 0,
+                                                teamMembersData: teamMembersData,
+                                                category: category?.division + ' - ' + category?.skillLevel,
+                                                hasRegistration: !!registration
+                                              });
                                               
                                               setSelectedTeamRegistration({
                                                 playerName: player.playerName,
@@ -8782,9 +8824,11 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                   // Fetch detailed team member information
                                                   const teamMemberPromises = regData.teamMembers.map(async (memberId) => {
                                                     try {
+                                                      const user = JSON.parse(localStorage.getItem('user') || '{}');
+                                                      const token = user.token;
                                                       const response = await fetch(`http://localhost:5000/api/users/${memberId}`, {
                                                         headers: {
-                                                          'Authorization': `Bearer ${localStorage.getItem('token')}`
+                                                          'Authorization': `Bearer ${token}`
                                                         }
                                                       });
                                                       if (response.ok) {
@@ -13692,50 +13736,84 @@ const EditBioButton = styled.button`
             }}>
               {selectedTeamRegistration.teamMembers && selectedTeamRegistration.teamMembers.length > 0 ? (
                 <div>
-                  {/* Registration Details */}
+                  {/* Registrant Details (if not captain) */}
                   {selectedTeamRegistration.registration && (
                     <div style={{
                       marginBottom: '24px',
                       padding: '20px',
-                      background: '#f8fafc',
-                      border: '1px solid #e2e8f0',
+                      background: '#f0f9ff',
+                      border: '1px solid #0ea5e9',
                       borderRadius: '12px'
                     }}>
                       <h3 style={{
-                        fontSize: '1.1rem',
+                        fontSize: '1.2rem',
                         fontWeight: '600',
-                        color: '#1e293b',
-                        marginBottom: '12px'
+                        color: '#0c4a6e',
+                        marginBottom: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
                       }}>
-                        Registration Details
+                        📋 Registrant Details
                       </h3>
                       <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '12px',
-                        fontSize: '0.875rem'
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                        gap: '16px',
+                        fontSize: '0.9rem'
                       }}>
-                        <div>
-                          <span style={{ color: '#64748b' }}>Captain Email:</span>
-                          <div style={{ fontWeight: '500', color: '#1e293b' }}>
+                        <div style={{
+                          background: 'white',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #e0f2fe'
+                        }}>
+                          <span style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '600' }}>Name</span>
+                          <div style={{ fontWeight: '600', color: '#1e293b', marginTop: '4px' }}>
+                            {selectedTeamRegistration.registration.playerName || 'Not provided'}
+                          </div>
+                        </div>
+                        <div style={{
+                          background: 'white',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #e0f2fe'
+                        }}>
+                          <span style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '600' }}>Email</span>
+                          <div style={{ fontWeight: '500', color: '#1e293b', marginTop: '4px' }}>
                             {selectedTeamRegistration.registration.playerEmail || 'Not provided'}
                           </div>
                         </div>
-                        <div>
-                          <span style={{ color: '#64748b' }}>Captain Phone:</span>
-                          <div style={{ fontWeight: '500', color: '#1e293b' }}>
+                        <div style={{
+                          background: 'white',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #e0f2fe'
+                        }}>
+                          <span style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '600' }}>Phone</span>
+                          <div style={{ fontWeight: '500', color: '#1e293b', marginTop: '4px' }}>
                             {selectedTeamRegistration.registration.playerPhone || 'Not provided'}
                           </div>
                         </div>
-                        <div>
-                          <span style={{ color: '#64748b' }}>Emergency Contact:</span>
-                          <div style={{ fontWeight: '500', color: '#1e293b' }}>
+                        <div style={{
+                          background: 'white',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #e0f2fe'
+                        }}>
+                          <span style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '600' }}>Emergency Contact</span>
+                          <div style={{ fontWeight: '500', color: '#1e293b', marginTop: '4px' }}>
                             {selectedTeamRegistration.registration.emergencyContact || 'Not provided'}
                           </div>
                         </div>
-                        <div>
-                          <span style={{ color: '#64748b' }}>Emergency Phone:</span>
-                          <div style={{ fontWeight: '500', color: '#1e293b' }}>
+                        <div style={{
+                          background: 'white',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #e0f2fe'
+                        }}>
+                          <span style={{ color: '#64748b', fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: '600' }}>Emergency Phone</span>
+                          <div style={{ fontWeight: '500', color: '#1e293b', marginTop: '4px' }}>
                             {selectedTeamRegistration.registration.emergencyPhone || 'Not provided'}
                           </div>
                         </div>
@@ -13743,110 +13821,398 @@ const EditBioButton = styled.button`
                     </div>
                   )}
                   
-                  {/* Team Members List */}
+                  {/* Required Team Members - Side by Side */}
                   <div style={{
-                    display: 'grid',
-                    gap: '16px'
+                    marginBottom: '24px'
                   }}>
-                    {selectedTeamRegistration.teamMembers.map((member, index) => (
-                      <div key={member._id || index} style={{
-                        background: member.isPlaceholder ? '#fff3cd' : '#f8fafc',
-                        border: member.isPlaceholder ? '1px solid #ffeaa7' : '1px solid #e2e8f0',
+                    <h3 style={{
+                      fontSize: '1.2rem',
+                      fontWeight: '600',
+                      color: '#1e293b',
+                      marginBottom: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      👥 Required Team Members
+                    </h3>
+                    
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '20px'
+                    }}>
+                      {/* Male Members */}
+                      <div style={{
+                        background: '#f0f9ff',
+                        border: '1px solid #0ea5e9',
                         borderRadius: '12px',
-                        padding: '20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '16px'
+                        padding: '16px'
                       }}>
-                        {/* Member Avatar */}
-                        {!member.isPlaceholder && (
-                          <div style={{
-                            width: '50px',
-                            height: '50px',
-                            borderRadius: '50%',
-                            background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            fontSize: '1.2rem',
-                            fontWeight: '600'
-                          }}>
-                            {(member.firstName?.[0] || 'M') + (member.lastName?.[0] || '')}
-                          </div>
-                        )}
-                        
-                        {member.isPlaceholder && (
-                          <div style={{
-                            width: '50px',
-                            height: '50px',
-                            borderRadius: '50%',
-                            background: '#ffc107',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            fontSize: '1.5rem'
-                          }}>
-                            ⚠️
-                          </div>
-                        )}
-                        
-                        {/* Member Info */}
-                        <div style={{ flex: 1 }}>
-                          <div style={{
+                        <h4 style={{
+                          fontSize: '1rem',
+                          fontWeight: '600',
+                          color: '#0c4a6e',
+                          marginBottom: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          👨 Male Members (2 Required)
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {selectedTeamRegistration.teamMembers
+                            .filter(member => member.gender?.toLowerCase() === 'male')
+                            .slice(0, 2)
+                            .map((member, index) => (
+                              <div key={member._id || index} style={{
+                                background: 'white',
+                                border: '1px solid #e0f2fe',
+                                borderRadius: '8px',
+                                padding: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px'
+                              }}>
+                                <div style={{
+                                  width: '40px',
+                                  height: '40px',
+                                  borderRadius: '50%',
+                                  background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'white',
+                                  fontSize: '1rem',
+                                  fontWeight: '600'
+                                }}>
+                                  {(member.firstName?.[0] || 'M') + (member.lastName?.[0] || '')}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{
+                                    fontSize: '0.95rem',
+                                    fontWeight: '600',
+                                    color: '#1e293b',
+                                    marginBottom: '2px'
+                                  }}>
+                                    {member.firstName} {member.lastName}
+                                  </div>
+                                  <div style={{
+                                    fontSize: '0.8rem',
+                                    color: '#64748b'
+                                  }}>
+                                    {member.email || 'N/A'} • PPL ID: {member.pplId || 'N/A'}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+
+                      {/* Female Members */}
+                      <div style={{
+                        background: '#fdf2f8',
+                        border: '1px solid #ec4899',
+                        borderRadius: '12px',
+                        padding: '16px'
+                      }}>
+                        <h4 style={{
+                          fontSize: '1rem',
+                          fontWeight: '600',
+                          color: '#be185d',
+                          marginBottom: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          👩 Female Members (2 Required)
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {selectedTeamRegistration.teamMembers
+                            .filter(member => member.gender?.toLowerCase() === 'female')
+                            .slice(0, 2)
+                            .map((member, index) => (
+                              <div key={member._id || index} style={{
+                                background: 'white',
+                                border: '1px solid #fce7f3',
+                                borderRadius: '8px',
+                                padding: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px'
+                              }}>
+                                <div style={{
+                                  width: '40px',
+                                  height: '40px',
+                                  borderRadius: '50%',
+                                  background: 'linear-gradient(135deg, #ec4899, #be185d)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'white',
+                                  fontSize: '1rem',
+                                  fontWeight: '600'
+                                }}>
+                                  {(member.firstName?.[0] || 'F') + (member.lastName?.[0] || '')}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{
+                                    fontSize: '0.95rem',
+                                    fontWeight: '600',
+                                    color: '#1e293b',
+                                    marginBottom: '2px'
+                                  }}>
+                                    {member.firstName} {member.lastName}
+                                  </div>
+                                  <div style={{
+                                    fontSize: '0.8rem',
+                                    color: '#64748b'
+                                  }}>
+                                    {member.email || 'N/A'} • PPL ID: {member.pplId || 'N/A'}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Substitute Members */}
+                  {(() => {
+                    const maleSubstitutes = selectedTeamRegistration.teamMembers
+                      .filter(member => member.gender?.toLowerCase() === 'male')
+                      .slice(2);
+                    const femaleSubstitutes = selectedTeamRegistration.teamMembers
+                      .filter(member => member.gender?.toLowerCase() === 'female')
+                      .slice(2);
+                    
+                    if (maleSubstitutes.length > 0 || femaleSubstitutes.length > 0) {
+                      return (
+                        <div style={{
+                          marginBottom: '24px',
+                          padding: '20px',
+                          background: '#f9fafb',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '12px'
+                        }}>
+                          <h3 style={{
                             fontSize: '1.1rem',
                             fontWeight: '600',
-                            color: member.isPlaceholder ? '#856404' : '#1e293b',
+                            color: '#374151',
+                            marginBottom: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>
+                            🔄 Substitute Members
+                          </h3>
+                          
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: maleSubstitutes.length > 0 && femaleSubstitutes.length > 0 ? '1fr 1fr' : '1fr',
+                            gap: '16px'
+                          }}>
+                            {maleSubstitutes.length > 0 && (
+                              <div>
+                                <h4 style={{
+                                  fontSize: '0.9rem',
+                                  fontWeight: '600',
+                                  color: '#6b7280',
+                                  marginBottom: '8px'
+                                }}>
+                                  Male Substitutes
+                                </h4>
+                                {maleSubstitutes.map((member, index) => (
+                                  <div key={member._id || index} style={{
+                                    background: 'white',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                    padding: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    marginBottom: '8px'
+                                  }}>
+                                    <div style={{
+                                      width: '35px',
+                                      height: '35px',
+                                      borderRadius: '50%',
+                                      background: '#9ca3af',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: 'white',
+                                      fontSize: '0.9rem',
+                                      fontWeight: '600'
+                                    }}>
+                                      {(member.firstName?.[0] || 'M') + (member.lastName?.[0] || '')}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                      <div style={{
+                                        fontSize: '0.9rem',
+                                        fontWeight: '600',
+                                        color: '#374151'
+                                      }}>
+                                        {member.firstName} {member.lastName}
+                                      </div>
+                                      <div style={{
+                                        fontSize: '0.75rem',
+                                        color: '#6b7280'
+                                      }}>
+                                        {member.email || 'N/A'}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {femaleSubstitutes.length > 0 && (
+                              <div>
+                                <h4 style={{
+                                  fontSize: '0.9rem',
+                                  fontWeight: '600',
+                                  color: '#6b7280',
+                                  marginBottom: '8px'
+                                }}>
+                                  Female Substitutes
+                                </h4>
+                                {femaleSubstitutes.map((member, index) => (
+                                  <div key={member._id || index} style={{
+                                    background: 'white',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                    padding: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    marginBottom: '8px'
+                                  }}>
+                                    <div style={{
+                                      width: '35px',
+                                      height: '35px',
+                                      borderRadius: '50%',
+                                      background: '#9ca3af',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: 'white',
+                                      fontSize: '0.9rem',
+                                      fontWeight: '600'
+                                    }}>
+                                      {(member.firstName?.[0] || 'F') + (member.lastName?.[0] || '')}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                      <div style={{
+                                        fontSize: '0.9rem',
+                                        fontWeight: '600',
+                                        color: '#374151'
+                                      }}>
+                                        {member.firstName} {member.lastName}
+                                      </div>
+                                      <div style={{
+                                        fontSize: '0.75rem',
+                                        color: '#6b7280'
+                                      }}>
+                                        {member.email || 'N/A'}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  {/* Proof of Payment */}
+                  {selectedTeamRegistration.registration?.proofOfPayment && (
+                    <div style={{
+                      marginBottom: '24px',
+                      padding: '20px',
+                      background: '#f0fdf4',
+                      border: '1px solid #22c55e',
+                      borderRadius: '12px'
+                    }}>
+                      <h3 style={{
+                        fontSize: '1.1rem',
+                        fontWeight: '600',
+                        color: '#15803d',
+                        marginBottom: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
+                        💳 Proof of Payment
+                      </h3>
+                      <div style={{
+                        background: 'white',
+                        border: '1px solid #bbf7d0',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px'
+                      }}>
+                        <div style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '8px',
+                          background: '#22c55e',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontSize: '1.2rem'
+                        }}>
+                          📄
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{
+                            fontSize: '0.95rem',
+                            fontWeight: '600',
+                            color: '#15803d',
                             marginBottom: '4px'
                           }}>
-                            {member.firstName} {member.lastName}
+                            Payment Receipt Uploaded
                           </div>
-                          
-                          {!member.isPlaceholder && (
-                            <div style={{
-                              display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                              gap: '8px',
-                              fontSize: '0.875rem',
-                              color: '#64748b'
-                            }}>
-                              <span>PPL ID: {member.pplId || 'N/A'}</span>
-                              <span>Gender: {member.gender || 'N/A'}</span>
-                              <span>Email: {member.email || 'N/A'}</span>
-                              {member.duprRatings && (
-                                <span>DUPR: {member.duprRatings.doubles || member.duprRatings.singles || 'N/A'}</span>
-                              )}
-                            </div>
-                          )}
-                          
-                          {member.isPlaceholder && (
-                            <div style={{
-                              fontSize: '0.875rem',
-                              color: '#856404',
-                              fontStyle: 'italic'
-                            }}>
-                              {member.email}
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Member Role Badge */}
-                        {!member.isPlaceholder && (
                           <div style={{
-                            background: index === 0 ? '#fef3c7' : '#e0f2fe',
-                            color: index === 0 ? '#92400e' : '#0369a1',
-                            padding: '4px 12px',
-                            borderRadius: '20px',
-                            fontSize: '0.75rem',
-                            fontWeight: '600'
+                            fontSize: '0.8rem',
+                            color: '#16a34a'
                           }}>
-                            {index === 0 ? 'Captain' : `Member ${index + 1}`}
+                            File: {selectedTeamRegistration.registration.proofOfPayment.split('/').pop()}
                           </div>
-                        )}
+                        </div>
+                        <a
+                          href={`http://localhost:5000${selectedTeamRegistration.registration.proofOfPayment}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            background: '#22c55e',
+                            color: 'white',
+                            padding: '8px 16px',
+                            borderRadius: '6px',
+                            textDecoration: 'none',
+                            fontSize: '0.8rem',
+                            fontWeight: '600',
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = '#16a34a';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = '#22c55e';
+                          }}
+                        >
+                          View Receipt
+                        </a>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div style={{

@@ -6,6 +6,7 @@ const {
   updateUser,
   deleteUser,
   getPlayersByGender,
+  getUserById,
 } = require("../controllers/playerController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -23,6 +24,9 @@ router.get("/", authMiddleware(["superadmin", "clubadmin"]), getAllUsers);
 
 // 👇 get players by gender for team member selection (accessible to all authenticated users)
 router.get("/players", authMiddleware(["player", "coach", "organizer", "clubadmin", "superadmin"]), getPlayersByGender);
+
+// 👇 get single user by ID (accessible to all authenticated users)
+router.get("/:id", authMiddleware(["player", "coach", "organizer", "clubadmin", "superadmin"]), getUserById);
 
 // 👇 allow clubadmin OR superadmin to create players
 router.post("/", authMiddleware(["superadmin", "clubadmin"]), createUser);

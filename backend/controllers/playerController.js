@@ -20,6 +20,25 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
+// Get single user by ID
+exports.getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const user = await User.findById(id)
+      .select('_id firstName lastName email gender birthDate pplId duprId username roles');
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json(user);
+  } catch (err) {
+    console.error("Error fetching user by ID:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Get players by gender for team member selection
 exports.getPlayersByGender = async (req, res) => {
   try {
