@@ -7672,7 +7672,34 @@ const duprRatings = userProfile?.duprRatings
                                          fontSize: '16px',
                                          flexShrink: 0
                                        }}>
-{player.player ? `${(player.player.firstName || '')[0]}${(player.player.lastName || '')[0]}`.toUpperCase() : '?'}
+{(() => {
+  // Check if this is a team category
+  const categoryData = selectedTournament.tournamentCategories && 
+    Object.values(selectedTournament.tournamentCategories).find(cat => 
+      cat._id === player.category || 
+      cat._id.toString() === player.category || 
+      cat.division === player.category
+    );
+  
+  const isTeamCategory = categoryData?.division?.toLowerCase().includes('team');
+  
+  if (isTeamCategory) {
+    // For team categories, try multiple sources for team name initials
+    const teamName = player.teamName || 
+                    player.registrationTeamName || 
+                    (player.foundRegistration && player.foundRegistration.teamName) ||
+                    'Team';
+    return teamName
+      .split(" ")
+      .filter(Boolean)
+      .map(n => n[0] || "")
+      .join("")
+      .toUpperCase() || "T";
+  } else {
+    // Show player name initials for individual categories
+    return player.player ? `${(player.player.firstName || '')[0]}${(player.player.lastName || '')[0]}`.toUpperCase() : '?';
+  }
+})()}
 </div>
                                        <div style={{ flex: 1 }}>
                                      {/* Player Name - Left Aligned */}
@@ -7700,107 +7727,169 @@ const duprRatings = userProfile?.duprRatings
   X
 </button>
 </div>
-{player.player ? `${player.player.firstName} ${player.player.lastName}` : 'Unknown Player'}
+{(() => {
+  // Check if this is a team category
+  const categoryData = selectedTournament.tournamentCategories && 
+    Object.values(selectedTournament.tournamentCategories).find(cat => 
+      cat._id === player.category || 
+      cat._id.toString() === player.category || 
+      cat.division === player.category
+    );
+  
+  const isTeamCategory = categoryData?.division?.toLowerCase().includes('team');
+  
+  if (isTeamCategory) {
+    // For team categories, try multiple sources for team name
+    const teamName = player.teamName || 
+                    player.registrationTeamName || 
+                    (player.foundRegistration && player.foundRegistration.teamName) ||
+                    'Team';
+    return teamName;
+  } else {
+    // Show player name for individual categories
+    return player.player ? `${player.player.firstName} ${player.player.lastName}` : 'Unknown Player';
+  }
+})()}
 </div>
                                      
-                                     {/* Player Details in One Row */}
-                                     <div style={{
-                                       display: 'grid',
-                                       gridTemplateColumns: '1fr 1fr 1fr 1fr',
-                                       gap: '12px',
-                                       marginBottom: '16px'
-                                     }}>
-                                       <div style={{
-                                         background: '#FFFFFF',
-                                          padding: '0px',
-                                          borderRadius: '6px',
-                                          textAlign: 'center'
-                                       }}>
-                                         <div style={{
-                                           fontSize: '0.7rem',
-                                           color: '#64748b',
-                                           fontWeight: '500',
-                                           marginBottom: '2px'
-                                         }}>
-                                           PPL ID
-                                         </div>
-                                         <div style={{
-                                           fontSize: '0.85rem',
-                                           fontWeight: '600',
-                                           color: '#29ba9b'
-                                         }}>
-                                           {player.player?.pplId || 'N/A'}
-                                         </div>
-                                       </div>
-                                       <div style={{
-                                         background: '#FFFFFF',
-                                          padding: '0px',
-                                          borderRadius: '6px',
-                                          textAlign: 'center'
-                                       }}>
-                                         <div style={{
-                                           fontSize: '0.7rem',
-                                           color: '#64748b',
-                                           fontWeight: '500',
-                                           marginBottom: '2px'
-                                         }}>
-                                           GENDER
-                                         </div>
-                                         <div style={{
-                                           fontSize: '0.85rem',
-                                           fontWeight: '500',
-                                           color: '#334155',
-                                           textTransform: 'capitalize'
-                                         }}>
-                                           {player.player?.gender || 'N/A'}
-                                         </div>
-                                       </div>
-<div style={{
-  background: '#FFFFFF',
-  padding: '0px',
-  borderRadius: '6px',
-  textAlign: 'center'
-}}>
-  <div style={{
-    fontSize: '0.7rem',
-    color: '#64748b',
-    fontWeight: '500',
-    marginBottom: '2px'
-  }}>
-    Age
-  </div>
-  <div style={{
-    fontSize: '0.85rem',
-    fontWeight: '500',
-    color: '#334155'
-  }}>
-    <span>{getAge(player.player?.birthDate)}</span>
-  </div>
-</div>
-
-                                       <div style={{
-                                         background: '#FFFFFF',
-                                          padding: '0px',
-                                          borderRadius: '6px',
-                                          textAlign: 'center'
-                                       }}>
-                                         <div style={{
-                                           fontSize: '0.7rem',
-                                           color: '#64748b',
-                                           fontWeight: '500',
-                                           marginBottom: '2px'
-                                         }}>
-                                           DUPR ID
-                                         </div>
-                                         <div style={{
-                                           fontSize: '0.85rem',
-                                           fontWeight: '700',
-                                           color: '#29ba9b'
-                                         }}>
-                                           {player.player?.duprId || 'N/A'} 
-                                         </div>
-                                       </div>
-                                     </div>
+{(() => {
+  // Check if this is a team category
+  const categoryData = selectedTournament.tournamentCategories && 
+    Object.values(selectedTournament.tournamentCategories).find(cat => 
+      cat._id === player.category || 
+      cat._id.toString() === player.category || 
+      cat.division === player.category
+    );
+  
+  const isTeamCategory = categoryData?.division?.toLowerCase().includes('team');
+  
+  if (isTeamCategory) {
+    // For team categories, show only category information
+    return (
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr',
+        gap: '12px',
+        marginBottom: '16px'
+      }}>
+        <div style={{
+          background: '#FFFFFF',
+          padding: '12px',
+          borderRadius: '6px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '0.85rem',
+            fontWeight: '600',
+            color: '#29ba9b'
+          }}>
+            {categoryData?.division || 'Team Category'}
+          </div>
+        </div>
+      </div>
+    );
+  } else {
+    // For individual categories, show player details
+    return (
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr 1fr 1fr',
+        gap: '12px',
+        marginBottom: '16px'
+      }}>
+        <div style={{
+          background: '#FFFFFF',
+          padding: '0px',
+          borderRadius: '6px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '0.7rem',
+            color: '#64748b',
+            fontWeight: '500',
+            marginBottom: '2px'
+          }}>
+            PPL ID
+          </div>
+          <div style={{
+            fontSize: '0.85rem',
+            fontWeight: '600',
+            color: '#29ba9b'
+          }}>
+            {player.player?.pplId || 'N/A'}
+          </div>
+        </div>
+        <div style={{
+          background: '#FFFFFF',
+          padding: '0px',
+          borderRadius: '6px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '0.7rem',
+            color: '#64748b',
+            fontWeight: '500',
+            marginBottom: '2px'
+          }}>
+            GENDER
+          </div>
+          <div style={{
+            fontSize: '0.85rem',
+            fontWeight: '500',
+            color: '#334155',
+            textTransform: 'capitalize'
+          }}>
+            {player.player?.gender || 'N/A'}
+          </div>
+        </div>
+        <div style={{
+          background: '#FFFFFF',
+          padding: '0px',
+          borderRadius: '6px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '0.7rem',
+            color: '#64748b',
+            fontWeight: '500',
+            marginBottom: '2px'
+          }}>
+            Age
+          </div>
+          <div style={{
+            fontSize: '0.85rem',
+            fontWeight: '500',
+            color: '#334155'
+          }}>
+            <span>{getAge(player.player?.birthDate)}</span>
+          </div>
+        </div>
+        <div style={{
+          background: '#FFFFFF',
+          padding: '0px',
+          borderRadius: '6px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            fontSize: '0.7rem',
+            color: '#64748b',
+            fontWeight: '500',
+            marginBottom: '2px'
+          }}>
+            DUPR ID
+          </div>
+          <div style={{
+            fontSize: '0.85rem',
+            fontWeight: '700',
+            color: '#29ba9b'
+          }}>
+            {player.player?.duprId || 'N/A'} 
+          </div>
+        </div>
+      </div>
+    );
+  }
+})()}
                                      
                                      {/* Partner Information for Doubles Categories */}
                                      {(() => {
