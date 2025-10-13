@@ -181,7 +181,7 @@ exports.createPost = async (req, res) => {
 exports.toggleLikePost = async (req, res) => {
   try {
     const userId = req.user._id.toString();
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id).populate('author', 'firstName lastName');
     if (!post) return res.status(404).json({ message: "Post not found" });
 
     const likedIndex = post.likedBy.findIndex(uid => uid.toString() === userId);
@@ -190,6 +190,23 @@ exports.toggleLikePost = async (req, res) => {
     if (likedIndex === -1) {
       post.likedBy.push(userId);
       isLiked = true;
+      
+      // Create notification for the post author (only when liking, not unliking)
+      // Don't notify if user is liking their own post
+      if (post.author._id.toString() !== userId) {
+        try {
+          await Notification.create({
+            user: post.author._id,
+            type: 'like',
+            message: `liked your post "${post.content?.slice(0, 30)}..."`,
+            postId: post._id,
+            isRead: false
+          });
+          console.log('✅ Like notification created');
+        } catch (notificationError) {
+          console.error('❌ Error creating like notification:', notificationError);
+        }
+      }
     } else {
       post.likedBy.splice(likedIndex, 1);
     }
@@ -233,13 +250,29 @@ exports.addComment = async (req, res) => {
     if (!content?.trim())
       return res.status(400).json({ message: "Comment content is required" });
 
-    const post = await Post.findById(req.params.postId);
+    const post = await Post.findById(req.params.postId).populate('author', 'firstName lastName');
     if (!post) return res.status(404).json({ message: "Post not found" });
 
     const newComment = { author: userId, content, createdAt: new Date(), replies: [] };
     post.comments.push(newComment);
     post.commentCount = post.comments.length;
     await post.save();
+
+    // Create notification for the post author (only if commenter is not the post author)
+    if (post.author._id.toString() !== userId) {
+      try {
+        await Notification.create({
+          user: post.author._id,
+          type: 'comment',
+          message: `commented on your post "${post.content?.slice(0, 30)}..."`,
+          postId: post._id,
+          isRead: false
+        });
+        console.log('✅ Comment notification created');
+      } catch (notificationError) {
+        console.error('❌ Error creating comment notification:', notificationError);
+      }
+    }
 
     let populatedPost = await Post.findById(req.params.postId)
       .populate("comments.author", "firstName lastName initials username email")
@@ -265,7 +298,7 @@ exports.addReply = async (req, res) => {
     const { content } = req.body;
     if (!content?.trim()) return res.status(400).json({ message: "Reply content is required" });
 
-    const post = await Post.findById(req.params.postId);
+    const post = await Post.findById(req.params.postId).populate('author', 'firstName lastName');
     if (!post) return res.status(404).json({ message: "Post not found" });
 
     const comment = post.comments.id(req.params.commentId);
@@ -274,6 +307,22 @@ exports.addReply = async (req, res) => {
     const newReply = { author: userId, content, createdAt: new Date() };
     comment.replies.push(newReply);
     await post.save();
+
+    // Create notification for the comment author (only if replier is not the comment author)
+    if (comment.author.toString() !== userId) {
+      try {
+        await Notification.create({
+          user: comment.author,
+          type: 'reply',
+          message: `replied to your comment on "${post.content?.slice(0, 30)}..."`,
+          postId: post._id,
+          isRead: false
+        });
+        console.log('✅ Reply notification created');
+      } catch (notificationError) {
+        console.error('❌ Error creating reply notification:', notificationError);
+      }
+    }
 
     let populatedPost = await Post.findById(req.params.postId)
       .populate("comments.author", "firstName lastName initials username email")
