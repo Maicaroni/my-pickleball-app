@@ -7744,7 +7744,34 @@ const duprRatings = userProfile?.duprRatings
                     player.registrationTeamName || 
                     (player.foundRegistration && player.foundRegistration.teamName) ||
                     'Team';
-    return teamName;
+    
+    return (
+      <div 
+        onClick={() => {
+          setSelectedTeamRegistration(player);
+          setShowTeamMembersModal(true);
+        }}
+        style={{
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '4px',
+          borderRadius: '4px',
+          transition: 'background-color 0.2s ease'
+        }}
+        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8fafc'}
+        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+      >
+        {teamName}
+        <span style={{
+          fontSize: '0.8rem',
+          color: '#64748b'
+        }}>
+          👥
+        </span>
+      </div>
+    );
   } else {
     // Show player name for individual categories
     return player.player ? `${player.player.firstName} ${player.player.lastName}` : 'Unknown Player';
@@ -13737,7 +13764,7 @@ const EditBioButton = styled.button`
             background: 'white',
             borderRadius: '16px',
             padding: '0',
-            maxWidth: '700px',
+            maxWidth: '800px',
             width: '100%',
             maxHeight: '90vh',
             display: 'flex',
@@ -13750,45 +13777,47 @@ const EditBioButton = styled.button`
               borderBottom: '1px solid #e2e8f0',
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center'
+              alignItems: 'center',
+              background: 'linear-gradient(135deg, #29ba9b, #1e40af)',
+              borderRadius: '16px 16px 0 0',
+              color: 'white'
             }}>
               <div>
                 <h2 style={{
                   fontSize: '1.5rem',
                   fontWeight: '700',
-                  color: '#234255',
+                  color: 'white',
                   margin: 0,
                   marginBottom: '4px'
                 }}>
-                  Team Members - {selectedTeamRegistration.teamName}
+                  {(() => {
+                    const teamName = selectedTeamRegistration.teamName || selectedTeamRegistration.registrationTeamName || 'Team Details';
+                    // Remove any ID that might be concatenated with the team name
+                    return teamName.replace(/^[a-f0-9]{24}\s*/, '').trim() || 'Team Details';
+                  })()}
                 </h2>
-                <p style={{
-                  fontSize: '0.875rem',
-                  color: '#64748b',
-                  margin: 0
-                }}>
-                  {selectedTeamRegistration.category} | Captain: {selectedTeamRegistration.playerName}
-                </p>
+
               </div>
               <button
                 style={{
-                  background: 'none',
-                  border: 'none',
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
                   fontSize: '1.5rem',
                   cursor: 'pointer',
-                  color: '#64748b',
-                  padding: '4px',
-                  borderRadius: '4px'
+                  color: 'white',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  transition: 'all 0.2s ease'
                 }}
                 onClick={() => {
                   setShowTeamMembersModal(false);
                   setSelectedTeamRegistration(null);
                 }}
                 onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#f1f5f9';
+                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
                 }}
                 onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
                 }}
               >
                 ×
