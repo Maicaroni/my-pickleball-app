@@ -7346,7 +7346,11 @@ if (skillLevel === 'Open' && category?.tier) {
                           selectedPlayerCategory: selectedPlayerCategory,
                           selectedPlayerCategoryType: typeof selectedPlayerCategory,
                           status: reg.status,
-                          isApproved: reg.status === 'approved'
+                          isApproved: reg.status === 'approved',
+                          teamName: reg.teamName,
+                          hasTeamName: !!reg.teamName,
+                          teamNameType: typeof reg.teamName,
+                          fullRegistration: JSON.stringify(reg, null, 2)
                         });
                         return reg && reg.status === 'approved';
                       }).filter(reg => {
@@ -7511,7 +7515,20 @@ if (skillLevel === 'Open' && category?.tier) {
                                   marginBottom: '12px',
                                   textAlign: 'left'
                                 }}>
-                                  {player.player ? `${player.player.firstName} ${player.player.lastName}` : 'Unknown Player'}
+                                  {(() => {
+                                    // Check if this is a team category
+                                    const category = selectedTournament.tournamentCategories && 
+                                      Object.values(selectedTournament.tournamentCategories).find(cat => cat._id.toString() === player.category);
+                                    const isTeamCategory = category?.division?.toLowerCase().includes('team');
+                                    
+                                    if (isTeamCategory) {
+                                      // For team categories, show team name
+                                      return player.teamName || 'Team Name Not Available';
+                                    } else {
+                                      // For individual categories, show player name
+                                      return player.player ? `${player.player.firstName} ${player.player.lastName}` : 'Unknown Player';
+                                    }
+                                  })()}
                                 </div>
                                 
                                 {/* Player Details in One Row */}

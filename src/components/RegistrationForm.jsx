@@ -516,9 +516,23 @@ const RegistrationForm = ({ tournament, onClose }) => {
       formDataToSubmit.append('emergencyPhone', formData.emergencyPhone);
       
       // Add other form fields
+      console.log('🔍 REGISTRATION FORM - All formData:', formData);
+      console.log('🔍 REGISTRATION FORM - Team Name Value:', formData.teamName);
+      console.log('🔍 REGISTRATION FORM - Is Team Category:', isTeamCategory);
+      
       Object.keys(formData).forEach(key => {
-        if (formData[key] && !['firstName', 'lastName', 'email', 'phone', 'emergencyContact', 'emergencyPhone'].includes(key)) {
-          formDataToSubmit.append(key, formData[key]);
+        // Skip basic player info fields that are handled separately
+        if (!['firstName', 'lastName', 'email', 'phone', 'emergencyContact', 'emergencyPhone'].includes(key)) {
+          // For teamName, always include it if it's a team category (even if empty)
+          if (key === 'teamName' && isTeamCategory) {
+            console.log(`🔍 REGISTRATION FORM - Adding ${key} (team category):`, formData[key]);
+            formDataToSubmit.append(key, formData[key] || '');
+          }
+          // For other fields, only include if they have a value
+          else if (formData[key]) {
+            console.log(`🔍 REGISTRATION FORM - Adding ${key}:`, formData[key]);
+            formDataToSubmit.append(key, formData[key]);
+          }
         }
       });
 
@@ -561,6 +575,12 @@ const RegistrationForm = ({ tournament, onClose }) => {
       // Add proof of payment file if uploaded
       if (proofOfPayment) {
         formDataToSubmit.append('proofOfPayment', proofOfPayment);
+      }
+
+      // Debug: Log all FormData entries before submission
+      console.log('🔍 REGISTRATION FORM - Final FormData entries:');
+      for (let [key, value] of formDataToSubmit.entries()) {
+        console.log(`${key}: ${value}`);
       }
 
       const response = await apiClient.post('/tournaments/register', formDataToSubmit, {

@@ -607,6 +607,9 @@ exports.addApprovedPlayer = async (req, res) => {
         hasPartner: !!pendingRegistration.partner,
         partnerValue: pendingRegistration.partner,
         partnerType: typeof pendingRegistration.partner,
+        teamName: pendingRegistration.teamName,
+        hasTeamName: !!pendingRegistration.teamName,
+        teamNameType: typeof pendingRegistration.teamName,
         fullRegistration: JSON.stringify(pendingRegistration, null, 2)
       });
       
@@ -621,7 +624,9 @@ exports.addApprovedPlayer = async (req, res) => {
         category,
         status: "approved",
         // Preserve all original registration data
+        partner: pendingRegistration.partner,
         teamMembers: pendingRegistration.teamMembers,
+        teamName: pendingRegistration.teamName, // ✅ CRITICAL FIX: Include teamName in initial object
         proofOfPayment: pendingRegistration.proofOfPayment,
         contactNumber: pendingRegistration.contactNumber,
         email: pendingRegistration.email,
@@ -633,13 +638,48 @@ exports.addApprovedPlayer = async (req, res) => {
         registrationDate: pendingRegistration.registrationDate
       };
 
-      // Preserve partner data if it exists
-      if (pendingRegistration.partner) {
-        approvedRegistration.partner = pendingRegistration.partner;
-        console.log('✅ PARTNER PRESERVED:', pendingRegistration.partner);
+      // 🔍 CRITICAL FIX: Explicitly handle teamName and partner to ensure they're preserved
+      if (pendingRegistration.teamName !== undefined && pendingRegistration.teamName !== null) {
+        approvedRegistration.teamName = pendingRegistration.teamName;
+        console.log('✅ EXPLICIT TEAMNAME ASSIGNMENT:', {
+          pendingTeamName: pendingRegistration.teamName,
+          assignedTeamName: approvedRegistration.teamName,
+          teamNameType: typeof approvedRegistration.teamName
+        });
       } else {
-        console.log('❌ NO PARTNER TO PRESERVE - partner value:', pendingRegistration.partner);
+        console.log('⚠️ PENDING REGISTRATION HAS NO TEAMNAME:', {
+          teamNameValue: pendingRegistration.teamName,
+          teamNameType: typeof pendingRegistration.teamName,
+          hasTeamNameProperty: pendingRegistration.hasOwnProperty('teamName')
+        });
       }
+
+      if (pendingRegistration.partner !== undefined && pendingRegistration.partner !== null) {
+        approvedRegistration.partner = pendingRegistration.partner;
+        console.log('✅ EXPLICIT PARTNER ASSIGNMENT:', {
+          pendingPartner: pendingRegistration.partner,
+          assignedPartner: approvedRegistration.partner,
+          partnerType: typeof approvedRegistration.partner
+        });
+      } else {
+        console.log('⚠️ PENDING REGISTRATION HAS NO PARTNER:', {
+          partnerValue: pendingRegistration.partner,
+          partnerType: typeof pendingRegistration.partner,
+          hasPartnerProperty: pendingRegistration.hasOwnProperty('partner')
+        });
+      }
+
+      console.log('🔍 TEAM NAME PRESERVATION DEBUG:', {
+        pendingTeamName: pendingRegistration.teamName,
+        approvedTeamName: approvedRegistration.teamName,
+        teamNamePreserved: pendingRegistration.teamName === approvedRegistration.teamName
+      });
+
+      console.log('🔍 PARTNER PRESERVATION DEBUG:', {
+        pendingPartner: pendingRegistration.partner,
+        approvedPartner: approvedRegistration.partner,
+        partnerPreserved: pendingRegistration.partner === approvedRegistration.partner
+      });
       
       tournament.registrations.push(approvedRegistration);
       
@@ -647,6 +687,9 @@ exports.addApprovedPlayer = async (req, res) => {
         hasPartner: !!approvedRegistration.partner,
         partnerValue: approvedRegistration.partner,
         partnerType: typeof approvedRegistration.partner,
+        teamName: approvedRegistration.teamName,
+        hasTeamName: !!approvedRegistration.teamName,
+        teamNameType: typeof approvedRegistration.teamName,
         fullApprovedReg: JSON.stringify(approvedRegistration, null, 2)
       });
       
@@ -658,7 +701,47 @@ exports.addApprovedPlayer = async (req, res) => {
       });
     }
 
+    // 🔍 CRITICAL DEBUG: Log tournament state BEFORE save
+    console.log('🔍 BEFORE SAVE DEBUG - Tournament registrations:');
+    tournament.registrations.forEach((reg, index) => {
+      if (reg.player.toString() === playerId && reg.status === 'approved') {
+        console.log(`BEFORE SAVE - Approved Registration ${index + 1}:`, {
+          _id: reg._id,
+          player: reg.player,
+          status: reg.status,
+          category: reg.category,
+          teamName: reg.teamName,
+          hasTeamName: !!reg.teamName,
+          teamNameType: typeof reg.teamName,
+          teamNameValue: JSON.stringify(reg.teamName),
+          allKeys: Object.keys(reg),
+          fullRegistration: JSON.stringify(reg, null, 2)
+        });
+      }
+    });
+
+    console.log('🔍 SAVING TOURNAMENT TO DATABASE...');
     await tournament.save();
+    console.log('✅ TOURNAMENT SAVED TO DATABASE');
+
+    // 🔍 CRITICAL DEBUG: Log tournament state AFTER save
+    console.log('🔍 AFTER SAVE DEBUG - Tournament registrations:');
+    tournament.registrations.forEach((reg, index) => {
+      if (reg.player.toString() === playerId && reg.status === 'approved') {
+        console.log(`AFTER SAVE - Approved Registration ${index + 1}:`, {
+          _id: reg._id,
+          player: reg.player,
+          status: reg.status,
+          category: reg.category,
+          teamName: reg.teamName,
+          hasTeamName: !!reg.teamName,
+          teamNameType: typeof reg.teamName,
+          teamNameValue: JSON.stringify(reg.teamName),
+          allKeys: Object.keys(reg),
+          fullRegistration: JSON.stringify(reg, null, 2)
+        });
+      }
+    });
 
     console.log('🔍 AFTER SAVE DEBUG - Tournament registrations:');
     tournament.registrations.forEach((reg, index) => {
@@ -668,7 +751,10 @@ exports.addApprovedPlayer = async (req, res) => {
           category: reg.category,
           hasPartner: !!reg.partner,
           partnerValue: reg.partner,
-          partnerType: typeof reg.partner
+          partnerType: typeof reg.partner,
+          teamName: reg.teamName,
+          hasTeamName: !!reg.teamName,
+          teamNameType: typeof reg.teamName
         });
       }
     });
@@ -810,6 +896,17 @@ const registerForTournament = async (req, res) => {
       teamMembers
     } = req.body;
 
+    // 🔍 COMPREHENSIVE TEAM NAME DEBUG
+    console.log('🔍 TEAM NAME EXTRACTION DEBUG:', {
+      teamNameFromDestructuring: teamName,
+      teamNameType: typeof teamName,
+      teamNameDirect: req.body.teamName,
+      teamNameDirectType: typeof req.body.teamName,
+      allBodyKeys: Object.keys(req.body),
+      teamRelatedKeys: Object.keys(req.body).filter(key => key.toLowerCase().includes('team')),
+      fullRequestBody: JSON.stringify(req.body, null, 2)
+    });
+
     // Validate required fields
     if (!tournamentId || !category || !playerName || !playerEmail) {
       console.log('❌ Missing required fields:', { tournamentId, category, playerName, playerEmail });
@@ -864,6 +961,15 @@ const registerForTournament = async (req, res) => {
     // Add team data if provided (for team categories)
     if (teamName) {
       registration.teamName = teamName;
+      console.log('✅ TEAM NAME ADDED TO REGISTRATION:', teamName);
+    } else {
+      console.log('❌ NO TEAM NAME TO ADD - teamName value:', teamName);
+      console.log('❌ TEAM NAME DEBUG - Checking all possible sources:', {
+        fromDestructuring: teamName,
+        fromBodyDirect: req.body.teamName,
+        fromBodyTeamName: req.body['teamName'],
+        allTeamKeys: Object.keys(req.body).filter(key => key.toLowerCase().includes('team'))
+      });
     }
     
     // 🔍 DEBUG: Log all request body data for team registration debugging

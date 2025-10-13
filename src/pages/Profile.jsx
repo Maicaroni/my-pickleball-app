@@ -7764,30 +7764,8 @@ const duprRatings = userProfile?.duprRatings
   const isTeamCategory = categoryData?.division?.toLowerCase().includes('team');
   
   if (isTeamCategory) {
-    // For team categories, show only category information
-    return (
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr',
-        gap: '12px',
-        marginBottom: '16px'
-      }}>
-        <div style={{
-          background: '#FFFFFF',
-          padding: '12px',
-          borderRadius: '6px',
-          textAlign: 'center'
-        }}>
-          <div style={{
-            fontSize: '0.85rem',
-            fontWeight: '600',
-            color: '#29ba9b'
-          }}>
-            {categoryData?.division || 'Team Category'}
-          </div>
-        </div>
-      </div>
-    );
+    // For team categories, no additional details needed (category and filter already show this info)
+    return null;
   } else {
     // For individual categories, show player details
     return (
