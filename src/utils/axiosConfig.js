@@ -16,7 +16,14 @@ apiClient.interceptors.request.use(
     const storedUser = localStorage.getItem('user');
     const superAdminToken = localStorage.getItem('superadminToken');
     
-    if (storedUser) {
+    // Prioritize superadmin token for superadmin routes or when explicitly set in headers
+    const isSuperAdminRoute = config.url?.includes('/superadmin') || 
+                             window.location.pathname.includes('/superadmin') ||
+                             config.headers?.Authorization?.includes('superadmin');
+    
+    if (superAdminToken && isSuperAdminRoute) {
+      config.headers.Authorization = `Bearer ${superAdminToken}`;
+    } else if (storedUser) {
       try {
         const userData = JSON.parse(storedUser);
         if (userData.token) {

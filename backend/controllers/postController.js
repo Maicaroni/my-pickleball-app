@@ -1,5 +1,6 @@
 const Post = require('../models/Post');
 const Profile = require('../models/Profile');
+const Notification = require('../models/Notifications');
 
 // =========================
 // Helper: Attach avatarUrl consistently
@@ -56,6 +57,15 @@ const attachAvatars = async (docs) => {
 // Get posts
 // =========================
 exports.getPosts = async (req, res) => {
+  console.log('🚀 GET POSTS CALLED:', {
+    method: req.method,
+    url: req.url,
+    query: req.query,
+    hasAuthHeader: !!req.headers.authorization,
+    authHeaderLength: req.headers.authorization?.length || 0,
+    timestamp: new Date().toISOString()
+  });
+
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -72,19 +82,54 @@ exports.getPosts = async (req, res) => {
       .lean();
 
     const withAvatars = await attachAvatars(posts);
-    const userId = req.user?._id?.toString();
+    
+    // Better user ID extraction with more robust checking
+    let userId = null;
+    if (req.user && req.user._id) {
+      userId = req.user._id.toString();
+    }
 
-    const formattedPosts = withAvatars.map(post => ({
-      ...post,
-      images: post.images || [],
-      content: post.content || "",
-      likedBy: post.likedBy || [],
-      isLiked: Array.isArray(post.likedBy) && userId
-        ? post.likedBy.some(uid => uid.toString() === userId)
-        : false,
-      likeCount: post.likedBy?.length || 0,
-      commentCount: post.comments?.length || 0,
-    }));
+    console.log('📊 GET POSTS DEBUG:', {
+      hasUser: !!req.user,
+      userId: userId,
+      authHeader: req.headers.authorization ? 'Present' : 'Missing',
+      postsCount: withAvatars.length,
+      timestamp: new Date().toISOString()
+    });
+
+    const formattedPosts = withAvatars.map((post, index) => {
+      const likedBy = post.likedBy || [];
+      const isLiked = userId && Array.isArray(likedBy) 
+        ? likedBy.some(uid => uid.toString() === userId)
+        : false;
+      
+      // Debug first post's like status
+      if (index === 0) {
+        console.log('🔍 FIRST POST LIKE DEBUG:', {
+          postId: post._id,
+          likedByArray: likedBy,
+          userId: userId,
+          isLiked: isLiked,
+          likeCount: likedBy.length
+        });
+      }
+      
+      return {
+        ...post,
+        images: post.images || [],
+        content: post.content || "",
+        likedBy: likedBy,
+        isLiked: isLiked,
+        likeCount: likedBy.length || 0,
+        commentCount: post.comments?.length || 0,
+      };
+    });
+
+    console.log('✅ GET POSTS RESPONSE:', {
+      postsReturned: formattedPosts.length,
+      firstPostIsLiked: formattedPosts[0]?.isLiked,
+      timestamp: new Date().toISOString()
+    });
 
     const totalCount = await Post.countDocuments(query);
     res.json({ success: true, posts: formattedPosts, totalCount, page, limit });
@@ -339,11 +384,25 @@ exports.deletePostSuperAdmin = async (req, res) => {
 exports.approvePost = async (req, res) => {
   try {
     console.log('🔹 Approve route hit, Post ID:', req.params.id);
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id).populate('author', 'firstName lastName');
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
     post.status = 'approved';
     await post.save();
+
+    // ✅ Create notification for the post author
+    try {
+      await Notification.create({
+        user: post.author._id, // receiver
+        type: 'post_approved',
+        message: `Your post "${post.content?.slice(0, 30)}..." has been approved!`,
+        postId: post._id,
+        isRead: false
+      });
+      console.log('✅ Notification created for post approval');
+    } catch (notificationError) {
+      console.error('❌ Error creating notification:', notificationError);
+    }
 
     res.json({ success: true, message: 'Post approved', post });
   } catch (err) {
@@ -355,11 +414,26 @@ exports.approvePost = async (req, res) => {
 exports.rejectPost = async (req, res) => {
   try {
     console.log('🔹 Reject route hit, Post ID:', req.params.id);
-    const post = await Post.findById(req.params.id);
+    const post = await Post.findById(req.params.id).populate('author', 'firstName lastName');
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
     post.status = 'rejected';
     await post.save();
+
+    // Create notification for the post author
+    try {
+      await Notification.create({
+        user: post.author._id,
+        type: 'post_rejected',
+        message: `Your post "${post.content?.slice(0, 30)}..." was not approved. Please review our community guidelines and try again.`,
+        postId: post._id,
+        isRead: false
+      });
+      console.log('✅ Notification created for post rejection');
+    } catch (notificationError) {
+      console.error('❌ Error creating notification:', notificationError);
+      // Don't fail the rejection if notification creation fails
+    }
 
     res.json({ success: true, message: 'Post rejected', post });
   } catch (err) {

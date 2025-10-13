@@ -7,8 +7,8 @@ import { FaCheck, FaTimes, FaEye, FaTrash } from 'react-icons/fa';
 import { useSuperAdminAuth } from '../../../contexts/SuperAdminAuthContext';
 
 const SuperAdminPosts = () => {
-  const { admin } = useSuperAdminAuth();
-  const token = localStorage.getItem('superadminToken');
+  const { admin, getToken } = useSuperAdminAuth();
+  const token = getToken(); // Use the getToken method from context
 
   const [activeTab, setActiveTab] = useState('pending'); 
   const [postsData, setPostsData] = useState({ pending: [], approved: [], rejected: [] });

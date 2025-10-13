@@ -856,19 +856,95 @@ exports.deleteRegistration = async (req, res) => {
   try {
     const { tournamentId, registrationId } = req.params;
 
+    // First, get the tournament and the registration to be deleted
+    const tournament = await Tournament.findById(tournamentId);
+    if (!tournament) {
+      return res.status(404).json({ message: "Tournament not found" });
+    }
+
+    // Find the registration to get player info before deletion
+    const registrationToDelete = tournament.registrations.find(reg => reg._id.toString() === registrationId);
+    if (!registrationToDelete) {
+      return res.status(404).json({ message: "Registration not found" });
+    }
+
+    // Get player name for bracket cleanup
+    const playerName = registrationToDelete.playerName || 
+                      `${registrationToDelete.firstName} ${registrationToDelete.lastName}` ||
+                      registrationToDelete.teamName;
+
+    // Remove the registration
     const result = await Tournament.updateOne(
       { _id: tournamentId },
       { $pull: { registrations: { _id: registrationId } } }
     );
 
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ message: "Tournament not found" });
-    }
     if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: "Registration not found" });
+      return res.status(404).json({ message: "Failed to remove registration" });
     }
 
-    return res.status(200).json({ message: "Player removed from category" });
+    // Now clean up bracket references
+    if (playerName && tournament.tournamentCategories) {
+      const updatedCategories = tournament.tournamentCategories.map(category => {
+        const updatedCategory = { ...category.toObject() };
+
+        // Clean up group stage standings and matches
+        if (updatedCategory.groupStage?.groups) {
+          updatedCategory.groupStage.groups = updatedCategory.groupStage.groups.map(group => {
+            // Remove from standings
+            if (group.standings) {
+              group.standings = group.standings.filter(standing => standing.player !== playerName);
+            }
+
+            // Clean up matches - replace player name with 'TBD'
+            if (group.matches) {
+              Object.keys(group.matches).forEach(matchKey => {
+                const match = group.matches[matchKey];
+                if (match.player1 === playerName) {
+                  match.player1 = 'TBD';
+                  match.score1 = 0;
+                  if (match.winner === playerName) match.winner = null;
+                }
+                if (match.player2 === playerName) {
+                  match.player2 = 'TBD';
+                  match.score2 = 0;
+                  if (match.winner === playerName) match.winner = null;
+                }
+              });
+            }
+
+            return group;
+          });
+        }
+
+        // Clean up elimination matches
+        if (updatedCategory.eliminationMatches?.matches) {
+          updatedCategory.eliminationMatches.matches = updatedCategory.eliminationMatches.matches.map(match => {
+            if (match.player1 === playerName) {
+              match.player1 = 'TBD';
+              match.score1 = 0;
+              if (match.winner === playerName) match.winner = null;
+            }
+            if (match.player2 === playerName) {
+              match.player2 = 'TBD';
+              match.score2 = 0;
+              if (match.winner === playerName) match.winner = null;
+            }
+            return match;
+          });
+        }
+
+        return updatedCategory;
+      });
+
+      // Update the tournament with cleaned categories
+      await Tournament.updateOne(
+        { _id: tournamentId },
+        { $set: { tournamentCategories: updatedCategories } }
+      );
+    }
+
+    return res.status(200).json({ message: "Player removed from category and brackets updated" });
   } catch (err) {
     console.error("Delete registration error:", err);
     return res.status(500).json({ message: "Server error" });

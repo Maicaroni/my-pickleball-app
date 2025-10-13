@@ -19,6 +19,8 @@ const profileRoutes = require("./routes/profiles");
 const tournamentRoutes = require('./routes/tournaments');
 const verificationRoutes = require('./routes/verifications');
 const forgotPasswordRoutes = require('./routes/forgotPassword');
+const NotificationRoutes = require('./routes/notifications');
+
 
 const app = express();
 
@@ -63,6 +65,12 @@ app.get('/test-basic', (req, res) => {
 });
 
 // API Routes
+// Test route for notifications debugging
+app.get('/api/notifications-test', (req, res) => {
+  console.log('🔹 NOTIFICATIONS TEST ROUTE HIT');
+  res.json({ message: 'Notifications test route working' });
+});
+
 console.log("🔹 Registering routes...");
 app.use("/api/auth", authRoutes);
 app.use('/api/rankings', rankingRoutes);
@@ -84,6 +92,7 @@ app.use("/api/profiles", profileRoutes);
 app.use("/api/tournaments", tournamentRoutes);
 app.use("/api/verifications", verificationRoutes);
 app.use("/api/forgotPassword", forgotPasswordRoutes);
+app.use("/api/notifications", NotificationRoutes);
 app.use("/uploads", express.static("uploads"));
 
 // Default route

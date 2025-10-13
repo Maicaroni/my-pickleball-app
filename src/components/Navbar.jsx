@@ -1064,68 +1064,29 @@ const { user, isAuthenticated, logout} = useAuth(); // <-- only these two
   const location = useLocation();
   const navigate = useNavigate();
 
-  // TODO: Replace with actual API call to backend
-  // Backend should provide: GET /api/notifications
-  // Mark as read: PUT /api/notifications/:id/read
-  // Mark all as read: PUT /api/notifications/mark-all-read
-  const [notifications, setNotifications] = useState([
-    {
-      id: '1',
-      type: 'like',
-      user: 'Sarah Chen',
-      message: 'liked your post about the pickleball tournament',
-      time: '5m ago',
-      unread: true,
-      postId: 'post123'
-    },
-    {
-      id: '2',
-      type: 'comment',
-      user: 'Mike Johnson',
-      message: 'commented on your post: "Great shots! Can\'t wait for the next match"',
-      time: '15m ago',
-      unread: true,
-      postId: 'post123'
-    },
-    {
-      id: '3',
-      type: 'reply',
-      user: 'Anna Rodriguez',
-      message: 'replied to your comment on Mike\'s post',
-      time: '1h ago',
-      unread: false,
-      postId: 'post456'
-    },
-    {
-      id: '4',
-      type: 'club_accepted',
-      user: 'Phoenix Pickleball Club',
-      message: 'accepted your request to join the club',
-      time: '2h ago',
-      unread: true,
-      clubId: 'club789'
-    },
-    {
-      id: '5',
-      type: 'club_request',
-      user: 'David Kim',
-      message: 'wants to join your club "Metro Pickleball"',
-      time: '3h ago',
-      unread: true,
-      clubId: 'club123'
-    },
-    {
-      id: '6',
-      type: 'tournament',
-      user: 'Maria Santos',
-      message: 'joined your tournament "Summer Smash 2024"',
-      time: '4h ago',
-      unread: false,
-      tournamentId: 'tournament456'
-    }
-  ]);
+  const [notifications, setNotifications] = useState([]);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
 
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  // Fetch notifications when user is authenticated
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!isAuthenticated) return;
+      
+      setIsLoadingNotifications(true);
+      try {
+        const response = await axios.get('/api/notifications');
+        setNotifications(response.data.data.notifications || []);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      } finally {
+        setIsLoadingNotifications(false);
+      }
+    };
+
+    fetchNotifications();
+  }, [isAuthenticated]);
 
 useEffect(() => {
   const fetchProfile = async () => {
@@ -1238,23 +1199,32 @@ useEffect(() => {
     navigate("/"); // redirect to home page
   };
 
-  // TODO: Replace with actual API calls
-  const markNotificationAsRead = (notificationId) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === notificationId 
-          ? { ...notification, unread: false }
-          : notification
-      )
-    );
-    // Backend API call: PUT /api/notifications/${notificationId}/read
+  // Mark notification as read
+  const markNotificationAsRead = async (notificationId) => {
+    try {
+      await axios.put(`/api/notifications/${notificationId}/read`);
+      setNotifications(prev => 
+        prev.map(notification => 
+          notification.id === notificationId 
+            ? { ...notification, unread: false }
+            : notification
+        )
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
   };
 
-  const markAllNotificationsAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, unread: false }))
-    );
-    // Backend API call: PUT /api/notifications/mark-all-read
+  // Mark all notifications as read
+  const markAllNotificationsAsRead = async () => {
+    try {
+      await axios.put('/api/notifications/mark-all-read');
+      setNotifications(prev => 
+        prev.map(notification => ({ ...notification, unread: false }))
+      );
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
   };
 
   const handleNotificationClick = (notification) => {
@@ -1297,6 +1267,31 @@ useEffect(() => {
         return <TrophyIcon />;
       default:
         return <BellIcon />;
+    }
+  };
+
+  const getNotificationTitle = (type) => {
+    switch (type) {
+      case 'post_approved':
+        return 'Post Approved';
+      case 'post_rejected':
+        return 'Post Rejected';
+      case 'like':
+        return 'New Like';
+      case 'comment':
+        return 'New Comment';
+      case 'reply':
+        return 'New Reply';
+      case 'club_request':
+        return 'Club Request';
+      case 'club_accepted':
+        return 'Club Accepted';
+      case 'tournament':
+        return 'Tournament Update';
+      case 'other':
+        return 'Notification';
+      default:
+        return 'Notification';
     }
   };
 
@@ -1399,14 +1394,14 @@ useEffect(() => {
 
               {/* Notification Bell - RIGHT side of profile button */} 
               <div style={{ position: 'relative' }} data-notification-container>
-               {/* <NotificationButton onClick={() => setIsNotificationOpen(!isNotificationOpen)}>
+               { <NotificationButton onClick={() => setIsNotificationOpen(!isNotificationOpen)}>
                   <BellIcon />
                   {unreadCount > 0 && (
                     <NotificationBadge $count={unreadCount}>
                       {unreadCount > 99 ? '99+' : unreadCount > 0 ? unreadCount : ''}
                     </NotificationBadge>
                   )}
-                </NotificationButton>*/}
+                </NotificationButton>}
                
                 <NotificationDropdown $isOpen={isNotificationOpen}>
                   <NotificationHeader>
@@ -1430,7 +1425,7 @@ useEffect(() => {
                       // If we're at the top and trying to scroll up, or at bottom and trying to scroll down
                       // prevent the event to stop page scrolling
                       if ((isScrolledToTop && e.deltaY < 0) || (isScrolledToBottom && e.deltaY > 0)) {
-                        e.preventDefault();
+
                       }
                     }}
                   >
@@ -1446,7 +1441,7 @@ useEffect(() => {
                           </NotificationIcon>
                           <NotificationContent>
                             <p className="notification-text">
-                              <span className="highlight">{notification.user}</span> {notification.message}
+                              <span className="highlight">{getNotificationTitle(notification.type)}</span> <br></br>{notification.message}
                             </p>
                             <span className="notification-time">{notification.time}</span>
                           </NotificationContent>

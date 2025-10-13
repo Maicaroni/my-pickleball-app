@@ -15,11 +15,12 @@ const {
   deletePostSuperAdmin,
 } = require('../controllers/postController');
 const authMiddleware = require('../middleware/authMiddleware');
+const optionalAuthMiddleware = require('../middleware/optionalAuthMiddleware');
 
 // ----------------------
-// Public route
+// Public route with optional auth (for like status)
 // ----------------------
-router.get('/', getPosts);
+router.get('/', optionalAuthMiddleware(), getPosts);
 
 // ----------------------
 // Protected routes (any logged-in user)
