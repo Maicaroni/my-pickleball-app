@@ -8,6 +8,7 @@ import getCroppedImg from "../../backend/utils/cropImage";
 import { Modal, Button } from "@mui/material";
 import axios from 'axios';
 import { message } from "antd";
+
 // Footer is rendered in App.jsx route, not needed here
 
 
@@ -4277,6 +4278,10 @@ const [selectedPlayerGender, setSelectedPlayerGender] = useState('all');
 const [tournaments,setTournaments] = useState([]);
 const [registrations, setRegistrations] = useState(selectedTournament?.registrations || []);
 
+// Partner invitation popup state
+const [showPartnerInvitationPopup, setShowPartnerInvitationPopup] = useState(false);
+const [partnerInvitationData, setPartnerInvitationData] = useState(null);
+
 
 
 
@@ -7965,10 +7970,11 @@ const duprRatings = userProfile?.duprRatings
                                        marginBottom: '16px'
                                      }}>
                                        <div style={{
-                                         background: '#FFFFFF',
-                                         padding: '0px',
+                                         background: '#f8fafc',
+                                         padding: '8px',
                                          borderRadius: '6px',
-                                         textAlign: 'center'
+                                         textAlign: 'center',
+                                         border: '1px solid #e2e8f0'
                                        }}>
                                          <div style={{
                                            fontSize: '0.7rem',
@@ -7987,10 +7993,11 @@ const duprRatings = userProfile?.duprRatings
                                          </div>
                                        </div>
                                        <div style={{
-                                         background: '#FFFFFF',
-                                         padding: '0px',
+                                         background: '#f8fafc',
+                                         padding: '8px',
                                          borderRadius: '6px',
-                                         textAlign: 'center'
+                                         textAlign: 'center',
+                                         border: '1px solid #e2e8f0'
                                        }}>
                                          <div style={{
                                            fontSize: '0.7rem',
@@ -8010,10 +8017,11 @@ const duprRatings = userProfile?.duprRatings
                                          </div>
                                        </div>
                                        <div style={{
-                                         background: '#FFFFFF',
-                                         padding: '0px',
+                                         background: '#f8fafc',
+                                         padding: '8px',
                                          borderRadius: '6px',
-                                         textAlign: 'center'
+                                         textAlign: 'center',
+                                         border: '1px solid #e2e8f0'
                                        }}>
                                          <div style={{
                                            fontSize: '0.7rem',
@@ -8032,10 +8040,11 @@ const duprRatings = userProfile?.duprRatings
                                          </div>
                                        </div>
                                        <div style={{
-                                         background: '#FFFFFF',
-                                         padding: '0px',
+                                         background: '#f8fafc',
+                                         padding: '8px',
                                          borderRadius: '6px',
-                                         textAlign: 'center'
+                                         textAlign: 'center',
+                                         border: '1px solid #e2e8f0'
                                        }}>
                                          <div style={{
                                            fontSize: '0.7rem',
@@ -8479,20 +8488,70 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                               {/* Partner Information for Doubles Categories */}
                                               {isDoublesCategory && player.partner && (
                                                 <div style={{
-                                                  background: '#e0f2fe',
+                                                  background: (() => {
+                                                    // Get partner invitation status - this would come from notifications or partner data
+                                                    // For now, we'll simulate different statuses for demonstration
+                                                    const partnerStatus = player.partner.invitationStatus || 'pending';
+                                                    
+                                                    switch(partnerStatus) {
+                                                      case 'accepted':
+                                                        return '#dcfce7'; // Light green background
+                                                      case 'declined':
+                                                        return '#fef2f2'; // Light red background
+                                                      case 'pending':
+                                                      default:
+                                                        return '#e0f2fe'; // Light blue background (current)
+                                                    }
+                                                  })(),
                                                   padding: '12px',
                                                   borderRadius: '8px',
                                                   marginBottom: '16px',
-                                                  border: '1px solid #0284c7'
+                                                  border: (() => {
+                                                    const partnerStatus = player.partner.invitationStatus || 'pending';
+                                                    
+                                                    switch(partnerStatus) {
+                                                      case 'accepted':
+                                                        return '1px solid #16a34a'; // Green border
+                                                      case 'declined':
+                                                        return '1px solid #dc2626'; // Red border
+                                                      case 'pending':
+                                                      default:
+                                                        return '1px solid #0284c7'; // Blue border (current)
+                                                    }
+                                                  })()
                                                 }}>
                                                   <div style={{
                                                     fontSize: '0.8rem',
-                                                    color: '#0369a1',
+                                                    color: (() => {
+                                                      const partnerStatus = player.partner.invitationStatus || 'pending';
+                                                      
+                                                      switch(partnerStatus) {
+                                                        case 'accepted':
+                                                          return '#15803d'; // Dark green text
+                                                        case 'declined':
+                                                          return '#b91c1c'; // Dark red text
+                                                        case 'pending':
+                                                        default:
+                                                          return '#0369a1'; // Dark blue text (current)
+                                                      }
+                                                    })(),
                                                     fontWeight: '600',
                                                     marginBottom: '8px',
                                                     textAlign: 'center'
                                                   }}>
-                                                    PARTNER INFORMATION
+                                                    PARTNER INFORMATION {(() => {
+                                                      const partnerStatus = player.partner.invitationStatus || 'pending';
+                                                      
+                                                      switch(partnerStatus) {
+                                                        case 'accepted':
+                                                          return '✓ ACCEPTED';
+                                                        case 'declined':
+                                                          return '✗ DECLINED';
+                                                        case 'pending':
+                                                        default:
+                                                          return '⏳ PENDING';
+                                                      }
+                                                    })()}
                                                   </div>
                                                   <div style={{
                                                     display: 'flex',
@@ -8505,7 +8564,19 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                       width: '40px',
                                                       height: '40px',
                                                       borderRadius: '50%',
-                                                      background: '#0284c7',
+                                                      background: (() => {
+                                                        const partnerStatus = player.partner.invitationStatus || 'pending';
+                                                        
+                                                        switch(partnerStatus) {
+                                                          case 'accepted':
+                                                            return '#16a34a'; // Green avatar background
+                                                          case 'declined':
+                                                            return '#dc2626'; // Red avatar background
+                                                          case 'pending':
+                                                          default:
+                                                            return '#0284c7'; // Blue avatar background (current)
+                                                        }
+                                                      })(),
                                                       display: 'flex',
                                                       alignItems: 'center',
                                                       justifyContent: 'center',
@@ -8543,10 +8614,11 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                     gap: '8px'
                                                   }}>
                                                     <div style={{
-                                                      background: '#FFFFFF',
-                                                      padding: '6px',
+                                                      background: '#f8fafc',
+                                                      padding: '8px',
                                                       borderRadius: '4px',
-                                                      textAlign: 'center'
+                                                      textAlign: 'center',
+                                                      border: '1px solid #e2e8f0'
                                                     }}>
                                                       <div style={{
                                                         fontSize: '0.65rem',
@@ -8565,10 +8637,11 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                       </div>
                                                     </div>
                                                     <div style={{
-                                                      background: '#FFFFFF',
-                                                      padding: '6px',
+                                                      background: '#f8fafc',
+                                                      padding: '8px',
                                                       borderRadius: '4px',
-                                                      textAlign: 'center'
+                                                      textAlign: 'center',
+                                                      border: '1px solid #e2e8f0'
                                                     }}>
                                                       <div style={{
                                                         fontSize: '0.65rem',
@@ -8588,10 +8661,11 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                       </div>
                                                     </div>
                                                     <div style={{
-                                                      background: '#FFFFFF',
-                                                      padding: '6px',
+                                                      background: '#f8fafc',
+                                                      padding: '8px',
                                                       borderRadius: '4px',
-                                                      textAlign: 'center'
+                                                      textAlign: 'center',
+                                                      border: '1px solid #e2e8f0'
                                                     }}>
                                                       <div style={{
                                                         fontSize: '0.65rem',
@@ -8610,10 +8684,11 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                       </div>
                                                     </div>
                                                     <div style={{
-                                                      background: '#FFFFFF',
-                                                      padding: '6px',
+                                                      background: '#f8fafc',
+                                                      padding: '8px',
                                                       borderRadius: '4px',
-                                                      textAlign: 'center'
+                                                      textAlign: 'center',
+                                                      border: '1px solid #e2e8f0'
                                                     }}>
                                                       <div style={{
                                                         fontSize: '0.65rem',

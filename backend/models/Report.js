@@ -5,6 +5,8 @@ const reportSchema = new mongoose.Schema({
   reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   reason: { type: String, required: true },
   customReason: { type: String },
+  resolved: { type: Boolean, default: false },
+  archived: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Report', reportSchema);

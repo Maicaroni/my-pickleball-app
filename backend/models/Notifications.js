@@ -15,12 +15,14 @@ const notificationSchema = new mongoose.Schema(
       enum: [
         'post_approved',
         'post_rejected',
+        'post_removed',
         'like',
         'comment',
         'reply',
         'club_request',
         'club_accepted',
         'tournament',
+        'partner_invitation',
         'other',
       ],
       default: 'other', // ✅ makes it safer when no type is set
@@ -50,6 +52,26 @@ const notificationSchema = new mongoose.Schema(
     isRead: {
       type: Boolean,
       default: false, // ✅ helps avoid undefined checks
+    },
+
+    // 🤝 Partner invitation specific fields
+    partnerInvitation: {
+      status: {
+        type: String,
+        enum: ['pending', 'accepted', 'declined'],
+        default: 'pending'
+      },
+      tournamentId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Tournament'
+      },
+      registrationId: {
+        type: mongoose.Schema.Types.ObjectId
+      },
+      invitedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
     },
   },
   {

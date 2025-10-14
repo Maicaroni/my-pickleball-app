@@ -1,4 +1,5 @@
 const Tournament = require("../models/Tournament");
+const { createNotification } = require("./notificationController");
 
 
 
@@ -1123,6 +1124,121 @@ const registerForTournament = async (req, res) => {
     // Add registration to tournament
     tournament.registrations.push(registration);
     await tournament.save();
+
+    // Create notifications for the user and team members about successful registration
+    const notificationData = {
+      type: 'tournament',
+      message: `Your registration for "${tournament.tournamentName}" has been submitted and is pending approval.`,
+      metadata: {
+        tournamentId: tournament._id,
+        tournamentName: tournament.tournamentName,
+        category: category,
+        registrationStatus: 'pending'
+      }
+    };
+
+    // Always notify the registrant
+    await createNotification({
+      userId: req.user._id,
+      ...notificationData
+    });
+
+    // If this is a partner registration, create partner invitation notification
+    if (registration.partner) {
+      try {
+        // Find the saved registration to get its ID
+        const savedRegistration = tournament.registrations[tournament.registrations.length - 1];
+        
+        // Resolve category ObjectId to category name
+        let categoryName = category;
+        console.log('🔍 CATEGORY RESOLUTION DEBUG:', {
+          originalCategory: category,
+          categoryType: typeof category,
+          tournamentCategoriesCount: tournament.tournamentCategories ? tournament.tournamentCategories.length : 0,
+          tournamentCategories: tournament.tournamentCategories
+        });
+        
+        if (tournament.tournamentCategories && tournament.tournamentCategories.length > 0) {
+          const categoryObj = tournament.tournamentCategories.find(cat => {
+            const catIdString = cat._id ? cat._id.toString() : '';
+            const categoryString = category ? category.toString() : '';
+            console.log('🔍 Comparing category IDs:', { catIdString, categoryString, match: catIdString === categoryString });
+            return catIdString === categoryString;
+          });
+          
+          console.log('🔍 Found category object:', categoryObj);
+          
+          if (categoryObj) {
+            // Create display name from category parts
+            const division = categoryObj.division || '';
+            const skillLevel = categoryObj.skillLevel === 'Open' && categoryObj.tier 
+              ? `Open Tier ${categoryObj.tier}` 
+              : categoryObj.skillLevel || '';
+            const age = categoryObj.ageCategory || '';
+            
+            const parts = [division, skillLevel, age].filter(part => part && part.trim());
+            categoryName = parts.length > 0 ? parts.join(' | ') : 'Tournament Category';
+            
+            console.log('✅ CATEGORY RESOLVED:', {
+              division,
+              skillLevel,
+              age,
+              parts,
+              finalCategoryName: categoryName
+            });
+          } else {
+            console.log('❌ CATEGORY NOT FOUND - Using fallback');
+            categoryName = 'Tournament Category';
+          }
+        } else {
+          console.log('❌ NO TOURNAMENT CATEGORIES FOUND');
+          categoryName = 'Tournament Category';
+        }
+        
+        await createNotification({
+          userId: registration.partner,
+          type: 'partner_invitation',
+          message: `${req.user.firstName} ${req.user.lastName} has invited you to be their partner for "${tournament.tournamentName}" in the ${categoryName} category.`,
+          metadata: {
+            tournamentId: tournament._id,
+            tournamentName: tournament.tournamentName,
+            category: categoryName,
+            registrationId: savedRegistration._id,
+            invitedBy: req.user._id
+          },
+          partnerInvitation: {
+            status: 'pending',
+            tournamentId: tournament._id,
+            registrationId: savedRegistration._id,
+            invitedBy: req.user._id
+          }
+        });
+        console.log('✅ PARTNER INVITATION - Notification created for partner:', registration.partner);
+        console.log('✅ PARTNER INVITATION - Category resolved:', { originalCategory: category, resolvedCategory: categoryName });
+      } catch (error) {
+        console.error('❌ PARTNER INVITATION ERROR - Failed to create notification:', error);
+      }
+    }
+
+    // If this is a team registration, notify all team members
+    if (registration.teamMembers && Array.isArray(registration.teamMembers) && registration.teamMembers.length > 0) {
+      console.log('🔔 TEAM NOTIFICATIONS - Creating notifications for team members:', registration.teamMembers);
+      
+      // Create notifications for each team member
+      for (const teamMemberId of registration.teamMembers) {
+        try {
+          await createNotification({
+            userId: teamMemberId,
+            ...notificationData
+          });
+          console.log('✅ TEAM NOTIFICATION - Created for team member:', teamMemberId);
+        } catch (error) {
+          console.error('❌ TEAM NOTIFICATION ERROR - Failed to create notification for team member:', teamMemberId, error);
+        }
+      }
+      
+      console.log('🔔 TEAM NOTIFICATIONS - Completed creating notifications for all team members');
+    }
 
     res.status(201).json({ 
       message: "Registration submitted successfully. Awaiting club admin approval.",

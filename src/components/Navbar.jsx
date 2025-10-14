@@ -4,6 +4,7 @@ import logoImg from '../../ppl-logo.svg';
 import axios from 'axios';
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import PartnerInvitationPopup from './PartnerInvitationPopup';
 
 
 
@@ -1041,6 +1042,17 @@ function TrophyIcon() {
   );
 }
 
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 6h18" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 11v6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M14 11v6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function BellOffIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1066,6 +1078,15 @@ const { user, isAuthenticated, logout} = useAuth(); // <-- only these two
 
   const [notifications, setNotifications] = useState([]);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+
+  // Post removal modal states
+  const [isPostRemovalModalOpen, setIsPostRemovalModalOpen] = useState(false);
+  const [selectedRemovedPost, setSelectedRemovedPost] = useState(null);
+  const [removalReason, setRemovalReason] = useState('');
+
+  // Partner invitation popup states
+  const [showPartnerInvitationPopup, setShowPartnerInvitationPopup] = useState(false);
+  const [partnerInvitationData, setPartnerInvitationData] = useState(null);
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
@@ -1227,9 +1248,107 @@ useEffect(() => {
     }
   };
 
+  // Handle partner invitation response
+  const handlePartnerInvitationResponse = async (notificationId, response) => {
+    try {
+      await axios.post('/api/notifications/partner-invitation/respond', {
+        notificationId,
+        response
+      });
+      
+      // Remove the notification from the list or update its status
+      setNotifications(prev => 
+        prev.filter(notification => notification._id !== notificationId)
+      );
+      
+      // Close the popup
+      setShowPartnerInvitationPopup(false);
+      setPartnerInvitationData(null);
+      
+      // Show success message
+      console.log(`Partner invitation ${response} successfully`);
+    } catch (error) {
+      console.error('Error responding to partner invitation:', error);
+    }
+  };
+
   const handleNotificationClick = (notification) => {
+    console.log('Notification clicked:', notification);
+    console.log('Notification type:', notification.type);
+    
+    // Handle partner invitation notifications by showing popup
+    if (notification.type === 'partner_invitation') {
+      console.log('Partner invitation notification detected');
+      console.log('Full notification object:', notification);
+      console.log('Partner invitation data:', notification.partnerInvitation);
+      console.log('Metadata:', notification.metadata);
+      
+      // Extract inviter name from the message since we don't have populated user data
+      const messageMatch = notification.message.match(/^(.+?) has invited you/);
+      const inviterName = messageMatch ? messageMatch[1] : 'Unknown Player';
+      
+      // Handle category display - check if it's an ObjectId and provide fallback
+      let categoryDisplay = notification.metadata?.category || 'Unknown Category';
+      
+      console.log('Original category from metadata:', categoryDisplay);
+      console.log('Notification message:', notification.message);
+      
+      // If category looks like an ObjectId (24 hex characters), provide a fallback
+      if (categoryDisplay.match(/^[0-9a-fA-F]{24}$/)) {
+        console.log('Category is ObjectId, using generic fallback');
+        categoryDisplay = 'Tournament Category';
+        console.log('Final category display:', categoryDisplay);
+      }
+      
+      const invitationData = {
+        id: notification._id,
+        inviterName: inviterName,
+        inviterAvatar: null, // We don't have this data in the notification
+        inviterRating: 'N/A', // We don't have this data in the notification
+        inviterGender: 'N/A', // We don't have this data in the notification
+        tournamentName: notification.metadata?.tournamentName || 'Unknown Tournament',
+        category: categoryDisplay,
+        message: notification.message
+      };
+      
+      console.log('Setting popup data:', invitationData);
+      console.log('showPartnerInvitationPopup before:', showPartnerInvitationPopup);
+      
+      setPartnerInvitationData(invitationData);
+      setShowPartnerInvitationPopup(true);
+      
+      // Add a timeout to check state after setting
+      setTimeout(() => {
+        console.log('showPartnerInvitationPopup after:', showPartnerInvitationPopup);
+        console.log('partnerInvitationData after:', partnerInvitationData);
+      }, 100);
+      
+      console.log('Popup should be showing now');
+      return;
+    }
+    
     if (notification.unread) {
       markNotificationAsRead(notification.id);
+    }
+    
+    // Handle post_removed notifications differently
+    if (notification.type === 'post_removed') {
+      // Debug: Log the notification data to see what we're working with
+      console.log('Post removed notification clicked:', notification);
+      console.log('Notification metadata:', notification.metadata);
+      console.log('Reason from metadata:', notification.metadata?.reason);
+      
+      // Set the removed post data and reason for the modal
+      setSelectedRemovedPost({
+        id: notification.postId,
+        content: notification.metadata?.postContent || 'Post content not available',
+        author: notification.metadata?.postAuthor || 'Unknown author',
+        createdAt: notification.metadata?.postCreatedAt || notification.createdAt,
+        images: notification.metadata?.postImages || []
+      });
+      setRemovalReason(notification.metadata?.reason || 'No reason provided');
+      setIsPostRemovalModalOpen(true);
+      return;
     }
     
     // Navigate to relevant page based on notification type
@@ -1253,6 +1372,8 @@ useEffect(() => {
 
   const getNotificationIcon = (type) => {
     switch (type) {
+      case 'post_removed':
+        return <TrashIcon />;
       case 'like':
         return <HeartIcon />;
       case 'comment':
@@ -1265,6 +1386,8 @@ useEffect(() => {
         return <UserCheckIcon />;
       case 'tournament':
         return <TrophyIcon />;
+      case 'partner_invitation':
+        return <UserPlusIcon />;
       default:
         return <BellIcon />;
     }
@@ -1276,6 +1399,8 @@ useEffect(() => {
         return 'Post Approved';
       case 'post_rejected':
         return 'Post Rejected';
+      case 'post_removed':
+        return 'Post Removed';
       case 'like':
         return 'New Like';
       case 'comment':
@@ -1288,6 +1413,8 @@ useEffect(() => {
         return 'Club Accepted';
       case 'tournament':
         return 'Tournament Update';
+      case 'partner_invitation':
+        return 'Partner Invitation';
       case 'other':
         return 'Notification';
       default:
@@ -1444,6 +1571,16 @@ useEffect(() => {
                               <span className="highlight">{getNotificationTitle(notification.type)}</span> <br></br>{notification.message}
                             </p>
                             <span className="notification-time">{notification.time}</span>
+                            {notification.type === 'partner_invitation' && (
+                              <div style={{ 
+                                marginTop: '8px',
+                                fontSize: '12px',
+                                color: '#666',
+                                fontStyle: 'italic'
+                              }}>
+                                Click to view details and respond
+                              </div>
+                            )}
                           </NotificationContent>
                         </NotificationItem>
                       ))
@@ -1630,7 +1767,8 @@ useEffect(() => {
                     ...(notification.type === 'reply' && { background: '#f0f9ff', color: '#3b82f6' }),
                     ...(notification.type === 'club_request' && { background: '#f0fdf4', color: '#22c55e' }),
                     ...(notification.type === 'club_accepted' && { background: '#f0fdf4', color: '#22c55e' }),
-                    ...(notification.type === 'tournament' && { background: '#fefce8', color: '#eab308' })
+                    ...(notification.type === 'tournament' && { background: '#fefce8', color: '#eab308' }),
+                    ...(notification.type === 'post_removed' && { background: '#fef2f2', color: '#ef4444' })
                   }}>
                     <div style={{ width: '18px', height: '18px' }}>
                       {getNotificationIcon(notification.type)}
@@ -1733,6 +1871,179 @@ useEffect(() => {
           C&C
         </MobileNavButton>
     </MobileBottomNav>
+
+    {/* Post Removal Modal */}
+    {isPostRemovalModalOpen && (
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: '20px'
+        }}
+        onClick={() => setIsPostRemovalModalOpen(false)}
+      >
+        <div 
+          style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '24px',
+            maxWidth: '600px',
+            width: '100%',
+            maxHeight: '80vh',
+            overflow: 'auto',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Modal Header */}
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
+            <div style={{ color: '#ef4444', marginRight: '12px', fontSize: '24px' }}>
+              🗑️
+            </div>
+            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '600', color: '#1f2937' }}>
+              Post Removed
+            </h2>
+            <button
+              onClick={() => setIsPostRemovalModalOpen(false)}
+              style={{
+                marginLeft: 'auto',
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: '#6b7280',
+                padding: '4px'
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Removal Reason */}
+          <div style={{ 
+            backgroundColor: '#fef2f2', 
+            border: '1px solid #fecaca', 
+            borderRadius: '8px', 
+            padding: '16px', 
+            marginBottom: '20px' 
+          }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '16px', fontWeight: '600', color: '#dc2626' }}>
+              Reason for Removal:
+            </h3>
+            <p style={{ margin: 0, color: '#7f1d1d', lineHeight: '1.5' }}>
+              {removalReason}
+            </p>
+          </div>
+
+          {/* Post Preview */}
+          {selectedRemovedPost && (
+            <div style={{ 
+              border: '1px solid #e5e7eb', 
+              borderRadius: '8px', 
+              padding: '16px',
+              backgroundColor: '#f9fafb'
+            }}>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: '600', color: '#374151' }}>
+                Your Removed Post:
+              </h3>
+              <div style={{ 
+                backgroundColor: 'white', 
+                padding: '12px', 
+                borderRadius: '6px',
+                border: '1px solid #d1d5db'
+              }}>
+                <p style={{ 
+                  margin: '0 0 8px 0', 
+                  color: '#374151', 
+                  lineHeight: '1.5',
+                  whiteSpace: 'pre-wrap'
+                }}>
+                  {selectedRemovedPost.content}
+                </p>
+                
+                {/* Display images if available */}
+                {selectedRemovedPost.images && selectedRemovedPost.images.length > 0 && (
+                  <div style={{ 
+                    margin: '12px 0',
+                    display: 'grid',
+                    gridTemplateColumns: selectedRemovedPost.images.length === 1 ? '1fr' : 'repeat(auto-fit, minmax(150px, 1fr))',
+                    gap: '8px'
+                  }}>
+                    {selectedRemovedPost.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image.url || image}
+                        alt={image.alt || `Post image ${index + 1}`}
+                        style={{
+                          width: '100%',
+                          maxHeight: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '6px',
+                          border: '1px solid #e5e7eb'
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+                
+                <div style={{ 
+                  fontSize: '12px', 
+                  color: '#6b7280',
+                  borderTop: '1px solid #e5e7eb',
+                  paddingTop: '8px'
+                }}>
+                  Posted on: {new Date(selectedRemovedPost.createdAt).toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div style={{ 
+            marginTop: '20px', 
+            padding: '16px', 
+            backgroundColor: '#f0f9ff', 
+            borderRadius: '8px',
+            border: '1px solid #bae6fd'
+          }}>
+            <p style={{ 
+              margin: 0, 
+              fontSize: '14px', 
+              color: '#0369a1',
+              lineHeight: '1.4'
+            }}>
+              <strong>Note:</strong> This post has been removed from the forum. If you believe this was done in error, 
+              please contact our support team through the feedback page.
+            </p>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Partner Invitation Popup */}
+    <div>
+      {console.log('Rendering popup check - showPartnerInvitationPopup:', showPartnerInvitationPopup)}
+      {console.log('Rendering popup check - partnerInvitationData:', partnerInvitationData)}
+      <PartnerInvitationPopup
+        isVisible={showPartnerInvitationPopup && !!partnerInvitationData}
+        invitation={partnerInvitationData}
+        onAccept={(invitation) => handlePartnerInvitationResponse(invitation.id, 'accepted')}
+        onDecline={(invitation) => handlePartnerInvitationResponse(invitation.id, 'declined')}
+        onClose={() => {
+          setShowPartnerInvitationPopup(false);
+          setPartnerInvitationData(null);
+        }}
+      />
+    </div>
+
     </GlobalReset>
   );
 }
