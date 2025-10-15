@@ -8,6 +8,7 @@ import getCroppedImg from "../../backend/utils/cropImage";
 import { Modal, Button } from "@mui/material";
 import axios from 'axios';
 import { message } from "antd";
+import { batchGetPartnerStatuses, getPartnerStatusStyle, getPartnerStatusText } from '../utils/partnerUtils';
 
 // Footer is rendered in App.jsx route, not needed here
 
@@ -4246,6 +4247,10 @@ const token = user?.token;
   const [selectedPlayerToReject, setSelectedPlayerToReject] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
   
+  // Partner status state management
+  const [partnerStatuses, setPartnerStatuses] = useState({});
+  const [loadingPartnerStatuses, setLoadingPartnerStatuses] = useState(false);
+  
   // Team member modal states
   const [showTeamMembersModal, setShowTeamMembersModal] = useState(false);
   const [selectedTeamRegistration, setSelectedTeamRegistration] = useState(null);
@@ -4281,6 +4286,14 @@ const [registrations, setRegistrations] = useState(selectedTournament?.registrat
 // Partner invitation popup state
 const [showPartnerInvitationPopup, setShowPartnerInvitationPopup] = useState(false);
 const [partnerInvitationData, setPartnerInvitationData] = useState(null);
+
+// Helper function to get partner status for a specific player
+const getPlayerPartnerStatus = (player, tournamentId) => {
+  if (!player.partner || !player.partner.playerId) return 'pending';
+  
+  const statusKey = `${tournamentId}-${player.playerId}-${player.partner.playerId}`;
+  return partnerStatuses[statusKey] || 'pending';
+};
 
 
 
@@ -4390,13 +4403,96 @@ useEffect(() => {
       console.log('🏆 User Tournament IDs from API:', response.data.map(t => t._id));
       setTournaments(response.data); // stores only user's tournaments
       console.log('✅ User tournaments state updated with', response.data.length, 'tournaments');
+      
+      // Load partner statuses for all tournaments
+      await loadPartnerStatuses(response.data);
     } catch (error) {
       console.error("Error fetching user tournaments:", error);
     }
   };
 
+  // Function to load partner statuses for tournaments
+  const loadPartnerStatuses = async (tournamentsData) => {
+    try {
+      setLoadingPartnerStatuses(true);
+      
+      // Extract all registrations from all tournaments
+      const allRegistrations = [];
+      tournamentsData.forEach(tournament => {
+        if (tournament.registeredPlayers) {
+          tournament.registeredPlayers.forEach(player => {
+            if (player.partner && player.partner.playerId) {
+              allRegistrations.push({
+                tournamentId: tournament._id,
+                playerId: player.playerId,
+                partnerId: player.partner.playerId,
+                registrationId: player._id
+              });
+            }
+          });
+        }
+      });
+      
+      if (allRegistrations.length > 0) {
+        const statuses = await batchGetPartnerStatuses(allRegistrations);
+        setPartnerStatuses(statuses);
+      }
+    } catch (error) {
+      console.error('Error loading partner statuses:', error);
+    } finally {
+      setLoadingPartnerStatuses(false);
+    }
+  };
+
   fetchTournaments();
 }, []);
+
+// Function to refresh tournament data (for partner invitation updates)
+const refreshTournamentData = useCallback(async (tournamentId = null) => {
+  try {
+    const targetTournamentId = tournamentId || localStorage.getItem('selectedTournamentId');
+    if (!targetTournamentId) return;
+
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    const token = storedUser?.token;
+    if (!token) return;
+
+    console.log('🔄 Refreshing tournament data for partner status update...');
+    
+    const response = await fetch(`/api/tournaments/${targetTournamentId}`, {
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      },
+    });
+
+    if (response.ok) {
+      const tournamentData = await response.json();
+      setSelectedTournament(tournamentData);
+      console.log('✅ Tournament data refreshed successfully');
+    }
+  } catch (error) {
+    console.error('❌ Error refreshing tournament data:', error);
+  }
+}, []);
+
+// Listen for partner invitation responses
+useEffect(() => {
+  const handlePartnerInvitationUpdate = (event) => {
+    console.log('🔔 Partner invitation update detected, refreshing tournament data...');
+    refreshTournamentData();
+  };
+
+  // Listen for custom events from Navbar
+  window.addEventListener('partnerInvitationResponse', handlePartnerInvitationUpdate);
+  
+  return () => {
+    window.removeEventListener('partnerInvitationResponse', handlePartnerInvitationUpdate);
+  };
+}, [refreshTournamentData]);
 
 // Add useEffect to restore and refetch selected tournament on page reload
 useEffect(() => {
@@ -7970,11 +8066,17 @@ const duprRatings = userProfile?.duprRatings
                                        marginBottom: '16px'
                                      }}>
                                        <div style={{
-                                         background: '#f8fafc',
+                                         background: (() => {
+                                           const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
+                                           return getPartnerStatusStyle(partnerStatus).backgroundColor;
+                                         })(),
                                          padding: '8px',
                                          borderRadius: '6px',
                                          textAlign: 'center',
-                                         border: '1px solid #e2e8f0'
+                                         border: (() => {
+                                           const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
+                                           return getPartnerStatusStyle(partnerStatus).borderColor;
+                                         })()
                                        }}>
                                          <div style={{
                                            fontSize: '0.7rem',
@@ -7993,11 +8095,17 @@ const duprRatings = userProfile?.duprRatings
                                          </div>
                                        </div>
                                        <div style={{
-                                         background: '#f8fafc',
+                                         background: (() => {
+                                           const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
+                                           return getPartnerStatusStyle(partnerStatus).backgroundColor;
+                                         })(),
                                          padding: '8px',
                                          borderRadius: '6px',
                                          textAlign: 'center',
-                                         border: '1px solid #e2e8f0'
+                                         border: (() => {
+                                           const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
+                                           return getPartnerStatusStyle(partnerStatus).borderColor;
+                                         })()
                                        }}>
                                          <div style={{
                                            fontSize: '0.7rem',
@@ -8017,11 +8125,17 @@ const duprRatings = userProfile?.duprRatings
                                          </div>
                                        </div>
                                        <div style={{
-                                         background: '#f8fafc',
+                                         background: (() => {
+                                           const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
+                                           return getPartnerStatusStyle(partnerStatus).backgroundColor;
+                                         })(),
                                          padding: '8px',
                                          borderRadius: '6px',
                                          textAlign: 'center',
-                                         border: '1px solid #e2e8f0'
+                                         border: (() => {
+                                           const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
+                                           return getPartnerStatusStyle(partnerStatus).borderColor;
+                                         })()
                                        }}>
                                          <div style={{
                                            fontSize: '0.7rem',
@@ -8040,11 +8154,17 @@ const duprRatings = userProfile?.duprRatings
                                          </div>
                                        </div>
                                        <div style={{
-                                         background: '#f8fafc',
+                                         background: (() => {
+                                           const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
+                                           return getPartnerStatusStyle(partnerStatus).backgroundColor;
+                                         })(),
                                          padding: '8px',
                                          borderRadius: '6px',
                                          textAlign: 'center',
-                                         border: '1px solid #e2e8f0'
+                                         border: (() => {
+                                           const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
+                                           return getPartnerStatusStyle(partnerStatus).borderColor;
+                                         })()
                                        }}>
                                          <div style={{
                                            fontSize: '0.7rem',
@@ -8491,56 +8611,30 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                   background: (() => {
                                                     // Get partner invitation status - this would come from notifications or partner data
                                                     // For now, we'll simulate different statuses for demonstration
-                                                    const partnerStatus = player.partner.invitationStatus || 'pending';
-                                                    
-                                                    switch(partnerStatus) {
-                                                      case 'accepted':
-                                                        return '#dcfce7'; // Light green background
-                                                      case 'declined':
-                                                        return '#fef2f2'; // Light red background
-                                                      case 'pending':
-                                                      default:
-                                                        return '#e0f2fe'; // Light blue background (current)
-                                                    }
+                                                    const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
+                                                    return getPartnerStatusStyle(partnerStatus).backgroundColor;
                                                   })(),
                                                   padding: '12px',
                                                   borderRadius: '8px',
                                                   marginBottom: '16px',
                                                   border: (() => {
-                                                    const partnerStatus = player.partner.invitationStatus || 'pending';
-                                                    
-                                                    switch(partnerStatus) {
-                                                      case 'accepted':
-                                                        return '1px solid #16a34a'; // Green border
-                                                      case 'declined':
-                                                        return '1px solid #dc2626'; // Red border
-                                                      case 'pending':
-                                                      default:
-                                                        return '1px solid #0284c7'; // Blue border (current)
-                                                    }
+                                                    const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
+                                                    return getPartnerStatusStyle(partnerStatus).borderColor;
                                                   })()
                                                 }}>
                                                   <div style={{
                                                     fontSize: '0.8rem',
                                                     color: (() => {
-                                                      const partnerStatus = player.partner.invitationStatus || 'pending';
-                                                      
-                                                      switch(partnerStatus) {
-                                                        case 'accepted':
-                                                          return '#15803d'; // Dark green text
-                                                        case 'declined':
-                                                          return '#b91c1c'; // Dark red text
-                                                        case 'pending':
-                                                        default:
-                                                          return '#0369a1'; // Dark blue text (current)
-                                                      }
+                                                      const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
+                                                      const statusStyle = getPartnerStatusStyle(partnerStatus);
+                                                      return statusStyle.textColor;
                                                     })(),
                                                     fontWeight: '600',
                                                     marginBottom: '8px',
                                                     textAlign: 'center'
                                                   }}>
                                                     PARTNER INFORMATION {(() => {
-                                                      const partnerStatus = player.partner.invitationStatus || 'pending';
+                                                      const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
                                                       
                                                       switch(partnerStatus) {
                                                         case 'accepted':
@@ -8565,17 +8659,9 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                                       height: '40px',
                                                       borderRadius: '50%',
                                                       background: (() => {
-                                                        const partnerStatus = player.partner.invitationStatus || 'pending';
-                                                        
-                                                        switch(partnerStatus) {
-                                                          case 'accepted':
-                                                            return '#16a34a'; // Green avatar background
-                                                          case 'declined':
-                                                            return '#dc2626'; // Red avatar background
-                                                          case 'pending':
-                                                          default:
-                                                            return '#0284c7'; // Blue avatar background (current)
-                                                        }
+                                                        const partnerStatus = getPlayerPartnerStatus(player, selectedTournament._id);
+                                                        const statusStyle = getPartnerStatusStyle(partnerStatus);
+                                                        return statusStyle.backgroundColor;
                                                       })(),
                                                       display: 'flex',
                                                       alignItems: 'center',
@@ -9071,7 +9157,7 @@ const cleanName = (player.playerName || "").replace(/["'].*?["']/g, "").trim();
                                           onClick={() => {
                                             setSelectedPlayerToReject({
                                               playerName: player.playerName,
-                                              playerId: player.playerId,
+                                              playerId: player.player?._id || player.player,
                                               categoryId: player.category
                                             });
                                             setRejectionReason('');
@@ -12883,19 +12969,80 @@ const EditBioButton = styled.button`
                       e.target.style.transform = 'translateY(0)';
                     }
                   }}
-                  onClick={() => {
+                  onClick={async () => {
                     if (rejectionReason.trim()) {
-                      // Handle rejection logic here
-                      console.log('Rejecting player:', selectedPlayerToReject.playerName);
-                      console.log('Reason:', rejectionReason);
-                      
-                      // Close modal
-                      setShowRejectModal(false);
-                      setSelectedPlayerToReject(null);
-                      setRejectionReason('');
-                      
-                      // You can add API call here to reject the player
-                      alert(`Player ${selectedPlayerToReject.playerName} has been rejected.\nReason: ${rejectionReason}`);
+                      try {
+                        console.log('=== REJECT PLAYER DEBUG ===');
+                        console.log('Rejecting player:', selectedPlayerToReject.playerName);
+                        console.log('Player ID:', selectedPlayerToReject.playerId);
+                        console.log('Category ID:', selectedPlayerToReject.categoryId);
+                        console.log('Reason:', rejectionReason);
+                        
+                        // Get authentication token
+                        const token = localStorage.getItem('token');
+                        const userFromStorage = JSON.parse(localStorage.getItem('user') || '{}');
+                        const authToken = userFromStorage.token || token;
+                        
+                        if (!authToken) {
+                          console.error('❌ No authentication token found');
+                          alert('Please sign in to reject players.');
+                          return;
+                        }
+                        
+                        // Make API call to reject player
+                        const response = await fetch(`/api/tournaments/${selectedTournament._id}/registrations/reject`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                          },
+                          body: JSON.stringify({
+                            playerId: selectedPlayerToReject.playerId,
+                            category: selectedPlayerToReject.categoryId,
+                            reason: rejectionReason
+                          })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (response.ok) {
+                          alert(`Player ${selectedPlayerToReject.playerName} has been rejected successfully!`);
+                          
+                          // Refresh the tournament data
+                          try {
+                            const refreshResponse = await fetch(`/api/tournaments/${selectedTournament._id}`, {
+                              headers: { 
+                                'Authorization': `Bearer ${authToken}`,
+                                'Content-Type': 'application/json',
+                                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                                'Pragma': 'no-cache',
+                                'Expires': '0'
+                              },
+                            });
+                            
+                            if (refreshResponse.ok) {
+                              const updatedTournament = await refreshResponse.json();
+                              setSelectedTournament(updatedTournament);
+                              console.log('✅ Tournament data refreshed after rejection');
+                            }
+                          } catch (refreshError) {
+                            console.error('Error refreshing tournament data:', refreshError);
+                          }
+                          
+                          // Close modal
+                          setShowRejectModal(false);
+                          setSelectedPlayerToReject(null);
+                          setRejectionReason('');
+                        } else {
+                          console.error('Rejection failed:', result);
+                          alert(`Failed to reject player: ${result.message || 'Unknown error'}`);
+                        }
+                      } catch (error) {
+                        console.error('Error rejecting player:', error);
+                        alert('Error rejecting player. Please try again.');
+                      }
+                    } else {
+                      alert('Please provide a reason for rejection.');
                     }
                   }}
                 >

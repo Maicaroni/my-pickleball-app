@@ -1265,6 +1265,11 @@ useEffect(() => {
       setShowPartnerInvitationPopup(false);
       setPartnerInvitationData(null);
       
+      // Dispatch custom event to notify Profile component of partner invitation response
+      window.dispatchEvent(new CustomEvent('partnerInvitationResponse', {
+        detail: { notificationId, response }
+      }));
+      
       // Show success message
       console.log(`Partner invitation ${response} successfully`);
     } catch (error) {

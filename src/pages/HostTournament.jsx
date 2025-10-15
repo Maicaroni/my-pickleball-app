@@ -1149,14 +1149,26 @@ if (!user || !token) {
 
 useEffect(() => {
   if (editTournament) {
+    // Format dates properly for form inputs
+    const formatDateForInput = (dateValue) => {
+      if (!dateValue) return '';
+      const date = new Date(dateValue);
+      return date.toISOString().split('T')[0];
+    };
+
+    const formatDatesArray = (datesArray) => {
+      if (!datesArray || !Array.isArray(datesArray)) return [];
+      return datesArray.map(date => formatDateForInput(date));
+    };
+
     setFormData(prev => ({
       ...prev,
       tournamentName: editTournament.tournamentName || '',
       description: editTournament.description || '',
       tournamentPicture: editTournament.tournamentPicture || null,
       registrationInstructions: editTournament.registrationInstructions || '',
-      tournamentDates: editTournament.tournamentDates || [],
-      registrationDeadline: editTournament.registrationDeadline || '',
+      tournamentDates: formatDatesArray(editTournament.tournamentDates),
+      registrationDeadline: formatDateForInput(editTournament.registrationDeadline),
       category: editTournament.category || '',
       skillLevel: editTournament.skillLevel || '',
       entryFeeMin: editTournament.entryFeeMin || '',

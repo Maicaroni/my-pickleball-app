@@ -3,7 +3,17 @@ const Notification = require('../models/Notifications');
 // ✅ Get all notifications for the logged-in user
 const getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({ user: req.user.id })
+    const notifications = await Notification.find({ 
+      user: req.user.id,
+      // Filter out partner invitations that have been accepted or declined
+      $or: [
+        { type: { $ne: 'partner_invitation' } }, // Include all non-partner invitation notifications
+        { 
+          type: 'partner_invitation',
+          'partnerInvitation.status': 'pending' // Only include pending partner invitations
+        }
+      ]
+    })
       .sort({ createdAt: -1 });
 
     res.json({ success: true, data: { notifications } });
@@ -86,8 +96,31 @@ const respondToPartnerInvitation = async (req, res) => {
     notification.isRead = true;
     await notification.save();
 
-    // If accepted, we might need to update the tournament registration
-    // This would require additional logic to find and update the registration
+    // If accepted, update the tournament registration to reflect the accepted partnership
+    if (response === 'accepted') {
+      const Tournament = require('../models/Tournament');
+      
+      try {
+        const tournament = await Tournament.findById(notification.partnerInvitation.tournamentId);
+        if (tournament) {
+          // Find the registration that contains this partner invitation
+          const registration = tournament.registrations.find(
+            reg => reg._id.toString() === notification.partnerInvitation.registrationId.toString()
+          );
+          
+          if (registration) {
+            // Set the partner field to the user's ObjectId (as per schema)
+            registration.partner = req.user._id;
+            
+            console.log('✅ Updated tournament registration with accepted partner:', req.user._id);
+            await tournament.save();
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error updating tournament registration:', error);
+        // Don't fail the entire request if this update fails
+      }
+    }
     
     // Create a notification for the person who sent the invitation
     const responseMessage = response === 'accepted' 
@@ -116,10 +149,52 @@ const respondToPartnerInvitation = async (req, res) => {
   }
 };
 
+// ✅ Get partner invitation status for a specific tournament and user
+const getPartnerInvitationStatus = async (req, res) => {
+  try {
+    const { tournamentId, partnerId } = req.params;
+    
+    // Check both directions of the partner invitation:
+    // 1. Current user invited the partner
+    // 2. Partner invited the current user
+    const notification = await Notification.findOne({
+      $or: [
+        {
+          // Current user invited the partner
+          user: partnerId,
+          type: 'partner_invitation',
+          'partnerInvitation.tournamentId': tournamentId,
+          'partnerInvitation.invitedBy': req.user._id
+        },
+        {
+          // Partner invited the current user
+          user: req.user._id,
+          type: 'partner_invitation',
+          'partnerInvitation.tournamentId': tournamentId,
+          'partnerInvitation.invitedBy': partnerId
+        }
+      ]
+    });
+    
+    if (!notification) {
+      return res.json({ success: true, status: 'pending' }); // Default to pending if no notification found
+    }
+    
+    res.json({ 
+      success: true, 
+      status: notification.partnerInvitation.status || 'pending'
+    });
+  } catch (err) {
+    console.error('Get partner invitation status error:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 module.exports = {
   getNotifications,
   markAsRead,
   markAllAsRead,
   createNotification,
-  respondToPartnerInvitation
+  respondToPartnerInvitation,
+  getPartnerInvitationStatus
 };

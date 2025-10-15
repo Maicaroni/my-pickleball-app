@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import logoImg from '../../ppl-logo.svg';
+import logoImg from '../../assets/ppl-logo-P6U_k7ZW.png';
 
 const FooterContainer = styled.footer`
   background: white;
@@ -10,7 +10,7 @@ const FooterContainer = styled.footer`
   
   @media (max-width: 768px) {
     padding: 30px 20px 80px; /* Add bottom padding for mobile nav clearance */
-    margin-top: 20px; /* Ensure some space from content above */
+    margin-top: 0; /* Remove margin to eliminate white gap */
     
     /* Hide footer on mobile for profile page */
     ${props => props.$hideOnMobileProfile && `
@@ -39,7 +39,7 @@ const LogoSection = styled.div`
     width: auto;
     
     @media (max-width: 768px) {
-      height: 95px;
+      height: 80px;
     }
   }
   

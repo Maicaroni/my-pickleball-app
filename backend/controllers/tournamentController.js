@@ -725,6 +725,126 @@ exports.addApprovedPlayer = async (req, res) => {
     await tournament.save();
     console.log('✅ TOURNAMENT SAVED TO DATABASE');
 
+    // 🔔 Create notification for the approved player
+    try {
+      // Determine the category name for the notification
+      let categoryName = category;
+      if (tournament.tournamentCategories && tournament.tournamentCategories.length > 0) {
+        const categoryObj = tournament.tournamentCategories.find(cat => {
+          const catIdString = cat._id ? cat._id.toString() : '';
+          const categoryString = category ? category.toString() : '';
+          return catIdString === categoryString;
+        });
+        
+        if (categoryObj) {
+          // Create display name from category parts
+          const division = categoryObj.division || '';
+          const skillLevel = categoryObj.skillLevel === 'Open' && categoryObj.tier 
+            ? `Open Tier ${categoryObj.tier}` 
+            : categoryObj.skillLevel || '';
+          const age = categoryObj.ageCategory || '';
+          
+          const parts = [division, skillLevel, age].filter(part => part && part.trim());
+          categoryName = parts.length > 0 ? parts.join(' | ') : 'Tournament Category';
+          
+          console.log('✅ APPROVAL NOTIFICATION - Category resolved:', {
+            division,
+            skillLevel,
+            age,
+            parts,
+            finalCategoryName: categoryName
+          });
+        }
+      }
+
+      // Determine registration type for notification message
+      let registrationType = 'single';
+      if (pendingRegistration.partner) {
+        registrationType = 'doubles';
+      } else if (pendingRegistration.teamMembers && pendingRegistration.teamMembers.length > 0) {
+        registrationType = 'team';
+      }
+
+      const notificationMessage = `Your ${registrationType} registration for "${tournament.tournamentName}" in ${categoryName} has been approved! You can now participate in the tournament.`;
+
+      await createNotification({
+        userId: playerId,
+        type: 'tournament',
+        message: notificationMessage,
+        metadata: {
+          tournamentId: tournament._id,
+          tournamentName: tournament.tournamentName,
+          category: categoryName,
+          registrationStatus: 'approved',
+          registrationType: registrationType
+        }
+      });
+
+      console.log('✅ APPROVAL NOTIFICATION - Created for player:', playerId);
+      console.log('✅ APPROVAL NOTIFICATION - Registration type:', registrationType);
+      console.log('✅ APPROVAL NOTIFICATION - Category:', categoryName);
+
+      // If this is a doubles registration, notify the partner
+      if (pendingRegistration.partner) {
+        console.log('🔔 PARTNER APPROVAL NOTIFICATION - Creating notification for partner:', pendingRegistration.partner);
+        
+        try {
+          await createNotification({
+            userId: pendingRegistration.partner,
+            type: 'tournament',
+            message: notificationMessage,
+            metadata: {
+              tournamentId: tournament._id,
+              tournamentName: tournament.tournamentName,
+              category: categoryName,
+              registrationStatus: 'approved',
+              registrationType: registrationType
+            }
+          });
+          console.log('✅ PARTNER APPROVAL NOTIFICATION - Created for partner:', pendingRegistration.partner);
+        } catch (error) {
+          console.error('❌ PARTNER APPROVAL NOTIFICATION ERROR - Failed to create notification for partner:', pendingRegistration.partner, error);
+        }
+      }
+
+      // If this is a team registration, notify all team members (except the registrant who already got notified)
+      if (pendingRegistration.teamMembers && Array.isArray(pendingRegistration.teamMembers) && pendingRegistration.teamMembers.length > 0) {
+        console.log('🔔 TEAM APPROVAL NOTIFICATIONS - Creating notifications for team members:', pendingRegistration.teamMembers);
+        
+        // Create approval notifications for each team member, excluding the registrant to avoid duplicates
+        for (const teamMemberId of pendingRegistration.teamMembers) {
+          // Skip the registrant since they already received a notification
+          if (teamMemberId.toString() === playerId.toString()) {
+            console.log('⏭️ TEAM APPROVAL NOTIFICATION - Skipping registrant to avoid duplicate:', teamMemberId);
+            continue;
+          }
+          
+          try {
+            await createNotification({
+              userId: teamMemberId,
+              type: 'tournament',
+              message: notificationMessage,
+              metadata: {
+                tournamentId: tournament._id,
+                tournamentName: tournament.tournamentName,
+                category: categoryName,
+                registrationStatus: 'approved',
+                registrationType: registrationType
+              }
+            });
+            console.log('✅ TEAM APPROVAL NOTIFICATION - Created for team member:', teamMemberId);
+          } catch (error) {
+            console.error('❌ TEAM APPROVAL NOTIFICATION ERROR - Failed to create notification for team member:', teamMemberId, error);
+          }
+        }
+        
+        console.log('🔔 TEAM APPROVAL NOTIFICATIONS - Completed creating notifications for all team members');
+      }
+    } catch (error) {
+      console.error('❌ APPROVAL NOTIFICATION ERROR - Failed to create notification:', error);
+      // Don't fail the entire request if notification creation fails
+    }
+
     // 🔍 CRITICAL DEBUG: Log tournament state AFTER save
     console.log('🔍 AFTER SAVE DEBUG - Tournament registrations:');
     tournament.registrations.forEach((reg, index) => {
@@ -827,7 +947,7 @@ exports.rejectPlayerRegistration = async (req, res) => {
     if (tournament.createdBy.toString() !== req.user._id.toString())
       return res.status(403).json({ message: "You can only manage your own tournaments" });
 
-    // Find and remove the pending registration
+    // Find the pending registration
     const registrationIndex = tournament.registrations.findIndex(
       r => r.player.toString() === playerId && r.category === category && r.status === "pending"
     );
@@ -836,10 +956,137 @@ exports.rejectPlayerRegistration = async (req, res) => {
       return res.status(404).json({ message: "Pending registration not found" });
     }
 
+    // Get the registration data before removing it (for notifications)
+    const rejectedRegistration = tournament.registrations[registrationIndex];
+
+    // Determine the category name for the notification
+    let categoryName = category;
+    if (tournament.tournamentCategories && tournament.tournamentCategories.length > 0) {
+      const categoryObj = tournament.tournamentCategories.find(cat => {
+        const catIdString = cat._id ? cat._id.toString() : '';
+        const categoryString = category ? category.toString() : '';
+        return catIdString === categoryString;
+      });
+      
+      if (categoryObj) {
+        // Create display name from category parts
+        const division = categoryObj.division || '';
+        const skillLevel = categoryObj.skillLevel === 'Open' && categoryObj.tier 
+          ? `Open Tier ${categoryObj.tier}` 
+          : categoryObj.skillLevel || '';
+        const age = categoryObj.ageCategory || '';
+        
+        const parts = [division, skillLevel, age].filter(part => part && part.trim());
+        categoryName = parts.length > 0 ? parts.join(' | ') : 'Tournament Category';
+        
+        console.log('✅ REJECTION NOTIFICATION - Category resolved:', {
+          division,
+          skillLevel,
+          age,
+          parts,
+          finalCategoryName: categoryName
+        });
+      }
+    }
+
+    // Determine registration type for notification message
+    let registrationType = 'single';
+    if (rejectedRegistration.partner) {
+      registrationType = 'doubles';
+    } else if (rejectedRegistration.teamMembers && rejectedRegistration.teamMembers.length > 0) {
+      registrationType = 'team';
+    }
+
+    // Create rejection notification message
+    const rejectionMessage = `Your ${registrationType} registration for "${tournament.tournamentName}" in ${categoryName} has been rejected. ${reason ? `Reason: ${reason}` : ''}`;
+
     // Remove the registration from the tournament
     tournament.registrations.splice(registrationIndex, 1);
-
     await tournament.save();
+
+    // 🔔 Create rejection notifications
+    try {
+      // Always notify the main player
+      await createNotification({
+        userId: playerId,
+        type: 'tournament',
+        message: rejectionMessage,
+        metadata: {
+          tournamentId: tournament._id,
+          tournamentName: tournament.tournamentName,
+          category: categoryName,
+          registrationStatus: 'rejected',
+          registrationType: registrationType,
+          rejectionReason: reason || 'No reason provided'
+        }
+      });
+
+      console.log('✅ REJECTION NOTIFICATION - Created for player:', playerId);
+      console.log('✅ REJECTION NOTIFICATION - Registration type:', registrationType);
+      console.log('✅ REJECTION NOTIFICATION - Category:', categoryName);
+
+      // If this is a doubles registration, notify the partner
+      if (rejectedRegistration.partner) {
+        console.log('🔔 PARTNER REJECTION NOTIFICATION - Creating notification for partner:', rejectedRegistration.partner);
+        
+        try {
+          await createNotification({
+            userId: rejectedRegistration.partner,
+            type: 'tournament',
+            message: rejectionMessage,
+            metadata: {
+              tournamentId: tournament._id,
+              tournamentName: tournament.tournamentName,
+              category: categoryName,
+              registrationStatus: 'rejected',
+              registrationType: registrationType,
+              rejectionReason: reason || 'No reason provided'
+            }
+          });
+          console.log('✅ PARTNER REJECTION NOTIFICATION - Created for partner:', rejectedRegistration.partner);
+        } catch (error) {
+          console.error('❌ PARTNER REJECTION NOTIFICATION ERROR - Failed to create notification for partner:', rejectedRegistration.partner, error);
+        }
+      }
+
+      // If this is a team registration, notify all team members (except the registrant who already got notified)
+      if (rejectedRegistration.teamMembers && Array.isArray(rejectedRegistration.teamMembers) && rejectedRegistration.teamMembers.length > 0) {
+        console.log('🔔 TEAM REJECTION NOTIFICATIONS - Creating notifications for team members:', rejectedRegistration.teamMembers);
+        
+        // Create rejection notifications for each team member, excluding the registrant to avoid duplicates
+        for (const teamMemberId of rejectedRegistration.teamMembers) {
+          // Skip the registrant since they already received a notification
+          if (teamMemberId.toString() === playerId.toString()) {
+            console.log('⏭️ TEAM REJECTION NOTIFICATION - Skipping registrant to avoid duplicate:', teamMemberId);
+            continue;
+          }
+          
+          try {
+            await createNotification({
+              userId: teamMemberId,
+              type: 'tournament',
+              message: rejectionMessage,
+              metadata: {
+                tournamentId: tournament._id,
+                tournamentName: tournament.tournamentName,
+                category: categoryName,
+                registrationStatus: 'rejected',
+                registrationType: registrationType,
+                rejectionReason: reason || 'No reason provided'
+              }
+            });
+            console.log('✅ TEAM REJECTION NOTIFICATION - Created for team member:', teamMemberId);
+          } catch (error) {
+            console.error('❌ TEAM REJECTION NOTIFICATION ERROR - Failed to create notification for team member:', teamMemberId, error);
+          }
+        }
+        
+        console.log('🔔 TEAM REJECTION NOTIFICATIONS - Completed creating notifications for all team members');
+      }
+    } catch (error) {
+      console.error('❌ REJECTION NOTIFICATION ERROR - Failed to create notification:', error);
+      // Don't fail the entire request if notification creation fails
+    }
 
     res.json({ 
       message: "Player registration rejected successfully",
@@ -1220,12 +1467,18 @@ const registerForTournament = async (req, res) => {
       }
     }
 
-    // If this is a team registration, notify all team members
+    // If this is a team registration, notify all team members (except the registrant who already got notified)
     if (registration.teamMembers && Array.isArray(registration.teamMembers) && registration.teamMembers.length > 0) {
       console.log('🔔 TEAM NOTIFICATIONS - Creating notifications for team members:', registration.teamMembers);
       
-      // Create notifications for each team member
+      // Create notifications for each team member, excluding the registrant to avoid duplicates
       for (const teamMemberId of registration.teamMembers) {
+        // Skip the registrant since they already received a notification
+        if (teamMemberId.toString() === req.user._id.toString()) {
+          console.log('⏭️ TEAM NOTIFICATION - Skipping registrant to avoid duplicate:', teamMemberId);
+          continue;
+        }
+        
         try {
           await createNotification({
             userId: teamMemberId,
